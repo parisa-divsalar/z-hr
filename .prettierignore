@@ -1,0 +1,10 @@
+# Ignore artifacts:
+coverage
+public/
+src/assets/
+build/
+node_modules/
+package-lock.json
+yarn.lock
+package.json
+README.md

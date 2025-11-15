@@ -1,0 +1,31 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+    -moz-font-feature-settings: "ss02";
+    -webkit-font-feature-settings: "ss02";
+    font-feature-settings: "ss02";
+    outline: none;
+
+    &::-webkit-scrollbar{
+        background-color: transparent;
+        width: 4px;
+        height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: #028386;
+        border-radius: 20px;
+        &:hover {
+            cursor: grab;
+        }
+    }
+}
+
+.cardActionArea {
+    width: fit-content !important;
+    border-radius: 0.875rem !important;
+}
