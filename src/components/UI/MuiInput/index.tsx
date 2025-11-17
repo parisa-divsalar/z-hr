@@ -1,8 +1,9 @@
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
-import { InputAdornment } from '@mui/material';
+import { InputAdornment, Stack, Typography } from '@mui/material';
 import TextField from '@mui/material/TextField';
 
+import InfoIcon from '@/assets/images/icons/info.svg';
 import { commafy } from '@/utils/commafyHelper';
 import { convertPersianNumbersToEnglish } from '@/utils/validation';
 
@@ -19,6 +20,7 @@ interface MuiInputProps {
   helperText?: string;
   autoComplete?: string;
   type?: 'text' | 'password' | 'email' | 'numeric';
+  size?: 'small' | 'medium' | 'large';
   inputMode?: InputModeType;
   disabled?: boolean;
   hidden?: boolean;
@@ -55,6 +57,7 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
       onEnter,
       startIcon,
       endIcon,
+      size = 'medium',
       autoComplete = 'off',
       autoFocus = false,
       onChange,
@@ -83,50 +86,54 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
     };
 
     return (
-      <TextField
-        variant={variant}
-        placeholder={placeholder}
-        fullWidth
-        label={label}
-        value={inputMode === 'decimal' ? (value ? commafy(value) : '') : value}
-        error={error}
-        required={required}
-        rows={rows}
-        onChange={handleChange}
-        helperText={helperText}
-        type={type}
-        hidden={hidden}
-        autoFocus={autoFocus}
-        multiline={multiline}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        onKeyDown={handleKeyDown}
-        onBlur={onBlur}
-        disabled={disabled}
-        inputRef={ref}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        InputProps={{
-          readOnly,
-          startAdornment: startIcon ? (
-            <InputAdornment position='start' sx={{ marginRight: 1 }}>
-              {startIcon}
-            </InputAdornment>
-          ) : undefined,
-          endAdornment: endIcon ? (
-            <InputAdornment position='end' sx={{ margin: '0' }}>
-              {endIcon}
-            </InputAdornment>
-          ) : undefined,
-          inputProps: {
-            maxLength,
-            autoComplete: 'new-password',
-            form: { autocomplete: 'off' },
-          },
-        }}
-        {...rest}
-      />
+      <Stack>
+        <Typography variant='caption' color={disabled ? 'grey.100' : error ? 'error.main' : 'text.secondary'}>
+          {label}
+        </Typography>
+        <TextField
+          variant={variant}
+          placeholder={placeholder}
+          fullWidth
+          label=''
+          value={inputMode === 'decimal' ? (value ? commafy(value) : '') : value}
+          error={error}
+          required={required}
+          rows={rows}
+          size={size}
+          onChange={handleChange}
+          type={type}
+          hidden={hidden}
+          autoFocus={autoFocus}
+          multiline={multiline}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          onKeyDown={handleKeyDown}
+          onBlur={onBlur}
+          disabled={disabled}
+          inputRef={ref}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          InputProps={{
+            readOnly,
+            startAdornment: startIcon ? <InputAdornment position='start'>{startIcon}</InputAdornment> : undefined,
+            endAdornment: endIcon ? <InputAdornment position='end'>{endIcon}</InputAdornment> : undefined,
+            inputProps: {
+              maxLength,
+              autoComplete: 'new-password',
+              form: { autocomplete: 'off' },
+            },
+          }}
+          {...rest}
+        />
+
+        <Stack direction='row' gap={1} alignItems='center'>
+          <InfoIcon color={disabled ? '#D8D8DA' : error ? '#EC2C27' : '#66666E'} />
+          <Typography variant='caption' color={disabled ? 'grey.100' : error ? 'error.main' : 'text.secondary'}>
+            {helperText}
+          </Typography>
+        </Stack>
+      </Stack>
     );
   },
 );

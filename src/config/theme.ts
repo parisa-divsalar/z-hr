@@ -71,6 +71,24 @@ const commonSettings: ThemeOptions = {
       },
     },
     MuiTextField: {
+      variants: [
+        {
+          props: { size: 'large' },
+          style: {
+            '& .MuiInputBase-root': {
+              height: '52px', // ارتفاع کل فیلد
+            },
+            '& input': {
+              padding: '0 12px', // تنظیم padding برای input
+              height: '100%', // پر کردن ارتفاع والد
+              fontSize: '1rem',
+            },
+            '& label': {
+              fontSize: '1rem',
+            },
+          },
+        },
+      ],
       defaultProps: {
         autoComplete: 'off',
       },
@@ -78,7 +96,7 @@ const commonSettings: ThemeOptions = {
         root: {
           width: '100%',
           height: '100%',
-          margin: '0.5rem auto',
+          margin: '0.25rem auto',
 
           '& .MuiInputBase-input': {
             lineHeight: '0',
@@ -90,9 +108,12 @@ const commonSettings: ThemeOptions = {
     },
     MuiOutlinedInput: {
       styleOverrides: {
+        sizeSmall: {
+          height: 34,
+        },
         root: {
-          height: 40,
-          borderRadius: '0.75rem',
+          height: 42,
+          borderRadius: '0.5rem',
         },
       },
     },
@@ -169,7 +190,7 @@ export const darkTheme = createTheme({
     mode: 'dark',
     primary: {
       main: '#4d49fc',
-      light: '#7d7bfd',
+      light: '#d4d4fe',
       dark: '#090387',
       contrastText: '#fff',
     },
@@ -200,7 +221,7 @@ export const darkTheme = createTheme({
     },
     info: {
       main: '#245BFF',
-      light: '#85A3FF',
+      light: '#F5F7FF',
       dark: '#0031C3',
     },
     success: {
@@ -230,7 +251,7 @@ export const lightTheme = createTheme({
     mode: 'light',
     primary: {
       main: '#4d49fc',
-      light: '#7d7bfd',
+      light: '#d4d4fe',
       dark: '#090387',
       contrastText: '#fff',
     },
@@ -255,24 +276,24 @@ export const lightTheme = createTheme({
       disabledBackground: '#0765681f',
     },
     error: {
-      main: '#D93200',
-      light: '#d9320017',
+      main: '#EC2C27',
+      light: '#FDF3F3',
       dark: '#EA0341',
     },
     info: {
       main: '#245BFF',
-      light: '#85A3FF',
+      light: '#F5F7FF',
       dark: '#0031C3',
     },
     success: {
-      main: '#1A9121',
-      light: '#25BC2D',
+      main: '#106915',
+      light: '#F4FEF4',
       dark: '#106915',
     },
     warning: {
-      main: '#EC2C27',
-      light: '#F77A79',
-      dark: '#AC1D19',
+      main: '#FE8A15',
+      light: '#FFF7F5',
+      dark: '#dd7002',
     },
     grey: {
       '50': '#FAFAFA',

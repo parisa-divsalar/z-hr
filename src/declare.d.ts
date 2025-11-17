@@ -8,3 +8,9 @@ declare module '@mui/material/styles' {
     border?: PaletteOptions['primary'];
   }
 }
+
+declare module '@mui/material/TextField' {
+  interface TextFieldPropsSizeOverrides {
+    large: true;
+  }
+}

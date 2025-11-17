@@ -1,11 +1,9 @@
 'use client';
 import { useState } from 'react';
 
-import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
-import { Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
-import TomanIcon from '@/assets/images/design/add-box.svg';
-import WalletIcon from '@/assets/images/icons/wallet.svg';
+import { Edit } from '@/components/Icons';
 import MuiInput from '@/components/UI/MuiInput';
 
 const AllInput = () => {
@@ -14,36 +12,119 @@ const AllInput = () => {
   return (
     <>
       <Typography variant='subtitle1' color='text.primary' fontWeight='600' mt={1}>
-        Input:
+        Input
       </Typography>
 
-      <MuiInput
-        value={inputValue}
-        onChange={setInputValue}
-        label='label'
-        placeholder='placeholder'
-        inputMode='decimal'
-        startIcon={<WalletIcon />}
-        endIcon={<TomanIcon />}
-      />
+      <Stack direction='row' gap={2} alignItems='end' mb={2}>
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          placeholder='Text field'
+          size='large'
+          helperText='Hint'
+          startIcon={<Edit width={20} height={20} color='#66666E' />}
+          endIcon={<Edit width={20} height={20} color='#66666E' />}
+        />
 
-      <MuiInput
-        value={inputValue}
-        onChange={setInputValue}
-        label='label'
-        startIcon={<AccessTimeRoundedIcon fontSize='small' />}
-      />
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          placeholder='Text field'
+          size='medium'
+          helperText='Hint'
+          startIcon={<Edit width={20} height={20} color='#66666E' />}
+          endIcon={<Edit width={20} height={20} color='#66666E' />}
+        />
 
-      <MuiInput
-        value={inputValue}
-        onChange={setInputValue}
-        label='label'
-        endIcon={<AccessTimeRoundedIcon fontSize='small' />}
-      />
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          size='small'
+          helperText='Hint'
+          placeholder='Text field'
+          startIcon={<Edit width={20} height={20} color='#66666E' />}
+          endIcon={<Edit width={20} height={20} color='#66666E' />}
+        />
+      </Stack>
 
-      <MuiInput value={inputValue} disabled onChange={setInputValue} label='label' />
+      <Stack direction='row' gap={2} alignItems='end' mb={2}>
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          placeholder='Text field'
+          size='large'
+          helperText='Hint'
+          error
+          startIcon={<Edit width={20} height={20} color='#EC2C27' />}
+          endIcon={<Edit width={20} height={20} color='#EC2C27' />}
+        />
 
-      <MuiInput value={inputValue} error helperText='helperText' onChange={setInputValue} label='label' />
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          placeholder='Text field'
+          size='medium'
+          helperText='Hint'
+          error
+          startIcon={<Edit width={20} height={20} color='#EC2C27' />}
+          endIcon={<Edit width={20} height={20} color='#EC2C27' />}
+        />
+
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          size='small'
+          error
+          helperText='Hint'
+          placeholder='Text field'
+          startIcon={<Edit width={20} height={20} color='#EC2C27' />}
+          endIcon={<Edit width={20} height={20} color='#EC2C27' />}
+        />
+      </Stack>
+
+      <Stack direction='row' gap={2} alignItems='end' mb={2}>
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          placeholder='Text field'
+          size='large'
+          helperText='Hint'
+          disabled
+          startIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+          endIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+        />
+
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          placeholder='Text field'
+          size='medium'
+          helperText='Hint'
+          disabled
+          startIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+          endIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+        />
+
+        <MuiInput
+          value={inputValue}
+          onChange={setInputValue}
+          label='Label'
+          size='small'
+          disabled
+          helperText='Hint'
+          placeholder='Text field'
+          startIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+          endIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+        />
+      </Stack>
     </>
   );
 };

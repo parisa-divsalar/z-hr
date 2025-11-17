@@ -10,43 +10,21 @@ const AllCheckbox = () => {
       </Typography>
 
       <Stack direction='row' gap={1}>
+        <MuiCheckbox size='large' />
+        <MuiCheckbox size='medium' />
         <MuiCheckbox size='small' />
-
-        <MuiCheckbox checked size='small' />
-
-        <MuiCheckbox checked color='secondary' size='small' />
-
-        <MuiCheckbox checked color='success' size='small' />
-
-        <MuiCheckbox checked color='info' size='small' />
-
-        <MuiCheckbox checked color='error' size='small' />
-
-        <MuiCheckbox checked color='warning' size='small' />
-
-        <MuiCheckbox checked disabled size='small' />
-
-        <MuiCheckbox label='Title' size='small' />
       </Stack>
 
       <Stack direction='row' gap={1}>
-        <MuiCheckbox />
+        <MuiCheckbox size='large' checked />
+        <MuiCheckbox size='medium' checked />
+        <MuiCheckbox size='small' checked />
+      </Stack>
 
-        <MuiCheckbox checked />
-
-        <MuiCheckbox checked color='secondary' />
-
-        <MuiCheckbox checked color='success' />
-
-        <MuiCheckbox checked color='info' />
-
-        <MuiCheckbox checked color='error' />
-
-        <MuiCheckbox checked color='warning' />
-
-        <MuiCheckbox checked disabled />
-
-        <MuiCheckbox label='Title' />
+      <Stack direction='row' gap={1}>
+        <MuiCheckbox size='large' checked disabled />
+        <MuiCheckbox size='medium' checked disabled />
+        <MuiCheckbox size='small' checked disabled />
       </Stack>
     </>
   );

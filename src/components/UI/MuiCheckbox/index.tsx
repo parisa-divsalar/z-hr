@@ -1,3 +1,5 @@
+import { ReactNode, ChangeEvent } from 'react';
+
 import Checkbox, { CheckboxProps } from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -5,13 +7,13 @@ import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 
 export type MuiCheckboxProps = Omit<CheckboxProps, 'onChange'> & {
-  label?: React.ReactNode;
-  helperText?: React.ReactNode;
+  label?: ReactNode;
+  helperText?: ReactNode;
   error?: boolean;
   row?: boolean;
   labelPlacement?: 'end' | 'start' | 'top' | 'bottom';
   id?: string;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+  onChange?: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
   describedBy?: string;
 };
 
@@ -29,7 +31,7 @@ const MuiCheckbox = ({
   color = 'primary',
   ...checkboxProps
 }: MuiCheckboxProps) => {
-  const inputId = id; // فقط از props استفاده می‌کنیم
+  const inputId = id;
   const helperId = helperText && inputId ? `${inputId}-helper` : undefined;
 
   const checkbox = (
@@ -40,6 +42,12 @@ const MuiCheckbox = ({
       aria-describedby={helperId || describedBy}
       disabled={disabled}
       color={color}
+      sx={{
+        opacity: disabled ? '0.2' : '1',
+        '& .MuiSvgIcon-root': {
+          borderRadius: 8,
+        },
+      }}
     />
   );
 
