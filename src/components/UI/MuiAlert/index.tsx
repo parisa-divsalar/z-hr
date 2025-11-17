@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode } from 'react';
+import { forwardRef, ReactNode } from 'react';
 
 import { Alert, AlertProps as MuiAlertProps, Typography } from '@mui/material';
 

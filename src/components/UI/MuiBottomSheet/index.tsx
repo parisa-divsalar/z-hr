@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent, ReactNode } from 'react';
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { IconButton, Stack, Typography } from '@mui/material';
@@ -11,7 +11,7 @@ interface MuiBottomSheetProps {
   title: string;
   open: boolean;
   closeDrawer: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
@@ -19,7 +19,7 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#0a0a0a' : 'white',
     borderRadius: '1.5rem 1.5rem 0 0',
     width: '100%',
-    maxWidth: '34rem',
+    maxWidth: '90rem',
     margin: '0 auto',
   },
 }));
@@ -48,7 +48,7 @@ export const MuiBottomSheet: FunctionComponent<MuiBottomSheetProps> = (props) =>
         <Stack p={2}>{children}</Stack>
 
         <ActionContainer>
-          <MuiButton fullWidth>Confirm</MuiButton>
+          <MuiButton fullWidth>submit</MuiButton>
         </ActionContainer>
       </Stack>
     </StyledDrawer>

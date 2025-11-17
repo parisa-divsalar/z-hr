@@ -19,18 +19,18 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
         }}
       >
         <Typography variant='h4' color='error' gutterBottom>
-          An error occurred
+          خطایی رخ داد
         </Typography>
         <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
-          {error.message || 'Something went wrong. Please try again.'}
+          {error.message || 'مشکلی پیش آمده است. لطفاً دوباره تلاش کنید.'}
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
           <Button variant='contained' color='primary' startIcon={<RefreshIcon />} onClick={() => reset()}>
-            Try again
+            تلاش دوباره
           </Button>
           <Button variant='outlined' color='secondary' startIcon={<HomeIcon />} onClick={() => router.push('/')}>
-            Back to home
+            بازگشت به خانه
           </Button>
         </Box>
       </Paper>

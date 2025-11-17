@@ -6,12 +6,12 @@ const AllAlert = () => {
   return (
     <>
       <Typography variant='subtitle1' color='text.primary' fontWeight='600' mt={1}>
-        Different alert states:
+        Alert
       </Typography>
 
-      <MuiAlert message='This is test text' severity='success' />
+      <MuiAlert message='message' severity='success' />
 
-      <MuiAlert message='This is test text' severity='info' />
+      <MuiAlert message='message' severity='info' />
     </>
   );
 };

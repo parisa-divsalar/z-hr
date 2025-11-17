@@ -1,5 +1,3 @@
-import React from 'react';
-
 import Checkbox, { CheckboxProps } from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -31,7 +29,7 @@ const MuiCheckbox = ({
   color = 'primary',
   ...checkboxProps
 }: MuiCheckboxProps) => {
-  const inputId = id; // We only use props
+  const inputId = id; // فقط از props استفاده می‌کنیم
   const helperId = helperText && inputId ? `${inputId}-helper` : undefined;
 
   const checkbox = (

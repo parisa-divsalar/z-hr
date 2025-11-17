@@ -1,34 +1,30 @@
-import React, { ReactNode, Suspense } from 'react';
+import { ReactNode, Suspense } from 'react';
 
 import Loading from '@/app/loading';
-import Layout from '@/components/Layout';
-import { yekanBakh } from '@/config/fonts';
-import { ReduxProvider } from '@/providers/redux';
+import { interphasesFont } from '@/config/fonts';
 import { ThemeProvider } from '@/providers/theme';
 import '@/config/configAxios';
 
 import '@/assets/styles/globals.css';
 
 export const metadata = {
-  title: 'NextJs',
+  title: 'NEXT JS',
   description: 'description',
-  themeColor: '#028386',
+  themeColor: '#4D49FC',
   icons: {
     icon: '/icons/favicon.ico',
+    apple: '/icons/icon-192x192.png',
   },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='fa' dir='rtl' className={`${yekanBakh.variable}`}>
+    <html lang='fa' dir='ltr' className={`${interphasesFont.variable}`}>
       <body>
-        <ReduxProvider>
-          <Suspense fallback={<Loading />}>
-            <ThemeProvider>
-              <Layout>{children}</Layout>
-            </ThemeProvider>
-          </Suspense>
-        </ReduxProvider>
+        <Suspense fallback={<Loading />}>
+          <ThemeProvider>{children}</ThemeProvider>
+        </Suspense>
       </body>
     </html>
   );

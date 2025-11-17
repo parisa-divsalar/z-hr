@@ -1,9 +1,11 @@
-export const toEnglishNumber = (str: string) => {
-  const persianNumbers = ['۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹', '۰'];
-  const englishNumbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+const persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
+const arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
 
-  return str
-    .split('')
-    .map((c) => englishNumbers[persianNumbers.indexOf(c)] || c)
-    .join('');
+export const convertPersianNumbersToEnglish = (str: string): string => {
+  if (typeof str !== 'string') return str;
+  let newStr = str;
+  for (let i = 0; i < 10; i++) {
+    newStr = newStr.replace(persianNumbers[i], i.toString()).replace(arabicNumbers[i], i.toString());
+  }
+  return newStr;
 };

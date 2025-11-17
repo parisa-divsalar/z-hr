@@ -1,9 +1,6 @@
-import { logout } from '@/app/api/auth';
 import axiosInstance from '@/app/api/axiosInstance';
-import { store } from '@/store';
-import { setToken } from '@/store/user/userSlice';
+import { useAuthStore } from '@/store/auth';
 
-// Types
 interface FailedQueueItem {
   resolve: (token: string) => void;
   reject: (error: any) => void;
@@ -56,8 +53,7 @@ export const configAxios = () => {
     (config) => {
       requestTimer.start();
 
-      const state = store.getState();
-      const accessToken = state.user?.accessToken;
+      const { accessToken } = useAuthStore();
 
       config.baseURL = process.env.NEXT_PUBLIC_API_URL;
       config.headers = config.headers || {};
@@ -110,9 +106,7 @@ export const configAxios = () => {
         isRefreshing = true;
 
         return new Promise((resolve, reject) => {
-          const state = store.getState();
-          const refreshToken = state.user?.refreshToken;
-          const accessToken = state.user?.accessToken;
+          const { accessToken, refreshToken = '', loginSuccess, logout } = useAuthStore();
 
           fetch(`${process.env.NEXT_PUBLIC_BASE_URL}auth/v1.0/token/refresh/${refreshToken}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
@@ -121,7 +115,7 @@ export const configAxios = () => {
             .then((data) => {
               if (data.status?.code === 200) {
                 const newTokenData = data.result.data;
-                store.dispatch(setToken(newTokenData));
+                loginSuccess(newTokenData.token, refreshToken as string);
                 processQueue(false, newTokenData.token);
                 originalRequest.headers.Authorization = `${newTokenData.type} ${newTokenData.token}`;
                 axiosInstance.defaults.headers.common.Authorization = `${newTokenData.type} ${newTokenData.token}`;

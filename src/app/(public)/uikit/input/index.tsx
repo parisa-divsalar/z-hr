@@ -4,6 +4,8 @@ import { useState } from 'react';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import { Typography } from '@mui/material';
 
+import TomanIcon from '@/assets/images/design/add-box.svg';
+import WalletIcon from '@/assets/images/icons/wallet.svg';
 import MuiInput from '@/components/UI/MuiInput';
 
 const AllInput = () => {
@@ -12,26 +14,36 @@ const AllInput = () => {
   return (
     <>
       <Typography variant='subtitle1' color='text.primary' fontWeight='600' mt={1}>
-        Different input states:
+        Input:
       </Typography>
 
       <MuiInput
         value={inputValue}
         onChange={setInputValue}
-        label='Title'
+        label='label'
+        placeholder='placeholder'
+        inputMode='decimal'
+        startIcon={<WalletIcon />}
+        endIcon={<TomanIcon />}
+      />
+
+      <MuiInput
+        value={inputValue}
+        onChange={setInputValue}
+        label='label'
         startIcon={<AccessTimeRoundedIcon fontSize='small' />}
       />
 
       <MuiInput
         value={inputValue}
         onChange={setInputValue}
-        label='Title'
+        label='label'
         endIcon={<AccessTimeRoundedIcon fontSize='small' />}
       />
 
-      <MuiInput value={inputValue} disabled onChange={setInputValue} label='Title' />
+      <MuiInput value={inputValue} disabled onChange={setInputValue} label='label' />
 
-      <MuiInput value={inputValue} error helperText='Required' onChange={setInputValue} label='Title' />
+      <MuiInput value={inputValue} error helperText='helperText' onChange={setInputValue} label='label' />
     </>
   );
 };

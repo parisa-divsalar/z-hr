@@ -20,15 +20,15 @@ export default function NotFound() {
       >
         <SearchOffIcon color='error' sx={{ fontSize: 60, mb: 2 }} />
         <Typography variant='h4' gutterBottom>
-          Page not found
+          صفحه پیدا نشد
         </Typography>
         <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
-          Unfortunately, the page you're looking for doesn't exist or has been deleted.
+          متأسفانه صفحه‌ای که دنبال آن هستید وجود ندارد یا حذف شده است.
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button variant='contained' color='primary' startIcon={<HomeIcon />} onClick={() => router.push('/')}>
-            Back to home
+            بازگشت به خانه
           </Button>
         </Box>
       </Paper>

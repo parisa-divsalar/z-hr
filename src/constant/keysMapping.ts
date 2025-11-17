@@ -1,11 +1,7 @@
 const helperMapping: any = {
   firstName: {
-    title: 'Name',
+    title: 'نام',
     subTitle: '',
-  },
-  '/uikit': {
-    title: 'UI Kit',
-    subTitle: 'Display different component states',
   },
 };
 

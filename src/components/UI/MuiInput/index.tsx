@@ -1,16 +1,15 @@
-import * as React from 'react';
-import { ForwardedRef, ReactNode } from 'react';
+import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
 import { InputAdornment } from '@mui/material';
 import TextField from '@mui/material/TextField';
 
 import { commafy } from '@/utils/commafyHelper';
-import { toEnglishNumber } from '@/utils/validation';
+import { convertPersianNumbersToEnglish } from '@/utils/validation';
 
 type InputModeType = 'tel' | 'numeric' | 'text' | 'email' | 'decimal' | undefined;
 type VariantType = 'outlined' | 'filled' | 'standard';
 
-interface CustomInputProps {
+interface MuiInputProps {
   label?: string;
   placeholder?: string;
   value?: any;
@@ -35,7 +34,7 @@ interface CustomInputProps {
   onBlur?: () => void;
 }
 
-const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
+const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
   (
     {
       label = '',
@@ -71,9 +70,9 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
         const rawValue = val.replace(/,/g, '');
         if (!/^\d*$/.test(rawValue)) return;
         onChange?.(rawValue);
-      } else if (inputMode === 'numeric' && /\D/g.test(toEnglishNumber(val))) return;
+      } else if (inputMode === 'numeric' && /\D/g.test(convertPersianNumbersToEnglish(val))) return;
       else {
-        onChange?.(inputMode === 'numeric' ? parseInt(toEnglishNumber(val || '0')) : val);
+        onChange?.(inputMode === 'numeric' ? parseInt(convertPersianNumbersToEnglish(val || '0')) : val);
       }
     };
 
@@ -106,7 +105,7 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
         disabled={disabled}
         inputRef={ref}
         InputLabelProps={{
-          shrink: true, // Label never goes up
+          shrink: true,
         }}
         InputProps={{
           readOnly,
@@ -132,6 +131,6 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
   },
 );
 
-CustomInput.displayName = 'CustomInput';
+MuiInput.displayName = 'MuiInput2';
 
-export default CustomInput;
+export default MuiInput;

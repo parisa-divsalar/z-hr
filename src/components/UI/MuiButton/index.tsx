@@ -27,7 +27,7 @@ const MuiButton = (props: PrimaryButtonProps) => {
   const {
     text = '',
     variant = 'contained',
-    size = 'large',
+    size = 'medium',
     type,
     disabled,
     loading,
@@ -56,7 +56,7 @@ const MuiButton = (props: PrimaryButtonProps) => {
       sx={sx}
       {...props}
     >
-      {loading ? <CircularProgress size={18} color={color ? color : 'primary'} /> : text || children}
+      {loading ? <CircularProgress size={16} color={color ? color : 'primary'} /> : text || children}
     </Button>
   );
 };

@@ -6,7 +6,7 @@ const AllCheckbox = () => {
   return (
     <>
       <Typography variant='subtitle1' color='text.primary' fontWeight='600' mt={1}>
-        Different checkbox states:
+        Checkbox
       </Typography>
 
       <Stack direction='row' gap={1}>

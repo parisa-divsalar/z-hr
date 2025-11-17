@@ -17,26 +17,56 @@ const commonSettings: ThemeOptions = {
     MuiButton: {
       styleOverrides: {
         sizeSmall: {
-          height: 30,
+          height: 34,
+          width: 'fit-content',
+          fontSize: '0.875rem',
+          padding: '0 0.75rem',
+
+          '& > .MuiButton-startIcon, & > .MuiButton-endIcon': {
+            fontSize: 16,
+            width: 16,
+            height: 16,
+          },
         },
         sizeMedium: {
-          height: 36,
+          height: 44,
+          fontSize: '1rem',
+          padding: '0 1rem',
+
+          '& > .MuiButton-startIcon, & > .MuiButton-endIcon': {
+            fontSize: 20,
+            width: 20,
+            height: 20,
+          },
         },
         sizeLarge: {
-          height: 42,
+          height: 56,
+          fontSize: '1rem',
+          padding: '0 1.25rem',
+
+          '& > .MuiButton-startIcon, & > .MuiButton-endIcon': {
+            fontSize: 24,
+            width: 24,
+            height: 24,
+          },
         },
         root: {
+          borderRadius: '0.5rem',
           width: 'fit-content',
-          borderRadius: '0.75rem',
-          fontSize: '0.875rem',
-          padding: '0 1.5rem',
-          fontWeight: '600',
+          textTransform: 'none',
+          minWidth: 'unset',
+          boxShadow: 'none',
+        },
+        contained: {
+          '&.Mui-disabled': {
+            backgroundColor: '#EAEAFE',
+          },
+        },
+        outlined: {
+          borderWidth: '2px',
         },
         fullWidth: {
           width: '100%',
-        },
-        contained: {
-          boxShadow: '-3px 3px 0 0 #007b861f',
         },
       },
     },
@@ -62,7 +92,7 @@ const commonSettings: ThemeOptions = {
       styleOverrides: {
         root: {
           height: 40,
-          borderRadius: '0.875rem',
+          borderRadius: '0.75rem',
         },
       },
     },
@@ -71,7 +101,7 @@ const commonSettings: ThemeOptions = {
         root: {
           letterSpacing: '0',
           fontSize: '0.875rem',
-          fontWeight: 'bold',
+          fontWeight: '600',
 
           '&.MuiInputLabel-shrink': {
             width: 'auto',
@@ -87,9 +117,14 @@ const commonSettings: ThemeOptions = {
         },
       },
     },
+    MuiSvgIcon: {
+      styleOverrides: {
+        fontSizeSmall: { fontSize: '16px' },
+      },
+    },
   },
   typography: {
-    fontFamily: 'var(--font-yekanbakh), Arial, sans-serif',
+    fontFamily: 'var(--font-interphases), Arial, sans-serif',
     h1: {
       fontSize: '2rem', // 32px
     },
@@ -133,16 +168,16 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#028386',
-      light: '#00A3A5',
-      dark: '#076568',
+      main: '#4d49fc',
+      light: '#7d7bfd',
+      dark: '#090387',
       contrastText: '#fff',
     },
     secondary: {
-      main: '#37474F',
-      light: '#455A64',
-      dark: '#263238',
-      contrastText: '#CFD8',
+      main: '#fca649',
+      light: '#fddac3',
+      dark: '#cd8220',
+      contrastText: '#fff',
     },
     text: {
       primary: '#FAFAFA',
@@ -164,14 +199,19 @@ export const darkTheme = createTheme({
       dark: '#EA0341',
     },
     info: {
-      main: '#3200D9',
-      light: '#3A04EC',
-      dark: '#3204CB',
+      main: '#245BFF',
+      light: '#85A3FF',
+      dark: '#0031C3',
     },
     success: {
-      main: '#45D900',
-      dark: '#3BBA00',
-      light: '#4FEA06',
+      main: '#1A9121',
+      light: '#25BC2D',
+      dark: '#106915',
+    },
+    warning: {
+      main: '#EC2C27',
+      light: '#F77A79',
+      dark: '#AC1D19',
     },
     grey: {
       '50': '#1c1c1c',
@@ -189,21 +229,21 @@ export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#028386',
-      light: '#00A3A5',
-      dark: '#076568',
+      main: '#4d49fc',
+      light: '#7d7bfd',
+      dark: '#090387',
       contrastText: '#fff',
     },
     secondary: {
-      main: '#37474F',
-      light: '#455A64',
-      dark: '#263238',
-      contrastText: '#CFD8DC',
+      main: '#fca649',
+      light: '#fddac3',
+      dark: '#cd8220',
+      contrastText: '#fff',
     },
     text: {
-      primary: '#1c133cf5',
-      secondary: '#1c133c99',
-      disabled: '#1c133c61',
+      primary: '#111113',
+      secondary: '#8A8A91',
+      disabled: '#b0b0b3',
     },
     divider: '#07656814',
     action: {
@@ -220,18 +260,29 @@ export const lightTheme = createTheme({
       dark: '#EA0341',
     },
     info: {
-      main: '#3200D9',
-      light: '#3A04EC',
-      dark: '#3204CB',
+      main: '#245BFF',
+      light: '#85A3FF',
+      dark: '#0031C3',
     },
     success: {
-      main: '#45D900',
-      dark: '#3BBA00',
-      light: '#4FEA06',
+      main: '#1A9121',
+      light: '#25BC2D',
+      dark: '#106915',
+    },
+    warning: {
+      main: '#EC2C27',
+      light: '#F77A79',
+      dark: '#AC1D19',
     },
     grey: {
       '50': '#FAFAFA',
-      '100': '#90a4ae36',
+      '100': '#D8D8DA',
+      '200': '#b0b0b5',
+      '300': '#8a8a91',
+      '400': '#66666E',
+      '500': '#44444C',
+      '600': '#25252A',
+      '700': '#111113',
     },
     background: {
       default: '#FFF',

@@ -17,7 +17,7 @@ html, body {
         height: 4px;
     }
     &::-webkit-scrollbar-thumb {
-        background-color: #028386;
+        background-color: #4D49FC;
         border-radius: 20px;
         &:hover {
             cursor: grab;

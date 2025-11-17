@@ -40,8 +40,8 @@ export default function MuiTabs() {
         onChange={(_, newValue) => setTab(newValue)}
         TabIndicatorProps={{ style: { display: 'none' } }}
       >
-        <StyledTab label='Tab Title 1' value='current' />
-        <StyledTab label='Tab Title 2' value='past' />
+        <StyledTab label='Tab 1' value='current' />
+        <StyledTab label='Tab 2' value='past' />
       </StyledTabs>
     </Stack>
   );
