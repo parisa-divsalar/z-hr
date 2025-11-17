@@ -23,5 +23,5 @@ export default function PrivateLayout({ children }: { children: ReactNode }) {
 
   if (!accessToken) return null;
 
-  return <Layout isAuth={!!accessToken}>{children}</Layout>;
+  return <Layout>{children}</Layout>;
 }
