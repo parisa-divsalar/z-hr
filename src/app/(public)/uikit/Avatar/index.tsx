@@ -1,7 +1,7 @@
 import { Stack, Typography } from '@mui/material';
 
 import AvatarSrc from '@/assets/images/bg/avatar.png';
-import { User } from '@/components/Icons';
+import UserIcon from '@/assets/images/icons/user.svg';
 import MuiAvatar from '@/components/UI/MuiAvatar';
 
 const AllAvatar = () => {
@@ -19,13 +19,13 @@ const AllAvatar = () => {
 
       <Stack direction='row' mt={2} gap={2}>
         <MuiAvatar size='large' color='light'>
-          <User width={24} />
+          <UserIcon width={24} />
         </MuiAvatar>
         <MuiAvatar size='medium' color='light'>
-          <User width={20} />
+          <UserIcon width={20} />
         </MuiAvatar>
         <MuiAvatar size='small' color='light'>
-          <User width={16} />
+          <UserIcon width={16} />
         </MuiAvatar>
       </Stack>
 

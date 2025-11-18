@@ -1,7 +1,11 @@
 'use client';
-import { Brightness4, Brightness7 } from '@mui/icons-material';
-import { IconButton, Stack, Typography } from '@mui/material';
+import { Divider, IconButton, Stack, Typography } from '@mui/material';
 
+import MoonIcon from '@/assets/images/icons/moon.svg';
+import SunIcon from '@/assets/images/icons/sun.svg';
+import UserPlusIcon from '@/assets/images/icons/user-plus.svg';
+import logo from '@/assets/images/logo/logo.png';
+import { AppImage } from '@/components/AppImage';
 import classes from '@/components/Layout/layout.module.css';
 import MuiButton from '@/components/UI/MuiButton';
 import { useThemeStore } from '@/store/common';
@@ -11,21 +15,52 @@ const Navbar = () => {
 
   return (
     <Stack direction='row' className={classes.mainNavbar} borderColor='divider'>
-      <Stack>
-        <Typography variant='subtitle2' fontWeight='600' color='text.primary'>
+      <Stack direction='row' alignItems='center' gap={2}>
+        <AppImage src={logo} width={24} height={34} />
+
+        <Typography variant='h4' fontWeight='700' color='text.primary'>
           Z-CV
         </Typography>
-      </Stack>
-      <Stack>
-        <Typography variant='subtitle2' fontWeight='600' color='text.primary'>
-          Home
+
+        <Typography variant='subtitle2' color='text.secondary'>
+          AI Resume Maker
         </Typography>
       </Stack>
-      <Stack direction='row'>
-        <IconButton disabled color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
-          {mode === 'dark' ? <Brightness7 fontSize='small' /> : <Brightness4 fontSize='small' />}
-        </IconButton>
-        <MuiButton color='secondary'>Sign Up</MuiButton>
+
+      <Stack direction='row' gap={2}>
+        <Typography variant='subtitle1' fontWeight='700' color='text.primary'>
+          Home
+        </Typography>
+
+        <Typography variant='subtitle1' color='grey.500'>
+          About Us
+        </Typography>
+
+        <Typography variant='subtitle1' color='grey.500'>
+          Our Plans
+        </Typography>
+
+        <Typography variant='subtitle1' color='grey.500'>
+          Contact Us
+        </Typography>
+      </Stack>
+
+      <Stack direction='row' gap={3}>
+        <MuiButton color='secondary' variant='outlined'>
+          Login
+        </MuiButton>
+
+        <MuiButton color='secondary' startIcon={<UserPlusIcon />}>
+          Sign Up
+        </MuiButton>
+
+        <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
+
+        <Stack className={classes.themeContainer}>
+          <IconButton disabled color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
+            {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </IconButton>
+        </Stack>
       </Stack>
     </Stack>
   );
