@@ -15,7 +15,7 @@ const Footer = () => {
         <Typography variant='h5' color='text.primary' fontWeight='700'>
           Z-CV
         </Typography>
-        <VerticalDivider orientation='vertical' variant='middle' flexItem />
+        <VerticalDivider orientation='vertical' />
         <Typography variant='subtitle1' color='text.secondry' fontWeight='400'>
           All rights reserved.
         </Typography>

@@ -14,7 +14,7 @@ const PromptBox = () => {
   const router = useRouter();
 
   return (
-    <GlassContainer>
+    <GlassContainer mt={10}>
       <Stack className='contentChatBox'>
         <Stack className='chatBoxContainer'>
           <Stack direction='row' justifyContent='space-between' alignItems='center'>
