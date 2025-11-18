@@ -46,6 +46,20 @@ const AllButton = () => {
         </Stack>
 
         <Stack direction='row' gap={1} alignItems='end'>
+          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} color='secondary' variant='outlined'>
+            Title
+          </MuiButton>
+
+          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} color='secondary' variant='outlined'>
+            Title
+          </MuiButton>
+
+          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} color='secondary' variant='outlined'>
+            Title
+          </MuiButton>
+        </Stack>
+
+        <Stack direction='row' gap={1} alignItems='end'>
           <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} color='error'>
             Title
           </MuiButton>
