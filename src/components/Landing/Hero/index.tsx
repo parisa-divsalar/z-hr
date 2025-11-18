@@ -24,7 +24,7 @@ const HeroSection = () => {
           Voice
         </Typography>
       </Stack>
-      <Stack direction='row' gap={2} alignItems='center' mt={10}>
+      <Stack direction='row' gap={2} alignItems='center' mt={6}>
         <HorizontalDivider orientation='horizontal' />
         <Typography variant='subtitle1' color='text.secondry' fontWeight='400'>
           or

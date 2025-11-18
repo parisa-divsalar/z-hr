@@ -7,20 +7,26 @@ import { useRouter } from 'next/navigation';
 import { EnterIcon, SearchIcon, VoiceIcon } from '@/components/Icons';
 import { PublicRoutes } from '@/config/routes';
 
-import { GlassContainer, InputContainer } from '../styled';
+import {
+  GlassContainer,
+  InputContainer,
+} from '../styled';
+import VoiceRecording from '../voice/voice';
+
 
 const PromptBox = () => {
   const [search, setSearch] = useState('');
   const router = useRouter();
 
   return (
-    <GlassContainer mt={10}>
+    <GlassContainer mt={6}>
       <Stack className='contentChatBox'>
         <Stack className='chatBoxContainer'>
           <Stack direction='row' justifyContent='space-between' alignItems='center'>
             <IconButton onClick={() => router.push(PublicRoutes.landing)}>
               <SearchIcon />
             </IconButton>
+
             <InputContainer
               className='InputContainer'
               placeholder='Type your prompt...'
@@ -28,9 +34,7 @@ const PromptBox = () => {
               onChange={(event: any) => setSearch(event.target.value)}
             />
 
-            <IconButton>
-              <VoiceIcon />
-            </IconButton>
+            <VoiceRecording />
 
             <IconButton onClick={() => router.push(PublicRoutes.landing)}>
               <EnterIcon />
