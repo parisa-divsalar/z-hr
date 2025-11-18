@@ -10,6 +10,7 @@ import AllButton from '@/app/(public)/uikit/Button';
 import AllCheckbox from '@/app/(public)/uikit/Checkbox';
 import AllInput from '@/app/(public)/uikit/input';
 import AllRadiobutton from '@/app/(public)/uikit/Radiobutton';
+import AllTypography from '@/app/(public)/uikit/Typograpgy';
 import { MuiBottomSheet } from '@/components/UI/MuiBottomSheet';
 
 const UIKIT = () => {
@@ -18,6 +19,10 @@ const UIKIT = () => {
   return (
     <>
       <Stack p={2}>
+        <AllTypography />
+
+        <Divider sx={{ marginTop: '2rem' }} />
+
         <AllButton />
 
         <Divider sx={{ marginTop: '2rem' }} />

@@ -52,7 +52,6 @@ const MuiAlert = forwardRef<HTMLDivElement, AlertWrapperProps>(({ message, sever
       {message && (
         <Typography
           variant='subtitle2'
-          fontWeight='600'
           color={
             severity === 'info'
               ? 'info.main'

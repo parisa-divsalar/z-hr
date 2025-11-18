@@ -6,7 +6,7 @@
     margin: 0;
     overflow: hidden;
     transition: all ease 0.5s;
-    background-color: #1809E2;
+    background-color: white;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 }

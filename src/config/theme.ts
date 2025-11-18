@@ -76,12 +76,14 @@ const commonSettings: ThemeOptions = {
           props: { size: 'large' },
           style: {
             '& .MuiInputBase-root': {
-              height: '52px', // ارتفاع کل فیلد
+              height: '52px',
+              borderRadius: '1rem',
             },
             '& input': {
-              padding: '0 12px', // تنظیم padding برای input
-              height: '100%', // پر کردن ارتفاع والد
+              padding: '0 12px',
+              height: '100%',
               fontSize: '1rem',
+              borderRadius: '1rem !important',
             },
             '& label': {
               fontSize: '1rem',
@@ -143,30 +145,77 @@ const commonSettings: ThemeOptions = {
         fontSizeSmall: { fontSize: '16px' },
       },
     },
+    MuiRadio: {
+      variants: [
+        {
+          props: { size: 'small' },
+          style: {
+            width: 16,
+            height: 16,
+          },
+        },
+        {
+          props: { size: 'medium' },
+          style: {
+            width: 20,
+            height: 20,
+          },
+        },
+        {
+          props: { size: 'large' },
+          style: {
+            width: 24,
+            height: 24,
+          },
+        },
+      ],
+      styleOverrides: {
+        root: {
+          // اگر بخوای بصورت عمومی تغییر بدی همه سایزها
+          // مثلا رنگ یا padding
+        },
+      },
+    },
+    MuiCheckbox: {
+      styleOverrides: {
+        root: ({ ownerState }) => {
+          switch (ownerState.size) {
+            case 'small':
+              return { width: 24, height: 24 };
+            case 'medium':
+              return { width: 32, height: 32 };
+            case 'large':
+              return { width: 40, height: 40 };
+            default:
+              return {};
+          }
+        },
+      },
+    },
   },
   typography: {
     fontFamily: 'var(--font-interphases), Arial, sans-serif',
     h1: {
-      fontSize: '2rem', // 32px
+      fontSize: '3rem', // 32px
     },
 
     h2: {
-      fontSize: '1.875rem', // 30px
+      fontSize: '2.5rem', // 40px
     },
 
     h3: {
-      fontSize: '1.5rem', // 24px
+      fontSize: '2rem', // 32px
     },
 
     h4: {
-      fontSize: '1.375rem', // 22px
+      fontSize: '1.5rem', // 24px
     },
 
-    body1: {
+    h5: {
       fontSize: '1.25rem', // 20px
     },
 
-    body2: {
+    h6: {
       fontSize: '1.125rem', // 18px
     },
 
@@ -178,8 +227,20 @@ const commonSettings: ThemeOptions = {
       fontSize: '0.875rem', // 14px
     },
 
+    body1: {
+      fontSize: '1rem', // 16px
+    },
+
+    body2: {
+      fontSize: '0.875rem', // 14px
+    },
+
     caption: {
       fontSize: '0.75rem', // 12px
+    },
+
+    overline: {
+      fontSize: '0.625rem', // 10px
     },
   },
 };

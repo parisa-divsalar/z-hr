@@ -14,3 +14,15 @@ declare module '@mui/material/TextField' {
     large: true;
   }
 }
+
+declare module '@mui/material/Radio' {
+  interface RadioPropsSizeOverrides {
+    large: true;
+  }
+}
+
+declare module '@mui/material/Checkbox' {
+  interface CheckboxPropsSizeOverrides {
+    large: true;
+  }
+}

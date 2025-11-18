@@ -9,19 +9,19 @@ const AllCheckbox = () => {
         Checkbox
       </Typography>
 
-      <Stack direction='row' gap={1}>
+      <Stack direction='row' gap={1} mt={2}>
         <MuiCheckbox size='large' />
         <MuiCheckbox size='medium' />
         <MuiCheckbox size='small' />
       </Stack>
 
-      <Stack direction='row' gap={1}>
+      <Stack direction='row' gap={1} mt={2}>
         <MuiCheckbox size='large' checked />
         <MuiCheckbox size='medium' checked />
         <MuiCheckbox size='small' checked />
       </Stack>
 
-      <Stack direction='row' gap={1}>
+      <Stack direction='row' gap={1} mt={2}>
         <MuiCheckbox size='large' checked disabled />
         <MuiCheckbox size='medium' checked disabled />
         <MuiCheckbox size='small' checked disabled />
