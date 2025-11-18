@@ -43,7 +43,7 @@ const MuiAlert = forwardRef<HTMLDivElement, AlertWrapperProps>(({ message, sever
                     : 'error.main'
             }
           >
-            Action
+            Button
           </Typography>
         </MuiButton>
       }

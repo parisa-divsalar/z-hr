@@ -11,11 +11,11 @@ const AllAlert = () => {
 
       <MuiAlert message='Information' severity='info' />
 
-      <MuiAlert message='Information' severity='success' />
+      <MuiAlert message='Success' severity='success' />
 
-      <MuiAlert message='Information' severity='warning' />
+      <MuiAlert message='Warning' severity='warning' />
 
-      <MuiAlert message='message' severity='error' />
+      <MuiAlert message='Error' severity='error' />
     </>
   );
 };

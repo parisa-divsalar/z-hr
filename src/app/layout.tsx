@@ -8,7 +8,7 @@ import '@/config/configAxios';
 import '@/assets/styles/globals.css';
 
 export const metadata = {
-  title: 'NEXT JS',
+  title: 'z-hr',
   description: 'description',
   themeColor: '#4D49FC',
   icons: {
@@ -20,7 +20,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='fa' dir='ltr' className={`${interphasesFont.variable}`}>
+    <html lang='en' dir='ltr' className={`${interphasesFont.variable}`}>
       <body>
         <Suspense fallback={<Loading />}>
           <ThemeProvider>{children}</ThemeProvider>

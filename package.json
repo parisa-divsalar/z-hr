@@ -1,7 +1,8 @@
 {
-  "name": "nextjs",
+  "name": "z-hr",
   "version": "1.0.1",
   "private": true,
+  "author": "Parisa Divsalar",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
