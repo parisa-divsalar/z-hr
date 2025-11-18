@@ -272,7 +272,7 @@ export const darkTheme = createTheme({
       hover: '#0765680a',
       selected: '#02838614',
       focus: '#028386',
-      disabled: '#07656861',
+      disabled: '#2F2F3B',
       disabledBackground: '#0765681f',
     },
     error: {
