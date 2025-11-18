@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { IconButton, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-import { EnterIcon, SearchIcon, VoiceIcon } from '@/components/Icons';
+import { EnterIcon, SearchIcon } from '@/components/Icons';
 import { PublicRoutes } from '@/config/routes';
 
 import {
