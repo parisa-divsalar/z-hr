@@ -20,30 +20,29 @@ const AddToHomeScreen = () => {
 
           <RowContainer>
             <Typography color='text.primary' variant='subtitle2'>
-              وب اپلیکیشن{' '}
-              را به صفحه اصلی موبایل خود اضافه کنید.
+              Add the web application to your mobile home screen.
             </Typography>
           </RowContainer>
 
           <RowContainer>
             <ShareIcon />
             <Typography color='text.primary' variant='subtitle2' mt={0.5}>
-              1. در نوار پایین روی دکمه{' '}
+              1.Click the
               <Typography component='span' fontWeight='bold' variant='subtitle2' color='text.primary' mx={0.5}>
                 Share
               </Typography>{' '}
-              بزنید.
+              Share button in the bottom bar.
             </Typography>
           </RowContainer>
 
           <RowContainer>
             <AddBoxIcon />
             <Typography color='text.primary' variant='subtitle2' mt={0.5}>
-              2. در منوی باز شده، در قسمت پایین، گزینه{' '}
+              2.In the menu that opens, at the bottom, select the
               <Typography component='span' fontWeight='bold' color='text.primary' variant='subtitle2' mx={0.5}>
                 Add to Home Screen
               </Typography>{' '}
-              را انتخاب کنید.
+              option
             </Typography>
           </RowContainer>
 
@@ -53,18 +52,18 @@ const AddToHomeScreen = () => {
             </Typography>
 
             <Typography color='text.primary' variant='subtitle2' mt={0.5}>
-              3. در مرحله بعد در قسمت بالا روی{' '}
+              3.Next, click Add at{' '}
               <Typography component='span' color='text.primary' fontWeight='bold' variant='subtitle2' mx={0.5}>
                 Add
               </Typography>{' '}
-              بزنید.
+              the top.
             </Typography>
           </RowContainer>
         </StackContent>
 
         <Stack width='100%' pt={1} px={2} mt={1}>
           <MuiButton fullWidth onClick={() => setOpen(false)}>
-            متوجه شدم
+            I understand
           </MuiButton>
         </Stack>
       </StackContainer>
