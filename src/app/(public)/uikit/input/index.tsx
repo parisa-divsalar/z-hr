@@ -34,8 +34,8 @@ const AllInput = () => {
           placeholder='Text field'
           size='medium'
           helperText='Hint'
-          startIcon={<Edit width={20} height={20} color='#66666E' />}
-          endIcon={<Edit width={20} height={20} color='#66666E' />}
+          startIcon={<Edit width={16} height={16} color='#66666E' />}
+          endIcon={<Edit width={16} height={16} color='#66666E' />}
         />
 
         <MuiInput
@@ -45,8 +45,8 @@ const AllInput = () => {
           size='small'
           helperText='Hint'
           placeholder='Text field'
-          startIcon={<Edit width={20} height={20} color='#66666E' />}
-          endIcon={<Edit width={20} height={20} color='#66666E' />}
+          startIcon={<Edit width={14} height={14} color='#66666E' />}
+          endIcon={<Edit width={14} height={14} color='#66666E' />}
         />
       </Stack>
 
@@ -71,8 +71,8 @@ const AllInput = () => {
           size='medium'
           helperText='Hint'
           error
-          startIcon={<Edit width={20} height={20} color='#EC2C27' />}
-          endIcon={<Edit width={20} height={20} color='#EC2C27' />}
+          startIcon={<Edit width={16} height={16} color='#EC2C27' />}
+          endIcon={<Edit width={16} height={16} color='#EC2C27' />}
         />
 
         <MuiInput
@@ -83,8 +83,8 @@ const AllInput = () => {
           error
           helperText='Hint'
           placeholder='Text field'
-          startIcon={<Edit width={20} height={20} color='#EC2C27' />}
-          endIcon={<Edit width={20} height={20} color='#EC2C27' />}
+          startIcon={<Edit width={14} height={14} color='#EC2C27' />}
+          endIcon={<Edit width={14} height={14} color='#EC2C27' />}
         />
       </Stack>
 
@@ -109,8 +109,8 @@ const AllInput = () => {
           size='medium'
           helperText='Hint'
           disabled
-          startIcon={<Edit width={20} height={20} color='#D8D8DA' />}
-          endIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+          startIcon={<Edit width={16} height={16} color='#D8D8DA' />}
+          endIcon={<Edit width={16} height={16} color='#D8D8DA' />}
         />
 
         <MuiInput
@@ -121,8 +121,8 @@ const AllInput = () => {
           disabled
           helperText='Hint'
           placeholder='Text field'
-          startIcon={<Edit width={20} height={20} color='#D8D8DA' />}
-          endIcon={<Edit width={20} height={20} color='#D8D8DA' />}
+          startIcon={<Edit width={14} height={14} color='#D8D8DA' />}
+          endIcon={<Edit width={14} height={14} color='#D8D8DA' />}
         />
       </Stack>
     </>
