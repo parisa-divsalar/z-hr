@@ -1,7 +1,45 @@
-import { Stack } from '@mui/material';
+'use client';
+import { useState } from 'react';
+
+import { IconButton, Stack } from '@mui/material';
+import { useRouter } from 'next/navigation';
+
+import { EnterIcon, SearchIcon, VoiceIcon } from '@/components/Icons';
+import { PublicRoutes } from '@/config/routes';
+
+import { GlassContainer, InputContainer } from '../styled';
 
 const PromptBox = () => {
-  return <Stack>Prompt Box</Stack>;
+  const [search, setSearch] = useState('');
+  const router = useRouter();
+
+  return (
+    <GlassContainer>
+      <Stack className='contentChatBox'>
+        <Stack className='chatBoxContainer'>
+          <Stack direction='row' justifyContent='space-between' alignItems='center'>
+            <IconButton onClick={() => router.push(PublicRoutes.landing)}>
+              <SearchIcon />
+            </IconButton>
+            <InputContainer
+              className='InputContainer'
+              placeholder='Type your prompt...'
+              value={search}
+              onChange={(event: any) => setSearch(event.target.value)}
+            />
+
+            <IconButton>
+              <VoiceIcon />
+            </IconButton>
+
+            <IconButton onClick={() => router.push(PublicRoutes.landing)}>
+              <EnterIcon />
+            </IconButton>
+          </Stack>
+        </Stack>
+      </Stack>
+    </GlassContainer>
+  );
 };
 
 export default PromptBox;
