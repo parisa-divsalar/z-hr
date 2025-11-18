@@ -1,16 +1,15 @@
-import { Stack, Typography } from '@mui/material';
-import Link from 'next/link';
+import { Suspense } from 'react';
 
-import MuiButton from 'src/components/UI/MuiButton';
+import { Stack } from '@mui/material';
+
+import HeroSection from '@/components/Landing/Hero';
 
 export default function LandingPage() {
   return (
-    <Stack p={2} textAlign='center'>
-      <Typography variant='subtitle1'>🏡 Landing</Typography>
-
-      <Link href='/uikit'>
-        <MuiButton>UiKit</MuiButton>
-      </Link>
+    <Stack width='100%' p={3} textAlign='center'>
+      <Suspense fallback={<div>loading</div>}>
+        <HeroSection />
+      </Suspense>
     </Stack>
   );
 }
