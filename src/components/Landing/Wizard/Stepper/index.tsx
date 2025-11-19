@@ -15,7 +15,7 @@ const Container = styled(Box)(({ theme }) => ({
   gap: theme.spacing(4),
 }));
 
-const StepItem = styled(Box)<{ active?: boolean }>(({ theme, active }) => ({
+const StepItem = styled(Box)<{ active?: boolean }>(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),
