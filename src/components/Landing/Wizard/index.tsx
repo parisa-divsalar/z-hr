@@ -4,15 +4,24 @@ import { Stack } from '@mui/material';
 
 import ArrowLeftIcon from '@/assets/images/icons/arrow-left.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import StepInputBox from '@/components/Landing/Wizard/StepInputBox';
 import StepWrapper from '@/components/Landing/Wizard/Stepper';
 import MuiButton from '@/components/UI/MuiButton';
 
 const Wizard = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
+  const [step1Input, setStep1Input] = useState<string>('');
+
+  const handleStep1Submit = (text: string) => {
+    setStep1Input(text);
+    console.log('Step 1 input:', text);
+  };
 
   return (
-    <Stack justifyContent='center' alignItems={'center'} p={2}>
+    <Stack justifyContent='center' alignItems={'center'} p={10}>
       <StepWrapper activeStep={activeStep} />
+
+      {activeStep === 1 && <StepInputBox onSubmit={handleStep1Submit} />}
 
       <Stack direction='row' mt={4} gap={2}>
         <MuiButton
