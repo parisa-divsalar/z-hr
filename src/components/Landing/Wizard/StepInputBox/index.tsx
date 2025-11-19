@@ -7,11 +7,11 @@ import ArrowTopIcon from '@/assets/images/icons/arrow-top.svg';
 
 import { CircleContainer, InputContainer, InputContent, MainContainer } from './styled';
 
-interface Step1InputBoxProps {
+interface StepInputBoxProps {
   onSubmit?: (text: string) => void;
 }
 
-const Step1InputBox: FunctionComponent<Step1InputBoxProps> = (props) => {
+const StepInputBox: FunctionComponent<StepInputBoxProps> = (props) => {
   const { onSubmit } = props;
 
   const [search, setSearch] = useState('');
@@ -54,4 +54,4 @@ const Step1InputBox: FunctionComponent<Step1InputBoxProps> = (props) => {
   );
 };
 
-export default Step1InputBox;
+export default StepInputBox;

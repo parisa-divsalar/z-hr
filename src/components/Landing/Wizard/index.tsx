@@ -10,10 +10,8 @@ import MuiButton from '@/components/UI/MuiButton';
 
 const Wizard = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
-  const [step1Input, setStep1Input] = useState<string>('');
 
   const handleStep1Submit = (text: string) => {
-    setStep1Input(text);
     console.log('Step 1 input:', text);
   };
 
