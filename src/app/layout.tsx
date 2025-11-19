@@ -8,7 +8,7 @@ import '@/config/configAxios';
 import '@/assets/styles/globals.css';
 
 export const metadata = {
-  title: 'z-hr',
+  title: 'z-cv',
   description: 'description',
   themeColor: '#4D49FC',
   icons: {
