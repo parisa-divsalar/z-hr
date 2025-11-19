@@ -5,7 +5,7 @@ export const InputContainer = styled(Stack)(() => ({
   backgroundColor: 'white',
   borderRadius: '1rem',
   border: `1px solid`,
-  padding: '1.5rem',
+  padding: '1rem',
   width: '100%',
   maxWidth: '588px',
   height: 'auto',
