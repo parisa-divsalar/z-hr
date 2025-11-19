@@ -5,7 +5,7 @@ import { Stack } from '@mui/material';
 import Footer from '@/components/Layout/Footer';
 import Navbar from '@/components/Layout/Navbar';
 import AddToHomeScreen from '@/components/Other/AddToHomeScreen';
-import SplashScreen from '@/components/Other/SplashScreen';
+// import SplashScreen from '@/components/Other/SplashScreen';
 
 import classes from './layout.module.css';
 
@@ -18,7 +18,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <Footer />
       </Stack>
 
-      <SplashScreen />
+      {/*<SplashScreen />*/}
 
       <AddToHomeScreen />
     </Stack>

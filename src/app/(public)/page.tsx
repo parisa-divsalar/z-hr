@@ -1,15 +1,11 @@
-import { Suspense } from 'react';
-
 import { Stack } from '@mui/material';
 
-import HeroSection from '@/components/Landing/Hero';
+import AISection from '@/components/Landing/AI';
 
 export default function LandingPage() {
   return (
-    <Stack width='100%' p={3} textAlign='center'>
-      <Suspense fallback={<div>loading</div>}>
-        <HeroSection />
-      </Suspense>
+    <Stack width='100%' height='100%'>
+      <AISection />
     </Stack>
   );
 }

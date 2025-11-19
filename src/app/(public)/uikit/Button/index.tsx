@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material';
 
-import { Edit } from '@/components/Icons';
+import Edit from '@/assets/images/icons/edit.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
 const AllButton = () => {

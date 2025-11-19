@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
-import { Edit } from '@/components/Icons';
+import Edit from '@/assets/images/icons/edit.svg';
 import MuiInput from '@/components/UI/MuiInput';
 
 const AllInput = () => {

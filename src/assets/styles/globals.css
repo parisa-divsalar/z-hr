@@ -4,6 +4,16 @@ html, body {
     padding: 0;
 }
 
+:root {
+    --app-height: 100vh;
+}
+
+@supports (height: 100dvh) {
+    :root {
+        --app-height: 100dvh;
+    }
+}
+
 * {
     box-sizing: border-box;
     -moz-font-feature-settings: "ss02";
