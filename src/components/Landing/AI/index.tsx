@@ -1,10 +1,18 @@
-'use client';
+import { FunctionComponent } from 'react';
+
 import { Typography } from '@mui/material';
 
 import AIInputBox from '@/components/Landing/AI/InputBox';
 import { MainContainer } from '@/components/Landing/AI/styled';
+import { AIStatus } from '@/components/Landing/type';
 
-const AISection = () => {
+interface AIInputProps {
+  setAiStatus: (status: AIStatus) => void;
+}
+
+const AIInput: FunctionComponent<AIInputProps> = (props) => {
+  const { setAiStatus } = props;
+
   return (
     <MainContainer>
       <Typography variant='h6' color='text.primary'>
@@ -14,9 +22,9 @@ const AISection = () => {
         Voice, Video, Photo and Text
       </Typography>
 
-      <AIInputBox />
+      <AIInputBox setAiStatus={setAiStatus} />
     </MainContainer>
   );
 };
 
-export default AISection;
+export default AIInput;
