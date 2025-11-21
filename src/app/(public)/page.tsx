@@ -8,7 +8,7 @@ import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
 
 export default function LandingPage() {
-  const [aiStatus, setAiStatus] = useState<AIStatus>('WIZARD');
+  const [aiStatus, setAiStatus] = useState<AIStatus>('START');
 
   return (
     <Stack width='100%' height='100%'>
