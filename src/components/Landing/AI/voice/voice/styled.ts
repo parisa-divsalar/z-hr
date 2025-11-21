@@ -16,6 +16,7 @@ export const WaveformContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   gap: '2px',
+  overflow: 'hidden',
   height: '32px',
   position: 'relative',
 });
@@ -24,14 +25,14 @@ export const WaveformBar = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'isActive' && prop !== 'isPlayed',
 })<{ isActive: boolean; isPlayed: boolean }>(({ isActive, isPlayed }) => ({
   width: '3px',
-  height: isActive ? '20px' : '8px',
-  backgroundColor: isPlayed ? '#007AFF' : '#999',
+  height: isActive ? '55px' : '35px',
+  backgroundColor: isPlayed ? '#007AFF' : '#b9b9b9',
   borderRadius: '2px',
   transition: 'all 0.3s ease',
   animation: isActive ? `waveAnimation 0.8s ease-in-out infinite` : 'none',
   '@keyframes waveAnimation': {
     '0%': {
-      height: '8px',
+      height: '11px',
       opacity: 0.6,
     },
     '25%': {
@@ -39,15 +40,15 @@ export const WaveformBar = styled(Box, {
       opacity: 0.8,
     },
     '50%': {
-      height: '24px',
+      height: '34px',
       opacity: 1,
     },
     '75%': {
-      height: '12px',
+      height: '18px',
       opacity: 0.9,
     },
     '100%': {
-      height: '8px',
+      height: '5px',
       opacity: 0.6,
     },
   },
@@ -55,7 +56,7 @@ export const WaveformBar = styled(Box, {
 
 export const ProgressBar = styled(Box)<{ progress: number }>(({ progress }) => ({
   position: 'absolute',
-  bottom: 0,
+  bottom: '-6px',
   left: 0,
   height: '2px',
   backgroundColor: '#007AFF',
