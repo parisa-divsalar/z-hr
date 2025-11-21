@@ -22,13 +22,13 @@ export const Tile = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
 }));
 
-export const IconWrapper = styled(Box)(({ theme }) => ({
+export const IconWrapper = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
 }));
 
-export const Label = styled(Typography)(({ theme }) => ({
+export const Label = styled(Typography)(() => ({
   marginTop: theme.spacing(1),
   textAlign: 'center',
   fontSize: 16,

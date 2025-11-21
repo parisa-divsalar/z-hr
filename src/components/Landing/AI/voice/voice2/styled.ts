@@ -50,7 +50,7 @@ export const VoiceMessageContainer = styled(Box)({
   width: '588px',
 });
 
-export const PlayPauseButton = styled(Box)<{ playbackState?: PlaybackState }>(({ playbackState }) => ({
+export const PlayPauseButton = styled(Box)<{ playbackState?: PlaybackState }>(() => ({
   width: '44px',
   height: '44px',
   borderRadius: '50%',
