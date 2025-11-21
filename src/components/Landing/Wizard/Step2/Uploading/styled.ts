@@ -1,6 +1,6 @@
 import { styled } from '@mui/material/styles';
 
-export const Container = styled('div')(({ theme }) => ({
+export const Container = styled('div')(() => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -8,7 +8,7 @@ export const Container = styled('div')(({ theme }) => ({
   padding: '40px',
 }));
 
-export const TopBox = styled('div')(({ theme }) => ({
+export const TopBox = styled('div')(() => ({
   width: '76px',
   height: '76px',
   borderRadius: '1rem',
@@ -20,7 +20,7 @@ export const TopBox = styled('div')(({ theme }) => ({
   justifyContent: 'center',
 }));
 
-export const Fill = styled('div')(({ theme }) => ({
+export const Fill = styled('div')(() => ({
   position: 'absolute',
   bottom: 0,
   left: 0,
@@ -30,19 +30,19 @@ export const Fill = styled('div')(({ theme }) => ({
   transition: 'height 0.2s linear',
 }));
 
-export const Icon = styled('div')(({ theme }) => ({
+export const Icon = styled('div')(() => ({
   position: 'relative',
   zIndex: 10,
   color: '#666',
   fontSize: '32px',
 }));
 
-export const PercentText = styled('div')(({ theme }) => ({
+export const PercentText = styled('div')(() => ({
   fontSize: '14px',
   fontWeight: 600,
 }));
 
-export const BarContainer = styled('div')(({ theme }) => ({
+export const BarContainer = styled('div')(() => ({
   width: '15rem',
   maxWidth: '600px',
   height: '18px',
@@ -51,7 +51,7 @@ export const BarContainer = styled('div')(({ theme }) => ({
   overflow: 'hidden',
 }));
 
-export const BarFill = styled('div')(({ theme }) => ({
+export const BarFill = styled('div')(() => ({
   height: '100%',
   background: '#4a5bff',
   transition: 'width 0.2s',

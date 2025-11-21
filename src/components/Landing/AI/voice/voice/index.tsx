@@ -56,6 +56,7 @@ const VoiceRecording = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  console.log({ audioBlob });
   const cleanup = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);

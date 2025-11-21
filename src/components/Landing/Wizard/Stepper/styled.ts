@@ -9,7 +9,7 @@ export const Container = styled(Box)(({ theme }) => ({
 
 export const StepItem = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'active',
-})<{ active?: boolean }>(({ theme, active }) => ({
+})<{ active?: boolean }>(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),

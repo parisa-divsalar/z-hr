@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 
-export const ChipContainer = styled(Stack)(({ theme }) => ({
+export const ChipContainer = styled(Stack)(() => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
