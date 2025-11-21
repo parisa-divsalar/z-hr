@@ -14,14 +14,14 @@ export const HeaderSection = styled(Box)(({ theme }) => ({
 }));
 
 export const FeatureCard = styled(Stack)(({ theme }) => ({
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
+  flexDirection: 'column',
+  alignItems: 'stretch',
+  borderRadius: '8px',
   padding: theme.spacing(2),
   gap: theme.spacing(1),
-  boxShadow: theme.shadows[1],
-  cursor: 'pointer',
+  border: `1px solid ${theme.palette.grey[100]}`,
+  width: 600,
+  height: 102,
 }));
 
 export const FeatureCardContent = styled(Box)(() => ({
@@ -29,21 +29,16 @@ export const FeatureCardContent = styled(Box)(() => ({
 }));
 
 export const NavigationListItem = styled(Stack)(({ theme }) => ({
-  flexDirection: 'row',
   justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: theme.spacing(2),
-  borderRadius: theme.shape.borderRadius,
+  padding: '24px',
+  border: `1px solid ${theme.palette.grey[100]}`,
+  borderRadius: '8px',
   cursor: 'pointer',
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  width: 600,
+  height: 102,
 }));
 
-export const NavigationListItemLeft = styled(Box)(() => ({
-  flex: 1,
-}));
-
-export const NavigationListItemRight = styled(Box)(() => ({
+export const NavigationListItemContent = styled(Box)(() => ({
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'space-between',
 }));
