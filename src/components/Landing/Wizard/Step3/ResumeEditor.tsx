@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Check, Close } from '@mui/icons-material';
 import { Box, CardContent, IconButton } from '@mui/material';
@@ -7,6 +8,7 @@ import EditIcon from '@/assets/images/icons/edit.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 import MuiButton from '@/components/UI/MuiButton';
+import { PublicRoutes } from '@/config/routes';
 
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import SectionHeader from './ResumeEditor/SectionHeader';
@@ -35,6 +37,7 @@ import {
 } from './ResumeEditor/styled';
 
 const ResumeEditor = () => {
+  const router = useRouter();
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   const [summary, setSummary] = useState(
@@ -78,6 +81,10 @@ const ResumeEditor = () => {
 
   const handleExperienceChange = (id: number, field: string, value: string) => {
     setExperiences(experiences.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)));
+  };
+
+  const handleSubmit = () => {
+    router.push(PublicRoutes.moreFeatures);
   };
 
   return (
@@ -255,7 +262,7 @@ const ResumeEditor = () => {
 
       <FooterContainer>
         <MuiButton variant='outlined' size='large' text='Regenerate All' />
-        <MuiButton variant='contained' size='large' text='Submit' />
+        <MuiButton variant='contained' size='large' text='Submit' onClick={handleSubmit} />
       </FooterContainer>
     </ResumeContainer>
   );
