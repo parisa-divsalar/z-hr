@@ -28,7 +28,7 @@ export const IconWrapper = styled(Box)(() => ({
   justifyContent: 'center',
 }));
 
-export const Label = styled(Typography)(() => ({
+export const Label = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1),
   textAlign: 'center',
   fontSize: 16,
