@@ -91,11 +91,11 @@ export const ExperienceContainer = styled(Box)(({ theme }) => ({
 
 export const ExperienceItem = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(3),
-  marginBottom: theme.spacing(4),
+  marginBottom: theme.spacing(3),
 }));
 
 export const ExperienceItemSmall = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
+  marginBottom: theme.spacing(3),
 }));
 
 export const ExperienceHeader = styled(Box)(() => ({
