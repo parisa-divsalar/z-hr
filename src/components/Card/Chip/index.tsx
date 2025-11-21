@@ -1,8 +1,10 @@
 import { FunctionComponent } from 'react';
-import { TSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/type';
-import { ChipContainer } from '@/components/Card/Chip/styled';
+
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { IconButton, Typography } from '@mui/material';
+
+import { ChipContainer } from '@/components/Card/Chip/styled';
+import { TSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/type';
 
 interface ChipSkillProps {
   skill: TSkill;

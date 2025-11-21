@@ -1,6 +1,7 @@
 import { FunctionComponent } from 'react';
-import SelectSkill from '@/components/Landing/Wizard/Step1/SlectSkill';
+
 import SKillInput from '@/components/Landing/Wizard/Step1/SKillInput';
+import SelectSkill from '@/components/Landing/Wizard/Step1/SlectSkill';
 
 interface Step1Props {
   setActiveStep: (activeStep: number) => void;

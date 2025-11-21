@@ -1,12 +1,14 @@
 import React, { FunctionComponent, useState } from 'react';
+
 import { Stack, Typography } from '@mui/material';
-import VoiceRecording from '@/components/Landing/AI/voice/voice';
-import MuiButton from '@/components/UI/MuiButton';
+
 import ArrowLeftIcon from '@/assets/images/icons/arrow-left.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
-import VoiceUploading from '@/components/Landing/Wizard/Step2/Uploading';
+import VoiceRecording from '@/components/Landing/AI/voice/voice';
 import VoiceResult from '@/components/Landing/Wizard/Step2/Result';
 import Thinking from '@/components/Landing/Wizard/Step2/Thinking';
+import VoiceUploading from '@/components/Landing/Wizard/Step2/Uploading';
+import MuiButton from '@/components/UI/MuiButton';
 
 interface Step2Props {
   setActiveStep: (activeStep: number) => void;

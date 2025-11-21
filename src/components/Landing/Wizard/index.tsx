@@ -2,10 +2,10 @@ import { useState } from 'react';
 
 import { Stack } from '@mui/material';
 
-import StepWrapper from '@/components/Landing/Wizard/Stepper';
 import Step1 from '@/components/Landing/Wizard/Step1';
 import Step2 from '@/components/Landing/Wizard/Step2';
 import Step3 from '@/components/Landing/Wizard/Step3';
+import StepWrapper from '@/components/Landing/Wizard/Stepper';
 
 const Wizard = () => {
   const [activeStep, setActiveStep] = useState<number>(1);

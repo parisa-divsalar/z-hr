@@ -1,11 +1,13 @@
-import { Stack, Typography } from '@mui/material';
-import MuiButton from '@/components/UI/MuiButton';
-import AddIcon from '@/assets/images/icons/add.svg';
+import { FunctionComponent } from 'react';
+
 import { Mic } from '@mui/icons-material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import { Stack, Typography } from '@mui/material';
+
+import AddIcon from '@/assets/images/icons/add.svg';
+import MuiButton from '@/components/UI/MuiButton';
 
 import { Container, Tile, Label, IconWrapper, CheckBadge } from './styled';
-import { FunctionComponent } from 'react';
 
 interface VoiceResultProps {
   onSubmit: () => void;

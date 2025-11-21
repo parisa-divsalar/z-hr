@@ -1,8 +1,10 @@
-import { Stack, Typography } from '@mui/material';
-import ThinkingIcon from '@/assets/images/icons/thinking.svg';
-import MuiButton from '@/components/UI/MuiButton';
 import { FunctionComponent, useEffect, useState } from 'react';
+
+import { Stack, Typography } from '@mui/material';
+
+import ThinkingIcon from '@/assets/images/icons/thinking.svg';
 import SignUpDialog from '@/components/Landing/Wizard/Step2/SignUpDialog';
+import MuiButton from '@/components/UI/MuiButton';
 
 interface ThinkingProps {
   onCancel: () => void;

@@ -1,6 +1,8 @@
-import { Stack, Typography } from '@mui/material';
-import MuiButton from '@/components/UI/MuiButton';
 import { FunctionComponent, useEffect, useState } from 'react';
+
+import { Mic } from '@mui/icons-material';
+import { Stack, Typography } from '@mui/material';
+
 import {
   TopBox,
   BarFill,
@@ -9,7 +11,7 @@ import {
   Container,
   PercentText,
 } from '@/components/Landing/Wizard/Step2/Uploading/styled';
-import { Mic } from '@mui/icons-material';
+import MuiButton from '@/components/UI/MuiButton';
 
 interface VoiceUploadingProps {
   setUploading: (uploading: boolean) => void;

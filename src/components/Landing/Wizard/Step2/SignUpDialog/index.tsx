@@ -1,9 +1,11 @@
+import { FunctionComponent } from 'react';
+
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { Divider, IconButton, Typography } from '@mui/material';
 
-import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
 import MuiButton from '@/components/UI/MuiButton';
-import { FunctionComponent } from 'react';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+
+import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
 
 interface SignUpDialogProps {
   open: boolean;

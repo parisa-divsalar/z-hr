@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Stack, Typography, Box } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
-import LinksIcon from '@/assets/images/icons/links.svg';
+import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { PublicRoutes } from '@/config/routes';
 
 import {
   Container,
@@ -13,10 +16,12 @@ import {
   FeatureCard,
   FeatureCardContent,
   NavigationListItem,
-  NavigationListItemContent,
+  NavigationListItemLeft,
+  NavigationListItemRight,
 } from './styled';
 
 const MoreFeaturesPage = () => {
+  const router = useRouter();
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   const handleFeatureToggle = (featureId: string) => {
@@ -54,32 +59,34 @@ const MoreFeaturesPage = () => {
     },
     {
       title: 'Voice Interview Practice',
-      description: 'Practice speaking and answering questions verbally with AI-based feedback on   .',
+      description: 'Practice speaking and answering questions verbally with AI-based feedback on tone and fluency.',
     },
   ];
 
   return (
     <Container>
       <HeaderSection>
-        <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
+        <Typography variant='h5' color='text.primary' fontWeight='700'>
           More Features
         </Typography>
-        <Typography variant='h6' color='text.primary' mt={1}>
-          You can utilize these features with your resume.{' '}
+        <Typography variant='body1' color='text.secondary'>
+          You can utilize these features with your resume.
         </Typography>
       </HeaderSection>
 
       <Stack spacing={2} mt={2}>
         {featureCards.map((card) => (
           <FeatureCard key={card.id}>
+            <MuiCheckbox
+              size='medium'
+              checked={selectedFeatures.includes(card.id)}
+              onChange={() => handleFeatureToggle(card.id)}
+            />
             <FeatureCardContent>
-              <MuiCheckbox
-                size='medium'
-                checked={selectedFeatures.includes(card.id)}
-                onChange={() => handleFeatureToggle(card.id)}
-                label={card.title}
-              />
-              <Typography variant='body2' color='text.secondary' ml={1}>
+              <Typography variant='subtitle1' color='text.primary' fontWeight={500}>
+                {card.title}
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
                 {card.description}
               </Typography>
             </FeatureCardContent>
@@ -90,18 +97,26 @@ const MoreFeaturesPage = () => {
       <Stack spacing={2} mt={2}>
         {navigationItems.map((item, index) => (
           <NavigationListItem key={index}>
-            <NavigationListItemContent>
+            <NavigationListItemLeft>
               <Typography variant='subtitle1' color='text.primary' fontWeight={500}>
                 {item.title}
               </Typography>
-              <LinksIcon />
-            </NavigationListItemContent>
-            <Typography variant='body2' color='text.secondary' pl={-3}>
-              {item.description}
-            </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                {item.description}
+              </Typography>
+            </NavigationListItemLeft>
+            <NavigationListItemRight>
+              <ArrowRightIcon />
+            </NavigationListItemRight>
           </NavigationListItem>
         ))}
       </Stack>
+
+      <Box mt={4} textAlign='center'>
+        <MuiButton variant='contained' size='large' onClick={() => router.push(PublicRoutes.resumeGenerator)}>
+          Resume Generator
+        </MuiButton>
+      </Box>
     </Container>
   );
 };

@@ -1,11 +1,13 @@
-import { Stack, Typography } from '@mui/material';
-import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import React, { FunctionComponent, useState } from 'react';
-import MuiButton from '@/components/UI/MuiButton';
-import { AllSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/data';
+
+import { Stack, Typography } from '@mui/material';
+
+import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ChipSkill from '@/components/Card/Chip';
-import { TSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/type';
+import { AllSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/data';
 import { SkillContainer } from '@/components/Landing/Wizard/Step1/SlectSkill/styled';
+import { TSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/type';
+import MuiButton from '@/components/UI/MuiButton';
 
 interface SelectSkillProps {
   setShowSelectSkill: (showSelectSkill: boolean) => void;

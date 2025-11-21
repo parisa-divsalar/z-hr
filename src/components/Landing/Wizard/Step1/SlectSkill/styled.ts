@@ -1,5 +1,5 @@
-import { styled } from '@mui/material/styles';
 import { Stack } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 export const SkillContainer = styled(Stack)(() => ({
   display: 'flex',

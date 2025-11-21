@@ -4,9 +4,9 @@ import { Stack, Typography } from '@mui/material';
 
 import ArrowLeftIcon from '@/assets/images/icons/arrow-left.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import MuiButton from '@/components/UI/MuiButton';
 
 import { InputContainer, InputContent, MainContainer } from './styled';
-import MuiButton from '@/components/UI/MuiButton';
 
 interface SKillInputProps {
   setShowSelectSkill: (showSelectSkill: boolean) => void;

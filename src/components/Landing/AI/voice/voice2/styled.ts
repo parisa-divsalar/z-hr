@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
+
 import { PlaybackState } from './index';
 
 export const WaveBarsContainer = styled(Box)({
