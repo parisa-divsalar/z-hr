@@ -261,8 +261,8 @@ const ResumeEditor = () => {
       </MainCardContainer>
 
       <FooterContainer>
-        <MuiButton variant='outlined' size='large' text='Regenerate All' />
-        <MuiButton variant='contained' size='large' text='Submit' onClick={handleSubmit} />
+        <MuiButton color='secondary' variant='outlined' size='large' text='Regenerate All' />
+        <MuiButton color='secondary' variant='contained' size='large' text='Submit' onClick={handleSubmit} />
       </FooterContainer>
     </ResumeContainer>
   );

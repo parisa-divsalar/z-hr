@@ -64,13 +64,21 @@ const Step2: FunctionComponent<Step2Props> = (props) => {
         Please Click on the Voice Icon for Record.
       </Typography>
 
-      <VoiceRecording
-        initialAudioUrl={voiceUrl}
-        initialAudioBlob={voiceBlob}
-        showRecordingControls={showRecordingControls}
-        onRecordingComplete={handleVoiceRecordingComplete}
-        onClearRecording={handleClearVoiceRecording}
-      />
+      {voiceUrl && (
+        <VoiceRecording
+          initialAudioUrl={voiceUrl}
+          initialAudioBlob={voiceBlob}
+          showRecordingControls={showRecordingControls}
+          onClearRecording={handleClearVoiceRecording}
+        />
+      )}
+
+      {!voiceUrl && (
+        <VoiceRecording
+          onRecordingComplete={handleVoiceRecordingComplete}
+          showRecordingControls={showRecordingControls}
+        />
+      )}
 
       <Stack direction='row' mt={6} gap={2}>
         <MuiButton color='secondary' startIcon={<ArrowLeftIcon />} onClick={() => setActiveStep(1)}>

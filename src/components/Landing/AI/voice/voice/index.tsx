@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-import { Mic, Pause } from '@mui/icons-material';
+import { Mic } from '@mui/icons-material';
 import { Typography, IconButton, Stack } from '@mui/material';
 
 import ButtonDIcon from '@/assets/images/icons/button-d.svg';
 import ButtonPIcon from '@/assets/images/icons/button-p.svg';
+import ButtonPuseIcon from '@/assets/images/icons/button-puse.svg';
 import ButtonRIcon from '@/assets/images/icons/button-r.svg';
 import ButtonStopIcon from '@/assets/images/icons/button-stop.svg';
 
@@ -35,20 +36,24 @@ const VoiceRecording = ({
   onClearRecording,
 }: VoiceRecordingProps) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isInternalUrl, setIsInternalUrl] = useState(false); // Track if URL was created internally
 
   useEffect(() => {
+    // Keep external initial values
     setAudioUrl(initialAudioUrl);
     setAudioBlob(initialAudioBlob);
     setIsInternalUrl(false);
   }, [initialAudioUrl, initialAudioBlob]);
+
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [playbackTime, setPlaybackTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
   const [audioProgress, setAudioProgress] = useState(0);
+
+  const [waveBarsCount, setWaveBarsCount] = useState(100);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -56,7 +61,6 @@ const VoiceRecording = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  console.log({ audioBlob });
   const cleanup = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -67,19 +71,27 @@ const VoiceRecording = ({
       streamRef.current = null;
     }
     if (audioRef.current) {
-      audioRef.current.pause();
+      try {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      } catch (e) {}
       audioRef.current = null;
     }
+
     if (audioUrl && isInternalUrl) {
-      URL.revokeObjectURL(audioUrl);
-      // setAudioUrl(null);
-      console.log('AAA');
+      try {
+        URL.revokeObjectURL(audioUrl);
+      } catch (e) {
+        // ignore
+      }
       setIsInternalUrl(false);
     }
+
     setPlaybackState('idle');
     setPlaybackTime(0);
     setAudioProgress(0);
     setAudioDuration(0);
+    setWaveBarsCount(100);
   }, [audioUrl, isInternalUrl]);
 
   const startRecording = useCallback(async () => {
@@ -95,33 +107,39 @@ const VoiceRecording = ({
       streamRef.current = stream;
       chunksRef.current = [];
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm',
-      });
+      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
 
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
+        if (event.data && event.data.size > 0) {
           chunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, {
-          type: mediaRecorder.mimeType,
-        });
+        const blob = new Blob(chunksRef.current, { type: mime });
         const url = URL.createObjectURL(blob);
+
+        if (audioUrl && isInternalUrl) {
+          try {
+            URL.revokeObjectURL(audioUrl);
+          } catch (e) {}
+        }
+
         setAudioUrl(url);
         setAudioBlob(blob);
-        setIsInternalUrl(true); // Mark this URL as internally created
+        setIsInternalUrl(true); // mark new URL as internal
         setRecordingTime(0);
         setRecordingState('idle');
+
         onRecordingComplete?.(url, blob);
         onRecordingStop?.();
       };
 
-      mediaRecorder.start(100);
+      mediaRecorder.start(100); // timeslice
       setRecordingState('recording');
       onRecordingStart?.();
 
@@ -129,7 +147,9 @@ const VoiceRecording = ({
         setRecordingTime((prev) => {
           const newTime = prev + 1;
           if (newTime >= maxDuration) {
-            stopRecording();
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+              mediaRecorderRef.current.stop();
+            }
             return maxDuration;
           }
           return newTime;
@@ -137,61 +157,106 @@ const VoiceRecording = ({
       }, 1000);
     } catch (error) {
       console.error('Voice recording error:', error);
-      alert('Error accessing microphone. Please check permissions.');
     }
-  }, [maxDuration, onRecordingComplete, onRecordingStart, onRecordingStop]);
+  }, [maxDuration, onRecordingComplete, onRecordingStart, onRecordingStop, audioUrl, isInternalUrl]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && recordingState === 'recording') {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
-  }, [recordingState]);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setRecordingState('idle');
+  }, []);
 
+  /** PLAYBACK: create audio element lazily and attach events */
   const playRecording = useCallback(async () => {
-    if (audioUrl && playbackState !== 'playing') {
-      try {
-        // Create new audio element if it doesn't exist or if URL has changed
-        if (!audioRef.current) {
-          audioRef.current = new Audio(audioUrl);
+    if (!audioUrl) return;
+    if (playbackState === 'playing') return;
 
-          audioRef.current.onloadedmetadata = () => {
-            if (audioRef.current) {
-              setAudioDuration(audioRef.current.duration);
-            }
-          };
-
-          audioRef.current.ontimeupdate = () => {
-            if (audioRef.current) {
-              const currentTime = audioRef.current.currentTime;
-              const progress = (currentTime / audioRef.current.duration) * 100;
-              setPlaybackTime(currentTime);
-              setAudioProgress(progress);
-            }
-          };
-
-          audioRef.current.onended = () => {
-            setPlaybackState('idle');
-            setPlaybackTime(0);
-            setAudioProgress(0);
-          };
-
-          audioRef.current.onerror = (error) => {
-            console.error('Audio playback error:', error);
-            setPlaybackState('idle');
-            alert('Error playing audio. Please try again.');
-          };
-        }
-
-        await audioRef.current.play();
-        setPlaybackState('playing');
-      } catch (error) {
-        console.error('Failed to play audio:', error);
-        setPlaybackState('idle');
-        alert('Error playing audio. Please try again.');
+    try {
+      // if we already have an audioRef but src differs, reset it
+      if (audioRef.current && audioRef.current.src !== audioUrl) {
+        try {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        } catch (e) {}
+        audioRef.current = null;
       }
+
+      if (!audioRef.current) {
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+
+        audio.onloadedmetadata = () => {
+          if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
+            setAudioDuration(audioRef.current.duration);
+            const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
+            setWaveBarsCount(bars);
+          }
+        };
+
+        audio.oncanplaythrough = () => {
+          if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
+            setAudioDuration(audioRef.current.duration);
+            const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
+            setWaveBarsCount(bars);
+          }
+        };
+
+        const fallbackTimer = setTimeout(() => {
+          if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
+            setAudioDuration(audioRef.current.duration);
+            const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
+            setWaveBarsCount(bars);
+          }
+        }, 400);
+
+        audio.ontimeupdate = () => {
+          if (!audioRef.current || !isFinite(audioRef.current.duration) || audioRef.current.duration === 0) return;
+          const currentTime = audioRef.current.currentTime;
+          const p = (currentTime / audioRef.current.duration) * 100;
+          setPlaybackTime(currentTime);
+          setAudioProgress(p);
+        };
+
+        audio.onended = () => {
+          setPlaybackState('idle');
+          setPlaybackTime(0);
+          setAudioProgress(0);
+        };
+
+        audio.onerror = (e) => {
+          console.error('Audio element error:', e);
+          setPlaybackState('idle');
+        };
+
+        const clearFallback = () => clearTimeout(fallbackTimer);
+        audio.oncanplaythrough = (() => {
+          if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
+            setAudioDuration(audioRef.current.duration);
+            const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
+            setWaveBarsCount(bars);
+          }
+          clearFallback();
+        }) as any;
+      }
+
+      await audioRef.current.play();
+      setPlaybackState('playing');
+    } catch (error) {
+      console.error('Failed to play audio:', error);
+      setPlaybackState('idle');
     }
   }, [audioUrl, playbackState]);
 
+  /** PAUSE */
   const pauseRecording = useCallback(() => {
     if (audioRef.current && playbackState === 'playing') {
       audioRef.current.pause();
@@ -203,10 +268,10 @@ const VoiceRecording = ({
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-      setPlaybackState('idle');
-      setPlaybackTime(0);
-      setAudioProgress(0);
     }
+    setPlaybackState('idle');
+    setPlaybackTime(0);
+    setAudioProgress(0);
   }, []);
 
   const togglePlayback = useCallback(() => {
@@ -217,34 +282,47 @@ const VoiceRecording = ({
     }
   }, [playbackState, playRecording, pauseRecording]);
 
+  /** CLEAR recording (called by UI) */
   const clearRecording = useCallback(() => {
-    stopPlayback();
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-      setAudioUrl(null);
+    if (audioRef.current) {
+      audioRef.current.onerror = null; // جلوگیری از onerror الکی
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.src = ''; // حذف منبع صوتی بدون خطا
+      audioRef.current = null;
     }
+
+    if (audioUrl && isInternalUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+
+    setAudioUrl(null);
     setAudioBlob(null);
-    setRecordingTime(0);
+    setIsInternalUrl(false);
+
     setRecordingState('idle');
     setPlaybackState('idle');
     setPlaybackTime(0);
     setAudioProgress(0);
     setAudioDuration(0);
+    setRecordingTime(0);
+
     onClearRecording?.();
-  }, [audioUrl, stopPlayback, onClearRecording]);
+  }, [audioUrl, isInternalUrl, onClearRecording]);
 
   const formatTime = useCallback((seconds: number) => {
-    if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
-      return '';
-    }
+    if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) return '00.00';
     const integerPart = Math.floor(seconds).toString().padStart(2, '0');
-    const decimalPart = (seconds % 1).toFixed(2).slice(1); // Get .XX part
+    const decimalPart = (seconds % 1).toFixed(2).slice(1); // .XX
     return `${integerPart}${decimalPart}`;
   }, []);
 
   useEffect(() => {
     if (audioUrl && audioRef.current) {
-      audioRef.current.pause();
+      try {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      } catch (e) {}
       audioRef.current = null;
       setPlaybackState('idle');
       setPlaybackTime(0);
@@ -254,12 +332,9 @@ const VoiceRecording = ({
   }, [audioUrl]);
 
   useEffect(() => {
-    if (initialAudioUrl) setAudioUrl(initialAudioUrl);
-  }, [initialAudioUrl]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return cleanup;
+    return () => {
+      cleanup();
+    };
   }, [cleanup]);
 
   return (
@@ -299,13 +374,14 @@ const VoiceRecording = ({
           </Typography>
 
           <Typography variant='body2' color='error'>
-            {formatTime(recordingTime)}
+            {formatTime(audioDuration)}
           </Typography>
 
           <VoiceMessageContainer bgcolor='primary.light'>
             <WaveformContainer>
-              {Array.from({ length: 20 }, (_, index) => {
-                const isPlayed = (index / 20) * 100 <= audioProgress;
+              {Array.from({ length: waveBarsCount }, (_, index) => {
+                // played threshold uses waveBarsCount
+                const isPlayed = (index / Math.max(1, waveBarsCount)) * 100 <= audioProgress;
                 return (
                   <WaveformBar key={index} isActive={playbackState === 'playing' && isPlayed} isPlayed={isPlayed} />
                 );
@@ -318,7 +394,7 @@ const VoiceRecording = ({
 
           <Stack direction='row' gap={3} mt={4}>
             <IconButton onClick={togglePlayback}>
-              {playbackState === 'playing' ? <Pause fontSize='small' /> : <ButtonPIcon />}
+              {playbackState === 'playing' ? <ButtonPuseIcon /> : <ButtonPIcon />}
             </IconButton>
 
             <IconButton onClick={clearRecording}>
