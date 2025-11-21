@@ -251,7 +251,7 @@ export const darkTheme = createTheme({
     mode: 'dark',
     primary: {
       main: '#4d49fc',
-      light: '#d4d4fe',
+      light: '#F1F1FE',
       dark: '#090387',
       contrastText: '#fff',
     },
@@ -312,7 +312,7 @@ export const lightTheme = createTheme({
     mode: 'light',
     primary: {
       main: '#4d49fc',
-      light: '#d4d4fe',
+      light: '#F1F1FE',
       dark: '#090387',
       contrastText: '#fff',
     },

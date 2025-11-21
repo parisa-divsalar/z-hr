@@ -1,0 +1,57 @@
+import React, { FunctionComponent, useState } from 'react';
+import { Stack, Typography } from '@mui/material';
+import VoiceRecording from '@/components/Landing/AI/voice/voice';
+import MuiButton from '@/components/UI/MuiButton';
+import ArrowLeftIcon from '@/assets/images/icons/arrow-left.svg';
+import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+
+interface Step2Props {
+  setActiveStep: (activeStep: number) => void;
+}
+const Step2: FunctionComponent<Step2Props> = (props) => {
+  const { setActiveStep } = props;
+
+  const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
+  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
+
+  const handleVoiceRecordingComplete = (url: string, blob: Blob) => {
+    console.log({ url, blob });
+    setVoiceUrl(url);
+    setVoiceBlob(blob);
+    setShowRecordingControls(false);
+  };
+
+  const handleClearVoiceRecording = () => {
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  return (
+    <Stack alignItems='center' justifyContent='center' height='100%'>
+      <Typography variant='h5' color='text.primary' fontWeight='700' mb={4}>
+        Please Click on the Voice Icon for Record.
+      </Typography>
+
+      <VoiceRecording
+        initialAudioUrl={voiceUrl}
+        initialAudioBlob={voiceBlob}
+        showRecordingControls={showRecordingControls}
+        onRecordingComplete={handleVoiceRecordingComplete}
+        onClearRecording={handleClearVoiceRecording}
+      />
+
+      <Stack direction='row' mt={6} gap={2}>
+        <MuiButton color='secondary' startIcon={<ArrowLeftIcon />} onClick={() => setActiveStep(1)}>
+          Prev
+        </MuiButton>
+
+        <MuiButton color='secondary' endIcon={<ArrowRightIcon />} onClick={() => setActiveStep(2)}>
+          Submit
+        </MuiButton>
+      </Stack>
+    </Stack>
+  );
+};
+
+export default Step2;

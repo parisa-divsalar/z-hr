@@ -1,11 +1,20 @@
 import { Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+export const MainContainer = styled(Stack)(() => ({
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '1rem',
+}));
+
 export const InputContainer = styled(Stack)(() => ({
   backgroundColor: 'white',
   borderRadius: '1rem',
   border: `1px solid`,
-  padding: '1rem',
+  padding: '0.5rem 1rem',
   width: '100%',
   maxWidth: '588px',
   height: 'auto',
@@ -15,16 +24,6 @@ export const InputContainer = styled(Stack)(() => ({
   justifyContent: 'center',
   gap: '0.25rem',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-}));
-
-export const CircleContainer = styled(Stack)(({ theme }) => ({
-  width: '28px',
-  height: '28px',
-  borderRadius: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.primary.main,
 }));
 
 export const InputContent = styled('textarea')(({ theme }) => ({
@@ -50,13 +49,4 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   '&:focus': {
     outline: 'none',
   },
-}));
-
-export const MainContainer = styled(Stack)(() => ({
-  width: '100%',
-  height: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '1rem',
 }));

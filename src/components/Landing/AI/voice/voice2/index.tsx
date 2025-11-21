@@ -33,7 +33,7 @@ export interface VoiceRecordingProps {
   onClearRecording?: () => void;
 }
 
-const VoiceRecording = ({
+const VoiceRecording2 = ({
   onRecordingComplete,
   onRecordingStart,
   onRecordingStop,
@@ -44,7 +44,7 @@ const VoiceRecording = ({
   onClearRecording,
 }: VoiceRecordingProps) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isInternalUrl, setIsInternalUrl] = useState(false); // Track if URL was created internally
@@ -269,13 +269,6 @@ const VoiceRecording = ({
     return cleanup;
   }, [cleanup]);
 
-  useEffect(() => {
-    console.log('initialAudioUrl', initialAudioUrl);
-    if (initialAudioUrl) setAudioUrl(initialAudioUrl);
-  }, [initialAudioUrl]);
-
-  console.log('audioUrl', audioUrl);
-
   return (
     <Box>
       {showRecordingControls && (
@@ -288,18 +281,12 @@ const VoiceRecording = ({
             {recordingState === 'recording' ? <Stop /> : <Mic />}
           </IconButton>
 
-          {/*{recordingState === 'recording' && (*/}
-          {/*    <WaveBarsContainer>*/}
-          {/*      {Array.from({ length: 5 }, (_, index) => (*/}
-          {/*          <WaveBar key={index} active={recordingState === 'recording'} delay={index * 0.1} />*/}
-          {/*      ))}*/}
-          {/*    </WaveBarsContainer>*/}
-          {/*)}*/}
-
           {recordingState === 'recording' && (
-            <Typography color='text.primary' variant='h5'>
-              Recording...
-            </Typography>
+            <WaveBarsContainer>
+              {Array.from({ length: 5 }, (_, index) => (
+                <WaveBar key={index} active={recordingState === 'recording'} delay={index * 0.1} />
+              ))}
+            </WaveBarsContainer>
           )}
 
           {recordingState === 'recording' && (
@@ -350,4 +337,4 @@ const VoiceRecording = ({
   );
 };
 
-export default VoiceRecording;
+export default VoiceRecording2;

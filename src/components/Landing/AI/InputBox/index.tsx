@@ -38,7 +38,6 @@ const AIInputBox: FunctionComponent<AIInputBoxProps> = (props) => {
           initialAudioBlob={voiceBlob}
           showRecordingControls={false}
           onClearRecording={handleClearVoiceRecording}
-          sx={{ mt: 6 }}
         />
       )}
 
@@ -53,6 +52,7 @@ const AIInputBox: FunctionComponent<AIInputBoxProps> = (props) => {
             value={search}
             onChange={(event: any) => setSearch(event.target.value)}
           />
+
           <VoiceRecording onRecordingComplete={handleVoiceRecordingComplete} showRecordingControls={true} />
 
           {search !== '' ? (
