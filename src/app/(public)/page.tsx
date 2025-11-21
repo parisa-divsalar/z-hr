@@ -12,8 +12,7 @@ export default function LandingPage() {
 
   return (
     <Stack width='100%' height='100%'>
-      {aiStatus === 'START' && <AIInput setAiStatus={setAiStatus} />}
-      {aiStatus === 'WIZARD' && <Wizard />}
+      {aiStatus === 'START' ? <AIInput setAiStatus={setAiStatus} /> : aiStatus === 'WIZARD' ? <Wizard /> : <Stack />}
     </Stack>
   );
 }

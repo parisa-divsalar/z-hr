@@ -1,14 +1,23 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-import { Mic, Pause } from '@mui/icons-material';
-import { Typography, IconButton, Stack } from '@mui/material';
+import { Mic, Stop, Pause } from '@mui/icons-material';
+import { Box, Typography, IconButton } from '@mui/material';
 
 import ButtonDIcon from '@/assets/images/icons/button-d.svg';
 import ButtonPIcon from '@/assets/images/icons/button-p.svg';
 import ButtonRIcon from '@/assets/images/icons/button-r.svg';
-import ButtonStopIcon from '@/assets/images/icons/button-stop.svg';
 
-import { VoiceMessageContainer, WaveformContainer, WaveformBar, ProgressBar, TimeDisplay } from './styled';
+import {
+  WaveBarsContainer,
+  WaveBar,
+  VoiceMessageContainer,
+  PlayPauseButton,
+  RefreshButton,
+  WaveformContainer,
+  WaveformBar,
+  ProgressBar,
+  TimeDisplay,
+} from './styled';
 
 export type RecordingState = 'idle' | 'recording';
 export type PlaybackState = 'idle' | 'playing' | 'paused';
@@ -24,7 +33,7 @@ export interface VoiceRecordingProps {
   onClearRecording?: () => void;
 }
 
-const VoiceRecording = ({
+const VoiceRecording2 = ({
   onRecordingComplete,
   onRecordingStart,
   onRecordingStop,
@@ -35,7 +44,7 @@ const VoiceRecording = ({
   onClearRecording,
 }: VoiceRecordingProps) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isInternalUrl, setIsInternalUrl] = useState(false); // Track if URL was created internally
@@ -71,8 +80,7 @@ const VoiceRecording = ({
     }
     if (audioUrl && isInternalUrl) {
       URL.revokeObjectURL(audioUrl);
-      // setAudioUrl(null);
-      console.log('AAA');
+      setAudioUrl(null);
       setIsInternalUrl(false);
     }
     setPlaybackState('idle');
@@ -232,6 +240,10 @@ const VoiceRecording = ({
     onClearRecording?.();
   }, [audioUrl, stopPlayback, onClearRecording]);
 
+  const handleRefresh = useCallback(() => {
+    window.location.reload();
+  }, []);
+
   const formatTime = useCallback((seconds: number) => {
     if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
       return '';
@@ -252,56 +264,42 @@ const VoiceRecording = ({
     }
   }, [audioUrl]);
 
-  useEffect(() => {
-    if (initialAudioUrl) setAudioUrl(initialAudioUrl);
-  }, [initialAudioUrl]);
-
   // Cleanup on unmount
   useEffect(() => {
     return cleanup;
   }, [cleanup]);
 
   return (
-    <Stack alignItems='center'>
+    <Box>
       {showRecordingControls && (
         <>
-          {recordingState !== 'recording' && (
-            <IconButton onClick={startRecording}>
-              <Mic color='primary' fontSize='large' />
-            </IconButton>
+          <IconButton
+            onClick={recordingState === 'recording' ? stopRecording : startRecording}
+            color={recordingState === 'recording' ? 'error' : 'primary'}
+            size='small'
+          >
+            {recordingState === 'recording' ? <Stop /> : <Mic />}
+          </IconButton>
+
+          {recordingState === 'recording' && (
+            <WaveBarsContainer>
+              {Array.from({ length: 5 }, (_, index) => (
+                <WaveBar key={index} active={recordingState === 'recording'} delay={index * 0.1} />
+              ))}
+            </WaveBarsContainer>
           )}
 
           {recordingState === 'recording' && (
-            <Typography color='text.primary' variant='h5' mb={1}>
-              Recording...
-            </Typography>
-          )}
-
-          {recordingState === 'recording' && (
-            <Typography variant='body2' color='error' mb={1}>
+            <Typography variant='body2' color='error'>
               {formatTime(recordingTime)}
             </Typography>
-          )}
-
-          {recordingState === 'recording' && (
-            <IconButton onClick={stopRecording}>
-              <ButtonStopIcon />
-            </IconButton>
           )}
         </>
       )}
 
       {audioUrl && recordingState === 'idle' && (
-        <Stack alignItems='center'>
-          <Typography color='text.primary' variant='h5'>
-            Recorded time
-          </Typography>
-
-          <Typography variant='body2' color='error'>
-            {formatTime(recordingTime)}
-          </Typography>
-
-          <VoiceMessageContainer bgcolor='primary.light'>
+        <Box>
+          <VoiceMessageContainer>
             <WaveformContainer>
               {Array.from({ length: 20 }, (_, index) => {
                 const isPlayed = (index / 20) * 100 <= audioProgress;
@@ -315,28 +313,28 @@ const VoiceRecording = ({
             <TimeDisplay>{formatTime(playbackState === 'idle' ? audioDuration : playbackTime)}</TimeDisplay>
           </VoiceMessageContainer>
 
-          <Stack direction='row' gap={3} mt={4}>
-            <IconButton onClick={togglePlayback}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 3 }}>
+            <PlayPauseButton playbackState={playbackState} onClick={togglePlayback}>
               {playbackState === 'playing' ? <Pause fontSize='small' /> : <ButtonPIcon />}
-            </IconButton>
+            </PlayPauseButton>
 
-            <IconButton onClick={clearRecording}>
+            <RefreshButton onClick={handleRefresh}>
               <ButtonRIcon />
-            </IconButton>
+            </RefreshButton>
 
-            <IconButton
+            <RefreshButton
               onClick={(e) => {
                 e.stopPropagation();
                 clearRecording();
               }}
             >
               <ButtonDIcon />
-            </IconButton>
-          </Stack>
-        </Stack>
+            </RefreshButton>
+          </Box>
+        </Box>
       )}
-    </Stack>
+    </Box>
   );
 };
 
-export default VoiceRecording;
+export default VoiceRecording2;

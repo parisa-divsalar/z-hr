@@ -44,10 +44,34 @@ export const VoiceMessageContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  padding: '1rem 12px',
-  borderRadius: '0.5rem',
+  // padding: '8px 12px',
+  backgroundColor: '#f0f0f0',
+  borderRadius: '20px',
   width: '588px',
-  marginTop: '1.5rem',
+});
+
+export const PlayPauseButton = styled(Box)<{ playbackState?: PlaybackState }>(({ playbackState }) => ({
+  width: '44px',
+  height: '44px',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'white',
+  fontSize: '14px',
+  transition: 'all 0.2s ease',
+}));
+
+export const RefreshButton = styled(Box)({
+  width: '44px',
+  height: '44px',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'white',
+  fontSize: '14px',
+  transition: 'all 0.2s ease',
 });
 
 export const WaveformContainer = styled(Box)({
@@ -59,9 +83,7 @@ export const WaveformContainer = styled(Box)({
   position: 'relative',
 });
 
-export const WaveformBar = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isActive' && prop !== 'isPlayed',
-})<{ isActive: boolean; isPlayed: boolean }>(({ isActive, isPlayed }) => ({
+export const WaveformBar = styled(Box)<{ isActive: boolean; isPlayed: boolean }>(({ isActive, isPlayed }) => ({
   width: '3px',
   height: isActive ? '20px' : '8px',
   backgroundColor: isPlayed ? '#007AFF' : '#999',
