@@ -38,25 +38,37 @@ interface ResumeTemplatesProps {
 const defaultTemplates: ResumeTemplate[] = [
   {
     id: '1',
-    title: 'Software',
+    title: '1Software',
     level: 'Mid-senior',
     price: 'Free',
   },
   {
     id: '2',
-    title: 'Product',
+    title: '2Product',
     level: 'Senior',
     price: '$9.99',
   },
   {
     id: '3',
-    title: 'UX Designer',
+    title: '3UX Designer',
     level: 'Mid-level',
     price: 'Free',
   },
   {
     id: '4',
-    title: 'Data Scientist',
+    title: '4Data Scientist',
+    level: 'Senior',
+    price: '$14.99',
+  },
+  {
+    id: '4',
+    title: '4Data Scientist',
+    level: 'Senior',
+    price: '$14.99',
+  },
+  {
+    id: '4',
+    title: '4Data Scientist',
     level: 'Senior',
     price: '$14.99',
   },
@@ -91,7 +103,7 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ templates = defaultTe
 
       <RightSection>
         <ResumeCardGrid>
-          {templates.map((template) => (
+          {templates.map((template, index) => (
             <ResumeCard key={template.id}>
               <CardImage>
                 <RectangleImage />

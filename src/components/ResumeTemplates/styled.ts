@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 export const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(4),
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
   backgroundColor: '#ffffff',
   borderRadius: '12px',
   border: `1px solid ${theme.palette.grey[200]}`,
@@ -25,7 +25,7 @@ export const LeftSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
-  flex: '0 0 280px',
+  flex: '0 0 235px',
 
   [theme.breakpoints.down('md')]: {
     flex: 'none',
@@ -68,21 +68,26 @@ export const MoreButton = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const RightSection = styled(Box)(() => ({
+export const RightSection = styled(Box)(({ theme }) => ({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
+  height: '190px',
+  overflow: 'hidden',
+  position: 'relative',
 }));
 
-export const ResumeCardGrid = styled(Box)(({ theme }) => ({
+export const ResumeCardGrid = styled(Box)(() => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, 126px)',
-  gap: theme.spacing(1.5),
-  justifyContent: 'center',
+  gap: 12, // افزایش فاصله بین کارت‌ها
+  maxWidth: 'fit-content',
+  marginTop: '-50px', // کاهش فاصله از بالا
+  transition: 'transform 0.5s ease-in-out',
+  position: 'relative',
 
-  [theme.breakpoints.down('md')]: {
-    gridTemplateColumns: 'repeat(2, 126px)',
-    gap: theme.spacing(1),
+  '&:hover': {
+    transform: 'translateY(-130px)', // تنظیم مجدد اسلاید برای نمایش مناسب
   },
 }));
 
@@ -93,6 +98,13 @@ export const CardImage = styled(Box)(() => ({
   alignItems: 'center',
   justifyContent: 'center',
   backgroundColor: '#f9fafb',
+
+  '&.half-image': {
+    height: '150px', // ارتفاع کامل برای نمایش نصفه
+    position: 'relative',
+    top: '-75px', // نیمه بالایی رو پنهان کن
+    overflow: 'visible',
+  },
 
   '& svg': {
     maxWidth: '100%',
@@ -112,6 +124,12 @@ export const ResumeCard = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
   transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   cursor: 'pointer',
+
+  '&.half-visible': {
+    height: '81px', // نصف ارتفاع
+    overflow: 'visible',
+    position: 'relative',
+  },
 
   '&:hover': {
     transform: 'translateY(-2px)',
