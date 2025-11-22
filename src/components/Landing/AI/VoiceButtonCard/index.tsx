@@ -1,8 +1,10 @@
 import React from 'react';
 
+import { Typography } from '@mui/material';
+
 import FrameVoiceIcon from '@/assets/images/design/Frame-voice.svg';
 
-import { CardContainer, VoiceButton, VoiceLabel, OrDivider, DividerLine, OrText } from './styled-VoiceButtonCard';
+import { CardContainer, VoiceButton, VoiceLabel, OrDivider, DividerLine } from './styled';
 
 interface VoiceButtonCardProps {
   onClick?: () => void;
@@ -11,15 +13,17 @@ interface VoiceButtonCardProps {
 const VoiceButtonCard: React.FC<VoiceButtonCardProps> = ({ onClick }) => {
   return (
     <CardContainer>
+      {/* Voice Button */}
       <VoiceButton aria-label='Voice button' onClick={onClick}>
         <FrameVoiceIcon />
       </VoiceButton>
-
-      <VoiceLabel variant='body1'>Voice</VoiceLabel>
-
+      <VoiceLabel>Voice</VoiceLabel>
+      {/* Divider with "Or" */}
       <OrDivider>
         <DividerLine />
-        <OrText>Or</OrText>
+        <Typography variant='body2' color='text.primary' px={2}>
+          Or
+        </Typography>
         <DividerLine />
       </OrDivider>
     </CardContainer>
