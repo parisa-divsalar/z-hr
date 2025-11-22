@@ -60,18 +60,6 @@ const defaultTemplates: ResumeTemplate[] = [
     level: 'Senior',
     price: '$14.99',
   },
-  {
-    id: '4',
-    title: '4Data Scientist',
-    level: 'Senior',
-    price: '$14.99',
-  },
-  {
-    id: '4',
-    title: '4Data Scientist',
-    level: 'Senior',
-    price: '$14.99',
-  },
 ];
 
 const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ templates = defaultTemplates }) => {
