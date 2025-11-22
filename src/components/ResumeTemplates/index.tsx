@@ -91,7 +91,7 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ templates = defaultTe
 
       <RightSection>
         <ResumeCardGrid>
-          {templates.map((template, index) => (
+          {templates.map((template, _index) => (
             <ResumeCard key={template.id}>
               <CardImage>
                 <RectangleImage />

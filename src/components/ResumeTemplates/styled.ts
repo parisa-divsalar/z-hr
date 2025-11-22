@@ -68,7 +68,7 @@ export const MoreButton = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const RightSection = styled(Box)(({ theme }) => ({
+export const RightSection = styled(Box)(() => ({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
@@ -80,9 +80,9 @@ export const RightSection = styled(Box)(({ theme }) => ({
 export const ResumeCardGrid = styled(Box)(() => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, 126px)',
-  gap: 12, // افزایش فاصله بین کارت‌ها
+  gap: 12,
   maxWidth: 'fit-content',
-  marginTop: '-50px', // کاهش فاصله از بالا
+  marginTop: '-50px',
   transition: 'transform 0.5s ease-in-out',
   position: 'relative',
 
@@ -100,9 +100,9 @@ export const CardImage = styled(Box)(() => ({
   backgroundColor: '#f9fafb',
 
   '&.half-image': {
-    height: '150px', // ارتفاع کامل برای نمایش نصفه
+    height: '150px',
     position: 'relative',
-    top: '-75px', // نیمه بالایی رو پنهان کن
+    top: '-75px',
     overflow: 'visible',
   },
 
@@ -161,7 +161,7 @@ export const PriceTag = styled(Box)(() => ({
   alignItems: 'center',
 }));
 
-export const CardMoreButton = styled(Box)(({ theme }) => ({
+export const CardMoreButton = styled(Box)(() => ({
   backgroundColor: '#f9fafb',
   color: '#6b7280',
   padding: '1px 12px',

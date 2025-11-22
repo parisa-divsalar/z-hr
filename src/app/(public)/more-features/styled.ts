@@ -8,7 +8,7 @@ export const Container = styled(Stack)(({ theme }) => ({
   minHeight: '100vh',
 }));
 
-export const HeaderSection = styled(Box)(({ theme }) => ({
+export const HeaderSection = styled(Box)(() => ({
   alignItems: 'center',
 }));
 

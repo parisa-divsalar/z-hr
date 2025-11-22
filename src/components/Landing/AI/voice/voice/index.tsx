@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 import { Mic } from '@mui/icons-material';
@@ -37,12 +38,11 @@ const VoiceRecording = ({
 }: VoiceRecordingProps) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
+  const [_audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isInternalUrl, setIsInternalUrl] = useState(false); // Track if URL was created internally
 
   useEffect(() => {
-    // Keep external initial values
     setAudioUrl(initialAudioUrl);
     setAudioBlob(initialAudioBlob);
     setIsInternalUrl(false);
@@ -74,15 +74,17 @@ const VoiceRecording = ({
       try {
         audioRef.current.pause();
         audioRef.current.src = '';
-      } catch (e) {}
+      } catch (_e) {
+        // ignore cleanup errors
+      }
       audioRef.current = null;
     }
 
     if (audioUrl && isInternalUrl) {
       try {
         URL.revokeObjectURL(audioUrl);
-      } catch (e) {
-        // ignore
+      } catch (_e) {
+        // ignore cleanup errors
       }
       setIsInternalUrl(false);
     }
@@ -126,7 +128,9 @@ const VoiceRecording = ({
         if (audioUrl && isInternalUrl) {
           try {
             URL.revokeObjectURL(audioUrl);
-          } catch (e) {}
+          } catch (_e) {
+        // ignore cleanup errors
+      }
         }
 
         setAudioUrl(url);
@@ -181,12 +185,13 @@ const VoiceRecording = ({
     if (playbackState === 'playing') return;
 
     try {
-      // if we already have an audioRef but src differs, reset it
       if (audioRef.current && audioRef.current.src !== audioUrl) {
         try {
           audioRef.current.pause();
           audioRef.current.src = '';
-        } catch (e) {}
+        } catch (_e) {
+          // ignore cleanup errors
+        }
         audioRef.current = null;
       }
 
@@ -264,7 +269,7 @@ const VoiceRecording = ({
     }
   }, [playbackState]);
 
-  const stopPlayback = useCallback(() => {
+  const _stopPlayback = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -282,7 +287,6 @@ const VoiceRecording = ({
     }
   }, [playbackState, playRecording, pauseRecording]);
 
-  /** CLEAR recording (called by UI) */
   const clearRecording = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.onerror = null; // جلوگیری از onerror الکی
@@ -322,7 +326,9 @@ const VoiceRecording = ({
       try {
         audioRef.current.pause();
         audioRef.current.src = '';
-      } catch (e) {}
+      } catch (_e) {
+        // ignore cleanup errors
+      }
       audioRef.current = null;
       setPlaybackState('idle');
       setPlaybackTime(0);

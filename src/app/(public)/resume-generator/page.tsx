@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -26,7 +26,7 @@ import {
 } from './styled';
 
 const ResumeGeneratorPage = () => {
-  const [hoveredCard, setHoveredCard] = React.useState<number | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   const resumeInfo = [
     { label: 'Created:', value: '09/09/2025' },
