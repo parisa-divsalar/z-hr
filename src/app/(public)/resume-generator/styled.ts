@@ -1,20 +1,29 @@
-import { Stack, Box, Paper } from '@mui/material';
+import { Stack, Box, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const Container = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2, 2),
   maxWidth: 1200,
   margin: '0 auto',
   minHeight: '100vh',
-  gap: theme.spacing(4),
+  gap: theme.spacing(3),
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(3),
+    gap: theme.spacing(4),
+  },
 }));
 
 export const HeaderSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingBottom: theme.spacing(2),
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  alignItems: 'flex-start',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+  [theme.breakpoints.up('sm')]: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 0,
+  },
 }));
 
 export const HeaderLeft = styled(Box)(() => ({
@@ -24,7 +33,7 @@ export const HeaderLeft = styled(Box)(() => ({
 }));
 
 export const PurplePill = styled(Box)(() => ({
-  backgroundColor: '#8B5CF6',
+  background: 'linear-gradient(135deg, #FF5900 0%, #BF00FF 100%)',
   color: 'white',
   padding: '4px 12px',
   borderRadius: 16,
@@ -32,17 +41,8 @@ export const PurplePill = styled(Box)(() => ({
   fontWeight: 500,
 }));
 
-export const MainContent = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: theme.spacing(4),
-  [theme.breakpoints.down('md')]: {
-    gridTemplateColumns: '1fr',
-  },
-}));
-
 export const ResumePreview = styled(Paper)(({ theme }) => ({
-  height: 400,
+  height: 250,
   backgroundColor: '#F5F5F5',
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: theme.shape.borderRadius,
@@ -50,6 +50,12 @@ export const ResumePreview = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   boxShadow: theme.shadows[1],
+  [theme.breakpoints.up('sm')]: {
+    height: 350,
+  },
+  [theme.breakpoints.up('md')]: {
+    height: 400,
+  },
 }));
 
 export const InfoTable = styled(Stack)(({ theme }) => ({
@@ -61,14 +67,14 @@ export const InfoRow = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: theme.spacing(1, 0),
-  borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
-export const FitScoreBadge = styled(Box)(() => ({
-  backgroundColor: '#10B981',
-  color: 'white',
+export const FitScoreBadge = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.success.light,
+  color: ' theme.palette.success.main',
   padding: '4px 8px',
-  borderRadius: 12,
+  borderRadius: 8,
+  border: `1px solid ${theme.palette.success.main}`,
   fontSize: '0.875rem',
   fontWeight: 500,
   display: 'inline-flex',
@@ -79,41 +85,55 @@ export const ActionButtons = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(2),
   marginTop: theme.spacing(3),
+  flexDirection: 'column',
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    flexDirection: 'row',
+    width: 'auto',
+  },
+  '& > *': {
+    flex: 1,
+    [theme.breakpoints.up('sm')]: {
+      flex: 'none',
+    },
+  },
 }));
 
 export const FeatureGrid = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: theme.spacing(3),
   marginTop: theme.spacing(4),
-  [theme.breakpoints.down('md')]: {
-    gridTemplateColumns: 'repeat(2, 1fr)',
-  },
-  [theme.breakpoints.down('sm')]: {
-    gridTemplateColumns: '1fr',
-  },
 }));
 
 export const FeatureCard = styled(Paper)(({ theme }) => ({
+  width: '100%',
+  minHeight: 135,
   padding: theme.spacing(3),
-  borderRadius: theme.shape.borderRadius,
-  border: `1px solid ${theme.palette.divider}`,
-  boxShadow: theme.shadows[1],
+  background: 'none',
+  borderRadius: 8,
+  border: `1px solid ${theme.palette.grey[100]}`,
   cursor: 'pointer',
   transition: 'box-shadow 0.2s ease-in-out',
   '&:hover': {
     boxShadow: theme.shadows[3],
+    border: `1px solid ${theme.palette.grey[200]}`,
   },
   position: 'relative',
+  [theme.breakpoints.up('sm')]: {
+    height: 135,
+  },
 }));
 
 export const FeatureCardIcon = styled(Box)(() => ({
   position: 'absolute',
   top: 16,
   right: 16,
-  width: 20,
-  height: 20,
+  width: 32,
+  height: 32,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+}));
+
+export const StyledDivider = styled(Divider)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[100],
+  margin: theme.spacing(1, 0),
 }));

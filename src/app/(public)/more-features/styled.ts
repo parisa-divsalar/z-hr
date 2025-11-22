@@ -9,8 +9,22 @@ export const Container = styled(Stack)(({ theme }) => ({
 }));
 
 export const HeaderSection = styled(Box)(({ theme }) => ({
-  textAlign: 'center',
-  marginBottom: theme.spacing(3),
+  alignItems: 'center',
+}));
+
+export const HeaderLeft = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+}));
+
+export const PurplePill = styled(Box)(() => ({
+  backgroundColor: '#8B5CF6',
+  color: 'white',
+  padding: '4px 12px',
+  borderRadius: 16,
+  fontSize: '0.75rem',
+  fontWeight: 500,
 }));
 
 export const FeatureCard = styled(Stack)(({ theme }) => ({

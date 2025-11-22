@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import LinksIcon from '@/assets/images/icons/links.svg';
+import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import {
@@ -57,6 +59,7 @@ const MoreFeaturesPage = () => {
       description: 'Practice speaking and answering questions verbally with AI-based feedback on   .',
     },
   ];
+  const router = useRouter();
 
   return (
     <Container>
@@ -101,6 +104,12 @@ const MoreFeaturesPage = () => {
             </Typography>
           </NavigationListItem>
         ))}
+      </Stack>
+
+      <Stack mt={4} alignItems='center'>
+        <MuiButton variant='contained' size='large' onClick={() => router.push('/resume-generator')}>
+          Generate Resume
+        </MuiButton>
       </Stack>
     </Container>
   );

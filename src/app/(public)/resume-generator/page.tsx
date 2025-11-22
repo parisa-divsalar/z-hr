@@ -3,27 +3,31 @@
 import React from 'react';
 
 import { Stack, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
-import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import ArrowIcon from '@/assets/images/icons/Icon.svg';
+import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
+import ArrowRightIcon from '@/assets/images/icons/links.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
 import {
   Container,
   HeaderSection,
-  HeaderLeft,
-  PurplePill,
-  MainContent,
   ResumePreview,
   InfoTable,
   InfoRow,
   FitScoreBadge,
   ActionButtons,
-  FeatureGrid,
   FeatureCard,
   FeatureCardIcon,
+  HeaderLeft,
+  PurplePill,
+  StyledDivider,
 } from './styled';
 
 const ResumeGeneratorPage = () => {
+  const [hoveredCard, setHoveredCard] = React.useState<number | null>(null);
+
   const resumeInfo = [
     { label: 'Created:', value: '09/09/2025' },
     { label: 'Size:', value: '2.85 MB' },
@@ -32,102 +36,134 @@ const ResumeGeneratorPage = () => {
     { label: 'Experience level:', value: 'Mid-senior' },
   ];
 
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   const featureCards = [
     {
       title: 'Resume Template',
-      description: 'Create professional, customizable resume templates with modern design and flexible layout options.',
+      description: 'Create professional, templates with modern design and flexible layout options.',
     },
     {
       title: 'Job Position Suggestions',
-      description: 'Get personalized job position recommendations based on your resume content and skills.',
+      description: 'Create professional, templates with modern design and flexible layout options.',
     },
     {
       title: 'Learning Hub',
-      description: 'Explore tailored learning paths, tutorials, and resources to improve required skills.',
+      description: 'Create professional, templates with modern design and flexible layout options.',
     },
     {
       title: 'Interview Questions',
-      description: 'Access common and position-specific interview questions to prepare effectively.',
+      description: 'Create professional, templates with modern design and flexible layout options.',
     },
     {
       title: 'Text Interview Practice (Chatbot)',
-      description: 'Simulate real interview scenarios with an AI chatbot and receive instant feedback.',
+      description: 'Create professional, templates with modern design and flexible layout options.',
     },
     {
       title: 'Voice Interview Practice',
-      description: 'Practice speaking and answering questions verbally with AI-based feedback on tone and fluency.',
+      description: 'Create professional, templates with modern design and flexible layout options.',
     },
   ];
 
   return (
     <Container>
-      <HeaderSection>
-        <HeaderLeft>
-          <Typography variant='h4' color='text.primary' fontWeight='700'>
-            Zayd Al-Mansoori's Resume
-          </Typography>
-          <PurplePill>
-            AI Generation
-          </PurplePill>
-        </HeaderLeft>
-        <MuiButton variant='outlined' endIcon={<ArrowRightIcon />}>
-          Go to panel →
-        </MuiButton>
-      </HeaderSection>
+      <Grid container spacing={{ xs: 3, sm: 4 }}>
+        <Grid size={{ xs: 12, lg: 3 }}>
+          <ResumePreview>
+            <Typography variant='body1' color='text.secondary'>
+              Resume Preview
+            </Typography>
+          </ResumePreview>
+        </Grid>
 
-      <MainContent>
-        <ResumePreview>
-          <Typography variant='body1' color='text.secondary'>
-            Resume Preview
-          </Typography>
-        </ResumePreview>
-
-        <InfoTable>
-          {resumeInfo.map((info, index) => (
-            <InfoRow key={index}>
-              <Typography variant='body1' color='text.secondary' fontWeight='500'>
-                {info.label}
-              </Typography>
-              {info.isBadge ? (
-                <FitScoreBadge>
-                  {info.value}
-                </FitScoreBadge>
-              ) : (
-                <Typography variant='body1' color='text.primary'>
-                  {info.value}
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <InfoTable>
+            <HeaderSection>
+              <HeaderLeft>
+                <Typography
+                  variant='h4'
+                  color='text.primary'
+                  fontWeight='700'
+                  sx={{
+                    fontSize: { xs: '1.5rem', sm: '2.125rem' },
+                  }}
+                >
+                  Zayd Al-Mansoori's Resume
                 </Typography>
-              )}
-            </InfoRow>
-          ))}
+                <PurplePill>AI Generation</PurplePill>
+              </HeaderLeft>
+              <MuiButton size='small' variant='outlined' endIcon={<ArrowIcon />} color='secondary'>
+                Go to panel
+              </MuiButton>
+            </HeaderSection>
 
-          <ActionButtons>
-            <MuiButton variant='outlined' size='large'>
-              Edit
-            </MuiButton>
-            <MuiButton variant='contained' size='large' color='primary'>
-              Download
-            </MuiButton>
-          </ActionButtons>
-        </InfoTable>
-      </MainContent>
+            <Grid container spacing={2} sx={{ mt: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+                {resumeInfo.map((info, index) => (
+                  <InfoRow key={index}>
+                    <Typography variant='body1' color='text.secondary' fontWeight='500'>
+                      {info.label}
+                    </Typography>
+                    {info.isBadge ? (
+                      <FitScoreBadge>{info.value}</FitScoreBadge>
+                    ) : (
+                      <Typography variant='body1' color='text.primary'>
+                        {info.value}
+                      </Typography>
+                    )}
+                  </InfoRow>
+                ))}
+                <Grid size={{ xs: 12, sm: 4, lg: 4 }} mt={6}>
+                  <ActionButtons>
+                    <MuiButton variant='outlined' size='large' color='secondary'>
+                      Edit
+                    </MuiButton>
+                    <MuiButton variant='contained' size='large' color='secondary'>
+                      Download
+                    </MuiButton>
+                  </ActionButtons>
+                </Grid>
+              </Grid>
+            </Grid>
+          </InfoTable>
+        </Grid>
+      </Grid>
 
-      <FeatureGrid>
+      <StyledDivider />
+
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         {featureCards.map((card, index) => (
-          <FeatureCard key={index}>
-            <FeatureCardIcon>
-              <ArrowRightIcon style={{ transform: 'rotate(-45deg)' }} />
-            </FeatureCardIcon>
-            <Stack spacing={1}>
-              <Typography variant='h6' color='text.primary' fontWeight='600'>
-                {card.title}
-              </Typography>
-              <Typography variant='body2' color='text.secondary'>
-                {card.description}
-              </Typography>
-            </Stack>
-          </FeatureCard>
+          <Grid key={index} size={{ xs: 12, sm: 6, lg: 4 }}>
+            <FeatureCard onMouseEnter={() => setHoveredCard(index)} onMouseLeave={() => setHoveredCard(null)}>
+              <FeatureCardIcon>{hoveredCard === index ? <LinkDarkIcon /> : <ArrowRightIcon />}</FeatureCardIcon>
+              <Stack spacing={2}>
+                <Typography
+                  variant='h6'
+                  color='text.primary'
+                  fontWeight='600'
+                  sx={{
+                    fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                  }}
+                >
+                  {card.title}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{
+                    fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                  }}
+                >
+                  {truncateText(card.description, 110)}
+                </Typography>
+              </Stack>
+            </FeatureCard>
+          </Grid>
         ))}
-      </FeatureGrid>
+      </Grid>
     </Container>
   );
 };
