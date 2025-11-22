@@ -1,8 +1,10 @@
 'use client';
 
 import { Typography, Grid, Box, Stack } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import ResumeTemplates from '@/components/ResumeTemplates';
+import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import {
@@ -19,6 +21,8 @@ import {
 } from './styled';
 
 const MoreFeaturesPage = () => {
+  const router = useRouter();
+
   const jobSuggestions = [
     {
       id: 1,
@@ -163,6 +167,16 @@ const MoreFeaturesPage = () => {
           </Box>
         </Grid>
       </Grid>
+
+      <Stack direction='row' spacing={2} justifyContent='center' mt={4}>
+        <MuiButton text='Back' variant='outlined' color='secondary' />
+        <MuiButton
+          text='Submit'
+          variant='contained'
+          color='secondary'
+          onClick={() => router.push('/resume-generator')}
+        />
+      </Stack>
     </>
   );
 };
