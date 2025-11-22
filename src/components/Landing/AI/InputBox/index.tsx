@@ -6,7 +6,7 @@ import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowTopIcon from '@/assets/images/icons/arrow-top.svg';
 import { CircleContainer, InputContainer, InputContent } from '@/components/Landing/AI/InputBox/styled';
 import VoiceRecording from '@/components/Landing/AI/voice/voice';
-import Index from '@/components/Landing/AI/VoiceButtonCard';
+import VoiceButtonCard from '@/components/Landing/AI/VoiceButtonCard';
 import { AIStatus } from '@/components/Landing/type';
 
 interface AIInputBoxProps {
@@ -39,7 +39,7 @@ const AIInputBox: FunctionComponent<AIInputBoxProps> = (props) => {
 
   return (
     <>
-      <Index onClick={handleVoiceButtonClick} />
+      <VoiceButtonCard onClick={handleVoiceButtonClick} />
 
       {isVoiceMode && (
         <VoiceRecording

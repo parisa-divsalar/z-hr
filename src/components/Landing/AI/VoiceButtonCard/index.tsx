@@ -13,12 +13,10 @@ interface VoiceButtonCardProps {
 const VoiceButtonCard: React.FC<VoiceButtonCardProps> = ({ onClick }) => {
   return (
     <CardContainer>
-      {/* Voice Button */}
       <VoiceButton aria-label='Voice button' onClick={onClick}>
         <FrameVoiceIcon />
       </VoiceButton>
       <VoiceLabel>Voice</VoiceLabel>
-      {/* Divider with "Or" */}
       <OrDivider>
         <DividerLine />
         <Typography variant='body2' color='text.primary' px={2}>
