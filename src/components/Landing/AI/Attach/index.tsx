@@ -16,6 +16,7 @@ const AddAttachFile = () => {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  console.log({ uploadedFiles });
   const handleAddIconClick = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchorEl(event.currentTarget);
   };

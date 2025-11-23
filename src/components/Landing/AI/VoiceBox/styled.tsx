@@ -24,7 +24,7 @@ export const VoiceLabel = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
 }));
 
-export const OrDivider = styled(Box)(({ theme }) => ({
+export const OrDivider = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   width: '11rem',
