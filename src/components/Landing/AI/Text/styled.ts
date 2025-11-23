@@ -8,12 +8,12 @@ export const InputContainer = styled(Stack, {
   width: '100%',
   borderRadius: '1rem',
   border: `1px solid ${active ? '#1976d2' : '#e0e0e0'}`, // primary.main or grey.100
-  padding: '1rem',
+  padding: '1rem 1rem 0.5rem 1rem',
   maxWidth: '588px',
   height: 'auto',
   marginTop: '3rem',
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'start',
   justifyContent: 'center',
   gap: '0.25rem',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
@@ -37,20 +37,16 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   color: theme.palette.text.primary,
   fontSize: '1rem',
   outline: 'none',
-  padding: '0',
+  paddingTop: '0.5rem',
   resize: 'none',
-  overflow: 'hidden',
-  letterSpacing: '0',
-  lineHeight: '1rem',
-  marginTop: '0.75rem',
+  overflow: 'hidden', // مهم
   height: 'auto',
+  letterSpacing: '0',
+  lineHeight: '1.5rem',
 
-  minHeight: '1.5rem',
+  minHeight: '0.5rem',
+
   '&::placeholder': {
     color: theme.palette.grey[400],
-    letterSpacing: '0',
-  },
-  '&:focus': {
-    outline: 'none',
   },
 }));

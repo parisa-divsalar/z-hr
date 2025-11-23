@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent } from 'react';
 
 import { IconButton } from '@mui/material';
 
@@ -9,20 +9,27 @@ import { AIStatus } from '@/components/Landing/type';
 
 interface AIInputPromptProps {
   setAiStatus: (status: AIStatus) => void;
+  search: string;
+  setSearch: (search: string) => void;
 }
 
 const AIInputPrompt: FunctionComponent<AIInputPromptProps> = (props) => {
-  const { setAiStatus } = props;
-  const [search, setSearch] = useState('');
+  const { setAiStatus, search, setSearch } = props;
+
+  const handleInput = (e: any) => {
+    e.target.style.height = 'auto';
+    e.target.style.height = e.target.scrollHeight + 'px';
+  };
 
   return (
     <InputContainer direction='row' active={!!search}>
       <AddAttachFile />
 
       <InputContent
-        placeholder='Type your prompt...'
         value={search}
-        onChange={(event) => setSearch(event.target.value)}
+        onChange={(e) => setSearch(e.target.value)}
+        onInput={handleInput}
+        placeholder='Type your prompt...'
       />
 
       {search !== '' ? (
