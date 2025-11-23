@@ -33,9 +33,8 @@ export const LeftSection = styled(Box)(({ theme }) => ({
 }));
 
 export const TitleSection = styled(Box)(() => ({
-  display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '9px',
 }));
 
 export const Description = styled(Box)(({ theme }) => ({

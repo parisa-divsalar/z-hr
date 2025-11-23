@@ -11,7 +11,6 @@ import {
   JobSuggestionsContainer,
   JobSuggestionsLeft,
   JobSuggestionsHeader,
-  MoreButton,
   JobSuggestionsRight,
   CardsWrapper,
   SuggestionCard,
@@ -22,16 +21,12 @@ import {
 const MoreFeaturesPage = () => {
   const router = useRouter();
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
   const jobSuggestions = [
     {
       id: 1,
       title: 'Job Position Suggestions',
-      description: 'Get personalized job recommendations based on your skills and experience',
+      description:
+        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
       cards: [
         {
           number: 1,
@@ -56,7 +51,9 @@ const MoreFeaturesPage = () => {
     {
       id: 2,
       title: 'Skill Assessment Tools',
-      description: 'Evaluate and improve your professional skills with our  ',
+      description:
+        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+
       cards: [
         {
           number: 1,
@@ -81,7 +78,9 @@ const MoreFeaturesPage = () => {
     {
       id: 3,
       title: 'Career Development',
-      description: 'Advance your career with personalized development   ',
+      description:
+        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+
       cards: [
         {
           number: 1,
@@ -124,14 +123,16 @@ const MoreFeaturesPage = () => {
                   <JobSuggestionsHeader>
                     <MuiCheckbox
                       label={
-                        <Typography variant='h6' fontWeight='600' color='text.primary'>
-                          {suggestion.title}
+                        <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+                          suggestion.title
                         </Typography>
                       }
-                      helperText={truncateText(suggestion.description, 62)}
                     />
+                    <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={1.5} ml={0.7}>
+                      {suggestion.description}
+                    </Typography>
                   </JobSuggestionsHeader>
-                  <MoreButton>More</MoreButton>
+                  <MuiButton text='More' variant='contained' color='secondary' />
                 </JobSuggestionsLeft>
                 <JobSuggestionsRight>
                   <CardsWrapper>

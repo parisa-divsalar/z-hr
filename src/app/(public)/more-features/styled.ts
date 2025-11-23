@@ -74,9 +74,8 @@ export const JobSuggestionsLeft = styled(Box)(() => ({
 }));
 
 export const JobSuggestionsHeader = styled(Box)(() => ({
-  display: 'flex',
   alignItems: 'center',
-  gap: 12,
+  gap: 10,
 }));
 
 export const MoreButton = styled(Box)(({ theme }) => ({
@@ -110,7 +109,7 @@ export const CardsWrapper = styled(Box)(() => ({
   flexDirection: 'column',
   gap: 12,
   marginTop: '-30px',
-  transition: 'transform 0.5s ease-in-out',
+  transition: 'transform 3s ease-out',
   '&:hover': {
     transform: 'translateY(-125px)',
   },
