@@ -31,7 +31,7 @@ const Wizard = () => {
   };
 
   return (
-    <Stack alignItems='center' height='100%' p={3}>
+    <Stack alignItems='center' height='100%' p={5}>
       <StepWrapper activeStep={activeStep} />
 
       {getSubChildWizard()}
