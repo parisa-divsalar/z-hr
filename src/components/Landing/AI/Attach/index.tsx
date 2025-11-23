@@ -7,7 +7,11 @@ import FileIcon from '@/assets/images/icons/icon-file.svg';
 import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import PhotoIcon from '@/assets/images/icons/select-Icon.svg';
 
-const AddAttachFile = () => {
+interface AddAttachFileProps {
+  onFilesChange?: (files: File[]) => void;
+}
+
+const AddAttachFile = ({ onFilesChange }: AddAttachFileProps) => {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(menuAnchorEl);
@@ -43,8 +47,14 @@ const AddAttachFile = () => {
   const handleFileUpload = (files: FileList | null) => {
     if (files) {
       const fileArray = Array.from(files);
-      setUploadedFiles((prev) => [...prev, ...fileArray]);
-      console.log('Files uploaded:', fileArray);
+      setUploadedFiles((prev) => {
+        const updated = [...prev, ...fileArray];
+        if (onFilesChange) {
+          onFilesChange(updated);
+        }
+        console.log('Files uploaded:', fileArray);
+        return updated;
+      });
     }
   };
 
@@ -52,7 +62,13 @@ const AddAttachFile = () => {
     if (files) {
       const videoFiles = Array.from(files).filter((file) => file.type.startsWith('video/'));
       if (videoFiles.length > 0) {
-        setUploadedFiles((prev) => [...prev, ...videoFiles]);
+        setUploadedFiles((prev) => {
+          const updated = [...prev, ...videoFiles];
+          if (onFilesChange) {
+            onFilesChange(updated);
+          }
+          return updated;
+        });
       }
     }
   };
@@ -61,8 +77,14 @@ const AddAttachFile = () => {
     if (files) {
       const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
       if (imageFiles.length > 0) {
-        setUploadedFiles((prev) => [...prev, ...imageFiles]);
-        console.log('Photos uploaded:', imageFiles);
+        setUploadedFiles((prev) => {
+          const updated = [...prev, ...imageFiles];
+          if (onFilesChange) {
+            onFilesChange(updated);
+          }
+          console.log('Photos uploaded:', imageFiles);
+          return updated;
+        });
       }
     }
   };

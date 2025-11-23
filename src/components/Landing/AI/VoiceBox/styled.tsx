@@ -28,7 +28,8 @@ export const OrDivider = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   width: '11rem',
-  marginTop: '2.5rem',
+  marginTop: '1rem',
+  marginBottom: '1rem',
 }));
 
 export const DividerLine = styled(Box)(({ theme }) => ({
