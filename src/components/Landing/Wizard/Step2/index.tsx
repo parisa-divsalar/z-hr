@@ -4,7 +4,7 @@ import { Stack, Typography } from '@mui/material';
 
 import ArrowLeftIcon from '@/assets/images/icons/arrow-left.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
-import VoiceRecording from '@/components/Landing/AI/voice/voice';
+import VoiceRecording from '@/components/Landing/Common/Voice';
 import VoiceResult from '@/components/Landing/Wizard/Step2/Result';
 import Thinking from '@/components/Landing/Wizard/Step2/Thinking';
 import VoiceUploading from '@/components/Landing/Wizard/Step2/Uploading';
