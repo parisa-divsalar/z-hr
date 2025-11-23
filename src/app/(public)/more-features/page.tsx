@@ -17,11 +17,15 @@ import {
   SuggestionCard,
   SuggestionCardHeader,
   NumberBadge,
-  SoftSkillTag,
 } from './styled';
 
 const MoreFeaturesPage = () => {
   const router = useRouter();
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
 
   const jobSuggestions = [
     {
@@ -39,63 +43,63 @@ const MoreFeaturesPage = () => {
           number: 2,
           title: 'Questions',
           tag: 'Soft skill',
-          answer: 'I thrive in collaborative environments and enjoy working with diverse teams.',
+          answer: 'I thrive in collaborative environments and enjoy working with.',
         },
         {
           number: 3,
           title: 'Questions',
           tag: 'Soft skill',
-          answer: 'Problem-solving is my strength. I approach challenges methodically.',
+          answer: 'Problem-solving is my strength. I approach challenges metho.',
         },
       ],
     },
     {
       id: 2,
       title: 'Skill Assessment Tools',
-      description: 'Evaluate and improve your professional skills with our comprehensive tools',
+      description: 'Evaluate and improve your professional skills with our  ',
       cards: [
         {
           number: 1,
           title: 'Technical Skills',
           tag: 'Hard skill',
-          answer: 'I have strong proficiency in React, TypeScript, and modern web development frameworks.',
+          answer: 'I have strong proficiency in React, TypeScript, and modern .',
         },
         {
           number: 2,
           title: 'Leadership',
           tag: 'Soft skill',
-          answer: 'I excel at mentoring junior developers and leading cross-functional teams.',
+          answer: 'I excel at mentoring junior developers and leading  teams.',
         },
         {
           number: 3,
           title: 'Project Management',
           tag: 'Soft skill',
-          answer: 'I use Agile methodologies to deliver projects on time and within budget.',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
         },
       ],
     },
     {
       id: 3,
       title: 'Career Development',
-      description: 'Advance your career with personalized development plans and resources',
+      description: 'Advance your career with personalized development   ',
       cards: [
         {
           number: 1,
           title: 'Goal Setting',
           tag: 'Career planning',
-          answer: 'I set SMART goals and regularly review progress to ensure continuous growth.',
+          answer: 'I set SMART goals and regularly review progress to ensure .',
         },
         {
           number: 2,
           title: 'Networking',
           tag: 'Professional development',
-          answer: 'I actively build and maintain professional relationships in my industry.',
+          answer: 'I actively build and maintain professional relationships .',
         },
         {
           number: 3,
           title: 'Continuous Learning',
-          tag: 'Education',
-          answer: 'I dedicate time weekly to learning new technologies and industry trends.',
+          tag: 'Education  ',
+          answer: 'I dedicate time weekly to learning new technologies and .',
         },
       ],
     },
@@ -105,7 +109,7 @@ const MoreFeaturesPage = () => {
     <>
       <Stack textAlign='center' mt={2}>
         <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
-          More Features{' '}
+          More Features
         </Typography>
         <Typography variant='h6' color='text.primary' mt={2}>
           You can utilize these features with your resume
@@ -124,7 +128,7 @@ const MoreFeaturesPage = () => {
                           {suggestion.title}
                         </Typography>
                       }
-                      helperText={suggestion.description}
+                      helperText={truncateText(suggestion.description, 62)}
                     />
                   </JobSuggestionsHeader>
                   <MoreButton>More</MoreButton>
@@ -139,7 +143,7 @@ const MoreFeaturesPage = () => {
                             <Typography variant='body2' fontWeight='600' color='text.primary'>
                               {card.title}
                             </Typography>
-                            <SoftSkillTag>{card.tag}</SoftSkillTag>
+                            {/*<SoftSkillTag>{card.tag}</SoftSkillTag>*/}
                           </Box>
                         </SuggestionCardHeader>
                         <Typography variant='body2' color='text.secondary'>
