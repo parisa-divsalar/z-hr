@@ -46,8 +46,15 @@ const MoreFeaturesPage = () => {
           tag: 'Soft skill',
           answer: 'Problem-solving is my strength. I approach challenges metho.',
         },
+        {
+          number: 3,
+          title: 'Project Management',
+          tag: 'Soft skill',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
+        },
       ],
     },
+
     {
       id: 2,
       title: 'Skill Assessment Tools',
@@ -66,6 +73,12 @@ const MoreFeaturesPage = () => {
           title: 'Leadership',
           tag: 'Soft skill',
           answer: 'I excel at mentoring junior developers and leading  teams.',
+        },
+        {
+          number: 3,
+          title: 'Project Management',
+          tag: 'Soft skill',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
         },
         {
           number: 3,
@@ -99,6 +112,12 @@ const MoreFeaturesPage = () => {
           title: 'Continuous Learning',
           tag: 'Education  ',
           answer: 'I dedicate time weekly to learning new technologies and .',
+        },
+        {
+          number: 3,
+          title: 'Project Management',
+          tag: 'Soft skill',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
         },
       ],
     },

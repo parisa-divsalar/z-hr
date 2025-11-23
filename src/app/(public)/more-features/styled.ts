@@ -109,9 +109,9 @@ export const CardsWrapper = styled(Box)(() => ({
   flexDirection: 'column',
   gap: 12,
   marginTop: '-30px',
-  transition: 'transform 3s ease-out',
+  transition: 'transform 4s ease-out',
   '&:hover': {
-    transform: 'translateY(-125px)',
+    transform: 'translateY(-45px)',
   },
 }));
 
