@@ -1,12 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 
 import { MainContainer } from '@/components/Landing/AI/styled';
 import AIInputPrompt from '@/components/Landing/AI/Text';
 import VoiceRecord from '@/components/Landing/Common/VoiceRecord';
 import { AIStatus } from '@/components/Landing/type';
-import MuiButton from '@/components/UI/MuiButton';
 
 interface AIInputProps {
   setAiStatus: (status: AIStatus) => void;
@@ -60,13 +59,13 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
 
       <AIInputPrompt setAiStatus={setAiStatus} search={search} setSearch={setSearch} />
 
-      {search !== '' && (
-        <Stack width='10rem' mt={6}>
-          <MuiButton fullWidth color='secondary' disabled={search === ''}>
-            submit
-          </MuiButton>
-        </Stack>
-      )}
+      {/*{search !== '' && (*/}
+      {/*  <Stack width='10rem' mt={6}>*/}
+      {/*    <MuiButton fullWidth color='secondary' disabled={search === ''}>*/}
+      {/*      submit*/}
+      {/*    </MuiButton>*/}
+      {/*  </Stack>*/}
+      {/*)}*/}
     </MainContainer>
   );
 };
