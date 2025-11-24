@@ -2,6 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
+import AttachView from '@/components/Landing/AI/Attach/View';
 import { MainContainer } from '@/components/Landing/AI/styled';
 import AIInputPrompt from '@/components/Landing/AI/Text';
 import VoiceRecord from '@/components/Landing/Common/VoiceRecord';
@@ -18,6 +19,7 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const handleVoiceRecordingComplete = (url: string, blob: Blob) => {
     setVoiceUrl(url);
@@ -33,17 +35,19 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
 
   return (
     <MainContainer>
-      {!voiceUrl && (
+      {!voiceUrl && uploadedFiles.length === 0 && (
         <Typography variant='h6' color='text.primary'>
           Create your resume with
         </Typography>
       )}
 
-      {!voiceUrl && (
+      {!voiceUrl && uploadedFiles.length === 0 && (
         <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
           Voice, Video, Photo and Text
         </Typography>
       )}
+
+      <AttachView uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles} />
 
       {voiceUrl && (
         <VoiceRecord
@@ -58,7 +62,13 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
         <VoiceRecord onRecordingComplete={handleVoiceRecordingComplete} showRecordingControls={showRecordingControls} />
       )}
 
-      <AIInputPrompt setAiStatus={setAiStatus} search={search} setSearch={setSearch} />
+      <AIInputPrompt
+        setAiStatus={setAiStatus}
+        search={search}
+        setSearch={setSearch}
+        uploadedFiles={uploadedFiles}
+        setUploadedFiles={setUploadedFiles}
+      />
 
       {search !== '' && (
         <Stack width='10rem' mt={6}>

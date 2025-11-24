@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { FunctionComponent, useRef, useState } from 'react';
 
 import { IconButton, Menu, MenuItem } from '@mui/material';
 
@@ -7,11 +7,17 @@ import FileIcon from '@/assets/images/icons/icon-file.svg';
 import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import PhotoIcon from '@/assets/images/icons/select-Icon.svg';
 
-const AddAttachFile = () => {
+interface AddAttachFileProps {
+  uploadedFiles: File[];
+  setUploadedFiles: (value: File[] | ((prev: File[]) => File[])) => void;
+}
+
+const AddAttachFile: FunctionComponent<AddAttachFileProps> = (props) => {
+  const { uploadedFiles, setUploadedFiles } = props;
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(menuAnchorEl);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -66,17 +72,6 @@ const AddAttachFile = () => {
       }
     }
   };
-
-  // const handleRemoveFile = (index: number) => {
-  //   setUploadedFiles((prev) => {
-  //     const newFiles = prev.filter((_, i) => i !== index);
-  //     const removedFile = prev[index];
-  //     if (removedFile && removedFile.type.startsWith('image/')) {
-  //       URL.revokeObjectURL(URL.createObjectURL(removedFile));
-  //     }
-  //     return newFiles;
-  //   });
-  // };
 
   return (
     <>
@@ -143,35 +138,5 @@ const AddAttachFile = () => {
     </>
   );
 };
-
-// {uploadedFiles.length > 0 && (
-//   <FilesStack direction='row' spacing={1}>
-//     {uploadedFiles.map((file, index) => (
-//       <FilePreviewContainer key={`${file.name}-${index}`}>
-//         {file.type.startsWith('image/') ? (
-//           <img
-//             src={URL.createObjectURL(file)}
-//             alt={file.name}
-//             style={{
-//               width: '100%',
-//               height: '100%',
-//               objectFit: 'cover',
-//             }}
-//           />
-//         ) : file.type.startsWith('video/') ? (
-//           <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-//         ) : (
-//           <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-//         )}
-//
-//         <RemoveFileButton onClick={() => handleRemoveFile(index)}>
-//           <Typography variant='caption' sx={{ fontSize: '12px', lineHeight: 1 }}>
-//             ×
-//           </Typography>
-//         </RemoveFileButton>
-//       </FilePreviewContainer>
-//     ))}
-//   </FilesStack>
-// )}
 
 export default AddAttachFile;

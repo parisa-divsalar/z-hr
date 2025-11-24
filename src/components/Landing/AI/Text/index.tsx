@@ -11,10 +11,12 @@ interface AIInputPromptProps {
   setAiStatus: (status: AIStatus) => void;
   search: string;
   setSearch: (search: string) => void;
+  uploadedFiles: File[];
+  setUploadedFiles: (value: File[] | ((prev: File[]) => File[])) => void;
 }
 
 const AIInputPrompt: FunctionComponent<AIInputPromptProps> = (props) => {
-  const { setAiStatus, search, setSearch } = props;
+  const { setAiStatus, search, setSearch, uploadedFiles, setUploadedFiles } = props;
 
   const handleInput = (e: any) => {
     e.target.style.height = 'auto';
@@ -23,7 +25,7 @@ const AIInputPrompt: FunctionComponent<AIInputPromptProps> = (props) => {
 
   return (
     <InputContainer direction='row' active={!!search}>
-      <AddAttachFile />
+      <AddAttachFile uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles} />
 
       <InputContent
         value={search}
