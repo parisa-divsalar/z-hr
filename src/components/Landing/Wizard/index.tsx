@@ -34,6 +34,7 @@ const Wizard = () => {
     >
       <Stack width='100%' maxWidth={880} spacing={4}>
         <StepWrapper activeStep={activeStep} />
+
         {getSubChildWizard()}
       </Stack>
     </Container>

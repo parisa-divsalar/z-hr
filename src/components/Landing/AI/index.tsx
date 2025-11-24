@@ -1,12 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import { Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
 import AttachView from '@/components/Landing/AI/Attach/View';
 import { MainContainer } from '@/components/Landing/AI/styled';
 import AIInputPrompt from '@/components/Landing/AI/Text';
 import VoiceRecord from '@/components/Landing/Common/VoiceRecord';
 import { AIStatus } from '@/components/Landing/type';
+import MuiButton from '@/components/UI/MuiButton';
 
 interface AIInputProps {
   setAiStatus: (status: AIStatus) => void;
@@ -69,13 +70,13 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
         setUploadedFiles={setUploadedFiles}
       />
 
-      {/*{search !== '' && (*/}
-      {/*  <Stack width='10rem' mt={6}>*/}
-      {/*    <MuiButton fullWidth color='secondary' disabled={search === ''}>*/}
-      {/*      submit*/}
-      {/*    </MuiButton>*/}
-      {/*  </Stack>*/}
-      {/*)}*/}
+      {(search !== '' || voiceUrl) && (
+        <Stack width='10rem' mt={6}>
+          <MuiButton fullWidth color='secondary' onClick={() => setAiStatus('WIZARD')}>
+            submit
+          </MuiButton>
+        </Stack>
+      )}
     </MainContainer>
   );
 };
