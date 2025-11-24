@@ -124,7 +124,6 @@ export const ExperienceDescription = styled(Typography)(({ theme }) => ({
   lineHeight: 1.6,
 }));
 
-
 // Profile Header styled components
 export const AvatarContainer = styled(Box)(() => ({
   display: 'flex',
@@ -139,7 +138,6 @@ export const StyledAvatar = styled('div')(() => ({
   alignItems: 'center',
   justifyContent: 'center',
 }));
-
 
 // Section Header styled components
 export const SectionHeaderContainer = styled(Box)(() => ({

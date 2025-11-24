@@ -61,22 +61,21 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = ({ onSubmit }) => {
           </Stack>
           <Status>Done</Status>
         </Row>
+        <Stack mt={4} direction='row' spacing={4} justifyContent='center' alignItems='center'>
+          <MuiButton
+            color='secondary'
+            variant='outlined'
+            onClick={onSubmit}
+            startIcon={<AddIcon />}
+            sx={{ width: 150, height: 58 }}
+          >
+            Add more
+          </MuiButton>
+          <MuiButton color='secondary' onClick={onSubmit} sx={{ width: 150, height: 58 }} endIcon={<ArrowRightIcon />}>
+            Submit
+          </MuiButton>
+        </Stack>
       </Container>
-
-      <Stack mt={4} direction='row' spacing={2} justifyContent='center'>
-        <MuiButton
-          color='secondary'
-          variant='outlined'
-          onClick={onSubmit}
-          startIcon={<AddIcon />}
-          sx={{ width: 150, height: 58 }}
-        >
-          Add more
-        </MuiButton>
-        <MuiButton color='secondary' onClick={onSubmit} sx={{ width: 150, height: 58 }} endIcon={<ArrowRightIcon />}>
-          Submit
-        </MuiButton>
-      </Stack>
     </Stack>
   );
 };
