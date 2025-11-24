@@ -42,7 +42,7 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   overflow: 'hidden', // مهم
   height: 'auto',
   letterSpacing: '0',
-  lineHeight: '1.5rem',
+  lineHeight: '1.25rem',
 
   minHeight: '0.5rem',
 

@@ -5,16 +5,16 @@ export const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2.5),
-  marginTop: '3rem',
+  marginTop: '5rem',
   width: '100%',
-  maxWidth: 420,
+  maxWidth: 300,
 }));
 
 export const Row = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(1.5, 2),
+  padding: theme.spacing(0.5, 2),
   boxSizing: 'border-box',
 }));
 
@@ -35,7 +35,7 @@ export const IconWrapper = styled(Box)(() => ({
 
 export const Label = styled(Typography)(({ theme }) => ({
   fontSize: 16,
-  fontWeight: 500,
+  fontWeight: 600,
   color: theme.palette.text.primary,
 }));
 

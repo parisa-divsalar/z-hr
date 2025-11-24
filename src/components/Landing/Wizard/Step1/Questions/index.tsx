@@ -7,6 +7,7 @@ import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MicIcon from '@/assets/images/icons/download1.svg';
 import ImageIcon from '@/assets/images/icons/download2.svg';
 import VideoIcon from '@/assets/images/icons/download3.svg';
+import { AIStatus } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 
 import {
@@ -25,9 +26,10 @@ import {
 
 interface QuestionsProps {
   onNext: () => void;
+  setAiStatus: (status: AIStatus) => void;
 }
 
-const Questions: FunctionComponent<QuestionsProps> = ({ onNext }) => {
+const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) => {
   const mediaItems = [
     { id: 'voice', label: 'Voice (1)', Icon: MicIcon },
     { id: 'photo', label: 'Photo (2)', Icon: ImageIcon },
@@ -107,7 +109,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext }) => {
 
       <BottomSection>
         <Stack direction='row' spacing={2} justifyContent='center'>
-          <MuiButton color='secondary' variant='outlined' startIcon={<AddIcon />}>
+          <MuiButton color='secondary' variant='outlined' startIcon={<AddIcon />} onClick={() => setAiStatus('START')}>
             Add more
           </MuiButton>
 

@@ -9,6 +9,7 @@ export const SkillContainer = styled(Stack)(() => ({
   marginTop: '1rem',
   flexWrap: 'wrap',
 }));
+
 export const ContainerSkill = styled(Stack, {
   shouldForwardProp: (prop) => prop !== 'active',
 })<{ active?: boolean }>(({ active }) => ({
@@ -19,7 +20,7 @@ export const ContainerSkill = styled(Stack, {
   padding: '1rem 1rem 0.5rem 1rem',
   maxWidth: '588px',
   height: 'auto',
-  marginTop: '5px',
+  marginTop: '1rem',
   display: 'flex',
   alignItems: 'start',
   justifyContent: 'center',
