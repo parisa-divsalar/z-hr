@@ -3,6 +3,7 @@
 import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
+import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import ResumeTemplates from '@/components/ResumeTemplates';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
@@ -135,6 +136,15 @@ const MoreFeaturesPage = () => {
       </Stack>
       <Grid container spacing={2} mt={2}>
         <Grid size={{ xs: 6 }}>
+          <ResumeTemplates />
+          <Box mt={2.5}>
+            <ResumeTemplates />
+          </Box>
+          <Box mt={2.5}>
+            <ResumeTemplates />
+          </Box>
+        </Grid>
+        <Grid size={{ xs: 6 }}>
           {jobSuggestions.map((suggestion) => (
             <Box key={suggestion.id} sx={{ border: `1px solid`, borderColor: 'grey.200', borderRadius: '8px', mb: 2 }}>
               <JobSuggestionsContainer>
@@ -180,20 +190,10 @@ const MoreFeaturesPage = () => {
             </Box>
           ))}
         </Grid>
-
-        <Grid size={{ xs: 6 }}>
-          <ResumeTemplates />
-          <Box mt={2.5}>
-            <ResumeTemplates />
-          </Box>
-          <Box mt={2.5}>
-            <ResumeTemplates />
-          </Box>
-        </Grid>
       </Grid>
 
-      <Stack direction='row' spacing={2} justifyContent='center' mt={4}>
-        <MuiButton text='Back' variant='outlined' color='secondary' />
+      <Stack direction='row' spacing={2} justifyContent='center' p={5}>
+        <MuiButton text='Back' variant='outlined' color='secondary' startIcon={<ArrowBackIcon />} />
         <MuiButton
           text='Submit'
           variant='contained'

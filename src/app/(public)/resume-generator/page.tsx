@@ -121,7 +121,7 @@ const ResumeGeneratorPage = () => {
                     <MuiButton variant='outlined' size='large' color='secondary'>
                       Edit
                     </MuiButton>
-                    <MuiButton variant='contained' size='large' color='secondary'>
+                    <MuiButton variant='contained' size='large' color='secondary' sx={{ width: '200px' }}>
                       Download
                     </MuiButton>
                   </ActionButtons>

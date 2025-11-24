@@ -73,7 +73,7 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ templates = defaultTe
               </Typography>
             }
           />
-          <Typography variant='subtitle2' color='text.primary' fontWeight='400' ml={1} mt={1.5}>
+          <Typography variant='subtitle2' color='text.primary' fontWeight='400' ml={1} mt={2}>
             Choose from our professionally designed resume templates to make your application stand out.
           </Typography>
         </TitleSection>
