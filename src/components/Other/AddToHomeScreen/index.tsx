@@ -3,7 +3,7 @@ import { Stack, Typography } from '@mui/material';
 
 import AddBoxIcon from '@/assets/images/design/add-box.svg';
 import ShareIcon from '@/assets/images/design/ios-share.svg';
-import logo from '@/assets/images/nextjs.png';
+import logo from '@/assets/images/logo/logo.png';
 import { AppImage } from '@/components/AppImage';
 import { DialogContainer, RowContainer, StackContainer, StackContent } from '@/components/Other/AddToHomeScreen/styled';
 import MuiButton from '@/components/UI/MuiButton';
@@ -16,7 +16,7 @@ const AddToHomeScreen = () => {
     <DialogContainer onClose={() => setOpen(false)} open={open} maxWidth='xs'>
       <StackContainer>
         <StackContent>
-          <AppImage src={logo} alt='' width={96} height={96} />
+          <AppImage src={logo} alt='' width={72} height={102} />
 
           <RowContainer>
             <Typography color='text.primary' variant='subtitle2'>

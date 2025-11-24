@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { FunctionComponent, useRef, useState } from 'react';
 
 import { IconButton, Menu, MenuItem } from '@mui/material';
 
@@ -8,14 +8,16 @@ import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import PhotoIcon from '@/assets/images/icons/select-Icon.svg';
 
 interface AddAttachFileProps {
-  onFilesChange?: (files: File[]) => void;
+  uploadedFiles: File[];
+  setUploadedFiles: (value: File[] | ((prev: File[]) => File[])) => void;
 }
 
-const AddAttachFile = ({ onFilesChange }: AddAttachFileProps) => {
+const AddAttachFile: FunctionComponent<AddAttachFileProps> = (props) => {
+  const { uploadedFiles, setUploadedFiles } = props;
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(menuAnchorEl);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -47,14 +49,8 @@ const AddAttachFile = ({ onFilesChange }: AddAttachFileProps) => {
   const handleFileUpload = (files: FileList | null) => {
     if (files) {
       const fileArray = Array.from(files);
-      setUploadedFiles((prev) => {
-        const updated = [...prev, ...fileArray];
-        if (onFilesChange) {
-          onFilesChange(updated);
-        }
-        console.log('Files uploaded:', fileArray);
-        return updated;
-      });
+      setUploadedFiles((prev) => [...prev, ...fileArray]);
+      console.log('Files uploaded:', fileArray);
     }
   };
 
@@ -62,13 +58,7 @@ const AddAttachFile = ({ onFilesChange }: AddAttachFileProps) => {
     if (files) {
       const videoFiles = Array.from(files).filter((file) => file.type.startsWith('video/'));
       if (videoFiles.length > 0) {
-        setUploadedFiles((prev) => {
-          const updated = [...prev, ...videoFiles];
-          if (onFilesChange) {
-            onFilesChange(updated);
-          }
-          return updated;
-        });
+        setUploadedFiles((prev) => [...prev, ...videoFiles]);
       }
     }
   };
@@ -77,28 +67,11 @@ const AddAttachFile = ({ onFilesChange }: AddAttachFileProps) => {
     if (files) {
       const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
       if (imageFiles.length > 0) {
-        setUploadedFiles((prev) => {
-          const updated = [...prev, ...imageFiles];
-          if (onFilesChange) {
-            onFilesChange(updated);
-          }
-          console.log('Photos uploaded:', imageFiles);
-          return updated;
-        });
+        setUploadedFiles((prev) => [...prev, ...imageFiles]);
+        console.log('Photos uploaded:', imageFiles);
       }
     }
   };
-
-  // const handleRemoveFile = (index: number) => {
-  //   setUploadedFiles((prev) => {
-  //     const newFiles = prev.filter((_, i) => i !== index);
-  //     const removedFile = prev[index];
-  //     if (removedFile && removedFile.type.startsWith('image/')) {
-  //       URL.revokeObjectURL(URL.createObjectURL(removedFile));
-  //     }
-  //     return newFiles;
-  //   });
-  // };
 
   return (
     <>
@@ -165,35 +138,5 @@ const AddAttachFile = ({ onFilesChange }: AddAttachFileProps) => {
     </>
   );
 };
-
-// {uploadedFiles.length > 0 && (
-//   <FilesStack direction='row' spacing={1}>
-//     {uploadedFiles.map((file, index) => (
-//       <FilePreviewContainer key={`${file.name}-${index}`}>
-//         {file.type.startsWith('image/') ? (
-//           <img
-//             src={URL.createObjectURL(file)}
-//             alt={file.name}
-//             style={{
-//               width: '100%',
-//               height: '100%',
-//               objectFit: 'cover',
-//             }}
-//           />
-//         ) : file.type.startsWith('video/') ? (
-//           <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-//         ) : (
-//           <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-//         )}
-//
-//         <RemoveFileButton onClick={() => handleRemoveFile(index)}>
-//           <Typography variant='caption' sx={{ fontSize: '12px', lineHeight: 1 }}>
-//             ×
-//           </Typography>
-//         </RemoveFileButton>
-//       </FilePreviewContainer>
-//     ))}
-//   </FilesStack>
-// )}
 
 export default AddAttachFile;

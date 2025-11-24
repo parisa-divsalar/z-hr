@@ -5,7 +5,7 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, keyframes } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import logo from '@/assets/images/nextjs.png';
+import logo from '@/assets/images/logo/logo.png';
 import { AppImage } from '@/components/AppImage';
 import { useInstallApp } from '@/store/common';
 import isInStandaloneMode from '@/utils/isInstalledWebApp';
@@ -97,7 +97,7 @@ const SplashScreen: FunctionComponent = () => {
   return (
     <SplashContainer sx={{ animation: isExiting ? `${zoomOutBlur} 0.8s ease-in-out forwards` : 'none' }}>
       <LogoContainer>
-        <LogoImage src={logo} alt='Logo' />
+        <LogoImage src={logo} alt='Logo' width={122} height={162} />
       </LogoContainer>
     </SplashContainer>
   );
