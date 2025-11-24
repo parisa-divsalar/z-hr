@@ -3,14 +3,13 @@ import React from 'react';
 import { Typography, Box } from '@mui/material';
 
 import RectangleImage from '@/assets/images/design/RectangleImage.svg';
+import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import {
   Container,
   LeftSection,
   TitleSection,
-  Description,
-  MoreButton,
   RightSection,
   ResumeCardGrid,
   ResumeCard,
@@ -69,24 +68,16 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ templates = defaultTe
         <TitleSection>
           <MuiCheckbox
             label={
-              <Typography variant='h6' fontWeight='600' color='text.primary'>
+              <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
                 Resume Template
               </Typography>
             }
-            helperText={
-              <Description>
-                <Typography variant='body2' color='text.secondary'>
-                  Choose from our professionally designed resume templates to make your application stand out.
-                </Typography>
-              </Description>
-            }
           />
-        </TitleSection>
-        <MoreButton>
-          <Typography variant='body2' fontWeight='500' color='text.secondary'>
-            More
+          <Typography variant='subtitle2' color='text.primary' fontWeight='400' ml={1} mt={2}>
+            Choose from our professionally designed resume templates to make your application stand out.
           </Typography>
-        </MoreButton>
+        </TitleSection>
+        <MuiButton text='More' variant='contained' color='secondary' />
       </LeftSection>
 
       <RightSection>

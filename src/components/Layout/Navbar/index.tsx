@@ -1,4 +1,6 @@
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
 
 import MoonIcon from '@/assets/images/icons/moon.svg';
@@ -12,6 +14,9 @@ import { useThemeStore } from '@/store/common';
 
 const Navbar = () => {
   const { mode, setMode } = useThemeStore();
+  const pathname = usePathname();
+
+  const isHomeActive = pathname === '/' || pathname === '/(public)';
 
   return (
     <Stack direction='row' className={classes.mainNavbar} borderColor='divider'>
@@ -28,9 +33,15 @@ const Navbar = () => {
       </Stack>
 
       <Stack direction='row' gap={2}>
-        <Typography variant='subtitle1' fontWeight='700' color='text.primary'>
-          Home
-        </Typography>
+        <Link href='/' style={{ textDecoration: 'none' }}>
+          <Typography
+            variant='subtitle1'
+            fontWeight={isHomeActive ? '700' : '400'}
+            color={isHomeActive ? 'text.primary' : 'grey.500'}
+          >
+            Home
+          </Typography>
+        </Link>
 
         <Typography variant='subtitle1' color='grey.500'>
           About Us

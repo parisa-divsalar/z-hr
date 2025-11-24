@@ -122,34 +122,4 @@ export const AllSkill: TSkill[] = [
     label: 'Email Marketing Specialist',
     selected: false,
   },
-  {
-    id: generateFakeUUIDv4(),
-    label: 'AI Researcher',
-    selected: false,
-  },
-  {
-    id: generateFakeUUIDv4(),
-    label: 'Digital Designer',
-    selected: false,
-  },
-  {
-    id: generateFakeUUIDv4(),
-    label: 'Cybersecurity Analyst',
-    selected: false,
-  },
-  {
-    id: generateFakeUUIDv4(),
-    label: 'Front-End Developer',
-    selected: false,
-  },
-  {
-    id: generateFakeUUIDv4(),
-    label: 'Operations Manager',
-    selected: false,
-  },
-  {
-    id: generateFakeUUIDv4(),
-    label: 'Brand Strategist',
-    selected: false,
-  },
 ];

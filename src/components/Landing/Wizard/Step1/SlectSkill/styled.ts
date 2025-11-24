@@ -9,3 +9,20 @@ export const SkillContainer = styled(Stack)(() => ({
   marginTop: '1rem',
   flexWrap: 'wrap',
 }));
+export const ContainerSkill = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active?: boolean }>(({ active }) => ({
+  backgroundColor: 'white',
+  width: '100%',
+  borderRadius: '1rem',
+  border: `1px solid ${active ? '#1976d2' : '#e0e0e0'}`, // primary.main or grey.100
+  padding: '1rem 1rem 0.5rem 1rem',
+  maxWidth: '588px',
+  height: 'auto',
+  marginTop: '5px',
+  display: 'flex',
+  alignItems: 'start',
+  justifyContent: 'center',
+  gap: '0.25rem',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+}));

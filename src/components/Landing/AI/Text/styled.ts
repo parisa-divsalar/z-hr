@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Box, IconButton, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const InputContainer = styled(Stack, {
@@ -11,7 +11,7 @@ export const InputContainer = styled(Stack, {
   padding: '1rem 1rem 0.5rem 1rem',
   maxWidth: '588px',
   height: 'auto',
-  marginTop: '3rem',
+  marginTop: '2rem',
   display: 'flex',
   alignItems: 'start',
   justifyContent: 'center',
@@ -48,5 +48,53 @@ export const InputContent = styled('textarea')(({ theme }) => ({
 
   '&::placeholder': {
     color: theme.palette.grey[400],
+  },
+}));
+
+export const UploadedFilesContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  paddingInline: theme.spacing(1),
+  overflowX: 'auto',
+  marginBottom: theme.spacing(0.5),
+}));
+
+export const FilePreviewBox = styled(Box)(() => ({
+  width: 100,
+  height: 100,
+  borderRadius: 8,
+  border: '1px solid #E0E0E0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  backgroundColor: '#F9F9FA',
+  flexShrink: 0,
+  position: 'relative',
+}));
+
+export const PreviewImage = styled('img')(() => ({
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+}));
+
+export const RemoveFileButton = styled(IconButton)(({ theme }) => ({
+  position: 'absolute',
+  top: 4,
+  right: 4,
+  width: 20,
+  height: 20,
+  borderRadius: '50%',
+  padding: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  color: theme.palette.common.white,
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  '& svg': {
+    fontSize: 14,
   },
 }));
