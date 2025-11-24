@@ -2,11 +2,11 @@ import { Box, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const Container = styled(Box)(({ theme }) => ({
-  display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2.5),
   marginTop: '3rem',
-  width: '100%',
+  alignItems: 'center',
+  justifyContent: 'center',
   maxWidth: 820,
 }));
 export const ContentCard = styled(Stack)(({ theme }) => ({
@@ -19,6 +19,8 @@ export const ContentCard = styled(Stack)(({ theme }) => ({
 export const TopSection = styled(Stack)(({ theme }) => ({
   width: '100%',
   gap: theme.spacing(2),
+  alignItems: 'center',
+  justifyContent: 'center',
 }));
 
 export const MediaRow = styled(Stack)(({ theme }) => ({

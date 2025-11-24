@@ -1,5 +1,7 @@
 'use client';
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 import MoonIcon from '@/assets/images/icons/moon.svg';
 import SunIcon from '@/assets/images/icons/sun.svg';
@@ -8,10 +10,17 @@ import logo from '@/assets/images/logo/logo.png';
 import { AppImage } from '@/components/AppImage';
 import classes from '@/components/Layout/layout.module.css';
 import MuiButton from '@/components/UI/MuiButton';
+import { PublicRoutes, VisibilityLayout } from '@/config/routes';
 import { useThemeStore } from '@/store/common';
 
 const Navbar = () => {
   const { mode, setMode } = useThemeStore();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isHomeActive = pathname === '/' || pathname === '/(public)';
+
+  if (!VisibilityLayout.includes(pathname)) return null;
 
   return (
     <Stack direction='row' className={classes.mainNavbar} borderColor='divider'>
@@ -28,9 +37,15 @@ const Navbar = () => {
       </Stack>
 
       <Stack direction='row' gap={2}>
-        <Typography variant='subtitle1' fontWeight='700' color='text.primary'>
-          Home
-        </Typography>
+        <Link href='/' style={{ textDecoration: 'none' }}>
+          <Typography
+            variant='subtitle1'
+            fontWeight={isHomeActive ? '700' : '400'}
+            color={isHomeActive ? 'text.primary' : 'grey.500'}
+          >
+            Home
+          </Typography>
+        </Link>
 
         <Typography variant='subtitle1' color='grey.500'>
           About Us
@@ -46,11 +61,11 @@ const Navbar = () => {
       </Stack>
 
       <Stack direction='row' gap={3}>
-        <MuiButton color='secondary' variant='outlined'>
+        <MuiButton color='secondary' variant='outlined' onClick={() => router.push(PublicRoutes.login)}>
           Login
         </MuiButton>
 
-        <MuiButton color='secondary' startIcon={<UserPlusIcon />}>
+        <MuiButton color='secondary' startIcon={<UserPlusIcon />} onClick={() => router.push(PublicRoutes.register)}>
           Sign Up
         </MuiButton>
 

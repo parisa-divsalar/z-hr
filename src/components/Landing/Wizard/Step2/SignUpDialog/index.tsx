@@ -2,8 +2,10 @@ import { FunctionComponent } from 'react';
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { Divider, IconButton, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
+import { PublicRoutes } from '@/config/routes';
 
 import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
 
@@ -14,6 +16,7 @@ interface SignUpDialogProps {
 }
 
 const SignUpDialog: FunctionComponent<SignUpDialogProps> = (props) => {
+  const router = useRouter();
   const { open, closeDialog, setActiveStep } = props;
 
   return (
@@ -40,7 +43,7 @@ const SignUpDialog: FunctionComponent<SignUpDialogProps> = (props) => {
         <Divider />
 
         <ActionContainer direction='row'>
-          <MuiButton fullWidth color='secondary' variant='outlined'>
+          <MuiButton fullWidth color='secondary' variant='outlined' onClick={() => router.push(PublicRoutes.login)}>
             Login
           </MuiButton>
           <MuiButton fullWidth color='secondary' onClick={() => setActiveStep(3)}>

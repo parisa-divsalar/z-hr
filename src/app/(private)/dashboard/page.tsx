@@ -1,4 +1,5 @@
 'use client';
+import { Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
@@ -11,16 +12,15 @@ const DashboardPage = () => {
 
   const handleLogout = () => {
     logout();
-    router.replace(PublicRoutes.login);
+    router.replace(PublicRoutes.landing);
   };
 
   return (
-    <div style={{ padding: 40 }}>
-      <h2>Welcome 👋</h2>
+    <Stack height='100%' bgcolor='red' width='100%'>
       <MuiButton onClick={handleLogout} color='error'>
         خروج
       </MuiButton>
-    </div>
+    </Stack>
   );
 };
 
