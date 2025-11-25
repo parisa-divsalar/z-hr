@@ -24,20 +24,18 @@ export const TopSection = styled(Stack)(({ theme }) => ({
 }));
 
 export const MediaRow = styled(Stack)(({ theme }) => ({
-  width: '100%',
+  width: '96%',
   flexDirection: 'row',
+  [theme.breakpoints.down('sm')]: {},
   alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: theme.spacing(2),
-  [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-  },
+  justifyContent: 'center',
 }));
 
 export const MediaItem = styled(Stack)(({ theme }) => ({
   flex: 1,
   flexDirection: 'row',
+  justifyContent: 'center important',
+
   alignItems: 'center',
   gap: theme.spacing(1.5),
 }));

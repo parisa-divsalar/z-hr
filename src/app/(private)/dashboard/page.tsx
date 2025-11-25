@@ -1,8 +1,7 @@
 'use client';
-import { Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-import MuiButton from '@/components/UI/MuiButton';
+import DashboardModule from '@/modules/dashboard';
 import { PublicRoutes } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 
@@ -15,13 +14,7 @@ const DashboardPage = () => {
     router.replace(PublicRoutes.landing);
   };
 
-  return (
-    <Stack height='100%' bgcolor='red' width='100%'>
-      <MuiButton onClick={handleLogout} color='error'>
-        خروج
-      </MuiButton>
-    </Stack>
-  );
+  return <DashboardModule onLogout={handleLogout} />;
 };
 
 export default DashboardPage;

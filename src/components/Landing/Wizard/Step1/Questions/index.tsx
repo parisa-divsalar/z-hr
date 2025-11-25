@@ -40,35 +40,34 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
 
   return (
     <Container>
-      <TopSection>
-        <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>
-          File uploaded
-        </Typography>
-
-        <MediaRow>
-          {mediaItems.map(({ id, label, Icon }) => (
-            <MediaItem key={id}>
-              <MediaIconBox>
-                <Icon />
-              </MediaIconBox>
-
-              <Stack direction='row' spacing={1.25} alignItems='center'>
-                <Typography variant='body2' fontWeight={500} color='text.primary'>
-                  {label}
-                </Typography>
-                <Typography variant='caption' fontWeight={600} color='success.main'>
-                  Done
-                </Typography>
-              </Stack>
-            </MediaItem>
-          ))}
-        </MediaRow>
-      </TopSection>
-
       <MiddleSection>
         {/*<Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>*/}
         {/*  Questions*/}
         {/*</Typography>*/}
+        <TopSection>
+          <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>
+            File uploaded
+          </Typography>
+
+          <MediaRow>
+            {mediaItems.map(({ id, label, Icon }) => (
+              <MediaItem key={id}>
+                <MediaIconBox>
+                  <Icon />
+                </MediaIconBox>
+
+                <Stack direction='row' spacing={1.25} alignItems='center'>
+                  <Typography variant='body2' fontWeight={500} color='text.primary'>
+                    {label}
+                  </Typography>
+                  <Typography variant='caption' fontWeight={600} color='success.main'>
+                    Done
+                  </Typography>
+                </Stack>
+              </MediaItem>
+            ))}
+          </MediaRow>
+        </TopSection>
 
         <QuestionList>
           {questionNumbers.map((num, index) => (
