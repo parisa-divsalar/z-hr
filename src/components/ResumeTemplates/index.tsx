@@ -77,7 +77,12 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ templates = defaultTe
             Choose from our professionally designed resume templates to make your application stand out.
           </Typography>
         </TitleSection>
-        <MuiButton text='More' variant='contained' color='secondary' />
+        <MuiButton
+          text='More'
+          variant='contained'
+          color='secondary'
+          sx={{ backgroundColor: '#F0F0F2', color: 'secondary.main' }}
+        />{' '}
       </LeftSection>
 
       <RightSection>

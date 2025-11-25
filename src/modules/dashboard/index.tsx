@@ -1,14 +1,13 @@
 import { Stack } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import MuiButton from '@/components/UI/MuiButton';
-
-import TopStats from '@/components/dashboard/TopStats';
-import UpcomingInterview from '@/components/dashboard/UpcomingInterview';
-import SuggestedPositions from '@/components/dashboard/SuggestedPositions';
 import CommunitySection from '@/components/dashboard/CommunitySection';
 import SkillGapAnalysis from '@/components/dashboard/SkillGapAnalysis';
 import { DashboardRoot } from '@/components/dashboard/styled';
+import SuggestedPositions from '@/components/dashboard/SuggestedPositions';
+import TopStats from '@/components/dashboard/TopStats';
+import UpcomingInterview from '@/components/dashboard/UpcomingInterview';
+import MuiButton from '@/components/UI/MuiButton';
 
 type DashboardModuleProps = {
   onLogout?: () => void;
@@ -17,20 +16,11 @@ type DashboardModuleProps = {
 const DashboardModule = ({ onLogout }: DashboardModuleProps) => {
   return (
     <DashboardRoot>
-      <Stack
-        direction='row'
-        alignItems='center'
-        justifyContent='space-between'
-      >
+      <Stack direction='row' alignItems='center' justifyContent='space-between'>
         <TopStats />
 
         {onLogout && (
-          <MuiButton
-            size='small'
-            color='error'
-            onClick={onLogout}
-            sx={{ borderRadius: 999 }}
-          >
+          <MuiButton size='small' color='error' onClick={onLogout} sx={{ borderRadius: 999 }}>
             خروج
           </MuiButton>
         )}
@@ -58,5 +48,3 @@ const DashboardModule = ({ onLogout }: DashboardModuleProps) => {
 };
 
 export default DashboardModule;
-
-

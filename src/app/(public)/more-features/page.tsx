@@ -161,7 +161,12 @@ const MoreFeaturesPage = () => {
                       {suggestion.description}
                     </Typography>
                   </JobSuggestionsHeader>
-                  <MuiButton text='More' variant='contained' color='secondary' />
+                  <MuiButton
+                    text='More'
+                    variant='contained'
+                    color='secondary'
+                    sx={{ backgroundColor: '#F0F0F2', color: 'secondary.main' }}
+                  />
                 </JobSuggestionsLeft>
                 <JobSuggestionsRight>
                   <CardsWrapper>

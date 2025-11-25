@@ -40,7 +40,7 @@ export const MediaItem = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(1.5),
 }));
 
-export const MediaIconBox = styled(Box)(({ theme }) => ({
+export const MediaIconBox = styled(Box)(() => ({
   width: 40,
   height: 40,
   borderRadius: 12,
@@ -50,7 +50,7 @@ export const MediaIconBox = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
 }));
 
-export const MiddleSection = styled(Stack)(({ theme }) => ({
+export const MiddleSection = styled(Stack)(() => ({
   width: '100%',
   alignItems: 'center',
 }));

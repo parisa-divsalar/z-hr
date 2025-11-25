@@ -80,3 +80,4 @@ const SkillGapAnalysis = () => {
 export default SkillGapAnalysis;
 
 
+

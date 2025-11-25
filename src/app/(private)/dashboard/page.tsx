@@ -1,8 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
 
-import DashboardModule from '@/modules/dashboard';
 import { PublicRoutes } from '@/config/routes';
+import DashboardModule from '@/modules/dashboard';
 import { useAuthStore } from '@/store/auth';
 
 const DashboardPage = () => {

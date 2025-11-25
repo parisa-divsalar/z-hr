@@ -18,7 +18,7 @@ export const Row = styled(Box)(({ theme }) => ({
   boxSizing: 'border-box',
 }));
 
-export const Tile = styled(Box)(({ theme }) => ({
+export const Tile = styled(Box)(() => ({
   width: 48,
   height: 48,
   borderRadius: 16,
@@ -39,7 +39,7 @@ export const Label = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.primary,
 }));
 
-export const Status = styled(Typography)(({ theme }) => ({
+export const Status = styled(Typography)(() => ({
   fontSize: 14,
   fontWeight: 600,
   color: '#00C853', // bright green
