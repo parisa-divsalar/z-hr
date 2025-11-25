@@ -55,7 +55,7 @@ const SuggestedJobCard = () => {
 
 const SuggestedPositions = () => {
   return (
-    <Stack gap={2}>
+    <Stack gap={2} mt={5}>
       <SectionHeader>
         <Stack direction='row' gap={1} alignItems='center'>
           <HeadIcon />

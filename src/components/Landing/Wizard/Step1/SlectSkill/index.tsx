@@ -4,11 +4,11 @@ import { Stack, Typography } from '@mui/material';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
-import MuiChips from '@/components/UI/MuiChips';
 import { InputContent } from '@/components/Landing/AI/Text/styled';
 import { DividerLine, OrDivider } from '@/components/Landing/AI/VoiceBox/styled';
 import { StageWizard } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
+import MuiChips from '@/components/UI/MuiChips';
 
 import { AllSkill } from './data';
 import { ContainerSkill, SkillContainer } from './styled';

@@ -44,7 +44,7 @@ const CommunityCard = ({ icon, title, subtitle }: { icon: 'tel' | 'insta'; title
 
 const CommunitySection = () => {
   return (
-    <Stack gap={2}>
+    <Stack gap={2} mt={5}>
       <SectionHeader>
         <Stack direction='row' gap={1} alignItems='center'>
           <HeadIcon />

@@ -1,8 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import MuiButton from '@/components/UI/MuiButton';
-
 // Shared constants for the dashboard page
 export const DASHBOARD_COLORS = {
   background: '#F7F7F7',
@@ -88,7 +86,7 @@ export const CardBaseiNTER = styled(Box)(({ theme }) => ({
   borderRadius: 8,
   backgroundColor: theme.palette.warning.light,
   border: `1px solid ${theme.palette.warning.main}`,
-
+  marginTop: '10px',
   padding: 20,
   boxSizing: 'border-box',
 }));
@@ -118,30 +116,6 @@ export const StatValue = styled(Typography)(() => ({
   color: DASHBOARD_COLORS.darkText,
 }));
 
-export const OrangeBadge = styled(Box)(() => ({
-  borderRadius: 999,
-  padding: '4px 10px',
-  backgroundColor: DASHBOARD_COLORS.orangeTag,
-  color: '#FFFFFF',
-  fontSize: 11,
-  fontWeight: 600,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-export const CommunityBodyTitle = styled(Typography)(() => ({
-  fontSize: 14,
-  lineHeight: 1.5,
-  color: DASHBOARD_COLORS.darkText,
-  fontWeight: 600,
-}));
-
-export const CommunityJoinButton = styled(MuiButton)(() => ({
-  borderRadius: 999,
-  textTransform: 'none',
-}));
-
 export const TagPill = styled(Typography)(({ theme }) => ({
   borderRadius: 999,
   padding: '4px 10px',
@@ -155,33 +129,15 @@ export const TagPill = styled(Typography)(({ theme }) => ({
   color: theme.palette.warning.main,
 }));
 
-export const MetaText = styled(Typography)(() => ({
-  fontSize: 12,
-  color: DASHBOARD_COLORS.lightText,
-}));
-
 export const JobTitleBox = styled(Typography)(({ theme }) => ({
   backgroundColor: theme.palette.grey[100],
   borderBottom: `1px solid ${theme.palette.grey[100]}`,
   padding: '15px',
 }));
 
-export const BodyText = styled(Typography)(() => ({
-  fontSize: 14,
-  lineHeight: 1.5,
-  color: DASHBOARD_COLORS.darkText,
-}));
-
 export const SubText = styled(Typography)(() => ({
   fontSize: 12,
   color: DASHBOARD_COLORS.lightText,
-}));
-
-export const GreenDot = styled(Box)(() => ({
-  width: 8,
-  height: 8,
-  borderRadius: '50%',
-  backgroundColor: DASHBOARD_COLORS.greenSuccess,
 }));
 
 export const AvatarGlowWrapper = styled(Box)(() => ({
