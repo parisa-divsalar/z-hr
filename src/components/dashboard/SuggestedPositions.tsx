@@ -1,27 +1,18 @@
-import { Stack, Box } from '@mui/material';
+import { Stack, Typography, Divider } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import MuiAvatar from '@/components/UI/MuiAvatar';
+import Box1Icon from '@/assets/images/dashboard/box1.svg';
+import Box2Icon from '@/assets/images/dashboard/box2.svg';
+import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
+import HeadIcon from '@/assets/images/dashboard/comm.svg';
+import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
-import {
-  CardBase,
-  DASHBOARD_COLORS,
-  GreenDot,
-  JobTitle,
-  MetaText,
-  SectionHeader,
-  SectionTitle,
-  BodyText,
-  SubText,
-  AvatarGlowWrapper,
-  AvatarGlow,
-  AvatarInnerWrapper,
-} from './styled';
+import { SectionHeader, SubText, JobTitleBox, SuggestedJobCardItem } from './styled';
 
 const SuggestedJobCard = () => {
   return (
-    <CardBase
+    <SuggestedJobCardItem
       sx={{
         height: '100%',
         display: 'flex',
@@ -29,65 +20,43 @@ const SuggestedJobCard = () => {
         gap: 1.5,
       }}
     >
-      <MetaText>09/09/2025 · Remote · Dubai</MetaText>
+      <JobTitleBox>
+        <Typography variant='h6' color='text.primary' fontWeight='400'>
+          Front end Developer
+        </Typography>
+      </JobTitleBox>
+      <Typography variant='subtitle2' color='text.primary' fontWeight='400' px={2}>
+        09/09/2025 · Remote · Dubai
+      </Typography>
 
-      <JobTitle>Front end Developer</JobTitle>
+      <Divider sx={{ borderColor: 'grey.100', marginX: '10px' }} />
 
-      <BodyText>
+      <Typography variant='subtitle2' color='text.primary' fontWeight='400' px={2}>
         Join a product-focused team to build modern, responsive web interfaces. You will work closely with designers and
         backend engineers to deliver pixel-perfect experiences and smooth user journeys.
-      </BodyText>
+      </Typography>
 
-      <SubText sx={{ mt: 0.5 }}>Tech stack: React, Next.js, TypeScript, TailwindCSS, REST APIs</SubText>
+      <Typography variant='subtitle2' color='text.primary' fontWeight='400' px={2}>
+        Tech stack: React, Next.js, TypeScript, TailwindCSS, REST APIs TypeScript, TailwindCSS, REST APIs
+      </Typography>
 
-      <Stack direction='row' gap={1} alignItems='center' mt={1}>
-        <GreenDot />
+      <Stack direction='row' gap={1} alignItems='center' px={2} mt={1}>
+        <Box1Icon />
+        <SubText sx={{ fontWeight: 600 }}>99% Fit with this Position</SubText>
+      </Stack>
+      <Stack direction='row' gap={1} alignItems='center' px={2} mt={1}>
+        <Box2Icon />
         <SubText sx={{ fontWeight: 600 }}>99% Fit with this Position</SubText>
       </Stack>
 
-      <Box sx={{ flexGrow: 1 }} />
-
-      <Stack direction='row' alignItems='center' justifyContent='space-between' mt={2}>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' px={2} p={2}>
         <Stack direction='row' gap={1.5}>
-          <MuiButton
-            variant='outlined'
-            size='small'
-            sx={{
-              borderRadius: 999,
-              borderColor: '#000',
-              color: DASHBOARD_COLORS.darkText,
-              textTransform: 'none',
-            }}
-          >
-            Zayd Al-Mansoori&apos;s Resume
-          </MuiButton>
-
-          <MuiButton
-            size='small'
-            sx={{
-              borderRadius: 999,
-              backgroundColor: '#000',
-              color: '#fff',
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: '#111',
-              },
-            }}
-          >
-            Apply
-          </MuiButton>
+          <BoxIcon />
         </Stack>
 
-        <AvatarGlowWrapper>
-          <AvatarGlow />
-          <AvatarInnerWrapper>
-            <MuiAvatar size='small' color='primary' sx={{ border: `2px solid ${DASHBOARD_COLORS.cardBackground}` }}>
-              Z
-            </MuiAvatar>
-          </AvatarInnerWrapper>
-        </AvatarGlowWrapper>
+        <MuiButton text='Apply' color='secondary' />
       </Stack>
-    </CardBase>
+    </SuggestedJobCardItem>
   );
 };
 
@@ -95,9 +64,14 @@ const SuggestedPositions = () => {
   return (
     <Stack gap={2}>
       <SectionHeader>
-        <SectionTitle>Suggested Positions</SectionTitle>
+        <Stack direction='row' gap={1} alignItems='center'>
+          <HeadIcon />
+          <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+            Suggested Positions
+          </Typography>
+        </Stack>
+        <MuiButton text='more' color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
       </SectionHeader>
-
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
           <SuggestedJobCard />

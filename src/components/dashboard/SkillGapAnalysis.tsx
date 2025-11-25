@@ -1,15 +1,10 @@
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
+import HeadIcon from '@/assets/images/dashboard/head.svg';
+import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
-import {
-  CardBase,
-  MetaText,
-  SectionHeader,
-  SectionTitle,
-  BodyText,
-  DASHBOARD_COLORS,
-} from './styled';
+import { CardBase, MetaText, SectionHeader, BodyText, DASHBOARD_COLORS } from './styled';
 
 const SkillCard = ({
   skill,
@@ -56,28 +51,21 @@ const SkillGapAnalysis = () => {
   return (
     <Stack gap={2}>
       <SectionHeader>
-        <SectionTitle>Skill Gap Analysis</SectionTitle>
+        <Stack direction='row' gap={1} alignItems='center'>
+          <HeadIcon />
+          <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+            Skill Gap Analysis{' '}
+          </Typography>
+        </Stack>
+        <MuiButton text='more' color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
       </SectionHeader>
 
       <Stack gap={2}>
-        <SkillCard
-          skill='React.js'
-          level='Intermediate'
-          suggestion='Needs improvement'
-          actionLabel='Add'
-        />
-        <SkillCard
-          skill='TypeScript'
-          level='Intermediate'
-          suggestion='On track'
-          actionLabel='View'
-        />
+        <SkillCard skill='React.js' level='Intermediate' suggestion='Needs improvement' actionLabel='Add' />
+        <SkillCard skill='TypeScript' level='Intermediate' suggestion='On track' actionLabel='View' />
       </Stack>
     </Stack>
   );
 };
 
 export default SkillGapAnalysis;
-
-
-

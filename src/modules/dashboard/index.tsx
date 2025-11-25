@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
 import CommunitySection from '@/components/dashboard/CommunitySection';
@@ -7,7 +7,6 @@ import { DashboardRoot } from '@/components/dashboard/styled';
 import SuggestedPositions from '@/components/dashboard/SuggestedPositions';
 import TopStats from '@/components/dashboard/TopStats';
 import UpcomingInterview from '@/components/dashboard/UpcomingInterview';
-import MuiButton from '@/components/UI/MuiButton';
 
 type DashboardModuleProps = {
   onLogout?: () => void;
@@ -16,30 +15,26 @@ type DashboardModuleProps = {
 const DashboardModule = ({ onLogout }: DashboardModuleProps) => {
   return (
     <DashboardRoot>
+      <Typography variant='subtitle1' color='text.primary' fontWeight='600'>
+        Dashboard
+      </Typography>
       <Stack direction='row' alignItems='center' justifyContent='space-between'>
         <TopStats />
-
-        {onLogout && (
-          <MuiButton size='small' color='error' onClick={onLogout} sx={{ borderRadius: 999 }}>
-            خروج
-          </MuiButton>
-        )}
       </Stack>
-
+      <Grid size={{ xs: 12, md: 12 }}>
+        <UpcomingInterview />
+      </Grid>
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <UpcomingInterview />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 12 }}>
           <SuggestedPositions />
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 12 }}>
           <CommunitySection />
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 12 }}>
           <SkillGapAnalysis />
         </Grid>
       </Grid>

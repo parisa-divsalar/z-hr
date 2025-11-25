@@ -4,7 +4,7 @@ import { Stack, Typography } from '@mui/material';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
-import ChipSkill from '@/components/Card/Chip';
+import MuiChips from '@/components/UI/MuiChips';
 import { InputContent } from '@/components/Landing/AI/Text/styled';
 import { DividerLine, OrDivider } from '@/components/Landing/AI/VoiceBox/styled';
 import { StageWizard } from '@/components/Landing/type';
@@ -34,7 +34,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
       <SkillContainer direction='row'>
         {skills.map((skill: TSkill) => (
-          <ChipSkill key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
+          <MuiChips key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
         ))}
       </SkillContainer>
 

@@ -1,58 +1,54 @@
 import { Stack } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
-import MuiChip from '@/components/UI/MuiChip';
+import Frame1Icon from '@/assets/images/dashboard/Frame1.svg';
+import Frame2Icon from '@/assets/images/dashboard/Frame2.svg';
+import Frame3Icon from '@/assets/images/dashboard/Frame3.svg';
 
-import {
-  SmallCardBase,
-  StatTitle,
-  StatValue,
-  StatValueRow,
-  OrangeBadge,
-  DASHBOARD_COLORS,
-} from './styled';
+import { SmallCardBase, StatTitle, StatValue, StatValueRow } from './styled';
 
 const TopStats = () => {
   return (
-    <Stack
-      direction={{ xs: 'column', md: 'row' }}
-      gap={2}
-      width='100%'
-    >
-      <SmallCardBase sx={{ flex: 1 }}>
-        <StatTitle>Credits Remaining</StatTitle>
-        <StatValueRow>
-          <StatValue>83</StatValue>
-          <OrangeBadge>+50</OrangeBadge>
-        </StatValueRow>
-      </SmallCardBase>
+    <Grid container spacing={2} width='100%'>
+      <Grid size={{ xs: 12, md: 4 }}>
+        <SmallCardBase>
+          <StatValueRow>
+            <Frame1Icon />
+            <Stack direction='column' spacing={0.5} ml={1}>
+              <StatTitle>Credits Remaining</StatTitle>
+              <StatValue>83</StatValue>
+            </Stack>
+          </StatValueRow>
+        </SmallCardBase>
+      </Grid>
 
-      <SmallCardBase sx={{ flex: 1 }}>
-        <StatTitle>Resumes Created</StatTitle>
-        <StatValue>3</StatValue>
-      </SmallCardBase>
+      <Grid size={{ xs: 12, md: 4 }}>
+        <SmallCardBase>
+          <StatValueRow>
+            <Frame2Icon />
+            <Stack direction='column' spacing={0.5} ml={1}>
+              <StatTitle>Resumes Created</StatTitle>
+              <StatValue>3</StatValue>
+            </Stack>
+          </StatValueRow>
+        </SmallCardBase>
+      </Grid>
 
-      <SmallCardBase sx={{ flex: 1 }}>
-        <StatTitle>Interview Practices</StatTitle>
-        <StatValueRow>
-          <StatValue>3</StatValue>
-          <MuiChip
-            size='small'
-            label='+1 today'
-            sx={{
-              borderRadius: 999,
-              fontSize: 11,
-              height: 22,
-              backgroundColor: '#F0F0F0',
-              color: DASHBOARD_COLORS.lightText,
-            }}
-          />
-        </StatValueRow>
-      </SmallCardBase>
-    </Stack>
+      <Grid size={{ xs: 12, md: 4 }}>
+        <SmallCardBase>
+          <StatValueRow>
+            <Frame3Icon />
+            <Stack direction='column' spacing={0.5} ml={1}>
+              <StatTitle>Interview Practices</StatTitle>
+              <StatValueRow>
+                <StatValue>3</StatValue>
+              </StatValueRow>
+            </Stack>
+          </StatValueRow>
+        </SmallCardBase>
+      </Grid>
+    </Grid>
   );
 };
 
 export default TopStats;
-
-
-
