@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 
 import { Check, Close } from '@mui/icons-material';
 import { Box, CardContent, IconButton } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
+import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 import MuiButton from '@/components/UI/MuiButton';
@@ -36,7 +37,12 @@ import {
   ExperienceTextareaAutosize,
 } from './ResumeEditor/styled';
 
-const ResumeEditor = () => {
+interface ResumeEditorProps {
+  setActiveStep: (activeStep: number) => void;
+}
+
+const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
+  const { setActiveStep } = props;
   const router = useRouter();
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
@@ -261,8 +267,15 @@ const ResumeEditor = () => {
       </MainCardContainer>
 
       <FooterContainer>
-        <MuiButton color='secondary' variant='outlined' size='large' text='Regenerate All' />
-        <MuiButton color='secondary' variant='contained' size='large' text='Submit' onClick={handleSubmit} />
+        <MuiButton
+          text='Back'
+          variant='outlined'
+          color='secondary'
+          startIcon={<ArrowBackIcon />}
+          onClick={() => setActiveStep(2)}
+        />
+
+        <MuiButton color='secondary' variant='contained' text='Submit' onClick={handleSubmit} />
       </FooterContainer>
     </ResumeContainer>
   );

@@ -21,7 +21,7 @@ const VoiceBox: React.FC<VoiceBoxProps> = ({ onClick }) => {
 
       <OrDivider>
         <DividerLine />
-        <Typography variant='body2' color='text.primary' px={2}>
+        <Typography variant='body2' color='text.primary' bgcolor='transparent' mx={1}>
           Or
         </Typography>
         <DividerLine />

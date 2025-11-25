@@ -28,7 +28,7 @@ export const OrDivider = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   width: '11rem',
-  marginTop: '1rem',
+  marginTop: '2rem',
   marginBottom: '1rem',
 }));
 
