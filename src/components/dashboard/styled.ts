@@ -1,7 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-// Shared constants for the dashboard page
 export const DASHBOARD_COLORS = {
   background: '#F7F7F7',
   cardBackground: '#FFFFFF',
@@ -12,13 +11,15 @@ export const DASHBOARD_COLORS = {
   darkText: '#1C1C1C',
 };
 
-export const DashboardRoot = styled(Stack)(() => ({
+export const DashboardRoot = styled(Stack)(({ theme }) => ({
   width: '100%',
-  minHeight: '100vh',
+  minHeight: '150vh',
   boxSizing: 'border-box',
-  backgroundColor: DASHBOARD_COLORS.background,
   padding: 24,
+  border: `1px solid ${theme.palette.grey[100]}`,
+  borderRadius: '8px',
   gap: 24,
+  margin: '8px',
 }));
 
 export const SectionHeader = styled(Stack)(() => ({
@@ -26,7 +27,6 @@ export const SectionHeader = styled(Stack)(() => ({
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'space-between',
-  marginBottom: 16,
 }));
 
 export const SectionTitle = styled(Typography)(() => ({
@@ -36,16 +36,62 @@ export const SectionTitle = styled(Typography)(() => ({
 }));
 
 export const CardBase = styled(Box)(() => ({
-  borderRadius: 18,
-  backgroundColor: DASHBOARD_COLORS.cardBackground,
-  boxShadow: '0 12px 30px #00000010',
+  borderRadius: 8,
   padding: 20,
   boxSizing: 'border-box',
 }));
 
-export const SmallCardBase = styled(CardBase)(() => ({
-  borderRadius: 16,
+export const CommunityCardRoot = styled(CardBase)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 16,
+  border: `1px solid ${theme.palette.grey[100]}`,
+  boxShadow: theme.shadows[1],
+  borderRadius: 8,
+}));
+
+export const CommunityIconCircle = styled(Stack)(() => ({
+  width: 42,
+  height: 42,
+  borderRadius: '50%',
+  backgroundColor: '#F0F0F5',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+export const CommunityIconWrapper = styled(Box)(() => ({
+  '& svg': {
+    fontSize: 22,
+    color: DASHBOARD_COLORS.darkText,
+  },
+}));
+
+export const SuggestedJobCardItem = styled(Box)(({ theme }) => ({
+  borderRadius: 8,
+  boxSizing: 'border-box',
+  border: `1px solid ${theme.palette.grey['100']}`,
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1.5,
+}));
+
+export const CardBaseiNTER = styled(Box)(({ theme }) => ({
+  borderRadius: 8,
+  backgroundColor: theme.palette.warning.light,
+  border: `1px solid ${theme.palette.warning.main}`,
+
+  padding: 20,
+  boxSizing: 'border-box',
+}));
+
+export const SmallCardBase = styled(CardBase)(({ theme }) => ({
+  borderRadius: 8,
   padding: 16,
+  border: `1px solid ${theme.palette.grey[100]}`,
 }));
 
 export const StatTitle = styled(Typography)(() => ({
@@ -67,19 +113,7 @@ export const StatValue = styled(Typography)(() => ({
   color: DASHBOARD_COLORS.darkText,
 }));
 
-export const OrangeBadge = styled(Box)(() => ({
-  borderRadius: 999,
-  padding: '4px 10px',
-  backgroundColor: DASHBOARD_COLORS.orangeTag,
-  color: '#FFFFFF',
-  fontSize: 11,
-  fontWeight: 600,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-export const TagPill = styled(Box)(() => ({
+export const TagPill = styled(Typography)(({ theme }) => ({
   borderRadius: 999,
   padding: '4px 10px',
   fontSize: 11,
@@ -87,39 +121,20 @@ export const TagPill = styled(Box)(() => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: '#FFF2E5',
-  color: '#B35A19',
+  backgroundColor: theme.palette.warning.light,
+  border: `1px solid ${theme.palette.warning.main}`,
+  color: theme.palette.warning.main,
 }));
 
-export const MetaText = styled(Typography)(() => ({
-  fontSize: 12,
-  color: DASHBOARD_COLORS.lightText,
-}));
-
-export const JobTitle = styled(Typography)(() => ({
-  fontSize: 18,
-  fontWeight: 600,
-  color: DASHBOARD_COLORS.darkText,
-  marginTop: 6,
-  marginBottom: 8,
-}));
-
-export const BodyText = styled(Typography)(() => ({
-  fontSize: 14,
-  lineHeight: 1.5,
-  color: DASHBOARD_COLORS.darkText,
+export const JobTitleBox = styled(Typography)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[100],
+  borderBottom: `1px solid ${theme.palette.grey[100]}`,
+  padding: '15px',
 }));
 
 export const SubText = styled(Typography)(() => ({
   fontSize: 12,
   color: DASHBOARD_COLORS.lightText,
-}));
-
-export const GreenDot = styled(Box)(() => ({
-  width: 8,
-  height: 8,
-  borderRadius: '50%',
-  backgroundColor: DASHBOARD_COLORS.greenSuccess,
 }));
 
 export const AvatarGlowWrapper = styled(Box)(() => ({

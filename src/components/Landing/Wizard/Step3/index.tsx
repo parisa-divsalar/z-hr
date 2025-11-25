@@ -13,10 +13,10 @@ const Step3: FunctionComponent<Step3Props> = (props) => {
 
   return (
     <Stack alignItems='center' height='100%' p={2}>
-      <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
+      <Typography variant='h5' color='text.primary' fontWeight='700' mt={2}>
         CV Preview
       </Typography>
-      <Typography variant='h6' color='text.primary'>
+      <Typography variant='h6' color='text.primary' my={1}>
         You can view and edit resume
       </Typography>
 

@@ -24,9 +24,9 @@ export const StackContainer = styled(Stack)(() => ({
 
 export const StackContent = styled(Stack)(() => ({
   flexGrow: '1',
-  padding: '0.5rem 0',
-  alignItems: 'center',
-  textAlign: 'center',
+  padding: '0.5rem 2px',
+  alignItems: 'left',
+  textAlign: 'left',
 }));
 
 export const HeaderContainer = styled(Stack)(({ theme }) => ({

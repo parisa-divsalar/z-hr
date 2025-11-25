@@ -8,13 +8,15 @@ export const PublicRoutes = {
 
 export const PrivateRoutes = {
   dashboard: '/dashboard',
+  history: '/history',
 };
 
 export const VisibilityLayout: string[] = [
   PublicRoutes.landing,
   PrivateRoutes.dashboard,
+  PrivateRoutes.history,
   PublicRoutes.moreFeatures,
   PublicRoutes.resumeGenerator,
 ];
 
-export const VisibilitySideBar: string[] = [PrivateRoutes.dashboard];
+export const VisibilitySideBar: string[] = [PrivateRoutes.dashboard, PrivateRoutes.history];

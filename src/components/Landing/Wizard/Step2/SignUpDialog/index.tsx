@@ -32,10 +32,10 @@ const SignUpDialog: FunctionComponent<SignUpDialogProps> = (props) => {
         </HeaderContainer>
 
         <StackContent>
-          <Typography color='text.primary' variant='subtitle2'>
+          <Typography color='text.primary' variant='subtitle2' mx={2}>
             To use it, you need to sign up for Z-CV.
           </Typography>
-          <Typography color='text.primary' variant='subtitle2' mt={2}>
+          <Typography color='text.primary' variant='subtitle2' mx={2} mt={2}>
             You can use it for free, and for your registration, we will take 10 credits for usage.
           </Typography>
         </StackContent>
