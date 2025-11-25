@@ -1,37 +1,36 @@
-import { useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 
 import { Stack } from '@mui/material';
 
+import { AIStatus } from '@/components/Landing/type';
 import Step1 from '@/components/Landing/Wizard/Step1';
 import Step2 from '@/components/Landing/Wizard/Step2';
 import Step3 from '@/components/Landing/Wizard/Step3';
 import StepWrapper from '@/components/Landing/Wizard/Stepper';
 
-const Wizard = () => {
+interface WizardProps {
+  setAiStatus: (status: AIStatus) => void;
+}
+
+const Wizard: FunctionComponent<WizardProps> = (props) => {
+  const { setAiStatus } = props;
   const [activeStep, setActiveStep] = useState<number>(1);
-  const [showSelectSkill, setShowSelectSkill] = useState(true);
 
   const getSubChildWizard = () => {
     switch (activeStep) {
       case 1:
-        return (
-          <Step1
-            setActiveStep={setActiveStep}
-            showSelectSkill={showSelectSkill}
-            setShowSelectSkill={setShowSelectSkill}
-          />
-        );
+        return <Step1 setAiStatus={setAiStatus} setActiveStep={setActiveStep} />;
       case 2:
         return <Step2 setActiveStep={setActiveStep} />;
       case 3:
-        return <Step3 />;
+        return <Step3 setActiveStep={setActiveStep} />;
       default:
         return <Stack />;
     }
   };
 
   return (
-    <Stack alignItems='center' height='100%' p={3}>
+    <Stack width='100%' height='100%' alignItems='center' p={8}>
       <StepWrapper activeStep={activeStep} />
 
       {getSubChildWizard()}

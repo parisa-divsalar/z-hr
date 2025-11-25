@@ -33,9 +33,8 @@ export const LeftSection = styled(Box)(({ theme }) => ({
 }));
 
 export const TitleSection = styled(Box)(() => ({
-  display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '9px',
 }));
 
 export const Description = styled(Box)(({ theme }) => ({
@@ -82,12 +81,12 @@ export const ResumeCardGrid = styled(Box)(() => ({
   gridTemplateColumns: 'repeat(2, 126px)',
   gap: 12,
   maxWidth: 'fit-content',
-  marginTop: '-50px',
-  transition: 'transform 0.5s ease-in-out',
+  marginTop: '-30px',
+  transition: 'transform 4s ease-out',
   position: 'relative',
 
   '&:hover': {
-    transform: 'translateY(-130px)', // تنظیم مجدد اسلاید برای نمایش مناسب
+    transform: 'translateY(-45px)',
   },
 }));
 

@@ -3,6 +3,7 @@
 import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
+import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import ResumeTemplates from '@/components/ResumeTemplates';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
@@ -11,13 +12,11 @@ import {
   JobSuggestionsContainer,
   JobSuggestionsLeft,
   JobSuggestionsHeader,
-  MoreButton,
   JobSuggestionsRight,
   CardsWrapper,
   SuggestionCard,
   SuggestionCardHeader,
   NumberBadge,
-  SoftSkillTag,
 } from './styled';
 
 const MoreFeaturesPage = () => {
@@ -27,7 +26,8 @@ const MoreFeaturesPage = () => {
     {
       id: 1,
       title: 'Job Position Suggestions',
-      description: 'Get personalized job recommendations based on your skills and experience',
+      description:
+        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
       cards: [
         {
           number: 1,
@@ -39,63 +39,86 @@ const MoreFeaturesPage = () => {
           number: 2,
           title: 'Questions',
           tag: 'Soft skill',
-          answer: 'I thrive in collaborative environments and enjoy working with diverse teams.',
+          answer: 'I thrive in collaborative environments and enjoy working with.',
         },
         {
           number: 3,
           title: 'Questions',
           tag: 'Soft skill',
-          answer: 'Problem-solving is my strength. I approach challenges methodically.',
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: 'Skill Assessment Tools',
-      description: 'Evaluate and improve your professional skills with our comprehensive tools',
-      cards: [
-        {
-          number: 1,
-          title: 'Technical Skills',
-          tag: 'Hard skill',
-          answer: 'I have strong proficiency in React, TypeScript, and modern web development frameworks.',
-        },
-        {
-          number: 2,
-          title: 'Leadership',
-          tag: 'Soft skill',
-          answer: 'I excel at mentoring junior developers and leading cross-functional teams.',
+          answer: 'Problem-solving is my strength. I approach challenges metho.',
         },
         {
           number: 3,
           title: 'Project Management',
           tag: 'Soft skill',
-          answer: 'I use Agile methodologies to deliver projects on time and within budget.',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
+        },
+      ],
+    },
+
+    {
+      id: 2,
+      title: 'Skill Assessment Tools',
+      description:
+        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+
+      cards: [
+        {
+          number: 1,
+          title: 'Technical Skills',
+          tag: 'Hard skill',
+          answer: 'I have strong proficiency in React, TypeScript, and modern .',
+        },
+        {
+          number: 2,
+          title: 'Leadership',
+          tag: 'Soft skill',
+          answer: 'I excel at mentoring junior developers and leading  teams.',
+        },
+        {
+          number: 3,
+          title: 'Project Management',
+          tag: 'Soft skill',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
+        },
+        {
+          number: 3,
+          title: 'Project Management',
+          tag: 'Soft skill',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
         },
       ],
     },
     {
       id: 3,
       title: 'Career Development',
-      description: 'Advance your career with personalized development plans and resources',
+      description:
+        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+
       cards: [
         {
           number: 1,
           title: 'Goal Setting',
           tag: 'Career planning',
-          answer: 'I set SMART goals and regularly review progress to ensure continuous growth.',
+          answer: 'I set SMART goals and regularly review progress to ensure .',
         },
         {
           number: 2,
           title: 'Networking',
           tag: 'Professional development',
-          answer: 'I actively build and maintain professional relationships in my industry.',
+          answer: 'I actively build and maintain professional relationships .',
         },
         {
           number: 3,
           title: 'Continuous Learning',
-          tag: 'Education',
-          answer: 'I dedicate time weekly to learning new technologies and industry trends.',
+          tag: 'Education  ',
+          answer: 'I dedicate time weekly to learning new technologies and .',
+        },
+        {
+          number: 3,
+          title: 'Project Management',
+          tag: 'Soft skill',
+          answer: 'I use Agile methodologies to deliver projects on  budget.',
         },
       ],
     },
@@ -105,13 +128,22 @@ const MoreFeaturesPage = () => {
     <>
       <Stack textAlign='center' mt={2}>
         <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
-          More Features{' '}
+          More Features
         </Typography>
         <Typography variant='h6' color='text.primary' mt={2}>
           You can utilize these features with your resume
         </Typography>
       </Stack>
       <Grid container spacing={2} mt={2}>
+        <Grid size={{ xs: 6 }}>
+          <ResumeTemplates />
+          <Box mt={2.5}>
+            <ResumeTemplates />
+          </Box>
+          <Box mt={2.5}>
+            <ResumeTemplates />
+          </Box>
+        </Grid>
         <Grid size={{ xs: 6 }}>
           {jobSuggestions.map((suggestion) => (
             <Box key={suggestion.id} sx={{ border: `1px solid`, borderColor: 'grey.200', borderRadius: '8px', mb: 2 }}>
@@ -120,14 +152,21 @@ const MoreFeaturesPage = () => {
                   <JobSuggestionsHeader>
                     <MuiCheckbox
                       label={
-                        <Typography variant='h6' fontWeight='600' color='text.primary'>
-                          {suggestion.title}
+                        <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+                          suggestion.title
                         </Typography>
                       }
-                      helperText={suggestion.description}
                     />
+                    <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={1.5} ml={0.7}>
+                      {suggestion.description}
+                    </Typography>
                   </JobSuggestionsHeader>
-                  <MoreButton>More</MoreButton>
+                  <MuiButton
+                    text='More'
+                    variant='contained'
+                    color='secondary'
+                    sx={{ backgroundColor: '#F0F0F2', color: 'secondary.main' }}
+                  />
                 </JobSuggestionsLeft>
                 <JobSuggestionsRight>
                   <CardsWrapper>
@@ -139,7 +178,7 @@ const MoreFeaturesPage = () => {
                             <Typography variant='body2' fontWeight='600' color='text.primary'>
                               {card.title}
                             </Typography>
-                            <SoftSkillTag>{card.tag}</SoftSkillTag>
+                            {/*<SoftSkillTag>{card.tag}</SoftSkillTag>*/}
                           </Box>
                         </SuggestionCardHeader>
                         <Typography variant='body2' color='text.secondary'>
@@ -156,20 +195,10 @@ const MoreFeaturesPage = () => {
             </Box>
           ))}
         </Grid>
-
-        <Grid size={{ xs: 6 }}>
-          <ResumeTemplates />
-          <Box mt={2.5}>
-            <ResumeTemplates />
-          </Box>
-          <Box mt={2.5}>
-            <ResumeTemplates />
-          </Box>
-        </Grid>
       </Grid>
 
-      <Stack direction='row' spacing={2} justifyContent='center' mt={4}>
-        <MuiButton text='Back' variant='outlined' color='secondary' />
+      <Stack direction='row' spacing={2} justifyContent='center' p={5}>
+        <MuiButton text='Back' variant='outlined' color='secondary' startIcon={<ArrowBackIcon />} />
         <MuiButton
           text='Submit'
           variant='contained'

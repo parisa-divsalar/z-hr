@@ -2,20 +2,18 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
-import ArrowLeftIcon from '@/assets/images/icons/arrow-left.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
+import { StageWizard } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 
 import { InputContainer, InputContent, MainContainer } from './styled';
 
 interface SKillInputProps {
-  setShowSelectSkill: (showSelectSkill: boolean) => void;
-  setActiveStep: (activeStep: number) => void;
+  setStage: (stage: StageWizard) => void;
 }
 
-const SKillInput: FunctionComponent<SKillInputProps> = (props) => {
-  const { setActiveStep, setShowSelectSkill } = props;
-
+const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
   const [answer, setAnswer] = useState('');
 
   return (
@@ -31,15 +29,20 @@ const SKillInput: FunctionComponent<SKillInputProps> = (props) => {
         />
       </InputContainer>
 
-      <Stack direction='row' mt={6} gap={2}>
-        <MuiButton color='secondary' startIcon={<ArrowLeftIcon />} onClick={() => setShowSelectSkill(true)}>
-          Prev
+      <Stack mt={4} mb={6} direction='row' spacing={2}>
+        <MuiButton
+          color='secondary'
+          variant='outlined'
+          startIcon={<ArrowBackIcon />}
+          onClick={() => setStage('SELECT_SKILL')}
+        >
+          Back
         </MuiButton>
 
         <MuiButton
           color='secondary'
           endIcon={<ArrowRightIcon />}
-          onClick={() => setActiveStep(2)}
+          onClick={() => setStage('QUESTIONS')}
           disabled={answer === ''}
         >
           Next

@@ -1,57 +1,79 @@
 import { FunctionComponent } from 'react';
 
-import { Mic } from '@mui/icons-material';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import { Stack, Typography } from '@mui/material';
 
 import AddIcon from '@/assets/images/icons/add.svg';
+import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import MicIcon from '@/assets/images/icons/download1.svg';
+import ImageIcon from '@/assets/images/icons/download2.svg';
+import VideoIcon from '@/assets/images/icons/download3.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
-import { Container, Tile, Label, IconWrapper, CheckBadge } from './styled';
+import { Container, Tile, Label, IconWrapper, Row, Status } from './styled';
 
 interface VoiceResultProps {
   onSubmit: () => void;
 }
 
-const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
-  const { onSubmit } = props;
-
+const VoiceResult: FunctionComponent<VoiceResultProps> = ({ onSubmit }) => {
   return (
-    <Stack alignItems='center' justifyContent='center' height='100%'>
+    <Stack alignItems='center' justifyContent='center' height='100%' spacing={3}>
       <Typography color='text.primary' variant='h6'>
         Uploaded
       </Typography>
-      <Typography color='text.primary' variant='h5' fontWeight='600'>
+      <Typography color='text.primary' variant='h5' fontWeight='600' textAlign='center'>
         You can add more items for the best results before you start thinking.
       </Typography>
 
       <Container>
-        <Stack alignItems='center'>
-          <Tile>
-            <IconWrapper>
-              <Mic sx={{ fontSize: 36, color: '#5E3FFF' }} />
-            </IconWrapper>
-            <CheckBadge title='Active'>
-              <CheckRoundedIcon sx={{ color: 'white' }} fontSize='small' />
-            </CheckBadge>
-          </Tile>
-          <Label>100%</Label>
-        </Stack>
+        <Row>
+          <Stack direction='row' spacing={2} alignItems='center'>
+            <Tile>
+              <IconWrapper>
+                <MicIcon />
+              </IconWrapper>
+            </Tile>
+            <Label>Voice (1)</Label>
+          </Stack>
+          <Status>Done</Status>
+        </Row>
 
-        <Stack alignItems='center'>
-          <Tile aria-label='add' sx={{ borderColor: '#e0e0e0' }}>
-            <IconWrapper>
-              <AddIcon />
-            </IconWrapper>
-          </Tile>
-          <Label sx={{ color: 'text.secondary' }} onClick={() => {}} role='button'>
-            Add
-          </Label>
-        </Stack>
+        <Row>
+          <Stack direction='row' spacing={2} alignItems='center'>
+            <Tile>
+              <IconWrapper>
+                <ImageIcon />
+              </IconWrapper>
+            </Tile>
+            <Label>Photo (2)</Label>
+          </Stack>
+          <Status>Done</Status>
+        </Row>
+
+        <Row>
+          <Stack direction='row' spacing={2} alignItems='center'>
+            <Tile>
+              <IconWrapper>
+                <VideoIcon />
+              </IconWrapper>
+            </Tile>
+            <Label>Video (1)</Label>
+          </Stack>
+          <Status>Done</Status>
+        </Row>
       </Container>
 
-      <Stack mt={8} width='10rem'>
-        <MuiButton color='secondary' fullWidth onClick={onSubmit}>
+      <Stack mt={4} direction='row' spacing={2} justifyContent='center'>
+        <MuiButton
+          color='secondary'
+          variant='outlined'
+          onClick={onSubmit}
+          startIcon={<AddIcon />}
+          sx={{ width: 150, height: 58 }}
+        >
+          Add more
+        </MuiButton>
+        <MuiButton color='secondary' onClick={onSubmit} sx={{ width: 150, height: 58 }} endIcon={<ArrowRightIcon />}>
           Submit
         </MuiButton>
       </Stack>

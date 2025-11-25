@@ -1,8 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
 
-import MuiButton from '@/components/UI/MuiButton';
 import { PublicRoutes } from '@/config/routes';
+import DashboardModule from '@/modules/dashboard';
 import { useAuthStore } from '@/store/auth';
 
 const DashboardPage = () => {
@@ -11,17 +11,10 @@ const DashboardPage = () => {
 
   const handleLogout = () => {
     logout();
-    router.replace(PublicRoutes.login);
+    router.replace(PublicRoutes.landing);
   };
 
-  return (
-    <div style={{ padding: 40 }}>
-      <h2>Welcome 👋</h2>
-      <MuiButton onClick={handleLogout} color='error'>
-        خروج
-      </MuiButton>
-    </div>
-  );
+  return <DashboardModule onLogout={handleLogout} />;
 };
 
 export default DashboardPage;

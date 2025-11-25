@@ -3,23 +3,28 @@ import { styled } from '@mui/material/styles';
 
 export const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(4),
-  alignItems: 'flex-start',
+  flexDirection: 'column',
+  gap: theme.spacing(2.5),
   marginTop: '3rem',
+  width: '100%',
+  maxWidth: 420,
 }));
 
-export const Tile = styled(Box)(({ theme }) => ({
-  width: 76,
-  height: 76,
+export const Row = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: theme.spacing(1.5, 2),
+  boxSizing: 'border-box',
+}));
+
+export const Tile = styled(Box)(() => ({
+  width: 48,
+  height: 48,
   borderRadius: 16,
-  border: `2px solid ${theme.palette.primary.main}`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(94, 63, 255, 0.06)',
-  boxSizing: 'border-box',
-  position: 'relative',
-  cursor: 'pointer',
 }));
 
 export const IconWrapper = styled(Box)(() => ({
@@ -29,23 +34,13 @@ export const IconWrapper = styled(Box)(() => ({
 }));
 
 export const Label = styled(Typography)(({ theme }) => ({
-  marginTop: theme.spacing(1),
-  textAlign: 'center',
   fontSize: 16,
   fontWeight: 500,
+  color: theme.palette.text.primary,
 }));
 
-export const CheckBadge = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: -10,
-  right: -10,
-  width: 24,
-  height: 24,
-  borderRadius: '50%',
-  background: theme.palette.primary.main,
-  border: `3px solid #5E3FFF`,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+export const Status = styled(Typography)(() => ({
+  fontSize: 14,
+  fontWeight: 600,
+  color: '#00C853', // bright green
 }));

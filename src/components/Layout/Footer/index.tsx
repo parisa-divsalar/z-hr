@@ -1,5 +1,6 @@
 'use client';
 import { Stack, Typography } from '@mui/material';
+import { usePathname } from 'next/navigation';
 
 import Instagram from '@/assets/images/icons/instagram.svg';
 import SocialIcons from '@/assets/images/icons/social-icons.svg';
@@ -7,8 +8,13 @@ import SocialIcon from '@/assets/images/icons/social-in.svg';
 import SocialZ from '@/assets/images/icons/social-z.svg';
 import { VerticalDivider } from '@/components/Layout/Footer/styled';
 import classes from '@/components/Layout/layout.module.css';
+import { VisibilityLayout } from '@/config/routes';
 
 const Footer = () => {
+  const pathname = usePathname();
+
+  if (!VisibilityLayout.includes(pathname)) return null;
+
   return (
     <Stack direction='row' className={classes.mainFooter} borderColor='divider'>
       <Stack direction='row' gap={2}>

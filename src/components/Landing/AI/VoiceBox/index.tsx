@@ -6,20 +6,22 @@ import FrameVoiceIcon from '@/assets/images/design/Frame-voice.svg';
 
 import { CardContainer, VoiceButton, VoiceLabel, OrDivider, DividerLine } from './styled';
 
-interface VoiceButtonCardProps {
+interface VoiceBoxProps {
   onClick?: () => void;
 }
 
-const VoiceButtonCard: React.FC<VoiceButtonCardProps> = ({ onClick }) => {
+const VoiceBox: React.FC<VoiceBoxProps> = ({ onClick }) => {
   return (
     <CardContainer>
       <VoiceButton aria-label='Voice button' onClick={onClick}>
         <FrameVoiceIcon />
       </VoiceButton>
-      <VoiceLabel>Voice</VoiceLabel>
+
+      <VoiceLabel color='text.primary'>Voice</VoiceLabel>
+
       <OrDivider>
         <DividerLine />
-        <Typography variant='body2' color='text.primary' px={2}>
+        <Typography variant='body2' color='text.primary' bgcolor='transparent' mx={1}>
           Or
         </Typography>
         <DividerLine />
@@ -28,4 +30,4 @@ const VoiceButtonCard: React.FC<VoiceButtonCardProps> = ({ onClick }) => {
   );
 };
 
-export default VoiceButtonCard;
+export default VoiceBox;
