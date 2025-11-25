@@ -13,7 +13,7 @@ export const DASHBOARD_COLORS = {
 
 export const DashboardRoot = styled(Stack)(({ theme }) => ({
   width: '100%',
-  minHeight: '150vh',
+  minHeight: '155vh',
   boxSizing: 'border-box',
   padding: 24,
   border: `1px solid ${theme.palette.grey[100]}`,

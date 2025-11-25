@@ -18,7 +18,7 @@ const SuggestedJobCard = () => {
           Front end Developer
         </Typography>
       </JobTitleBox>
-      <Typography variant='subtitle2' color='text.primary' fontWeight='400' px={2}>
+      <Typography variant='subtitle2' color='text.primary' fontWeight='400' p={2}>
         09/09/2025 · Remote · Dubai
       </Typography>
 
