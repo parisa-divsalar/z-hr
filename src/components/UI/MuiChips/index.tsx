@@ -21,13 +21,13 @@ const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
   const chipLabel = labelProp ?? label;
 
   const handleSelect = () => {
-    if (!onUpdateSkill) return;
+    if (!onUpdateSkill || !id) return;
     if (!selected) onUpdateSkill(id, true);
   };
 
   const handleUnselect = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    if (!onUpdateSkill) return;
+    if (!onUpdateSkill || !id) return;
     onUpdateSkill(id, false);
   };
 

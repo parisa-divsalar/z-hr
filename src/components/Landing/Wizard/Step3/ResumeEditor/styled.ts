@@ -31,12 +31,11 @@ export const FooterContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
   marginTop: theme.spacing(4),
   paddingTop: theme.spacing(3),
-  borderTop: `1px solid ${theme.palette.divider}`,
 }));
 
 // Resume Editor styled components
 export const ResumeContainer = styled(Box)(() => ({
-  maxWidth: 800,
+  maxWidth: 748,
   margin: '0 auto',
   padding: '24px',
 }));

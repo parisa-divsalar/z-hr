@@ -1,7 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-// Shared constants for the dashboard page
 export const DASHBOARD_COLORS = {
   background: '#F7F7F7',
   cardBackground: '#FFFFFF',
@@ -36,14 +35,12 @@ export const SectionTitle = styled(Typography)(() => ({
   color: DASHBOARD_COLORS.darkText,
 }));
 
-export const CardBase = styled(Box)(({ theme }) => ({
+export const CardBase = styled(Box)(() => ({
   borderRadius: 8,
-  // backgroundColor: theme.palette.warning.light,
   padding: 20,
   boxSizing: 'border-box',
 }));
 
-// Community section specific styles
 export const CommunityCardRoot = styled(CardBase)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
@@ -86,7 +83,7 @@ export const CardBaseiNTER = styled(Box)(({ theme }) => ({
   borderRadius: 8,
   backgroundColor: theme.palette.warning.light,
   border: `1px solid ${theme.palette.warning.main}`,
-  marginTop: '10px',
+
   padding: 20,
   boxSizing: 'border-box',
 }));

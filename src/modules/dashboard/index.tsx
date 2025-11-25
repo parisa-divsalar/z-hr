@@ -1,4 +1,4 @@
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
 import CommunitySection from '@/components/dashboard/CommunitySection';
@@ -20,6 +20,11 @@ const DashboardModule = ({ onLogout }: DashboardModuleProps) => {
       </Typography>
       <Stack direction='row' alignItems='center' justifyContent='space-between'>
         <TopStats />
+        {onLogout && (
+          <Button variant='outlined' size='small' onClick={onLogout}>
+            Logout
+          </Button>
+        )}
       </Stack>
       <Grid size={{ xs: 12, md: 12 }}>
         <UpcomingInterview />

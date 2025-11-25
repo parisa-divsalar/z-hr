@@ -74,7 +74,7 @@ const VoiceRecording = ({
       try {
         audioRef.current.pause();
         audioRef.current.src = '';
-      } catch (_e) {
+      } catch {
         // ignore cleanup errors
       }
       audioRef.current = null;
@@ -83,7 +83,7 @@ const VoiceRecording = ({
     if (audioUrl && isInternalUrl) {
       try {
         URL.revokeObjectURL(audioUrl);
-      } catch (_e) {
+      } catch {
         // ignore cleanup errors
       }
       setIsInternalUrl(false);
@@ -128,9 +128,9 @@ const VoiceRecording = ({
         if (audioUrl && isInternalUrl) {
           try {
             URL.revokeObjectURL(audioUrl);
-          } catch (_e) {
-        // ignore cleanup errors
-      }
+          } catch {
+            // ignore cleanup errors
+          }
         }
 
         setAudioUrl(url);
@@ -189,7 +189,7 @@ const VoiceRecording = ({
         try {
           audioRef.current.pause();
           audioRef.current.src = '';
-        } catch (_e) {
+        } catch {
           // ignore cleanup errors
         }
         audioRef.current = null;
@@ -326,7 +326,7 @@ const VoiceRecording = ({
       try {
         audioRef.current.pause();
         audioRef.current.src = '';
-      } catch (_e) {
+      } catch {
         // ignore cleanup errors
       }
       audioRef.current = null;

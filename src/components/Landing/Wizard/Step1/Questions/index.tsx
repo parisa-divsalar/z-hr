@@ -68,7 +68,9 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
             ))}
           </MediaRow>
         </TopSection>
-
+        <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center' mt={3}>
+          Questions
+        </Typography>
         <QuestionList>
           {questionNumbers.map((num, index) => (
             <React.Fragment key={num}>
@@ -107,7 +109,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
       </MiddleSection>
 
       <BottomSection>
-        <Stack direction='row' spacing={2} justifyContent='center'>
+        <Stack direction='row' spacing={2} justifyContent='center' m={4}>
           <MuiButton color='secondary' variant='outlined' startIcon={<AddIcon />} onClick={() => setAiStatus('START')}>
             Add more
           </MuiButton>
