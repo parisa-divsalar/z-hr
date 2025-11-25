@@ -12,14 +12,7 @@ import { SectionHeader, SubText, JobTitleBox, SuggestedJobCardItem } from './sty
 
 const SuggestedJobCard = () => {
   return (
-    <SuggestedJobCardItem
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1.5,
-      }}
-    >
+    <SuggestedJobCardItem>
       <JobTitleBox>
         <Typography variant='h6' color='text.primary' fontWeight='400'>
           Front end Developer
@@ -42,11 +35,11 @@ const SuggestedJobCard = () => {
 
       <Stack direction='row' gap={1} alignItems='center' px={2} mt={1}>
         <Box1Icon />
-        <SubText sx={{ fontWeight: 600 }}>99% Fit with this Position</SubText>
+        <SubText sx={{ fontWeight: 600 }}>98% Fit with this Position</SubText>
       </Stack>
       <Stack direction='row' gap={1} alignItems='center' px={2} mt={1}>
         <Box2Icon />
-        <SubText sx={{ fontWeight: 600 }}>99% Fit with this Position</SubText>
+        <SubText sx={{ fontWeight: 600 }}>Zayd Al-Mansoori’s Resume</SubText>
       </Stack>
 
       <Stack direction='row' alignItems='center' justifyContent='space-between' px={2} p={2}>

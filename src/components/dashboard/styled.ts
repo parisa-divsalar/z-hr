@@ -16,12 +16,13 @@ export const DASHBOARD_COLORS = {
 
 export const DashboardRoot = styled(Stack)(({ theme }) => ({
   width: '100%',
-  minHeight: '140vh',
+  minHeight: '150vh',
   boxSizing: 'border-box',
   padding: 24,
   border: `1px solid ${theme.palette.grey[100]}`,
   borderRadius: '8px',
   gap: 24,
+  margin: '8px',
 }));
 
 export const SectionHeader = styled(Stack)(() => ({
@@ -77,6 +78,10 @@ export const SuggestedJobCardItem = styled(Box)(({ theme }) => ({
   borderRadius: 8,
   boxSizing: 'border-box',
   border: `1px solid ${theme.palette.grey['100']}`,
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1.5,
 }));
 
 export const CardBaseiNTER = styled(Box)(({ theme }) => ({
@@ -145,8 +150,8 @@ export const TagPill = styled(Typography)(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  // Use warning colors from theme instead of hard‑coded values
-  backgroundColor: theme.palette.warning.light, // like "warning/base" background
+  backgroundColor: theme.palette.warning.light,
+  border: `1px solid ${theme.palette.warning.main}`,
   color: theme.palette.warning.main,
 }));
 
@@ -157,7 +162,7 @@ export const MetaText = styled(Typography)(() => ({
 
 export const JobTitleBox = styled(Typography)(({ theme }) => ({
   backgroundColor: theme.palette.grey[100],
-  borderButton: theme.palette.grey[100],
+  borderBottom: `1px solid ${theme.palette.grey[100]}`,
   padding: '15px',
 }));
 

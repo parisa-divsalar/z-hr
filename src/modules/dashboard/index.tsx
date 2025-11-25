@@ -34,6 +34,9 @@ const DashboardModule = ({ onLogout }: DashboardModuleProps) => {
         <Grid size={{ xs: 12, md: 12 }}>
           <CommunitySection />
         </Grid>
+      </Grid>
+
+      <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 12 }}>
           <SkillGapAnalysis />
         </Grid>
