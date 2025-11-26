@@ -1,0 +1,102 @@
+export type HistoryChannel = {
+  id: string;
+  name: string;
+  date: string;
+  Percentage: string;
+  position: string;
+  level: string;
+  title: string;
+  Voice: string;
+  Photo: string;
+  size: string;
+  Video: string;
+  description: string;
+};
+
+export const communityChannels: HistoryChannel[] = [
+  {
+    id: '1',
+    name: "Zayd Al-Mansoori's Resume",
+    date: '09/09/2025',
+    Percentage: '89%',
+    size: '2.85 MB',
+    position: 'Front-end',
+    level: 'Mid-senior',
+    title: 'Frontend channel!',
+    Voice: 'Voice',
+    Photo: 'Photo',
+    Video: 'Video',
+    description: '3 Suggested Position',
+  },
+  {
+    id: '2',
+    name: "Sarah Ahmed's Portfolio",
+    date: '11/15/2025',
+    Percentage: '95%',
+    size: '3.2 MB',
+    position: 'Full-stack',
+    level: 'Senior',
+    title: 'Full-stack Developer',
+    Voice: 'Voice',
+    Photo: 'Photo',
+    Video: 'Video',
+    description: '5 Suggested Position',
+  },
+  {
+    id: '3',
+    name: 'Mohammed Hassan CV',
+    date: '10/22/2025',
+    Percentage: '78%',
+    size: '1.95 MB',
+    position: 'Back-end',
+    level: 'Junior',
+    title: 'Backend Developer',
+    Voice: 'Voice',
+    Photo: 'Photo',
+    Video: 'Video',
+    description: '2 Suggested Position',
+  },
+  {
+    id: '4',
+    name: "Fatima Ali's Resume",
+    date: '11/01/2025',
+    Percentage: '92%',
+    size: '2.5 MB',
+    position: 'UI/UX Designer',
+    level: 'Mid-senior',
+    title: 'Product Designer',
+    Voice: 'Voice',
+    Photo: 'Photo',
+    Video: 'Video',
+    description: '4 Suggested Position',
+  },
+  {
+    id: '5',
+    name: 'Omar Khalil Portfolio',
+    date: '08/30/2025',
+    Percentage: '85%',
+    size: '3.8 MB',
+    position: 'DevOps',
+    level: 'Senior',
+    title: 'DevOps Engineer',
+    Voice: 'Voice',
+    Photo: 'Photo',
+    Video: 'Video',
+    description: '3 Suggested Position',
+  },
+  {
+    id: '6',
+    name: 'Layla Ibrahim CV',
+    date: '11/20/2025',
+    Percentage: '88%',
+    size: '2.1 MB',
+    position: 'Mobile Developer',
+    level: 'Mid-senior',
+    title: 'React Native Developer',
+    Voice: 'Voice',
+    Photo: 'Photo',
+    Video: 'Video',
+    description: '6 Suggested Position',
+  },
+];
+
