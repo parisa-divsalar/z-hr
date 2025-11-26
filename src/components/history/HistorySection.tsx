@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CircularProgress, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import Dotsvertical from '@/assets/images/dashboard/dots-vertical.svg';
 import FrameFaw from '@/assets/images/dashboard/FrameFaw.svg';
@@ -41,12 +42,17 @@ const HistoryCard = ({
   Video,
   description,
 }: HistoryChannel) => {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleMoreClick = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleEditClick = () => {
+    router.push('/history-edite');
   };
 
   const handleFavorite = () => {
@@ -148,7 +154,6 @@ const HistoryCard = ({
         <Grid size={{ xs: 12, sm: 3, md: 3 }}>
           <Stack gap={11} alignItems='flex-end'>
             <RelativeStack direction='row' gap={3}>
-              {/*<Star  />*/}
               <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label='More options'>
                 <Dotsvertical />
               </MoreButton>
@@ -171,7 +176,7 @@ const HistoryCard = ({
               </PopupMenu>
             </RelativeStack>
             <Stack direction='row' gap={2}>
-              <MuiButton variant='outlined' color='secondary'>
+              <MuiButton variant='outlined' color='secondary' onClick={handleEditClick}>
                 Edit
               </MuiButton>
               <MuiButton variant='contained' color='secondary'>
@@ -201,8 +206,6 @@ const HistorySection = () => {
   };
 
   const handleSortOption = (sortType: string) => {
-    console.log('Sort by:', sortType);
-    // TODO: Implement sorting logic
     setIsSortMenuOpen(false);
   };
 
@@ -210,7 +213,6 @@ const HistorySection = () => {
     loadMoreItems();
   }, []);
 
-  // Close sort menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
