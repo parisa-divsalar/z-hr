@@ -3,14 +3,11 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 
 import { Typography, IconButton, Stack } from '@mui/material';
 
-import ButtonDIcon from '@/assets/images/icons/button-d.svg';
-import ButtonPIcon from '@/assets/images/icons/button-p.svg';
+import ButtonPIcon from '@/assets/images/icons/button-play.svg';
 import ButtonPuseIcon from '@/assets/images/icons/button-puse.svg';
-import ButtonRIcon from '@/assets/images/icons/button-r.svg';
+import { FilePreviewVoiceContainer, FilesStack, RemoveFileButton } from '@/components/Landing/AI/Attach/View/styled';
 import VoiceBoxRecording from '@/components/Landing/AI/Recording';
 import VoiceBox from '@/components/Landing/AI/VoiceBox';
-
-import { VoiceMessageContainer, WaveformContainer, WaveformBar, ProgressBar, TimeDisplay } from './styled';
 
 export type RecordingState = 'idle' | 'recording';
 export type PlaybackState = 'idle' | 'playing' | 'paused';
@@ -360,48 +357,23 @@ const VoiceRecord = ({
       )}
 
       {audioUrl && recordingState === 'idle' && (
-        <Stack alignItems='center'>
-          <Typography color='text.primary' variant='h5'>
-            Recorded time
-          </Typography>
-
-          <Typography variant='body2' color='error'>
-            {formatTime(audioDuration)}
-          </Typography>
-
-          <VoiceMessageContainer bgcolor='primary.light'>
-            <WaveformContainer>
-              {Array.from({ length: waveBarsCount }, (_, index) => {
-                const isPlayed = (index / Math.max(1, waveBarsCount)) * 100 <= audioProgress;
-                return (
-                  <WaveformBar key={index} isActive={playbackState === 'playing' && isPlayed} isPlayed={isPlayed} />
-                );
-              })}
-              <ProgressBar progress={audioProgress} />
-            </WaveformContainer>
-
-            <TimeDisplay>{formatTime(playbackState === 'idle' ? audioDuration : playbackTime)}</TimeDisplay>
-          </VoiceMessageContainer>
-
-          <Stack direction='row' gap={3} mt={2}>
+        <FilesStack direction='row' spacing={1}>
+          <FilePreviewVoiceContainer>
             <IconButton onClick={togglePlayback}>
               {playbackState === 'playing' ? <ButtonPuseIcon /> : <ButtonPIcon />}
             </IconButton>
 
-            <IconButton onClick={clearRecording}>
-              <ButtonRIcon />
-            </IconButton>
+            <Typography variant='body2' color='error'>
+              {formatTime(audioDuration)}
+            </Typography>
 
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation();
-                clearRecording();
-              }}
-            >
-              <ButtonDIcon />
-            </IconButton>
-          </Stack>
-        </Stack>
+            <RemoveFileButton onClick={clearRecording}>
+              <Typography variant='caption' sx={{ fontSize: '12px', lineHeight: 1 }}>
+                ×
+              </Typography>
+            </RemoveFileButton>
+          </FilePreviewVoiceContainer>
+        </FilesStack>
       )}
     </Stack>
   );

@@ -16,9 +16,25 @@ export const FilePreviewContainer = styled(Box)(() => ({
   borderColor: 'grey.300',
   overflow: 'hidden',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   backgroundColor: 'grey.50',
+}));
+
+export const FilePreviewVoiceContainer = styled(Box)(() => ({
+  position: 'relative',
+  width: 100,
+  height: 146,
+  borderRadius: '8px',
+  border: '1px solid',
+  borderColor: '#d3d3fb',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'white',
 }));
 
 export const RemoveFileButton = styled(IconButton)(() => ({
