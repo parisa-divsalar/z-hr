@@ -1,10 +1,9 @@
-'use client';
-
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Divider, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import Dotsvertical from '@/assets/images/dashboard/dots-vertical.svg';
 import FrameFaw from '@/assets/images/dashboard/FrameFaw.svg';
@@ -14,10 +13,7 @@ import ResumeIcon from '@/assets/images/dashboard/resume.svg?url';
 import TrashIcon from '@/assets/images/dashboard/trash-01.svg';
 import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
-import MuiButton from '@/components/UI/MuiButton';
-
 import {
-  HistoryCommunityCardRoot,
   HistoryImage,
   MenuContentStack,
   MenuItemStack,
@@ -26,14 +22,30 @@ import {
   RelativeStack,
   StyledDivider,
 } from '@/components/history/styled';
+import MuiButton from '@/components/UI/MuiButton';
 
-const PreviewEdite = () => {
+import { PreviewEditeRoot } from '../styled';
+
+interface PreviewEditeProps {
+  setActiveStep?: (step: number) => void;
+}
+
+const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleMoreClick = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleEditResume = () => {
+    if (setActiveStep) {
+      setActiveStep(3);
+    } else {
+      router.push('/?step=3');
+    }
   };
 
   const handleFavorite = () => {
@@ -45,7 +57,6 @@ const PreviewEdite = () => {
     setIsMenuOpen(false);
   };
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -66,25 +77,25 @@ const PreviewEdite = () => {
   }, [isMenuOpen]);
 
   return (
-    <HistoryCommunityCardRoot>
+    <PreviewEditeRoot>
       <Grid container spacing={2} alignItems='center'>
-        <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-          <HistoryImage m={1}>
+        <Grid size={{ xs: 12, sm: 12, md: 2 }}>
+          <HistoryImage p={2}>
             <Image src={ResumeIcon} alt='Resume preview' fill />
           </HistoryImage>
         </Grid>
 
         <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2}>
-          <Stack direction='row' gap={2}>
+          <Stack direction='row' gap={1}>
             <Typography variant='h6' fontWeight='500' color='text.primary'>
               Resume Name
             </Typography>
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary' mt={1}>
+            <Typography variant='subtitle2' fontWeight='400' color='text.secondary' mt={0.5}>
               85%
             </Typography>
           </Stack>
 
-          <Stack direction='row' gap={2} mt={1} alignItems='center'>
+          <Stack direction='row' gap={2} alignItems='center'>
             <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
               Nov 26, 2024
             </Typography>
@@ -105,30 +116,36 @@ const PreviewEdite = () => {
           <Stack direction='row' gap={3} alignItems='center' mt={2}>
             <Stack direction='row' gap={0.5} alignItems='center'>
               <VoiceIcon />
-              <Typography variant='body1' fontWeight='400' color='text.primary'>
-                0
+              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                Voice
               </Typography>
             </Stack>
             <Stack direction='row' gap={0.5} alignItems='center'>
               <ImageIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                1
+              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                Photo
               </Typography>
             </Stack>
             <Stack direction='row' gap={0.5} alignItems='center'>
               <VideoIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                0
+              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                Video
               </Typography>
             </Stack>
           </Stack>
 
-          <Stack direction='row' gap={1} mt={3}>
+          <Stack direction='row' gap={1} mt={2}>
             <Position />
 
             <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
-              This is a sample description for the resume
+              3 Suggested Position{' '}
             </Typography>
+          </Stack>
+
+          <Stack direction='row' gap={1} mt={2} alignItems='center'>
+            <FrameFaw />
+            <Divider orientation='vertical' flexItem sx={{ bgcolor: 'grey.100' }} />
+            <TrashIcon />
           </Stack>
         </Grid>
 
@@ -157,19 +174,18 @@ const PreviewEdite = () => {
               </PopupMenu>
             </RelativeStack>
             <Stack direction='row' gap={2}>
-              <MuiButton variant='outlined' color='secondary'>
+              <MuiButton variant='outlined' color='secondary' onClick={handleEditResume}>
                 Edit
               </MuiButton>
-              <MuiButton variant='contained' color='secondary'>
+              <MuiButton variant='contained' color='secondary' onClick={handleEditResume}>
                 Download
               </MuiButton>
             </Stack>
           </Stack>
         </Grid>
       </Grid>
-    </HistoryCommunityCardRoot>
+    </PreviewEditeRoot>
   );
 };
 
 export default PreviewEdite;
-
