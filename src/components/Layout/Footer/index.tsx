@@ -16,7 +16,7 @@ const Footer = () => {
   if (!VisibilityLayout.includes(pathname)) return null;
 
   return (
-    <Stack direction='row' className={classes.mainFooter} borderColor='divider'>
+    <Stack direction='row' className={classes.mainFooter} borderColor='divider' mt={2}>
       <Stack direction='row' gap={2}>
         <Typography variant='h5' color='text.primary' fontWeight='700'>
           Z-CV

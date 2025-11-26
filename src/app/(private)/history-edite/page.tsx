@@ -1,10 +1,11 @@
 'use client';
 
-import { Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import PreviewEdite from './PreviewEdite';
-import { HistoryEditeRoot, SectionCard } from './styled';
+import GapSection from './Components/GapSection';
+import PreviewEdite from './Components/PreviewEdite';
+import HistoryQuestions from './HistoryQuestionsDialog/HistoryQuestions';
+import { HistoryEditeRoot } from './styled';
 
 const HistoryEdite = () => {
   return (
@@ -15,25 +16,11 @@ const HistoryEdite = () => {
         </Grid>
 
         <Grid size={{ xs: 12, md: 12 }}>
-          <SectionCard>
-            <Typography variant='h6' fontWeight='500' color='text.primary'>
-              بخش دوم
-            </Typography>
-            <Typography variant='body1' color='text.secondary'>
-              این متن تستی برای بخش دوم است. محتوای این بخش را می‌توانید به دلخواه تغییر دهید.
-            </Typography>
-          </SectionCard>
+          <HistoryQuestions />
         </Grid>
 
         <Grid size={{ xs: 12, md: 12 }}>
-          <SectionCard>
-            <Typography variant='h6' fontWeight='500' color='text.primary'>
-              بخش سوم
-            </Typography>
-            <Typography variant='body1' color='text.secondary'>
-              این متن تستی برای بخش سوم است. شما می‌توانید هر نوع کامپوننتی را در این بخش قرار دهید.
-            </Typography>
-          </SectionCard>
+          <GapSection />
         </Grid>
       </Grid>
     </HistoryEditeRoot>

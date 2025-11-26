@@ -10,11 +10,12 @@ import StepWrapper from '@/components/Landing/Wizard/Stepper';
 
 interface WizardProps {
   setAiStatus: (status: AIStatus) => void;
+  initialStep?: number;
 }
 
 const Wizard: FunctionComponent<WizardProps> = (props) => {
-  const { setAiStatus } = props;
-  const [activeStep, setActiveStep] = useState<number>(1);
+  const { setAiStatus, initialStep = 1 } = props;
+  const [activeStep, setActiveStep] = useState<number>(initialStep);
 
   const getSubChildWizard = () => {
     switch (activeStep) {

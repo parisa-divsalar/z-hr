@@ -1,3 +1,5 @@
+import type { FC } from 'react';
+
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
@@ -12,7 +14,7 @@ type DashboardModuleProps = {
   onLogout?: () => void;
 };
 
-const DashboardModule = ({ onLogout }: DashboardModuleProps) => {
+const DashboardModule: FC<DashboardModuleProps> = () => {
   return (
     <DashboardRoot>
       <Typography variant='subtitle1' color='text.primary' fontWeight='600'>
