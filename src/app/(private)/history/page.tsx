@@ -1,7 +1,14 @@
 'use client';
 
+import HistorySection from '@/components/history/HistorySection';
+import { HistoryRoot } from '@/components/history/styled';
+
 const HistoryPage = () => {
-  return <div style={{ padding: 24 }}>این یک متن تستی برای صفحه History است.</div>;
+  return (
+    <HistoryRoot>
+      <HistorySection />
+    </HistoryRoot>
+  );
 };
 
 export default HistoryPage;
