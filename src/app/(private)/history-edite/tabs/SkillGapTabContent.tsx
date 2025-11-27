@@ -26,3 +26,6 @@ const SkillGapTabContent = () => {
 };
 
 export default SkillGapTabContent;
+
+
+
