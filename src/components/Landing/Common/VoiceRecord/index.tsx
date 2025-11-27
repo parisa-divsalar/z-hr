@@ -196,6 +196,16 @@ const VoiceRecord = ({
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
 
+        const fallbackTimer = setTimeout(() => {
+          if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
+            setAudioDuration(audioRef.current.duration);
+            const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
+            setWaveBarsCount(bars);
+          }
+        }, 400);
+
+        const clearFallback = () => clearTimeout(fallbackTimer);
+
         audio.onloadedmetadata = () => {
           if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
             setAudioDuration(audioRef.current.duration);
@@ -210,15 +220,8 @@ const VoiceRecord = ({
             const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
             setWaveBarsCount(bars);
           }
+          clearFallback();
         };
-
-        const fallbackTimer = setTimeout(() => {
-          if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
-            setAudioDuration(audioRef.current.duration);
-            const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
-            setWaveBarsCount(bars);
-          }
-        }, 400);
 
         audio.ontimeupdate = () => {
           if (!audioRef.current || !isFinite(audioRef.current.duration) || audioRef.current.duration === 0) return;
@@ -238,16 +241,6 @@ const VoiceRecord = ({
           console.error('Audio element error:', e);
           setPlaybackState('idle');
         };
-
-        const clearFallback = () => clearTimeout(fallbackTimer);
-        audio.oncanplaythrough = (() => {
-          if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
-            setAudioDuration(audioRef.current.duration);
-            const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
-            setWaveBarsCount(bars);
-          }
-          clearFallback();
-        }) as any;
       }
 
       await audioRef.current.play();

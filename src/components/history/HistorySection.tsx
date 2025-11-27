@@ -60,11 +60,9 @@ const HistoryCard = ({
   };
 
   const handleDelete = () => {
-    console.log('Delete clicked for:', name);
     setIsMenuOpen(false);
   };
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -205,13 +203,27 @@ const HistorySection = () => {
     setIsSortMenuOpen(!isSortMenuOpen);
   };
 
-  const handleSortOption = (sortType: string) => {
+  const handleSortOption = (_sortType: string) => {
     setIsSortMenuOpen(false);
   };
 
+  const loadMoreItems = useCallback(() => {
+    if (isLoading || currentIndex >= communityChannels.length) return;
+
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const nextItems = communityChannels.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
+
+      setDisplayedItems((prev) => [...prev, ...nextItems]);
+      setCurrentIndex((prev) => prev + ITEMS_PER_PAGE);
+      setIsLoading(false);
+    }, 500);
+  }, [currentIndex, isLoading]);
+
   useEffect(() => {
     loadMoreItems();
-  }, []);
+  }, [loadMoreItems]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -231,20 +243,6 @@ const HistorySection = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isSortMenuOpen]);
-
-  const loadMoreItems = useCallback(() => {
-    if (isLoading || currentIndex >= communityChannels.length) return;
-
-    setIsLoading(true);
-
-    setTimeout(() => {
-      const nextItems = communityChannels.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
-
-      setDisplayedItems((prev) => [...prev, ...nextItems]);
-      setCurrentIndex((prev) => prev + ITEMS_PER_PAGE);
-      setIsLoading(false);
-    }, 500);
-  }, [currentIndex, isLoading]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
