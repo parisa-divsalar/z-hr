@@ -1,5 +1,7 @@
 import { useState, ReactNode } from 'react';
 
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import {
   Table,
   TableHead,
@@ -10,6 +12,8 @@ import {
   TablePagination,
   TableSortLabel,
   Box,
+  Divider,
+  IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -35,8 +39,8 @@ interface MuiTableProps {
 }
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  borderRadius: '12px',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+  borderRadius: '8px',
+  boxShadow: '0 1px 1px rgba(0, 0, 0, 0.06)',
   border: `1px solid ${theme.palette.grey[100]}`,
   backgroundColor: '#fff',
   overflow: 'hidden',
@@ -60,27 +64,66 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
   '& td': {
     borderBottom: 'none',
-    padding: theme.spacing(2),
     fontSize: '14px',
     color: theme.palette.text.primary,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
 
   '& th': {
     borderBottom: 'none',
-    padding: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5),
     fontSize: '14px',
-    fontWeight: 700,
-    color: theme.palette.text.secondary,
+    fontWeight: 500,
+    color: theme.palette.text.primary,
     backgroundColor: '#fff',
   },
 
   [theme.breakpoints.down('sm')]: {
     '& td, & th': {
-      padding: theme.spacing(1.5),
       fontSize: '12px',
     },
   },
 }));
+
+interface TablePaginationActionsProps {
+  count: number;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
+}
+
+function TablePaginationActions(props: TablePaginationActionsProps) {
+  const { count, page, rowsPerPage, onPageChange } = props;
+
+  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onPageChange(event, page - 1);
+  };
+
+  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onPageChange(event, page + 1);
+  };
+
+  return (
+    <Box sx={{ flexShrink: 0, ml: 2.5 }}>
+      <IconButton
+        onClick={handleNextButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label='next page'
+      >
+        <KeyboardArrowRight />
+      </IconButton>
+      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label='previous page'>
+        <KeyboardArrowLeft />
+      </IconButton>
+    </Box>
+  );
+}
 
 const MuiTable = ({
   columns,
@@ -162,6 +205,11 @@ const MuiTable = ({
                 </TableCell>
               ))}
             </StyledTableRow>
+            <TableRow>
+              <TableCell colSpan={columns.length} sx={{ border: 'none', py: 0, height: '1px' }}>
+                <Divider sx={{ borderColor: 'grey.100' }} />
+              </TableCell>
+            </TableRow>
           </TableHead>
           <TableBody>
             {displayedData.map((row, rowIndex) => (
@@ -185,7 +233,7 @@ const MuiTable = ({
       </StyledTableContainer>
 
       {pagination && (
-        <Box sx={{ direction: 'ltr' }}>
+        <Box sx={{ direction: 'ltr', display: 'flex', justifyContent: 'flex-start' }}>
           <TablePagination
             rowsPerPageOptions={rowsPerPageOptions}
             component='div'
@@ -196,6 +244,7 @@ const MuiTable = ({
             onRowsPerPageChange={handleChangeRowsPerPage}
             labelRowsPerPage='Rows per page:'
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`}
+            ActionsComponent={TablePaginationActions}
           />
         </Box>
       )}
