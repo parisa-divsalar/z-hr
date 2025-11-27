@@ -2,16 +2,14 @@ import { Box, Divider, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const HistoryRoot = styled(Stack)(({ theme }) => ({
+  padding: theme.spacing(3),
   width: '100%',
-  boxSizing: 'border-box',
-  padding: 24,
-  maxHeight: 'calc(100vh - 155px)',
-  overflowY: 'auto',
-  border: `1px solid ${theme.palette.grey[100]}`,
+  height: 'calc(100vh - 200px)',
+  margin: '1 auto',
   borderRadius: '8px',
-  gap: 24,
-  margin: '1px',
-  marginTop: '10px',
+  border: `1px solid ${theme.palette.grey[100]}`,
+  overflowY: 'auto',
+  overflowX: 'hidden',
 }));
 
 export const HistoryCommunityCardRoot = styled(Stack)(({ theme }) => ({

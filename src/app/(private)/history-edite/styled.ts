@@ -4,6 +4,12 @@ import { styled } from '@mui/material/styles';
 export const HistoryEditeRoot = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   width: '100%',
+  height: 'calc(100vh - 200px)',
+  margin: '1 auto',
+  borderRadius: '8px',
+  border: `1px solid ${theme.palette.grey[100]}`,
+  overflowY: 'auto',
+  overflowX: 'hidden',
 }));
 
 export const PreviewEditeRoot = styled(Stack)(({ theme }) => ({
@@ -51,8 +57,8 @@ export const QuestionCard = styled(Stack)(({ theme }) => ({
 }));
 
 export const QuestionBadge = styled(Box)(({ theme }) => ({
-  width: 32,
-  height: 32,
+  width: 38,
+  height: 54,
   borderRadius: 8,
   display: 'flex',
   alignItems: 'center',

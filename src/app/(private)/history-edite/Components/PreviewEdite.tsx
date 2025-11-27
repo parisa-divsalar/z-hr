@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import Dotsvertical from '@/assets/images/dashboard/dots-vertical.svg';
 import FrameFaw from '@/assets/images/dashboard/FrameFaw.svg';
+import BackIcon from '@/assets/images/dashboard/imag/backIcon.svg';
 import ImageIcon from '@/assets/images/dashboard/image.svg';
 import Position from '@/assets/images/dashboard/position.svg';
 import ResumeIcon from '@/assets/images/dashboard/resume.svg?url';
@@ -79,6 +80,14 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
   return (
     <PreviewEditeRoot>
       <Grid container spacing={2} alignItems='center'>
+        <Grid size={{ xs: 12, sm: 12, md: 12 }}>
+          <Stack direction='row' alignItems='center' gap={2}>
+            <BackIcon />
+            <Typography variant='h5' color='text.primary' fontWeight='500'>
+              Zayd Al-Mansoori's Resume
+            </Typography>
+          </Stack>
+        </Grid>
         <Grid size={{ xs: 12, sm: 12, md: 2 }}>
           <HistoryImage p={2}>
             <Image src={ResumeIcon} alt='Resume preview' fill />

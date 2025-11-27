@@ -18,7 +18,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, name, question = 'Q
         <Stack direction='row' alignItems='flex-start' gap={2} width='100%'>
           <QuestionBadge>{number}</QuestionBadge>
           <QuestionTexts>
-            <Typography variant='subtitle2' fontWeight={500} color='text.primary'>
+            <Typography variant='subtitle2' fontWeight={500} color='text.primary' mt={1}>
               {question}
             </Typography>
             {name && (

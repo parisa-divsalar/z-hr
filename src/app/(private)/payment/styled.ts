@@ -4,39 +4,18 @@ import { styled } from '@mui/material/styles';
 export const PaymentRoot = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   width: '100%',
-  maxWidth: '1200px',
-  margin: '0 auto',
+  height: 'calc(100vh - 200px)',
+  margin: '1 auto',
+  borderRadius: '8px',
+  border: `1px solid ${theme.palette.grey[100]}`,
+  overflowY: 'auto',
+  overflowX: 'hidden',
 
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2),
+    height: 'calc(100vh - 80px)', // Adjust for mobile
   },
 }));
-
-export const StatusBadge = styled(Box)<{ status: 'success' | 'pending' | 'failed' }>(
-  ({ status }) => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '6px 12px',
-    borderRadius: '16px',
-    fontSize: '13px',
-    fontWeight: 500,
-    textTransform: 'capitalize',
-    whiteSpace: 'nowrap',
-    ...(status === 'success' && {
-      backgroundColor: '#E2FBE2',
-      color: '#1F7A1F',
-    }),
-    ...(status === 'pending' && {
-      backgroundColor: '#FFE9D6',
-      color: '#D9822B',
-    }),
-    ...(status === 'failed' && {
-      backgroundColor: '#FFE2E2',
-      color: '#D14343',
-    }),
-  })
-);
 
 export const ViewButton = styled(Button)(({ theme }) => ({
   padding: '6px 16px',
@@ -89,4 +68,3 @@ export const PageTitle = styled(Box)(({ theme }) => ({
     },
   },
 }));
-
