@@ -13,7 +13,7 @@ export const PaymentRoot = styled(Box)(({ theme }) => ({
 
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2),
-    height: 'calc(100vh - 80px)', // Adjust for mobile
+    height: 'calc(100vh - 80px)',
   },
 }));
 

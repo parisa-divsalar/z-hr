@@ -11,6 +11,7 @@ export const PrivateRoutes = {
   history: '/history',
   historyEdite: '/history-edite',
   payment: '/payment',
+  interView: '/inter-view',
 };
 
 export const VisibilityLayout: string[] = [
@@ -19,6 +20,7 @@ export const VisibilityLayout: string[] = [
   PrivateRoutes.history,
   PrivateRoutes.historyEdite,
   PrivateRoutes.payment,
+  PrivateRoutes.interView,
   PublicRoutes.moreFeatures,
   PublicRoutes.resumeGenerator,
 ];
@@ -28,4 +30,5 @@ export const VisibilitySideBar: string[] = [
   PrivateRoutes.history,
   PrivateRoutes.historyEdite,
   PrivateRoutes.payment,
+  PrivateRoutes.interView,
 ];
