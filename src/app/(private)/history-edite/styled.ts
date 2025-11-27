@@ -163,7 +163,7 @@ export const SkillGapCard = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const CardImageWrapper = styled(Box)(({ theme }) => ({
+export const CardImageWrapper = styled(Box)(() => ({
   position: 'relative',
   width: '100%',
   paddingTop: '56.25%', // 16:9 aspect ratio
@@ -193,7 +193,7 @@ export const CardContent = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(1.5),
 }));
 
-export const CardHeader = styled(Stack)(({ theme }) => ({
+export const CardHeader = styled(Stack)(() => ({
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'flex-start',
@@ -225,7 +225,7 @@ export const Price = styled(Typography)(({ theme }) => ({
   color: theme.palette.primary.main,
 }));
 
-export const FreeChip = styled(Box)(({ theme }) => ({
+export const FreeChip = styled(Box)(() => ({
   backgroundColor: '#e8f5e9',
   color: '#2e7d32',
   padding: '6px 14px',
