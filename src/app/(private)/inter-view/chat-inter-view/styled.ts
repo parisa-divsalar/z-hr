@@ -1,5 +1,10 @@
-import { Box, Stack } from '@mui/material';
+import { Box, Grid, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
+
+import {
+  InputContainer as BaseInputContainer,
+  InputContent as BaseInputContent,
+} from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 
 export const ChatInterViewRoot = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -17,42 +22,43 @@ export const ChatInterViewRoot = styled(Box)(({ theme }) => ({
   },
 }));
 
+export const ChatInterViewGrid = styled(Grid)(() => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
 export const CenterGrayBox = styled(Stack)(({ theme }) => ({
   width: '100%',
-  maxWidth: 480,
   margin: theme.spacing(0, 'auto'),
-  borderRadius: '8px',
-  backgroundColor: theme.palette.grey[50],
-  padding: '10px',
   alignItems: 'center',
   justifyContent: 'center',
 }));
 
-export const PageTitle = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
+export const ChatInterViewContent = styled(Stack)(() => ({
+  flex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
 
-  '& h1, & h5': {
-    fontSize: '24px',
-    fontWeight: 700,
-    color: theme.palette.text.primary,
-    margin: 0,
-  },
+interface ChatInputContainerProps {
+  hasValue?: boolean;
+}
 
-  '& p': {
-    fontSize: '14px',
-    color: theme.palette.text.secondary,
-    margin: theme.spacing(1, 0, 0, 0),
-  },
+export const ChatInputContainer = styled(BaseInputContainer, {
+  shouldForwardProp: (prop) => prop !== 'hasValue',
+})<ChatInputContainerProps>(({ theme, hasValue }) => ({
+  height: '52px',
+  alignItems: 'center',
+  marginTop: theme.spacing(8),
+  borderColor: hasValue ? theme.palette.primary.main : theme.palette.grey[100],
+}));
 
-  [theme.breakpoints.down('sm')]: {
-    marginBottom: theme.spacing(2),
-
-    '& h1, & h5': {
-      fontSize: '20px',
-    },
-
-    '& p': {
-      fontSize: '13px',
-    },
-  },
+export const ChatInputContent = styled(BaseInputContent)(() => ({
+  height: '52px',
+  lineHeight: '52px',
+  paddingTop: 0,
+  paddingBottom: 0,
+  backgroundColor: 'transparent',
 }));
