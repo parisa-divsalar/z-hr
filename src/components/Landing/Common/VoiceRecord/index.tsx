@@ -5,6 +5,7 @@ import { Typography, IconButton, Stack } from '@mui/material';
 
 import ButtonPIcon from '@/assets/images/icons/button-play.svg';
 import ButtonPuseIcon from '@/assets/images/icons/button-puse.svg';
+import CleanIcon from '@/assets/images/icons/clean.svg';
 import { FilePreviewVoiceContainer, FilesStack, RemoveFileButton } from '@/components/Landing/AI/Attach/View/styled';
 import VoiceBoxRecording from '@/components/Landing/AI/Recording';
 import VoiceBox from '@/components/Landing/AI/VoiceBox';
@@ -80,9 +81,7 @@ const VoiceRecord = ({
     if (audioUrl && isInternalUrl) {
       try {
         URL.revokeObjectURL(audioUrl);
-      } catch {
-        // ignore cleanup errors
-      }
+      } catch {}
       setIsInternalUrl(false);
     }
 
@@ -316,9 +315,7 @@ const VoiceRecord = ({
       try {
         audioRef.current.pause();
         audioRef.current.src = '';
-      } catch {
-        // ignore cleanup errors
-      }
+      } catch {}
       audioRef.current = null;
       setPlaybackState('idle');
       setPlaybackTime(0);
@@ -360,10 +357,19 @@ const VoiceRecord = ({
               {formatTime(audioDuration)}
             </Typography>
 
-            <RemoveFileButton onClick={clearRecording}>
-              <Typography variant='caption' sx={{ fontSize: '12px', lineHeight: 1 }}>
-                ×
-              </Typography>
+            <RemoveFileButton
+              onClick={clearRecording}
+              sx={{
+                width: 24,
+                height: 24,
+                padding: 0,
+                backgroundColor: 'transparent',
+                '&:hover': {
+                  backgroundColor: 'transparent',
+                },
+              }}
+            >
+              <CleanIcon width={24} height={24} />
             </RemoveFileButton>
           </FilePreviewVoiceContainer>
         </FilesStack>
