@@ -1,4 +1,7 @@
+ 'use client';
+
 import { Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
@@ -6,13 +9,25 @@ import MuiButton from '@/components/UI/MuiButton';
 import { CardBaseiNTER, SectionHeader, StepsLeftChip } from './styled';
 
 const UpcomingInterview = () => {
+  const router = useRouter();
+
+  const handleContinue = () => {
+    router.push('/inter-view/chat-inter-view');
+  };
+
   return (
     <CardBaseiNTER mt={2}>
       <SectionHeader>
         <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
           Interview
         </Typography>
-        <MuiButton text='Continue' color='secondary' variant='contained' endIcon={<ArrowRightIcon />} />
+        <MuiButton
+          text='Continue'
+          color='secondary'
+          variant='contained'
+          endIcon={<ArrowRightIcon />}
+          onClick={handleContinue}
+        />
       </SectionHeader>
 
       <Stack>

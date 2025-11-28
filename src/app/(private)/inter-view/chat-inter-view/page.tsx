@@ -11,7 +11,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import SkillInputStep from './SkillInputStep';
 import { ChatInterViewContent, ChatInterViewGrid, ChatInterViewRoot, CenterGrayBox } from './styled';
 
-const ChatInterView = () => {
+export default function ChatInterView() {
   const router = useRouter();
   const [step, setStep] = useState<'intro' | 'skill-input'>('intro');
 
@@ -41,7 +41,7 @@ const ChatInterView = () => {
 
         <ChatInterViewContent>
           {step === 'intro' ? (
-            <CenterGrayBox>
+            <CenterGrayBox isIntro>
               <Typography variant='h5' color='text.primary' fontWeight='600' mt={4}>
                 Chat Interview
               </Typography>
@@ -79,6 +79,4 @@ const ChatInterView = () => {
       </ChatInterViewGrid>
     </ChatInterViewRoot>
   );
-};
-
-export default ChatInterView;
+}

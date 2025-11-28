@@ -20,7 +20,7 @@ const InterviewModule: FC<InterviewModuleProps> = () => {
         Interview
       </Typography>
 
-      <Stack direction='row' alignItems='center' justifyContent='space-between'>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' mt={3}>
         <InterviewStats />
       </Stack>
 
