@@ -1,8 +1,8 @@
 import { Stack, Typography } from '@mui/material';
 
-import { SecondChild } from '@/components/Auth/Advertisement/styled';
+import { SecondChild } from '@/components/Auth/AdAuth/styled';
 
-export const Advertisement = () => {
+const AdAuth = () => {
   return (
     <SecondChild>
       <Stack width='100%' alignItems='end'>
@@ -36,4 +36,4 @@ export const Advertisement = () => {
   );
 };
 
-export default Advertisement;
+export default AdAuth;

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 
 import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
 import { verifyCode } from '@/app/api/auth';
-import Advertisement from '@/components/Auth/Advertisement';
+import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
 import { DividerLine, OrDivider } from '@/components/Landing/AI/VoiceBox/styled';
 import MuiButton from '@/components/UI/MuiButton';
@@ -121,7 +121,8 @@ const LoginPage = () => {
             </MuiButton>
           </Stack>
         </FirstChild>
-        <Advertisement />
+
+        <AdAuth />
       </MainContent>
     </MainContainer>
   );
