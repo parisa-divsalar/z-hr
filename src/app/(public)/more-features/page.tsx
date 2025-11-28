@@ -198,7 +198,12 @@ const MoreFeaturesPage = () => {
       </Grid>
 
       <Stack direction='row' spacing={2} justifyContent='center' p={5}>
-        <MuiButton text='Back' variant='outlined' color='secondary' startIcon={<ArrowBackIcon />} />
+        <MuiButton
+          text='Back'
+          variant='outlined'
+          color='secondary'
+          startIcon={<ArrowBackIcon style={{ color: '#111113' }} />}
+        />
         <MuiButton
           text='Submit'
           variant='contained'

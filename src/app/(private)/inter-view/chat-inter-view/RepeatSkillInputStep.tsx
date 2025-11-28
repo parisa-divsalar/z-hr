@@ -52,7 +52,7 @@ const RepeatSkillInputStep = ({ initialAnswer = '', onBack, onNext }: RepeatSkil
 
       <Stack mt={10} mb={5} direction='row' spacing={4}>
         <MuiButton color='secondary' variant='outlined' startIcon={<ArrowBackIcon />} onClick={onBack}>
-          Backتتتتتتتتتتتت
+          Back
         </MuiButton>
 
         <MuiButton color='secondary' endIcon={<ArrowRightIcon />} onClick={handleSubmit} disabled={answer === ''}>

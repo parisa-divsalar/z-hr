@@ -50,7 +50,12 @@ const SkillInputStep = ({ onBack, onNext }: SkillInputStepProps) => {
       </ChatInputContainer>
 
       <Stack mt={10} mb={5} direction='row' spacing={4}>
-        <MuiButton color='secondary' variant='outlined' startIcon={<ArrowBackIcon />} onClick={onBack}>
+        <MuiButton
+          color='secondary'
+          variant='outlined'
+          startIcon={<ArrowBackIcon style={{ color: '#111113' }} />}
+          onClick={onBack}
+        >
           Back
         </MuiButton>
 
