@@ -25,7 +25,7 @@ const InterviewModule: FC<InterviewModuleProps> = () => {
       </Stack>
 
       <Grid size={{ xs: 12, md: 12 }}>
-        <Stack direction='row' alignItems='center' gap={2}>
+        <Stack direction='row' alignItems='center' gap={2} mt={3}>
           <HeadInterviewIcon />
           <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
             Interview History

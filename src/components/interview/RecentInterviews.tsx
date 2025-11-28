@@ -1,137 +1,61 @@
-import { Stack, Typography, Box } from '@mui/material';
+import { Typography, Box, Stack } from '@mui/material';
 
-import MuiChips from '@/components/UI/MuiChips';
+import DoneIcon from '@/assets/images/dashboard/done.svg';
+import MuiButton from '@/components/UI/MuiButton';
 
-import { InterviewCardRoot, SectionHeader } from './styled';
+import {
+  RecentInterviewsContainer,
+  InterviewsList,
+  RecentInterviewCard,
+  InterviewCardContent,
+  InterviewMetaInfo,
+} from './styled';
+
+const interviews = [
+  {
+    title: 'Frontend Developer Interview',
+    date: '11/20/2025',
+    duration: 45,
+    status: 'Completed',
+    chipColor: 'success.main',
+  },
+];
 
 const RecentInterviews = () => {
   return (
-    <InterviewCardRoot>
-      <Stack spacing={2} sx={{ width: '100%' }}>
-        <SectionHeader>
-          <Typography>Recent Interviews</Typography>
-        </SectionHeader>
+    <Box sx={{ marginTop: 3 }}>
+      <RecentInterviewsContainer>
+        <InterviewsList>
+          {interviews.map((interview, index) => (
+            <RecentInterviewCard key={index}>
+              <InterviewCardContent>
+                <Box gap={3}>
+                  <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
+                    {interview.title}
+                  </Typography>
+                  <InterviewMetaInfo>
+                    <Typography variant='body2' color='text.secondary' fontWeight='400'>
+                      {interview.date}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary' fontWeight='400'>
+                      Duration: {interview.duration} min
+                    </Typography>
+                    <Stack direction='row' gap={0.5} alignItems='center'>
+                      <DoneIcon style={{ fontSize: 14 }} />
 
-        <Stack spacing={2}>
-          {/* Interview Item 1 */}
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 1,
-              bgcolor: 'grey.50',
-              border: '1px solid',
-              borderColor: 'grey.200',
-            }}
-          >
-            <Stack direction='row' justifyContent='space-between' alignItems='center'>
-              <Stack gap={1}>
-                <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
-                  Frontend Developer Interview
-                </Typography>
-                <Stack direction='row' gap={2} alignItems='center'>
-                  <Typography variant='body2' color='text.secondary' fontSize='12px'>
-                    11/20/2025
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary' fontSize='12px'>
-                    Duration: 45 min
-                  </Typography>
-                </Stack>
-              </Stack>
-              <MuiChips
-                label='Completed'
-                color='white'
-                sx={{
-                  width: 100,
-                  height: 25,
-                  fontSize: '12px',
-                  px: 2,
-                  py: 1,
-                  bgcolor: 'success.main',
-                }}
-              />
-            </Stack>
-          </Box>
-
-          {/* Interview Item 2 */}
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 1,
-              bgcolor: 'grey.50',
-              border: '1px solid',
-              borderColor: 'grey.200',
-            }}
-          >
-            <Stack direction='row' justifyContent='space-between' alignItems='center'>
-              <Stack gap={1}>
-                <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
-                  React Developer Position
-                </Typography>
-                <Stack direction='row' gap={2} alignItems='center'>
-                  <Typography variant='body2' color='text.secondary' fontSize='12px'>
-                    11/18/2025
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary' fontSize='12px'>
-                    Duration: 60 min
-                  </Typography>
-                </Stack>
-              </Stack>
-              <MuiChips
-                label='Completed'
-                color='white'
-                sx={{
-                  width: 100,
-                  height: 25,
-                  fontSize: '12px',
-                  px: 2,
-                  py: 1,
-                  bgcolor: 'success.main',
-                }}
-              />
-            </Stack>
-          </Box>
-
-          {/* Interview Item 3 */}
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 1,
-              bgcolor: 'grey.50',
-              border: '1px solid',
-              borderColor: 'grey.200',
-            }}
-          >
-            <Stack direction='row' justifyContent='space-between' alignItems='center'>
-              <Stack gap={1}>
-                <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
-                  Senior UI/UX Interview
-                </Typography>
-                <Stack direction='row' gap={2} alignItems='center'>
-                  <Typography variant='body2' color='text.secondary' fontSize='12px'>
-                    11/15/2025
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary' fontSize='12px'>
-                    Duration: 50 min
-                  </Typography>
-                </Stack>
-              </Stack>
-              <MuiChips
-                label='In Progress'
-                color='white'
-                sx={{
-                  width: 100,
-                  height: 25,
-                  fontSize: '12px',
-                  px: 2,
-                  py: 1,
-                  bgcolor: 'info.main',
-                }}
-              />
-            </Stack>
-          </Box>
-        </Stack>
-      </Stack>
-    </InterviewCardRoot>
+                      <Typography variant='body2' color='text.primary' fontWeight='400'>
+                        Done{' '}
+                      </Typography>
+                    </Stack>
+                  </InterviewMetaInfo>
+                </Box>
+                <MuiButton text='Result ' variant='outlined' size='small' color='secondary' />
+              </InterviewCardContent>
+            </RecentInterviewCard>
+          ))}
+        </InterviewsList>
+      </RecentInterviewsContainer>
+    </Box>
   );
 };
 

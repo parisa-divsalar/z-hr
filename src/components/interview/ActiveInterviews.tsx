@@ -1,10 +1,21 @@
 import { FC } from 'react';
 
 import { AccessTime, CalendarToday } from '@mui/icons-material';
-import { Avatar, Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import { InterviewCardRoot, SectionHeader, SectionTitle, SubText, TagPill } from './styled';
+import {
+  InterviewCardRoot,
+  SectionHeader,
+  SubText,
+  TagPill,
+  ActiveInterviewsRoot,
+  ViewAllButton,
+  InterviewCardFlex,
+  CompanyAvatar,
+  InterviewDetails,
+  DateTimeStack,
+} from './styled';
 
 const ActiveInterviews: FC = () => {
   const interviews = [
@@ -29,30 +40,30 @@ const ActiveInterviews: FC = () => {
   ];
 
   return (
-    <Stack sx={{ marginTop: 3 }} gap={2}>
+    <ActiveInterviewsRoot>
       <SectionHeader>
-        <SectionTitle>Active Interviews</SectionTitle>
-        <Button variant='text' size='small' sx={{ textTransform: 'none' }}>
+        <Typography variant='subtitle1'>Active Interviews</Typography>
+        <ViewAllButton variant='text' size='small'>
           View All
-        </Button>
+        </ViewAllButton>
       </SectionHeader>
 
       <Grid container spacing={2}>
         {interviews.map((interview) => (
           <Grid size={{ xs: 12, md: 6 }} key={interview.id}>
             <InterviewCardRoot>
-              <Stack direction='row' gap={2} alignItems='center' sx={{ flex: 1 }}>
-                <Avatar src={interview.logo} alt={interview.company} sx={{ width: 56, height: 56 }}>
+              <InterviewCardFlex direction='row' gap={2} alignItems='center'>
+                <CompanyAvatar src={interview.logo} alt={interview.company}>
                   {interview.company.charAt(0)}
-                </Avatar>
+                </CompanyAvatar>
 
-                <Stack gap={0.5} sx={{ flex: 1 }}>
+                <InterviewDetails gap={0.5}>
                   <Typography variant='body1' fontWeight={600}>
                     {interview.position}
                   </Typography>
                   <SubText>{interview.company}</SubText>
 
-                  <Stack direction='row' gap={2} sx={{ marginTop: 1 }}>
+                  <DateTimeStack direction='row' gap={2}>
                     <Stack direction='row' gap={0.5} alignItems='center'>
                       <CalendarToday sx={{ fontSize: 14, color: 'text.secondary' }} />
                       <SubText>{interview.date}</SubText>
@@ -61,9 +72,9 @@ const ActiveInterviews: FC = () => {
                       <AccessTime sx={{ fontSize: 14, color: 'text.secondary' }} />
                       <SubText>{interview.time}</SubText>
                     </Stack>
-                  </Stack>
-                </Stack>
-              </Stack>
+                  </DateTimeStack>
+                </InterviewDetails>
+              </InterviewCardFlex>
 
               <Box>
                 <TagPill>{interview.status}</TagPill>
@@ -72,7 +83,7 @@ const ActiveInterviews: FC = () => {
           </Grid>
         ))}
       </Grid>
-    </Stack>
+    </ActiveInterviewsRoot>
   );
 };
 
