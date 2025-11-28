@@ -8,6 +8,7 @@ export const SidebarContainer = styled(Box)(() => ({
   borderRadius: '0.5rem',
   display: 'flex',
   flexDirection: 'column',
+  overflow: 'hidden',
   justifyContent: 'space-between',
 }));
 
@@ -16,7 +17,7 @@ export const ItemButton = styled(ListItemButton, {
 })<{ active?: boolean }>(({ theme, active }) => ({
   borderRadius: 8,
   margin: '4px 0',
-  padding: '10px 14px',
+  padding: '10px 24px',
   color: '#d1d1d1',
   fontSize: 14,
   ...(active && {

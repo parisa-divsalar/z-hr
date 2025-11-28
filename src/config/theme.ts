@@ -196,7 +196,7 @@ const commonSettings: ThemeOptions = {
   typography: {
     fontFamily: 'var(--font-interphases), Arial, sans-serif',
     h1: {
-      fontSize: '3rem', // 32px
+      fontSize: '3rem', // 48px
     },
 
     h2: {

@@ -127,12 +127,14 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
           {...rest}
         />
 
-        <Stack direction='row' gap={1} alignItems='center'>
-          <InfoIcon color={disabled ? '#D8D8DA' : error ? '#EC2C27' : '#66666E'} />
-          <Typography variant='caption' color={disabled ? 'grey.100' : error ? 'error.main' : 'text.secondary'}>
-            {helperText}
-          </Typography>
-        </Stack>
+        {error && (
+          <Stack direction='row' gap={1} alignItems='center'>
+            <InfoIcon color={disabled ? '#D8D8DA' : error ? '#EC2C27' : '#66666E'} />
+            <Typography variant='caption' color={disabled ? 'grey.100' : error ? 'error.main' : 'text.secondary'}>
+              {helperText}
+            </Typography>
+          </Stack>
+        )}
       </Stack>
     );
   },

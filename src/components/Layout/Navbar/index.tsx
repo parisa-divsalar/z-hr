@@ -23,7 +23,7 @@ const Navbar = () => {
   if (!VisibilityLayout.includes(pathname)) return null;
 
   return (
-    <Stack direction='row' className={classes.mainNavbar} borderColor='divider' mb={4}>
+    <Stack direction='row' className={classes.mainNavbar} borderColor='divider' mb={0.5}>
       <Stack direction='row' alignItems='center' gap={2}>
         <AppImage src={logo} width={24} height={34} />
 

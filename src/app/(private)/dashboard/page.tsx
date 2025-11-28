@@ -1,20 +1,32 @@
 'use client';
-import { useRouter } from 'next/navigation';
 
-import { PublicRoutes } from '@/config/routes';
-import DashboardModule from '@/modules/dashboard';
-import { useAuthStore } from '@/store/auth';
+import { Stack, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+
+import CommunitySection from '@/components/Dashboard/CommunitySection';
+import SkillGapAnalysis from '@/components/Dashboard/SkillGapAnalysis';
+import { DashboardRoot } from '@/components/Dashboard/styled';
+import SuggestedPositions from '@/components/Dashboard/SuggestedPositions';
+import TopStats from '@/components/Dashboard/TopStats';
+import UpcomingInterview from '@/components/Dashboard/UpcomingInterview';
 
 const DashboardPage = () => {
-  const router = useRouter();
-  const { logout } = useAuthStore();
-
-  const handleLogout = () => {
-    logout();
-    router.replace(PublicRoutes.landing);
-  };
-
-  return <DashboardModule onLogout={handleLogout} />;
+  return (
+    <DashboardRoot>
+      <Typography variant='subtitle1' color='text.primary' fontWeight='600'>
+        Dashboard
+      </Typography>
+      <Stack direction='row' alignItems='center' justifyContent='space-between'>
+        <TopStats />
+      </Stack>
+      <Grid size={{ xs: 12, md: 12 }}>
+        <UpcomingInterview />
+        <SuggestedPositions />
+        <CommunitySection />
+        <SkillGapAnalysis />
+      </Grid>
+    </DashboardRoot>
+  );
 };
 
 export default DashboardPage;
