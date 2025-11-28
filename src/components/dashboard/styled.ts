@@ -20,7 +20,6 @@ export const DashboardRoot = styled(Stack)(({ theme }) => ({
   borderRadius: '8px',
   gap: 24,
   margin: '1px',
-  marginTop: '10px',
 }));
 
 export const SectionHeader = styled(Stack)(() => ({
