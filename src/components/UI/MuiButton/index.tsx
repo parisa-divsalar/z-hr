@@ -21,6 +21,7 @@ interface PrimaryButtonProps {
   href?: string;
   theme?: 'default';
   sx?: any;
+  [key: string]: any;
 }
 
 const MuiButton = (props: PrimaryButtonProps) => {
@@ -39,7 +40,20 @@ const MuiButton = (props: PrimaryButtonProps) => {
     children,
     href,
     sx,
+    ...rest
   } = props;
+
+  const mergedSx = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    // ensure icons and text are vertically centered on one line
+    '& .MuiButton-startIcon, & .MuiButton-endIcon': {
+      margin: 0,
+      display: 'inline-flex',
+      alignItems: 'center',
+    },
+    ...sx,
+  };
 
   return (
     <Button
@@ -53,8 +67,8 @@ const MuiButton = (props: PrimaryButtonProps) => {
       size={size}
       disabled={disabled || loading}
       href={href}
-      sx={sx}
-      {...props}
+      sx={mergedSx}
+      {...rest}
     >
       {loading ? <CircularProgress size={16} color={color ? color : 'primary'} /> : text || children}
     </Button>
