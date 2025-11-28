@@ -4,16 +4,19 @@ import { useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-import BackIcon from '@/assets/images/dashboard/imag/backIcon.svg';
+import BackIcon from '@/assets/images/dashboard/iBack.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
+import InterviewReadyStep from './InterviewReadyStep';
+import RepeatSkillInputStep from './RepeatSkillInputStep';
 import SkillInputStep from './SkillInputStep';
 import { ChatInterViewContent, ChatInterViewGrid, ChatInterViewRoot, CenterGrayBox } from './styled';
 
 export default function ChatInterView() {
   const router = useRouter();
-  const [step, setStep] = useState<'intro' | 'skill-input'>('intro');
+  const [step, setStep] = useState<'intro' | 'skill-input' | 'ready' | 'repeat-skill-input'>('intro');
+  const [skillAnswer, setSkillAnswer] = useState('');
 
   const handleStartClick = () => {
     setStep('skill-input');
@@ -24,9 +27,26 @@ export default function ChatInterView() {
   };
 
   const handleSkillSubmit = (answer: string) => {
-    // TODO: connect to interview questions flow
-    // eslint-disable-next-line no-console
-    console.log('Selected skill for chat interview:', answer);
+    setSkillAnswer(answer);
+    setStep('ready');
+  };
+
+  const handleBackToSkill = () => {
+    setStep('skill-input');
+  };
+
+  const handleBackToReady = () => {
+    setStep('ready');
+  };
+
+  const handleRepeatClick = () => {
+    setStep('repeat-skill-input');
+  };
+
+  const handleStartInterview = () => {
+    // TODO: connect to actual interview flow
+    // For now, just navigate back or keep user on this page
+    // router.push('/inter-view'); // Uncomment when interview flow is ready
   };
 
   return (
@@ -40,7 +60,7 @@ export default function ChatInterView() {
         </Stack>
 
         <ChatInterViewContent>
-          {step === 'intro' ? (
+          {step === 'intro' && (
             <CenterGrayBox isIntro>
               <Typography variant='h5' color='text.primary' fontWeight='600' mt={4}>
                 Chat Interview
@@ -72,8 +92,25 @@ export default function ChatInterView() {
                 </MuiButton>
               </Stack>
             </CenterGrayBox>
-          ) : (
-            <SkillInputStep onBack={handleBackToIntro} onNext={handleSkillSubmit} />
+          )}
+
+          {step === 'skill-input' && <SkillInputStep onBack={handleBackToIntro} onNext={handleSkillSubmit} />}
+
+          {step === 'repeat-skill-input' && (
+            <RepeatSkillInputStep
+              initialAnswer={skillAnswer}
+              onBack={handleBackToReady}
+              onNext={handleSkillSubmit}
+            />
+          )}
+
+          {step === 'ready' && (
+            <InterviewReadyStep
+              answer={skillAnswer}
+              onBack={handleBackToSkill}
+              onStart={handleStartInterview}
+              onRepeat={handleRepeatClick}
+            />
           )}
         </ChatInterViewContent>
       </ChatInterViewGrid>
