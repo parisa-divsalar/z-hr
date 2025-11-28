@@ -5,17 +5,26 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import HeadphonesRoundedIcon from '@mui/icons-material/HeadphonesRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import MicRoundedIcon from '@mui/icons-material/MicRounded';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import { List, ListItemText, Stack, Typography } from '@mui/material';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { ItemButton, SidebarContainer, ItemIcon } from '@/components/Layout/SideBar/styled';
-import { VisibilitySideBar } from '@/config/routes';
+import { PublicRoutes, VisibilitySideBar } from '@/config/routes';
+import { useAuthStore } from '@/store/auth';
 
 const SideBar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    router.replace(PublicRoutes.landing);
+  };
 
   if (!VisibilitySideBar.includes(pathname)) return null;
 
@@ -86,8 +95,14 @@ const SideBar = () => {
         </List>
       </Stack>
 
-      <Stack p={3}>
-        <Typography color='grey.300' variant='caption'>
+      <Stack>
+        <ItemButton onClick={handleLogout}>
+          <ListItemText primary='Log out' sx={{ color: '#F77A79' }} />
+
+          <LogoutRoundedIcon sx={{ color: '#F77A79' }} fontSize='small' />
+        </ItemButton>
+
+        <Typography color='grey.300' variant='caption' px={3} pb={3}>
           Version 1.3.23
         </Typography>
       </Stack>
