@@ -54,7 +54,7 @@ const InterviewReadyStep = ({ onStart, onRepeat }: InterviewReadyStepProps) => {
         <MuiButton variant='outlined' color='secondary' endIcon={<ArrowRightIcon />} onClick={onStart}>
           Interview page
         </MuiButton>
-        <MuiButton color='secondary' startIcon={<RepeatIcon />} onClick={onRepeat} sx={{ width: 172 }}>
+        <MuiButton color='secondary' startIcon={<RepeatIcon />} onClick={onRepeat} sx={{ width: 172, gap: 1.5 }}>
           Repeat{' '}
         </MuiButton>
       </Stack>

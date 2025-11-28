@@ -13,7 +13,7 @@ import { List, ListItemText, Stack, Typography } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { ItemButton, SidebarContainer, ItemIcon } from '@/components/Layout/SideBar/styled';
-import { PublicRoutes, VisibilitySideBar } from '@/config/routes';
+import { PrivateRoutes, PublicRoutes, VisibilitySideBar } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 
 const SideBar = () => {
@@ -35,7 +35,10 @@ const SideBar = () => {
           Menu
         </Typography>
         <List>
-          <ItemButton active>
+          <ItemButton
+            active={pathname === PrivateRoutes.dashboard}
+            onClick={() => router.push(PrivateRoutes.dashboard)}
+          >
             <ItemIcon>
               <DashboardRoundedIcon fontSize='small' />
             </ItemIcon>
@@ -44,35 +47,50 @@ const SideBar = () => {
             <KeyboardArrowRightRoundedIcon />
           </ItemButton>
 
-          <ItemButton>
+          <ItemButton
+            active={pathname === PublicRoutes.resumeGenerator}
+            onClick={() => router.push(PublicRoutes.resumeGenerator)}
+          >
             <ItemIcon>
               <ArticleRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Resume Builder' />
           </ItemButton>
 
-          <ItemButton>
+          <ItemButton
+            active={pathname === PrivateRoutes.history}
+            onClick={() => router.push(PrivateRoutes.history)}
+          >
             <ItemIcon>
               <HistoryRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='History' />
           </ItemButton>
 
-          <ItemButton>
+          <ItemButton
+            active={pathname === PrivateRoutes.payment}
+            onClick={() => router.push(PrivateRoutes.payment)}
+          >
             <ItemIcon>
               <CreditCardRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Payment' />
           </ItemButton>
 
-          <ItemButton>
+          <ItemButton
+            active={pathname === PrivateRoutes.learningHub}
+            onClick={() => router.push(PrivateRoutes.learningHub)}
+          >
             <ItemIcon>
               <SchoolRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Learning Hub' />
           </ItemButton>
 
-          <ItemButton>
+          <ItemButton
+            active={pathname === PrivateRoutes.interView}
+            onClick={() => router.push(PrivateRoutes.interView)}
+          >
             <ItemIcon>
               <MicRoundedIcon fontSize='small' />
             </ItemIcon>
