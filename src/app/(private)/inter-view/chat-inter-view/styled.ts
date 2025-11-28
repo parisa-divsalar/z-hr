@@ -28,14 +28,24 @@ export const ChatInterViewGrid = styled(Grid)(() => ({
   flexDirection: 'column',
 }));
 
-export const CenterGrayBox = styled(Stack)(({ theme }) => ({
+interface CenterGrayBoxProps {
+  isIntro?: boolean;
+}
+
+export const CenterGrayBox = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== 'isIntro',
+})<CenterGrayBoxProps>(({ theme, isIntro }) => ({
   width: '100%',
+  // Intro card remains 460px, typing step becomes 528px wide
+  maxWidth: isIntro ? '460px' : '528px',
   margin: theme.spacing(0, 'auto'),
   alignItems: 'center',
   justifyContent: 'center',
+  backgroundColor: isIntro ? theme.palette.grey[50] : 'transparent',
+  borderRadius: '8px',
 }));
 
-export const ChatInterViewContent = styled(Stack)(() => ({
+export const ChatInterViewContent = styled(Stack)(({ theme }) => ({
   flex: 1,
   display: 'flex',
   alignItems: 'center',
