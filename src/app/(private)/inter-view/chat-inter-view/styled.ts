@@ -36,7 +36,6 @@ export const CenterGrayBox = styled(Stack, {
   shouldForwardProp: (prop) => prop !== 'isIntro',
 })<CenterGrayBoxProps>(({ theme, isIntro }) => ({
   width: '100%',
-  // Intro card remains 460px, typing step becomes 528px wide
   maxWidth: isIntro ? '460px' : '528px',
   margin: theme.spacing(0, 'auto'),
   alignItems: 'center',
@@ -45,7 +44,7 @@ export const CenterGrayBox = styled(Stack, {
   borderRadius: '8px',
 }));
 
-export const ChatInterViewContent = styled(Stack)(({ theme }) => ({
+export const ChatInterViewContent = styled(Stack)(() => ({
   flex: 1,
   display: 'flex',
   alignItems: 'center',

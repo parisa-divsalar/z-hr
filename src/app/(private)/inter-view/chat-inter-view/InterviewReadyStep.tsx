@@ -13,7 +13,7 @@ interface InterviewReadyStepProps {
   onRepeat?: () => void;
 }
 
-const InterviewReadyStep = ({ answer, onBack, onStart, onRepeat }: InterviewReadyStepProps) => {
+const InterviewReadyStep = ({ onStart, onRepeat }: InterviewReadyStepProps) => {
   return (
     <CenterGrayBox isIntro>
       <Typography variant='h5' color='text.primary' fontWeight='600' mt={4}>

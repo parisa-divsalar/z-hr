@@ -278,10 +278,10 @@ const VoiceRecord = ({
 
   const clearRecording = useCallback(() => {
     if (audioRef.current) {
-      audioRef.current.onerror = null; // جلوگیری از onerror الکی
+      audioRef.current.onerror = null;
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-      audioRef.current.src = ''; // حذف منبع صوتی بدون خطا
+      audioRef.current.src = '';
       audioRef.current = null;
     }
 
