@@ -6,22 +6,33 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { Checkbox, Stack, Typography } from '@mui/material';
 
 import { SectionHeader } from '@/components/dashboard/styled';
-import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
-import LearningHubContent from './LearningHubContent';
+import LearningHubContent, { mockLearningHubData } from './LearningHubContent';
 import {
   HeaderDivider,
   LearningHubRoot,
+  LearningHubTabButton,
   MenuItemStack,
   PopupMenu,
   RelativeStack,
   SortMenuContentStack,
 } from './styled';
 
+const AllLearningHubSection = () => <LearningHubContent items={mockLearningHubData} />;
+
+const FreeLearningHubSection = () => (
+  <LearningHubContent items={mockLearningHubData.filter((item) => item.isFree)} />
+);
+
+const PaidLearningHubSection = () => (
+  <LearningHubContent items={mockLearningHubData.filter((item) => !item.isFree)} />
+);
+
 const LearningHubPage = () => {
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string>('new-to-old');
+  const [activeTab, setActiveTab] = useState<'all' | 'free' | 'paid'>('all');
   const sortButtonRef = useRef<HTMLDivElement | null>(null);
   const sortMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -55,7 +66,7 @@ const LearningHubPage = () => {
 
   return (
     <LearningHubRoot>
-      <Stack gap={1} mt={1}>
+      <Stack gap={2} mt={1}>
         <SectionHeader>
           <Typography variant='h5' fontWeight='500' color='text.primary'>
             Learning Hub{' '}
@@ -72,7 +83,7 @@ const LearningHubPage = () => {
             <HeaderDivider orientation='vertical' flexItem />
 
             <RelativeStack ref={sortButtonRef}>
-              <MuiButton
+              <LearningHubTabButton
                 text='Select resume'
                 color='secondary'
                 variant='text'
@@ -120,7 +131,30 @@ const LearningHubPage = () => {
           </Stack>
         </SectionHeader>
 
-        <LearningHubContent />
+        <Stack direction='row' gap={1}>
+          <LearningHubTabButton
+            text='All'
+            variant={activeTab === 'all' ? 'contained' : 'outlined'}
+            color='primary'
+            onClick={() => setActiveTab('all')}
+          />
+          <LearningHubTabButton
+            text='Free'
+            variant={activeTab === 'free' ? 'contained' : 'outlined'}
+            color='primary'
+            onClick={() => setActiveTab('free')}
+          />
+          <LearningHubTabButton
+            text='Paid'
+            variant={activeTab === 'paid' ? 'contained' : 'outlined'}
+            color='primary'
+            onClick={() => setActiveTab('paid')}
+          />
+        </Stack>
+
+        {activeTab === 'all' && <AllLearningHubSection />}
+        {activeTab === 'free' && <FreeLearningHubSection />}
+        {activeTab === 'paid' && <PaidLearningHubSection />}
       </Stack>
     </LearningHubRoot>
   );

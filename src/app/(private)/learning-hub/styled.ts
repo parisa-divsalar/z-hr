@@ -1,6 +1,8 @@
 import { Box, Divider, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+import MuiButton from '@/components/UI/MuiButton';
+
 export const LearningHubRoot = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   width: '100%',
@@ -69,4 +71,8 @@ export const MenuItemStack = styled(Stack)(() => ({
   '&:hover': {
     opacity: 0.7,
   },
+}));
+
+export const LearningHubTabButton = styled(MuiButton)(() => ({
+  borderRadius: 16,
 }));
