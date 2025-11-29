@@ -29,7 +29,7 @@ const SideBar = () => {
   if (!VisibilitySideBar.includes(pathname)) return null;
 
   return (
-    <SidebarContainer>
+    <SidebarContainer mt={2}>
       <Stack>
         <Typography color='grey.300' variant='caption' px={3} pt={3}>
           Menu
@@ -57,20 +57,14 @@ const SideBar = () => {
             <ListItemText primary='Resume Builder' />
           </ItemButton>
 
-          <ItemButton
-            active={pathname === PrivateRoutes.history}
-            onClick={() => router.push(PrivateRoutes.history)}
-          >
+          <ItemButton active={pathname === PrivateRoutes.history} onClick={() => router.push(PrivateRoutes.history)}>
             <ItemIcon>
               <HistoryRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='History' />
           </ItemButton>
 
-          <ItemButton
-            active={pathname === PrivateRoutes.payment}
-            onClick={() => router.push(PrivateRoutes.payment)}
-          >
+          <ItemButton active={pathname === PrivateRoutes.payment} onClick={() => router.push(PrivateRoutes.payment)}>
             <ItemIcon>
               <CreditCardRoundedIcon fontSize='small' />
             </ItemIcon>
