@@ -4,7 +4,6 @@ import Grid from '@mui/material/Grid';
 import Box1Icon from '@/assets/images/dashboard/box1.svg';
 import Box2Icon from '@/assets/images/dashboard/box2.svg';
 import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
-import HeadIcon from '@/assets/images/dashboard/comm.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
@@ -58,7 +57,7 @@ const SuggestedPositions = () => {
     <Stack gap={2} mt={5}>
       <SectionHeader>
         <Stack direction='row' gap={1} alignItems='center'>
-          <HeadIcon />
+          <Box2Icon />
           <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
             Suggested Positions
           </Typography>
