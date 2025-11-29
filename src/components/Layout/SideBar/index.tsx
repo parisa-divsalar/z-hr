@@ -48,8 +48,8 @@ const SideBar = () => {
           </ItemButton>
 
           <ItemButton
-            active={pathname === PublicRoutes.resumeGenerator}
-            onClick={() => router.push(PublicRoutes.resumeGenerator)}
+            active={pathname === PrivateRoutes.resumeBuilder}
+            onClick={() => router.push(PrivateRoutes.resumeBuilder)}
           >
             <ItemIcon>
               <ArticleRoundedIcon fontSize='small' />
