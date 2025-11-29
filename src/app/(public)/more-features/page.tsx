@@ -3,7 +3,7 @@
 import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-import ResumeTemplates from '@/app/(private)/resume-builder/more/ResumeTemplates';
+import { ResumeTemplates } from '@/app/(private)/resume-builder/MoreFeatures';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';

@@ -3,7 +3,6 @@ import { ReactNode } from 'react';
 import { Stack } from '@mui/material';
 
 import Footer from '@/components/Layout/Footer';
-// @ts-ignore
 import classes from '@/components/Layout/layout.module.css';
 import Navbar from '@/components/Layout/Navbar';
 import SideBar from '@/components/Layout/SideBar';

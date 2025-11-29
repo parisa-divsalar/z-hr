@@ -35,7 +35,7 @@ export const CardBase = styled(Box)(() => ({
   boxSizing: 'border-box',
 }));
 
-export const InterviewCardRoot = styled(CardBase)(({ theme }) => ({
+export const InterviewCardRoot = styled(CardBase)(() => ({
   display: 'flex',
   padding: 0,
   height: 108,

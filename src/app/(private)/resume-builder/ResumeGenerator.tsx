@@ -9,3 +9,5 @@ const ResumeGenerator: FunctionComponent = () => {
 export default ResumeGenerator;
 
 
+
+

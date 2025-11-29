@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import { Checkbox, CircularProgress, Stack, Typography } from '@mui/material';
+import { CircularProgress, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -195,19 +195,20 @@ const HistorySection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string>('new-to-old');
+  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(communityChannels[0]?.id ?? null);
   const observerTarget = useRef<HTMLDivElement>(null);
   const sortButtonRef = useRef<HTMLDivElement>(null);
   const sortMenuRef = useRef<HTMLDivElement>(null);
 
   const ITEMS_PER_PAGE = 3;
+  const selectedResume = communityChannels.find((channel) => channel.id === selectedResumeId) ?? null;
 
   const handleSortClick = () => {
     setIsSortMenuOpen((prev) => !prev);
   };
 
-  const handleSortOption = (sortType: string) => {
-    setSelectedOption(sortType);
+  const handleResumeSelect = (resumeId: string) => {
+    setSelectedResumeId(resumeId);
     setIsSortMenuOpen(false);
   };
 
@@ -289,50 +290,46 @@ const HistorySection = () => {
 
           <RelativeStack ref={sortButtonRef}>
             <MuiButton
-              text='Select resume'
+              text={selectedResume?.name ?? 'Select resume'}
               color='secondary'
               variant='text'
+              sx={{
+                gap: '0.4rem',
+                backgroundColor: 'transparent',
+                '&:hover': { backgroundColor: 'transparent' },
+              }}
               onClick={handleSortClick}
               endIcon={<KeyboardArrowDownRoundedIcon fontSize='small' />}
             />
 
             <PopupMenu ref={sortMenuRef} isOpen={isSortMenuOpen}>
               <SortMenuContentStack>
-                <MenuItemStack
-                  direction='row'
-                  alignItems='center'
-                  gap={1}
-                  onClick={() => handleSortOption('new-to-old')}
-                >
-                  <Checkbox size='small' checked={selectedOption === 'new-to-old'} />
-                  <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                    Newest
-                  </Typography>
-                </MenuItemStack>
-
-                <MenuItemStack
-                  direction='row'
-                  alignItems='center'
-                  gap={1}
-                  onClick={() => handleSortOption('old-to-new')}
-                >
-                  <Checkbox size='small' checked={selectedOption === 'old-to-new'} />
-                  <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                    Oldest
-                  </Typography>
-                </MenuItemStack>
-
-                <MenuItemStack
-                  direction='row'
-                  alignItems='center'
-                  gap={1}
-                  onClick={() => handleSortOption('free-first')}
-                >
-                  <Checkbox size='small' checked={selectedOption === 'free-first'} />
-                  <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                    Free first
-                  </Typography>
-                </MenuItemStack>
+                {communityChannels.map((channel) => {
+                  const isSelected = selectedResumeId === channel.id;
+                  return (
+                    <MenuItemStack
+                      key={channel.id}
+                      direction='column'
+                      alignItems='flex-start'
+                      gap={0.5}
+                      onClick={() => handleResumeSelect(channel.id)}
+                      sx={{
+                        px: 1,
+                        py: 0.75,
+                        borderRadius: 1,
+                        width: '100%',
+                        backgroundColor: isSelected ? 'action.selected' : 'transparent',
+                      }}
+                    >
+                      <Typography variant='subtitle2' fontWeight={isSelected ? 600 : 400} color='text.primary'>
+                        {channel.name}
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary'>
+                        {channel.date}
+                      </Typography>
+                    </MenuItemStack>
+                  );
+                })}
               </SortMenuContentStack>
             </PopupMenu>
           </RelativeStack>

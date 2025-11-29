@@ -58,10 +58,10 @@ export const PopupMenu = styled('div')<{ isOpen: boolean }>(({ theme, isOpen }) 
   borderRadius: '8px',
   backgroundColor: 'white',
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1)',
-  width: '92px',
-  height: '100px',
+  width: '220px',
+  maxHeight: '320px',
   zIndex: 9999,
-  overflow: 'hidden',
+  overflowY: 'auto',
   opacity: isOpen ? 1 : 0,
   visibility: isOpen ? 'visible' : 'hidden',
   transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-10px)',
@@ -70,8 +70,8 @@ export const PopupMenu = styled('div')<{ isOpen: boolean }>(({ theme, isOpen }) 
   border: `1px solid ${theme.palette.divider}`,
 
   [theme.breakpoints.down('sm')]: {
-    width: '92px',
-    height: '132px',
+    width: '180px',
+    maxHeight: '340px',
   },
 }));
 
@@ -98,9 +98,8 @@ export const MenuContentStack = styled(Stack)(() => ({
 
 export const SortMenuContentStack = styled(Stack)(() => ({
   padding: '8px',
-  gap: '2px',
-  height: '100%',
-  justifyContent: 'center',
+  gap: '6px',
+  width: '100%',
 }));
 
 export const MenuItemStack = styled(Stack)(() => ({

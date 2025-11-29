@@ -4,7 +4,7 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
 
-import MoreFeatures from '@/app/(private)/resume-builder/more';
+import MoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
 import ResumeGenerator from '@/app/(private)/resume-builder/ResumeGenerator';
 import {
   CircleContainer,

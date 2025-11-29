@@ -137,9 +137,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
         </Typography>
       </Stack>
 
-      {/* Main content area inside the resume builder card */}
       <Grid container spacing={2} mt={2}>
-        {/* Left side (Grid 6 of 12) - placeholder content for templates / extra info */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Stack spacing={2}>
             <Box
@@ -248,7 +246,6 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
         </Grid>
       </Grid>
 
-      {/* Actions aligned with resume builder flow */}
       <Stack direction='row' spacing={2} justifyContent='center' p={4}>
         <MuiButton
           text='Back'

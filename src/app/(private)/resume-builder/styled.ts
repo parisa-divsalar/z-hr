@@ -1,7 +1,7 @@
 import { Box, CardActionArea, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import bgAI from '@/assets/images/bg/Ellipse.png';
+import bgAI from '@/assets/images/bg/Ellipse.svg';
 
 export const ResumeBuilderRoot = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -304,6 +304,22 @@ export const SelectSkillContainerSkill = styled(Stack, {
   justifyContent: 'center',
   gap: '0.25rem',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+}));
+
+// === More features / resume templates ===
+export const MoreFeaturesTemplatesWrapper = styled(Box)(() => ({
+  width: '100%',
+}));
+
+export const MoreFeaturesTemplateCard = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1),
+  padding: theme.spacing(2),
+  borderRadius: 8,
+  border: `1px solid ${theme.palette.grey[100]}`,
+  height: 102,
 }));
 
 // keep CardActionArea import used for potential future reuse

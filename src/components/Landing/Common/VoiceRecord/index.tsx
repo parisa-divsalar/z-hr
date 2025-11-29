@@ -47,11 +47,11 @@ const VoiceRecord = ({
   }, [initialAudioUrl, initialAudioBlob]);
 
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
-  const [playbackTime, setPlaybackTime] = useState(0);
+  const [_playbackTime, setPlaybackTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
-  const [audioProgress, setAudioProgress] = useState(0);
+  const [_audioProgress, setAudioProgress] = useState(0);
 
-  const [waveBarsCount, setWaveBarsCount] = useState(100);
+  const [_waveBarsCount, setWaveBarsCount] = useState(100);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -74,6 +74,7 @@ const VoiceRecord = ({
         audioRef.current.src = '';
       } catch {
         // ignore cleanup errors
+        void 0;
       }
       audioRef.current = null;
     }
@@ -81,7 +82,10 @@ const VoiceRecord = ({
     if (audioUrl && isInternalUrl) {
       try {
         URL.revokeObjectURL(audioUrl);
-      } catch {}
+      } catch {
+        // ignore cleanup errors
+        void 0;
+      }
       setIsInternalUrl(false);
     }
 
@@ -126,6 +130,7 @@ const VoiceRecord = ({
             URL.revokeObjectURL(audioUrl);
           } catch {
             // ignore cleanup errors
+            void 0;
           }
         }
 
@@ -187,6 +192,7 @@ const VoiceRecord = ({
           audioRef.current.src = '';
         } catch {
           // ignore cleanup errors
+          void 0;
         }
         audioRef.current = null;
       }
@@ -315,7 +321,10 @@ const VoiceRecord = ({
       try {
         audioRef.current.pause();
         audioRef.current.src = '';
-      } catch {}
+      } catch {
+        // ignore cleanup errors
+        void 0;
+      }
       audioRef.current = null;
       setPlaybackState('idle');
       setPlaybackTime(0);
