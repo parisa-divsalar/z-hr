@@ -1,17 +1,17 @@
 'use client';
-import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
-import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import HeadphonesRoundedIcon from '@mui/icons-material/HeadphonesRounded';
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import MicRoundedIcon from '@mui/icons-material/MicRounded';
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import { List, ListItemText, Stack, Typography } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 
+import DashboardRoundedIcon from '@/assets/images/menu/Icon1.svg';
+import ArticleRoundedIcon from '@/assets/images/menu/Icon2.svg';
+import HistoryRoundedIcon from '@/assets/images/menu/Icon3.svg';
+import CreditCardRoundedIcon from '@/assets/images/menu/Icon4.svg';
+import SchoolRoundedIcon from '@/assets/images/menu/Icon5.svg';
+import SettingsRoundedIcon from '@/assets/images/menu/Icon6.svg';
+import HeadphonesRoundedIcon from '@/assets/images/menu/Icon7.svg';
+import MicRoundedIcon from '@/assets/images/menu/Icon8.svg';
 import { ItemButton, SidebarContainer, ItemIcon } from '@/components/Layout/SideBar/styled';
 import { PrivateRoutes, PublicRoutes, VisibilitySideBar } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
@@ -91,7 +91,7 @@ const SideBar = () => {
             <ListItemText primary='Interview' />
           </ItemButton>
 
-          <ItemButton>
+          <ItemButton active={pathname === PrivateRoutes.setting} onClick={() => router.push(PrivateRoutes.setting)}>
             <ItemIcon>
               <SettingsRoundedIcon fontSize='small' />
             </ItemIcon>

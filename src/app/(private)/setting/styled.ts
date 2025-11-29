@@ -10,6 +10,7 @@ export const SettingRoot = styled(Box)(({ theme }) => ({
   border: `1px solid ${theme.palette.grey[100]}`,
   overflowY: 'auto',
   overflowX: 'hidden',
+  marginTop: '10px',
 
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2),

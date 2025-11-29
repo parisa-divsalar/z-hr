@@ -12,14 +12,16 @@ export const INTERVIEW_COLORS = {
 };
 
 export const InterviewRoot = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(3),
   width: '100%',
-  height: 'calc(100vh - 200px)',
-  margin: '1 auto',
-  borderRadius: '8px',
+  maxHeight: '100vh-120px', // limit height to viewport
+  overflowY: 'auto', // scroll only inside this content
+  boxSizing: 'border-box',
+  padding: 24,
   border: `1px solid ${theme.palette.grey[100]}`,
-  overflowY: 'auto',
-  overflowX: 'hidden',
+  borderRadius: '8px',
+  gap: 24,
+  margin: '1px',
+  marginTop: '10px',
 }));
 
 export const SectionHeader = styled(Stack)(() => ({

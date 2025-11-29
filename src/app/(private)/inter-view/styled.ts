@@ -11,5 +11,6 @@ export const PaymentRoot = styled(Box)(({ theme }) => ({
   borderRadius: '8px',
   gap: 24,
   margin: '1px',
-  marginTop: '14px',
+
+  marginTop: '20px',
 }));
