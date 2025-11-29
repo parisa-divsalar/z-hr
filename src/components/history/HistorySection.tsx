@@ -91,7 +91,7 @@ const HistoryCard = ({
           </HistoryImage>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2}>
+        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={3}>
           <Stack direction='row' gap={2}>
             <Typography variant='h6' fontWeight='500' color='text.primary'>
               {name}
@@ -122,25 +122,25 @@ const HistoryCard = ({
           <Stack direction='row' gap={3} alignItems='center' mt={2}>
             <Stack direction='row' gap={0.5} alignItems='center'>
               <VoiceIcon />
-              <Typography variant='body1' fontWeight='400' color='text.primary'>
+              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
                 {Voice}
               </Typography>
             </Stack>
             <Stack direction='row' gap={0.5} alignItems='center'>
               <ImageIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
                 {Photo}
               </Typography>
             </Stack>
             <Stack direction='row' gap={0.5} alignItems='center'>
               <VideoIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
                 {Video}
               </Typography>
             </Stack>
           </Stack>
 
-          <Stack direction='row' gap={1} mt={3}>
+          <Stack direction='row' gap={1} mt={4}>
             <Position />
 
             <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
@@ -267,12 +267,12 @@ const HistorySection = () => {
   }, [isLoading, currentIndex, loadMoreItems]);
 
   return (
-    <Stack gap={1} mt={1}>
+    <Stack gap={1}>
       <SectionHeader>
         <Typography variant='h5' fontWeight='500' color='text.primary'>
           History{' '}
         </Typography>
-        <Stack direction='row' alignItems='center'>
+        <Stack direction='row' alignItems='center' mt={2}>
           <MuiButton text='Favorites' color='secondary' variant='text' />
           <HeaderDivider orientation='vertical' flexItem />
 

@@ -10,10 +10,10 @@ export const DASHBOARD_COLORS = {
   lightText: '#A1A1A1',
   darkText: '#1C1C1C',
 };
-
 export const DashboardRoot = styled(Stack)(({ theme }) => ({
   width: '100%',
-  minHeight: '155vh',
+  maxHeight: '100vh', // limit height to viewport
+  overflowY: 'auto', // scroll only inside this content
   boxSizing: 'border-box',
   padding: 24,
   border: `1px solid ${theme.palette.grey[100]}`,

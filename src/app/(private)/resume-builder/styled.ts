@@ -4,8 +4,10 @@ import { styled } from '@mui/material/styles';
 export const ResumeBuilderRoot = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   width: '100%',
-  height: 'calc(100vh - 200px)',
+  height: 'calc(100vh - 180px)',
   margin: '1 auto',
+  marginTop: '10px',
+
   borderRadius: '8px',
   border: `1px solid ${theme.palette.grey[100]}`,
   overflowY: 'auto',

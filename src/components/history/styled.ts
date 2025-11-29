@@ -4,12 +4,13 @@ import { styled } from '@mui/material/styles';
 export const HistoryRoot = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(3),
   width: '100%',
-  height: 'calc(100vh - 200px)',
+  height: 'calc(100vh - 160px)',
   margin: '1 auto',
   borderRadius: '8px',
   border: `1px solid ${theme.palette.grey[100]}`,
   overflowY: 'auto',
   overflowX: 'hidden',
+  marginTop: '10px',
 }));
 
 export const HistoryCommunityCardRoot = styled(Stack)(({ theme }) => ({
