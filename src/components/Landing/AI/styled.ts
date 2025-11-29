@@ -6,7 +6,6 @@ import bgAI from '@/assets/images/bg/bg-ai.png';
 export const MainContainer = styled(Stack)(() => ({
   width: '100%',
   height: '100%',
-  backgroundColor: 'red',
   backgroundImage: `url(${bgAI.src})`,
   display: 'flex',
   alignItems: 'center',
