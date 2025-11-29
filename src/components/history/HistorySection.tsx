@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { CircularProgress, Stack, Typography } from '@mui/material';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import { Checkbox, CircularProgress, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,6 +16,7 @@ import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
 import { SectionHeader } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
+import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import { communityChannels, HistoryChannel } from './mockData';
 import {
@@ -193,6 +195,7 @@ const HistorySection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<string>('new-to-old');
   const observerTarget = useRef<HTMLDivElement>(null);
   const sortButtonRef = useRef<HTMLDivElement>(null);
   const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -200,10 +203,11 @@ const HistorySection = () => {
   const ITEMS_PER_PAGE = 3;
 
   const handleSortClick = () => {
-    setIsSortMenuOpen(!isSortMenuOpen);
+    setIsSortMenuOpen((prev) => !prev);
   };
 
-  const handleSortOption = (_sortType: string) => {
+  const handleSortOption = (sortType: string) => {
+    setSelectedOption(sortType);
     setIsSortMenuOpen(false);
   };
 
@@ -272,27 +276,61 @@ const HistorySection = () => {
         <Typography variant='h5' fontWeight='500' color='text.primary'>
           History{' '}
         </Typography>
-        <Stack direction='row' alignItems='center' mt={2}>
-          <MuiButton text='Favorites' color='secondary' variant='text' />
-          <HeaderDivider orientation='vertical' flexItem />
+        <Stack direction='row' alignItems='center'>
+          <MuiCheckbox
+            label={
+              <Typography variant='body2' fontWeight='400' color='text.primary'>
+                Bookmarks{' '}
+              </Typography>
+            }
+          />
+
+          <HeaderDivider orientation='vertical' flexItem sx={{ ml: 2 }} />
 
           <RelativeStack ref={sortButtonRef}>
-            <MuiButton text='Sort' color='secondary' variant='text' onClick={handleSortClick} />
+            <MuiButton
+              text='Select resume'
+              color='secondary'
+              variant='text'
+              onClick={handleSortClick}
+              endIcon={<KeyboardArrowDownRoundedIcon fontSize='small' />}
+            />
+
             <PopupMenu ref={sortMenuRef} isOpen={isSortMenuOpen}>
               <SortMenuContentStack>
-                <MenuItemStack onClick={() => handleSortOption('new-to-old')}>
+                <MenuItemStack
+                  direction='row'
+                  alignItems='center'
+                  gap={1}
+                  onClick={() => handleSortOption('new-to-old')}
+                >
+                  <Checkbox size='small' checked={selectedOption === 'new-to-old'} />
                   <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                    New to Old
+                    Newest
                   </Typography>
                 </MenuItemStack>
-                <MenuItemStack onClick={() => handleSortOption('old-to-new')}>
+
+                <MenuItemStack
+                  direction='row'
+                  alignItems='center'
+                  gap={1}
+                  onClick={() => handleSortOption('old-to-new')}
+                >
+                  <Checkbox size='small' checked={selectedOption === 'old-to-new'} />
                   <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                    Old to New
+                    Oldest
                   </Typography>
                 </MenuItemStack>
-                <MenuItemStack onClick={() => handleSortOption('fit-score')}>
+
+                <MenuItemStack
+                  direction='row'
+                  alignItems='center'
+                  gap={1}
+                  onClick={() => handleSortOption('free-first')}
+                >
+                  <Checkbox size='small' checked={selectedOption === 'free-first'} />
                   <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                    Fit Score
+                    Free first
                   </Typography>
                 </MenuItemStack>
               </SortMenuContentStack>

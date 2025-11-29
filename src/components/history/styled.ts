@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 export const HistoryRoot = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(3),
   width: '100%',
-  height: 'calc(100vh - 160px)',
+  flex: 1,
   margin: '1 auto',
   borderRadius: '8px',
   border: `1px solid ${theme.palette.grey[100]}`,

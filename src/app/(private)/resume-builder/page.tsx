@@ -4,7 +4,39 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
 
-import { ResumeBuilderRoot } from '@/app/(private)/resume-builder/styled';
+import MoreFeatures from '@/app/(private)/resume-builder/more';
+import ResumeGenerator from '@/app/(private)/resume-builder/ResumeGenerator';
+import {
+  CircleContainer,
+  DividerLine,
+  InputContainer,
+  InputContent,
+  MainContainer,
+  OrDivider,
+  QuestionsBottomSection,
+  QuestionsContainer,
+  QuestionsMediaIconBox,
+  QuestionsMediaItem,
+  QuestionsMediaRow,
+  QuestionsMiddleSection,
+  QuestionsQuestionBadge,
+  QuestionsQuestionCard,
+  QuestionsQuestionList,
+  QuestionsQuestionTexts,
+  QuestionsTopSection,
+  ResultContainer,
+  ResultIconWrapper,
+  ResultLabel,
+  ResultRow,
+  ResultStatus,
+  ResultTile,
+  ResumeBuilderRoot,
+  SelectSkillContainerSkill,
+  SelectSkillSkillContainer,
+  SkillInputContainer,
+  SkillInputContent,
+  SkillInputMainContainer,
+} from '@/app/(private)/resume-builder/styled';
 import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ArrowTopIcon from '@/assets/images/icons/arrow-top.svg';
@@ -14,43 +46,12 @@ import VideoIcon from '@/assets/images/icons/download3.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import AddAttachFile from '@/components/Landing/AI/Attach';
 import AttachView from '@/components/Landing/AI/Attach/View';
-import { MainContainer } from '@/components/Landing/AI/styled';
-import { CircleContainer, InputContainer, InputContent } from '@/components/Landing/AI/Text/styled';
-import { DividerLine, OrDivider } from '@/components/Landing/AI/VoiceBox/styled';
 import VoiceRecord from '@/components/Landing/Common/VoiceRecord';
 import { AIStatus, StageWizard } from '@/components/Landing/type';
-import {
-  TopSection as QuestionsTopSection,
-  MediaRow as QuestionsMediaRow,
-  MediaItem as QuestionsMediaItem,
-  MediaIconBox as QuestionsMediaIconBox,
-  MiddleSection as QuestionsMiddleSection,
-  QuestionList as QuestionsQuestionList,
-  QuestionCard as QuestionsQuestionCard,
-  QuestionBadge as QuestionsQuestionBadge,
-  QuestionTexts as QuestionsQuestionTexts,
-  BottomSection as QuestionsBottomSection,
-  Container as QuestionsContainer,
-} from '@/components/Landing/Wizard/Step1/Questions/styled';
-import {
-  Container as ResultContainer,
-  Tile as ResultTile,
-  Label as ResultLabel,
-  IconWrapper as ResultIconWrapper,
-  Row as ResultRow,
-  Status as ResultStatus,
-} from '@/components/Landing/Wizard/Step1/Result/styled';
-import {
-  InputContainer as SkillInputContainer,
-  InputContent as SkillInputContent,
-  MainContainer as SkillInputMainContainer,
-} from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 import { AllSkill as SelectSkillAllSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/data';
-import {
-  ContainerSkill as SelectSkillContainerSkill,
-  SkillContainer as SelectSkillSkillContainer,
-} from '@/components/Landing/Wizard/Step1/SlectSkill/styled';
 import { TSkill as SelectSkillTSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/type';
+import Thinking from '@/components/Landing/Wizard/Step2/Thinking';
+import Step3 from '@/components/Landing/Wizard/Step3';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 
@@ -89,9 +90,7 @@ const ResumeAIInputPrompt: FunctionComponent<ResumeAIInputPromptProps> = (props)
         </IconButton>
       ) : (
         <IconButton>
-          <CircleContainer>
-            <ArrowTopIcon color='#8A8A91' />
-          </CircleContainer>
+          <ArrowTopIcon color='#8A8A91' />
         </IconButton>
       )}
     </InputContainer>
@@ -413,9 +412,11 @@ const ResumeBuilderStep1Questions: FunctionComponent<ResumeBuilderStep1Questions
             ))}
           </QuestionsMediaRow>
         </QuestionsTopSection>
+
         <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center' mt={3}>
           Questions
         </Typography>
+
         <QuestionsQuestionList>
           {questionNumbers.map((num, index) => (
             <React.Fragment key={num}>
@@ -470,10 +471,28 @@ const ResumeBuilderStep1Questions: FunctionComponent<ResumeBuilderStep1Questions
 
 interface ResumeBuilderStep1Props {
   setAiStatus: (status: AIStatus) => void;
+  setActiveStep: (activeStep: number) => void;
 }
 
 const ResumeBuilderStep1: FunctionComponent<ResumeBuilderStep1Props> = ({ setAiStatus }) => {
   const [stage, setStage] = useState<StageWizard>('RESULT');
+  const [showMoreFeatures, setShowMoreFeatures] = useState<boolean>(false);
+  const [showResumeGenerator, setShowResumeGenerator] = useState<boolean>(false);
+
+  if (showResumeGenerator) {
+    return <ResumeGenerator />;
+  }
+
+  if (showMoreFeatures) {
+    return (
+      <MoreFeatures
+        onBack={() => setShowMoreFeatures(false)}
+        onSubmit={() => {
+          setShowResumeGenerator(true);
+        }}
+      />
+    );
+  }
 
   if (stage === 'RESULT') {
     return <ResumeBuilderStep1VoiceResult onSubmit={() => setStage('SELECT_SKILL')} setAiStatus={setAiStatus} />;
@@ -487,18 +506,40 @@ const ResumeBuilderStep1: FunctionComponent<ResumeBuilderStep1Props> = ({ setAiS
     return <ResumeBuilderStep1SkillInput setStage={setStage} />;
   }
 
-  return <ResumeBuilderStep1Questions onNext={() => setAiStatus('START')} setAiStatus={setAiStatus} />;
+  return (
+    <ResumeBuilderStep1Questions
+      onNext={() => {
+        setShowMoreFeatures(true);
+      }}
+      setAiStatus={setAiStatus}
+    />
+  );
 };
 
 const ResumeBuilder: FunctionComponent = () => {
   const [aiStatus, setAiStatus] = useState<AIStatus>('START');
+  const [activeStep, setActiveStep] = useState<number>(1);
 
   return (
     <ResumeBuilderRoot>
       {aiStatus === 'START' ? (
         <ResumeAIInput setAiStatus={setAiStatus} />
       ) : aiStatus === 'WIZARD' ? (
-        <ResumeBuilderStep1 setAiStatus={setAiStatus} />
+        activeStep === 1 ? (
+          <ResumeBuilderStep1 setAiStatus={setAiStatus} setActiveStep={setActiveStep} />
+        ) : activeStep === 2 ? (
+          <Thinking
+            onCancel={() => {
+              setAiStatus('START');
+              setActiveStep(1);
+            }}
+            setActiveStep={setActiveStep}
+          />
+        ) : activeStep === 3 ? (
+          <Step3 setActiveStep={setActiveStep} />
+        ) : (
+          <Stack />
+        )
       ) : (
         <Stack />
       )}
