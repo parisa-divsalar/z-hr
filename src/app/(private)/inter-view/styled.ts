@@ -2,17 +2,14 @@ import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const PaymentRoot = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
   width: '100%',
-  height: 'calc(100vh - 200px)',
-  margin: '1 auto',
-  borderRadius: '8px',
+  maxHeight: '100vh', // limit height to viewport
+  overflowY: 'auto', // scroll only inside this content
+  boxSizing: 'border-box',
+  padding: 24,
   border: `1px solid ${theme.palette.grey[100]}`,
-  overflowY: 'auto',
-  overflowX: 'hidden',
-
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-    height: 'calc(100vh - 80px)',
-  },
+  borderRadius: '8px',
+  gap: 24,
+  margin: '1px',
+  marginTop: '14px',
 }));
