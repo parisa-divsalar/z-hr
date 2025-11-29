@@ -21,6 +21,7 @@ export const MainContent = styled(Stack)(() => ({
 export const FirstChild = styled(Stack)(() => ({
   width: '100%',
   padding: '5rem',
+  justifyContent: 'space-between',
 }));
 
 export const ThemeContainer = styled(Stack)(() => ({

@@ -9,3 +9,20 @@ export const convertPersianNumbersToEnglish = (str: string): string => {
   }
   return newStr;
 };
+
+export const emailValidation = (value: string) => {
+  return value.match(
+    /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
+  );
+};
+
+export const isContainsLowercase = (value: string) => {
+  const isContainsUppercase = /^(?=.*[A-Z]).*$/;
+  return isContainsUppercase.test(value);
+};
+
+export const validateDigit = (value: string) => value.search(/[0-9]/) < 0;
+
+export const validateSpecialChar = (value: string) => value.search(/[!@#\$%\^&\*_]/) < 0;
+
+export const checkPasswordLength = (value: string) => value.length >= 8;
