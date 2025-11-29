@@ -1,6 +1,8 @@
 export const PublicRoutes = {
   landing: '/',
   login: '/login',
+  forgetPassword: '/reset-password',
+  newPassword: '/new-password',
   register: '/register',
   moreFeatures: '/more-features',
   resumeGenerator: '/resume-generator',

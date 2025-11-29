@@ -15,7 +15,7 @@ import AuthHeader from '@/components/Auth/Header';
 import { DividerLine, OrDivider } from '@/components/Landing/AI/VoiceBox/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
-import { PrivateRoutes } from '@/config/routes';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 
 const LoginPage = () => {
@@ -43,72 +43,85 @@ const LoginPage = () => {
     <MainContainer>
       <MainContent direction='row'>
         <FirstChild>
-          <AuthHeader />
-          <Typography color='secondary.main' variant='h5' mt={4}>
-            Sign in
-          </Typography>
-          <Typography color='grey.300' variant='subtitle2'>
-            Login to your account
-          </Typography>
-          <Typography color='secondary.main' variant='subtitle1'>
-            Enter your email and password
-          </Typography>
+          <Stack width='100%'>
+            <AuthHeader />
+            <Typography color='secondary.main' variant='h5' mt={4}>
+              Sign in
+            </Typography>
+            <Typography color='grey.300' variant='subtitle2'>
+              Login to your account
+            </Typography>
+            <Typography color='secondary.main' variant='subtitle1'>
+              Enter your email and password
+            </Typography>
 
-          <Stack spacing={1} mt={4}>
-            <MuiInput value={email} onChange={setEmail} label='Email' placeholder='Your email...' />
+            <Stack spacing={1} mt={4}>
+              <MuiInput value={email} onChange={setEmail} label='Email' placeholder='Your email...' />
 
-            <MuiInput
-              value={password}
-              onChange={setPassword}
-              type={typeInput}
-              label='Password'
-              endIcon={
-                typeInput === 'password' ? (
-                  <IconButton onClick={() => setTypeInput('text')}>
-                    <VisibilityRoundedIcon color='primary' fontSize='small' />
-                  </IconButton>
-                ) : (
-                  <IconButton onClick={() => setTypeInput('password')}>
-                    <VisibilityOffRoundedIcon color='primary' fontSize='small' />
-                  </IconButton>
-                )
-              }
-              placeholder='Your password...'
-            />
-          </Stack>
+              <MuiInput
+                value={password}
+                onChange={setPassword}
+                type={typeInput}
+                label='Password'
+                endIcon={
+                  typeInput === 'password' ? (
+                    <IconButton onClick={() => setTypeInput('text')}>
+                      <VisibilityRoundedIcon color='primary' fontSize='small' />
+                    </IconButton>
+                  ) : (
+                    <IconButton onClick={() => setTypeInput('password')}>
+                      <VisibilityOffRoundedIcon color='primary' fontSize='small' />
+                    </IconButton>
+                  )
+                }
+                placeholder='Your password...'
+              />
+            </Stack>
 
-          <Stack mt={4} spacing={1}>
-            <MuiButton color='secondary' fullWidth onClick={onSubmit} disabled={!email || !password} loading={loading}>
-              Login
-            </MuiButton>
+            <Stack mt={4} spacing={1}>
+              <MuiButton
+                color='secondary'
+                fullWidth
+                onClick={onSubmit}
+                disabled={!email || !password}
+                loading={loading}
+              >
+                Login
+              </MuiButton>
 
-            <MuiButton color='secondary' variant='text' fullWidth>
-              Forget password
-            </MuiButton>
-          </Stack>
+              <MuiButton
+                color='secondary'
+                variant='text'
+                fullWidth
+                onClick={() => router.push(PublicRoutes.forgetPassword)}
+              >
+                Forget password
+              </MuiButton>
+            </Stack>
 
-          <Stack alignItems='center'>
-            <OrDivider sx={{ marginTop: '0.75rem' }}>
-              <DividerLine />
-              <Typography variant='body2' color='text.primary' bgcolor='transparent' mx={1}>
-                Or
-              </Typography>
-              <DividerLine />
-            </OrDivider>
-          </Stack>
+            <Stack alignItems='center'>
+              <OrDivider sx={{ marginTop: '0.75rem' }}>
+                <DividerLine />
+                <Typography variant='body2' color='text.primary' bgcolor='transparent' mx={1}>
+                  Or
+                </Typography>
+                <DividerLine />
+              </OrDivider>
+            </Stack>
 
-          <Stack direction='row' justifyContent='center' gap={2} mt={2}>
-            <LogoCard>
-              <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />
-            </LogoCard>
+            <Stack direction='row' justifyContent='center' gap={2} mt={2}>
+              <LogoCard>
+                <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />
+              </LogoCard>
 
-            <LogoCard>
-              <AppleIcon sx={{ fontSize: 24 }} />
-            </LogoCard>
+              <LogoCard>
+                <AppleIcon sx={{ fontSize: 24 }} />
+              </LogoCard>
 
-            <LogoCard>
-              <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />
-            </LogoCard>
+              <LogoCard>
+                <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />
+              </LogoCard>
+            </Stack>
           </Stack>
 
           <Stack direction='row' justifyContent='space-between' alignItems='center' mt={4}>
