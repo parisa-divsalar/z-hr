@@ -23,6 +23,6 @@ export const isContainsLowercase = (value: string) => {
 
 export const validateDigit = (value: string) => value.search(/[0-9]/) < 0;
 
-export const validateSpecialChar = (value: string) => value.search(/[!@#\$%\^&\*_]/) < 0;
+export const validateSpecialChar = (value: string) => value.search(/[!@#$%^&*_]/) < 0;
 
 export const checkPasswordLength = (value: string) => value.length >= 8;
