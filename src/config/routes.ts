@@ -14,6 +14,7 @@ export const PrivateRoutes = {
   historyEdite: '/history-edite',
   payment: '/payment',
   setting: '/setting',
+  support: '/support',
   interView: '/inter-view',
   resumeBuilder: '/resume-builder',
   learningHub: '/learning-hub',
@@ -24,6 +25,7 @@ export const VisibilityLayout: string[] = [
   PublicRoutes.landing,
   PrivateRoutes.dashboard,
   PrivateRoutes.history,
+  PrivateRoutes.support,
   PrivateRoutes.historyEdite,
   PrivateRoutes.chatInterView,
   PrivateRoutes.payment,
@@ -42,6 +44,7 @@ export const VisibilitySideBar: string[] = [
   PrivateRoutes.payment,
   PrivateRoutes.setting,
   PrivateRoutes.resumeBuilder,
+  PrivateRoutes.support,
 
   PrivateRoutes.interView,
   PrivateRoutes.chatInterView,

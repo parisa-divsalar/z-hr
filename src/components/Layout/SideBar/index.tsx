@@ -98,7 +98,7 @@ const SideBar = () => {
             <ListItemText primary='Setting' />
           </ItemButton>
 
-          <ItemButton>
+          <ItemButton active={pathname === PrivateRoutes.support} onClick={() => router.push(PrivateRoutes.support)}>
             <ItemIcon>
               <HeadphonesRoundedIcon fontSize='small' />
             </ItemIcon>
