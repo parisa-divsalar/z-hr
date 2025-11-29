@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Typography } from '@mui/material';
 import { ChevronDown } from 'lucide-react';
 
+import { PageTitle } from '@/app/(private)/payment/styled';
 import {
   AccordionHeader,
   AccordionItem,
@@ -84,6 +85,11 @@ const Support = () => {
 
   return (
     <SupportRoot>
+      <PageTitle>
+        <Typography component='h5' fontWeight='500' color='text.primary'>
+          FAQ
+        </Typography>
+      </PageTitle>
       <GridContainer>
         <ContentWrapper>
           {accordionData.map((item) => {

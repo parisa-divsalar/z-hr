@@ -70,7 +70,7 @@ export const ContentWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const AccordionItem = styled(Box)(({ theme }) => ({
+export const AccordionItem = styled(Box)(({ theme: _theme }) => ({
   borderTop: '1px solid #F0F0F2',
 
   '&:first-of-type': {
@@ -82,7 +82,7 @@ interface AccordionHeaderProps {
   expanded?: boolean;
 }
 
-export const AccordionHeader = styled('button')<AccordionHeaderProps>(({ theme, expanded }) => ({
+export const AccordionHeader = styled('button')<AccordionHeaderProps>(({ theme, expanded: _expanded }) => ({
   width: '100%',
   display: 'flex',
   alignItems: 'center',
