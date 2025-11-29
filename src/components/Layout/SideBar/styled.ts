@@ -10,6 +10,18 @@ export const SidebarContainer = styled(Box)(() => ({
   flexDirection: 'column',
   overflow: 'hidden',
   justifyContent: 'space-between',
+  position: 'relative', // مهم
+
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 150, // می‌تونی مقدارشو تغییر بدی
+    height: 150,
+    pointerEvents: 'none',
+    background: 'radial-gradient(circle at top right, rgba(255,255,255,0.25), rgba(255,255,255,0) 70%)',
+  },
 }));
 
 export const ItemButton = styled(ListItemButton, {
