@@ -18,13 +18,13 @@ const ProfileHeader = () => {
       <AvatarContainer>
         <MuiAvatar size='large' src={AvatarSrc.src} />
         <ProfileInfo>
-          <Typography variant='h4' fontWeight='bold' gutterBottom>
+          <Typography variant='subtitle1' fontWeight='600' color='text.primary' gutterBottom>
             Zayd Al-Mansoori
           </Typography>
           <Typography variant='body1' color='text.secondary' gutterBottom>
             Dubai
           </Typography>
-          <Typography variant='body2' color='text.secondary'>
+          <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
             Front-end Developer • Visa status • 12 Years of experience
           </Typography>
         </ProfileInfo>

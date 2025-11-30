@@ -105,7 +105,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
               {editingSection === 'summary' ? (
                 <StyledTextareaAutosize value={summary} onChange={(e) => setSummary(e.target.value)} />
               ) : (
-                <SummaryText variant='body2'>{summary}</SummaryText>
+                <SummaryText>{summary}</SummaryText>
               )}
             </SummaryContainer>
           </SectionContainer>
