@@ -17,7 +17,7 @@ const Step3: FunctionComponent<Step3Props> = (props) => {
   if (stage === 'RESUME_EDITOR')
     return (
       <Stack alignItems='center' height='100%' p={2}>
-        <Typography variant='h5' color='text.primary' fontWeight='700' mt={2}>
+        <Typography variant='h5' color='text.primary' fontWeight='600' mt={2}>
           CV Preview
         </Typography>
         <Typography variant='h6' color='text.primary' my={1}>

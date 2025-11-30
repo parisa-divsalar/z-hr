@@ -107,7 +107,7 @@ export const ExperienceHeader = styled(Box)(() => ({
 }));
 
 export const CompanyName = styled(Typography)(() => ({
-  fontWeight: 'bold',
+  fontWeight: '500',
   marginBottom: '4px',
 }));
 
