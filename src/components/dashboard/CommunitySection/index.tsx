@@ -11,7 +11,7 @@ import {
   CommunityIconCircle,
   CommunityIconWrapper,
   SectionHeader,
-} from '@/components/Dashboard/styled';
+} from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
 const CommunityCard = ({ icon, title, subtitle }: { icon: 'tel' | 'insta'; title: string; subtitle: string }) => {
