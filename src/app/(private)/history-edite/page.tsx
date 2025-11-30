@@ -2,10 +2,11 @@
 
 import Grid from '@mui/material/Grid';
 
+import { HistoryEditeRoot } from '@/app/(private)/history-edite/styled';
+
 import GapSection from './Components/GapSection';
 import PreviewEdite from './Components/PreviewEdite';
 import HistoryQuestions from './HistoryQuestionsDialog/HistoryQuestions';
-import { HistoryEditeRoot } from './styled';
 
 const HistoryEdite = () => {
   return (

@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import { Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
@@ -8,7 +8,7 @@ import MuiButton from '@/components/UI/MuiButton';
 
 import { CardBaseiNTER, SectionHeader, StepsLeftChip } from './styled';
 
-const UpcomingInterview = () => {
+const UpcomingInterview2 = () => {
   const router = useRouter();
 
   const handleContinue = () => {
@@ -51,4 +51,4 @@ const UpcomingInterview = () => {
   );
 };
 
-export default UpcomingInterview;
+export default UpcomingInterview2;

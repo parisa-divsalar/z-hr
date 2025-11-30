@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Checkbox, Stack, Typography } from '@mui/material';
 
-import { SectionHeader } from '@/components/dashboard/styled';
+import { SectionHeader } from '@/components/Dashboard/styled';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import LearningHubContent, { mockLearningHubData } from './LearningHubContent';
@@ -21,13 +21,9 @@ import {
 
 const AllLearningHubSection = () => <LearningHubContent items={mockLearningHubData} />;
 
-const FreeLearningHubSection = () => (
-  <LearningHubContent items={mockLearningHubData.filter((item) => item.isFree)} />
-);
+const FreeLearningHubSection = () => <LearningHubContent items={mockLearningHubData.filter((item) => item.isFree)} />;
 
-const PaidLearningHubSection = () => (
-  <LearningHubContent items={mockLearningHubData.filter((item) => !item.isFree)} />
-);
+const PaidLearningHubSection = () => <LearningHubContent items={mockLearningHubData.filter((item) => !item.isFree)} />;
 
 const LearningHubPage = () => {
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);

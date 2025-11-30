@@ -5,9 +5,8 @@ import Box1Icon from '@/assets/images/dashboard/box1.svg';
 import Box2Icon from '@/assets/images/dashboard/box2.svg';
 import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import { SectionHeader, SubText, SuggestedJobCardItem } from '@/components/Dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
-
-import { SectionHeader, SubText, SuggestedJobCardItem } from './styled';
 
 const SuggestedJobCard = () => {
   return (

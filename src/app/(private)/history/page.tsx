@@ -1,7 +1,7 @@
 'use client';
 
-import HistorySection from '@/components/history/HistorySection';
-import { HistoryRoot } from '@/components/history/styled';
+import HistorySection from '@/components/History/HistorySection';
+import { HistoryRoot } from '@/components/History/styled';
 
 const HistoryPage = () => {
   return (

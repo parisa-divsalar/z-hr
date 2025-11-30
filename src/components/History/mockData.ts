@@ -1,19 +1,6 @@
-export type HistoryChannel = {
-  id: string;
-  name: string;
-  date: string;
-  Percentage: string;
-  position: string;
-  level: string;
-  title: string;
-  Voice: string;
-  Photo: string;
-  size: string;
-  Video: string;
-  description: string;
-};
+import { THistoryChannel } from '@/components/History/type';
 
-export const communityChannels: HistoryChannel[] = [
+export const communityChannels: THistoryChannel[] = [
   {
     id: '1',
     name: "Zayd Al-Mansoori's Resume",
@@ -99,13 +86,3 @@ export const communityChannels: HistoryChannel[] = [
     description: '6 Suggested Position',
   },
 ];
-
-
-
-
-
-
-
-
-
-

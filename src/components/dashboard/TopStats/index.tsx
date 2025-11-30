@@ -4,8 +4,7 @@ import Grid from '@mui/material/Grid';
 import Frame1Icon from '@/assets/images/dashboard/Frame1.svg';
 import Frame2Icon from '@/assets/images/dashboard/Frame2.svg';
 import Frame3Icon from '@/assets/images/dashboard/Frame3.svg';
-
-import { SmallCardBase, StatTitle, StatValue, StatValueRow } from './styled';
+import { SmallCardBase, StatTitle, StatValue, StatValueRow } from '@/components/Dashboard/styled';
 
 const TopStats = () => {
   return (

@@ -22,7 +22,7 @@ import {
   PopupMenu,
   RelativeStack,
   StyledDivider,
-} from '@/components/history/styled';
+} from '@/components/History/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
 import { PreviewEditeRoot } from '../styled';

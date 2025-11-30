@@ -14,11 +14,8 @@ import ResumeIcon from '@/assets/images/dashboard/resume.svg?url';
 import TrashIcon from '@/assets/images/dashboard/trash-01.svg';
 import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
-import { SectionHeader } from '@/components/dashboard/styled';
-import MuiButton from '@/components/UI/MuiButton';
-import MuiCheckbox from '@/components/UI/MuiCheckbox';
-
-import { communityChannels, HistoryChannel } from './mockData';
+import { SectionHeader } from '@/components/Dashboard/styled';
+import { communityChannels } from '@/components/History/mockData';
 import {
   HeaderDivider,
   HistoryCommunityCardRoot,
@@ -30,7 +27,10 @@ import {
   RelativeStack,
   SortMenuContentStack,
   StyledDivider,
-} from './styled';
+} from '@/components/History/styled';
+import { THistoryChannel } from '@/components/History/type';
+import MuiButton from '@/components/UI/MuiButton';
+import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 const HistoryCard = ({
   name,
@@ -43,7 +43,7 @@ const HistoryCard = ({
   Photo,
   Video,
   description,
-}: HistoryChannel) => {
+}: THistoryChannel) => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
@@ -191,7 +191,7 @@ const HistoryCard = ({
 };
 
 const HistorySection = () => {
-  const [displayedItems, setDisplayedItems] = useState<HistoryChannel[]>([]);
+  const [displayedItems, setDisplayedItems] = useState<THistoryChannel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);

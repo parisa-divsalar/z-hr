@@ -1,10 +1,9 @@
 import { Stack, Typography } from '@mui/material';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import { CardBaseiNTER, SectionHeader, SectionTitle } from '@/components/Dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
-
-import { CardBaseiNTER, SectionHeader, SectionTitle } from './styled';
 
 const UpcomingInterview = () => {
   return (

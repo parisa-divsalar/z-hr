@@ -6,9 +6,13 @@ import HeadIcon from '@/assets/images/dashboard/comm.svg';
 import InstaIcon from '@/assets/images/dashboard/insta.svg';
 import TelIcon from '@/assets/images/dashboard/tel.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import {
+  CommunityCardRoot,
+  CommunityIconCircle,
+  CommunityIconWrapper,
+  SectionHeader,
+} from '@/components/Dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
-
-import { CommunityCardRoot, CommunityIconCircle, CommunityIconWrapper, SectionHeader } from './styled';
 
 const CommunityCard = ({ icon, title, subtitle }: { icon: 'tel' | 'insta'; title: string; subtitle: string }) => {
   const IconComponent = icon === 'tel' ? TelIcon : InstaIcon;

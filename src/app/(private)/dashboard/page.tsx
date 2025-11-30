@@ -2,12 +2,12 @@
 
 import { Grid, Stack, Typography } from '@mui/material';
 
-import CommunitySection from '@/components/dashboard/CommunitySection';
-import SkillGapAnalysis from '@/components/dashboard/SkillGapAnalysis';
+import CommunitySection from '@/components/Dashboard/CommunitySection';
+import SkillGapAnalysis from '@/components/Dashboard/SkillGapAnalysis';
 import { DashboardRoot } from '@/components/Dashboard/styled';
-import SuggestedPositions from '@/components/dashboard/SuggestedPositions';
-import TopStats from '@/components/dashboard/TopStats';
-import UpcomingInterview from '@/components/dashboard/UpcomingInterview';
+import SuggestedPositions from '@/components/Dashboard/SuggestedPositions';
+import TopStats from '@/components/Dashboard/TopStats';
+import UpcomingInterview from '@/components/Dashboard/UpcomingInterview';
 
 const DashboardPage = () => {
   return (
