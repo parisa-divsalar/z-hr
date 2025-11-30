@@ -20,28 +20,26 @@ interface SectionHeaderProps {
 const SectionHeader = ({ title, onEdit, isEditing, onSave, onCancel }: SectionHeaderProps) => {
   return (
     <SectionHeaderContainer>
-      <SectionTitle variant="h6">
-        {title}
-      </SectionTitle>
+      <SectionTitle variant='subtitle1'>{title}</SectionTitle>
       <SectionActions>
         {isEditing ? (
           <>
-            <IconButton size="small" onClick={onSave} color="success">
-              <Check fontSize="small" />
+            <IconButton size='small' onClick={onSave} color='success'>
+              <Check fontSize='small' />
             </IconButton>
-            <IconButton size="small" onClick={onCancel} color="error">
-              <Close fontSize="small" />
+            <IconButton size='small' onClick={onCancel} color='error'>
+              <Close fontSize='small' />
             </IconButton>
           </>
         ) : (
           <>
-            <IconButton size="small" onClick={onEdit}>
+            <IconButton size='small' onClick={onEdit}>
               <EditIcon />
             </IconButton>
-            <IconButton size="small">
+            <IconButton size='small'>
               <RefreshIcon />
             </IconButton>
-            <IconButton size="small">
+            <IconButton size='small'>
               <StarIcon />
             </IconButton>
           </>

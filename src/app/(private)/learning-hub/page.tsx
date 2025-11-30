@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Checkbox, Stack, Typography } from '@mui/material';
 
-import { SectionHeader } from '@/components/Dashboard/styled';
+import { SectionHeader } from '@/components/dashboard/styled';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import LearningHubContent, { mockLearningHubData } from './LearningHubContent';

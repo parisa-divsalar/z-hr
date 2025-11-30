@@ -57,8 +57,10 @@ export const SummaryContainer = styled(Box)(({ theme }) => ({
 }));
 
 export const SummaryText = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.secondary,
+  color: theme.palette.text.primary,
   lineHeight: 1.6,
+  fontSize: '14px',
+  fontWeight: '500',
 }));
 
 export const SkillsContainer = styled(Box)(({ theme }) => ({
@@ -146,7 +148,8 @@ export const SectionHeaderContainer = styled(Box)(() => ({
 }));
 
 export const SectionTitle = styled(Typography)(() => ({
-  fontWeight: 'bold',
+  fontWeight: '600',
+  fontSize: '16px',
 }));
 
 export const SectionActions = styled(Box)(({ theme }) => ({
@@ -162,6 +165,8 @@ export const SkillTextField = styled(TextField)(({ theme }) => ({
 
 export const CompanyTextField = styled(TextField)(({ theme }) => ({
   marginBottom: theme.spacing(1),
+  fontSize: '16px',
+  fontWeight: '500',
 }));
 
 export const PositionTextField = styled(TextField)(() => ({

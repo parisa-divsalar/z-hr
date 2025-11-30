@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import RectangleIcon from '@/assets/images/dashboard/imag/rectangle.svg?url';
-import { SectionHeader } from '@/components/Dashboard/styled';
+import { SectionHeader } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
 import QuestionCard from '../Components/QuestionCard';
