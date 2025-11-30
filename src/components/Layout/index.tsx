@@ -14,9 +14,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
     <Stack className={classes.mainLayout}>
       <Stack className={classes.layoutContainer} bgcolor='background.default'>
         <Navbar />
-        <Stack direction='row' flex={1} overflow='hidden'>
+        <Stack direction='row' className={classes.childrenContainer}>
           <SideBar />
-          <Stack className={classes.childrenContainer}>{children}</Stack>
+          <Stack className={classes.children}>{children}</Stack>
         </Stack>
         <Footer />
       </Stack>
