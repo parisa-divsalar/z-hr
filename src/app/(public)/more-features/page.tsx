@@ -3,8 +3,8 @@
 import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-import { ResumeTemplates } from '@/app/(private)/resume-builder/MoreFeatures';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
+import ResumeMoreTemplates from '@/components/MoreFeature/ResumeTemplates';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
@@ -137,12 +137,12 @@ const MoreFeaturesPage = () => {
       </Stack>
       <Grid container spacing={2} mt={2}>
         <Grid size={{ xs: 6 }}>
-          <ResumeTemplates />
+          <ResumeMoreTemplates />
           <Box mt={2.5}>
-            <ResumeTemplates />
+            <ResumeMoreTemplates />
           </Box>
           <Box mt={2.5}>
-            <ResumeTemplates />
+            <ResumeMoreTemplates />
           </Box>
         </Grid>
         <Grid size={{ xs: 6 }}>
