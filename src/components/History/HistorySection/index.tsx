@@ -14,7 +14,7 @@ import ResumeIcon from '@/assets/images/dashboard/resume.svg?url';
 import TrashIcon from '@/assets/images/dashboard/trash-01.svg';
 import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
-import { SectionHeader } from '@/components/Dashboard/styled';
+import { SectionHeader } from '@/components/dashboard/styled';
 import { communityChannels } from '@/components/History/mockData';
 import {
   HeaderDivider,

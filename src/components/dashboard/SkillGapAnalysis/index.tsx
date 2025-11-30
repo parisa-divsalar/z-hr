@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 
 import HeadIcon from '@/assets/images/dashboard/head.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
-import { SectionHeader, SuggestedJobCardItem, TagPill } from '@/components/Dashboard/styled';
+import { SectionHeader, SuggestedJobCardItem, TagPill } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
 type SkillInfoItem = {
