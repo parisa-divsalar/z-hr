@@ -31,7 +31,7 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
   };
 
   return (
-    <Stack width='100%' height='100%' alignItems='center' p={8}>
+    <Stack width='100%' height='100%' alignItems='center' p={5}>
       <StepWrapper activeStep={activeStep} />
 
       {getSubChildWizard()}

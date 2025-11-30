@@ -271,11 +271,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
           text='Back'
           variant='outlined'
           color='secondary'
+          size='large'
           startIcon={<ArrowBackIcon />}
           onClick={() => setActiveStep(2)}
         />
 
-        <MuiButton color='secondary' variant='contained' text='Submit' onClick={handleSubmit} />
+        <MuiButton
+          color='secondary'
+          size='large'
+          variant='contained'
+          text='Submit'
+          onClick={handleSubmit}
+          sx={{ width: '188px' }}
+        />
       </FooterContainer>
     </ResumeContainer>
   );

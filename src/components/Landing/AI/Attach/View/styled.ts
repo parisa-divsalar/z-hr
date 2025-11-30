@@ -29,7 +29,6 @@ export const FilePreviewVoiceContainer = styled(Box)(() => ({
   borderRadius: '8px',
   border: '1px solid',
   borderColor: '#d3d3fb',
-  overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',

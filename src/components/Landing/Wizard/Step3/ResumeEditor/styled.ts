@@ -28,7 +28,7 @@ export const ActionButtons = styled(Box)(() => ({
 export const FooterContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
-  gap: theme.spacing(2),
+  gap: theme.spacing(3),
   marginTop: theme.spacing(4),
   paddingTop: theme.spacing(3),
 }));

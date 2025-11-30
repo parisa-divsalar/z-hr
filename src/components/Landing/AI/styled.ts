@@ -12,6 +12,6 @@ export const MainContainer = styled(Stack)(() => ({
   justifyContent: 'center',
   padding: '1rem',
   backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
+  backgroundSize: 'contain',
   backgroundPosition: 'center center',
 }));

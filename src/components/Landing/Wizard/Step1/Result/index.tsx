@@ -22,7 +22,7 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
-      <Typography color='text.primary' variant='h6'>
+      <Typography color='text.primary' variant='h6' mt={2}>
         Uploaded
       </Typography>
       <Typography color='text.primary' variant='h5' fontWeight='600' textAlign='center' mt={0.5}>
@@ -66,7 +66,7 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
           <Status>Done</Status>
         </Row>
 
-        <Stack mt={6} direction='row' gap={2} width='22rem'>
+        <Stack mt={6} direction='row' gap={5} width='22rem'>
           <MuiButton
             color='secondary'
             variant='outlined'

@@ -72,7 +72,7 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
 
       {(search !== '' || voiceUrl) && (
         <Stack width='10rem' mt={6}>
-          <MuiButton fullWidth color='secondary' onClick={() => setAiStatus('WIZARD')}>
+          <MuiButton fullWidth color='secondary' size='large' onClick={() => setAiStatus('WIZARD')}>
             submit
           </MuiButton>
         </Stack>

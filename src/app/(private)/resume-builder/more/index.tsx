@@ -17,6 +17,7 @@ import {
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 interface MoreFeaturesProps {
   onBack: () => void;
@@ -221,7 +222,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                 <JobSuggestionsRight>
                   <CardsWrapper>
                     {suggestion.cards.map((card) => (
-                      <SuggestionCard key={card.number}>
+                      <SuggestionCard key={generateFakeUUIDv4()}>
                         <SuggestionCardHeader>
                           <NumberBadge>{card.number}</NumberBadge>
                           <Box>

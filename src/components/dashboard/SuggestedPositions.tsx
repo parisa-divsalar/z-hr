@@ -7,16 +7,15 @@ import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
-import { SectionHeader, SubText, JobTitleBox, SuggestedJobCardItem } from './styled';
+import { SectionHeader, SubText, SuggestedJobCardItem } from './styled';
 
 const SuggestedJobCard = () => {
   return (
     <SuggestedJobCardItem>
-      <JobTitleBox>
-        <Typography variant='h6' color='text.primary' fontWeight='400'>
-          Front end Developer
-        </Typography>
-      </JobTitleBox>
+      <Typography variant='h6' color='text.primary' fontWeight='400'>
+        Front end Developer
+      </Typography>
+
       <Typography variant='subtitle2' color='text.primary' fontWeight='400' p={2}>
         09/09/2025 · Remote · Dubai
       </Typography>

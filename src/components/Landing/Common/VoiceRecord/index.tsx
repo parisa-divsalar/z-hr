@@ -371,7 +371,10 @@ const VoiceRecord = ({
               sx={{
                 width: 24,
                 height: 24,
+                top: -12,
+                right: -12,
                 padding: 0,
+                position: 'absolute',
                 backgroundColor: 'transparent',
                 '&:hover': {
                   backgroundColor: 'transparent',

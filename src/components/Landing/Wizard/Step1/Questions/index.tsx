@@ -41,9 +41,6 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
   return (
     <Container>
       <MiddleSection>
-        {/*<Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>*/}
-        {/*  Questions*/}
-        {/*</Typography>*/}
         <TopSection>
           <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>
             File uploaded
@@ -57,10 +54,10 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
                 </MediaIconBox>
 
                 <Stack direction='row' spacing={1.25} alignItems='center'>
-                  <Typography variant='body2' fontWeight={500} color='text.primary'>
+                  <Typography variant='body2' fontWeight={600} color='text.primary'>
                     {label}
                   </Typography>
-                  <Typography variant='caption' fontWeight={600} color='success.main'>
+                  <Typography variant='caption' fontWeight={600} color='success.light'>
                     Done
                   </Typography>
                 </Stack>
@@ -83,8 +80,8 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
                       Questions
                     </Typography>
                   </Stack>
-                  <Stack direction='row' spacing={0.5} mt={1}>
-                    <Typography variant='subtitle2' fontWeight={400} color='text.primary'>
+                  <Stack direction='row' gap={1} mt={1}>
+                    <Typography variant='subtitle2' fontWeight={600} color='text.primary'>
                       Answer
                     </Typography>
                     <Typography variant='subtitle2' fontWeight={400} color='text.primary'>
@@ -109,12 +106,18 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
       </MiddleSection>
 
       <BottomSection>
-        <Stack direction='row' spacing={2} justifyContent='center' m={4}>
-          <MuiButton color='secondary' variant='outlined' startIcon={<AddIcon />} onClick={() => setAiStatus('START')}>
+        <Stack direction='row' gap={5} justifyContent='center' m={4}>
+          <MuiButton
+            color='secondary'
+            variant='outlined'
+            size='large'
+            startIcon={<AddIcon />}
+            onClick={() => setAiStatus('START')}
+          >
             Add more
           </MuiButton>
 
-          <MuiButton color='secondary' onClick={onNext} endIcon={<ArrowRightIcon />}>
+          <MuiButton color='secondary' size='large' onClick={onNext} endIcon={<ArrowRightIcon />}>
             Submit
           </MuiButton>
         </Stack>

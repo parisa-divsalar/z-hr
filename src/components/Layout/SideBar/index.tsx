@@ -29,7 +29,7 @@ const SideBar = () => {
   if (!VisibilitySideBar.includes(pathname)) return null;
 
   return (
-    <SidebarContainer mt={2}>
+    <SidebarContainer>
       <Stack>
         <Typography color='grey.300' variant='caption' px={3} pt={3}>
           Menu

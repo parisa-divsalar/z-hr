@@ -67,10 +67,11 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         )}
       </ContainerSkill>
 
-      <Stack mt={4} mb={6} direction='row' spacing={2}>
+      <Stack mt={4} mb={6} direction='row' gap={3}>
         <MuiButton
           color='secondary'
           variant='outlined'
+          size='large'
           startIcon={<ArrowBackIcon />}
           onClick={() => setStage('RESULT')}
         >
@@ -80,6 +81,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         <MuiButton
           color='secondary'
           endIcon={<ArrowRightIcon />}
+          size='large'
           onClick={() => setStage('SKILL_INPUT')}
           disabled={customSkill === ''}
         >

@@ -1,11 +1,10 @@
 'use client';
 
-import { Stack, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { Grid, Stack, Typography } from '@mui/material';
 
 import CommunitySection from '@/components/dashboard/CommunitySection';
 import SkillGapAnalysis from '@/components/dashboard/SkillGapAnalysis';
-import { DashboardRoot } from '@/components/dashboard/styled';
+import { DashboardRoot } from '@/components/Dashboard/styled';
 import SuggestedPositions from '@/components/dashboard/SuggestedPositions';
 import TopStats from '@/components/dashboard/TopStats';
 import UpcomingInterview from '@/components/dashboard/UpcomingInterview';

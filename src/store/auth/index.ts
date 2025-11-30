@@ -6,7 +6,7 @@ import { useAuthStoreProps } from '@/store/auth/type';
 export const useAuthStore = create<useAuthStoreProps>()(
   persist(
     (set) => ({
-      accessToken: 'afss',
+      accessToken: '',
       refreshToken: null,
       status: 'idle',
       loginStart: () => set({ status: 'loading' }),

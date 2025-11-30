@@ -12,14 +12,12 @@ export const DASHBOARD_COLORS = {
 };
 export const DashboardRoot = styled(Stack)(({ theme }) => ({
   width: '100%',
-  // height: '100%',
-  // overflowY: 'auto', // scroll only inside this content
-  // boxSizing: 'border-box',
-  // padding: 24,
-  // border: `1px solid ${theme.palette.grey[100]}`,
-  // borderRadius: '8px',
-  // gap: 24,
-  // margin: '1px',
+  height: 'auto',
+  boxSizing: 'border-box',
+  padding: 24,
+  border: `1px solid ${theme.palette.grey[100]}`,
+  borderRadius: '8px',
+  gap: 24,
 }));
 
 export const SectionHeader = styled(Stack)(() => ({
@@ -124,12 +122,6 @@ export const TagPill = styled(Typography)(({ theme }) => ({
   backgroundColor: theme.palette.warning.light,
   border: `1px solid ${theme.palette.warning.main}`,
   color: theme.palette.warning.main,
-}));
-
-export const JobTitleBox = styled(Typography)(({ theme }) => ({
-  backgroundColor: theme.palette.grey[100],
-  borderBottom: `1px solid ${theme.palette.grey[100]}`,
-  padding: '15px',
 }));
 
 export const SubText = styled(Typography)(() => ({
