@@ -62,7 +62,7 @@ export const JobSuggestionsContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(3),
   padding: theme.spacing(3),
   alignItems: 'flex-start',
-  width: '588px',
+  width: '100%',
   height: '218px',
 }));
 
@@ -121,7 +121,7 @@ export const SuggestionCard = styled(Box)(({ theme }) => ({
   borderRadius: '12px',
   padding: theme.spacing(1),
   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-  width: '258px',
+  width: '100%',
   height: '85px',
   overflow: 'hidden',
 }));

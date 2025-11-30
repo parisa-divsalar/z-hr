@@ -1,14 +1,9 @@
-'use client';
+import { FunctionComponent } from 'react';
 
 import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
-import ResumeMoreTemplates from '@/components/MoreFeature/ResumeTemplates';
-import MuiButton from '@/components/UI/MuiButton';
-import MuiCheckbox from '@/components/UI/MuiCheckbox';
-import { generateFakeUUIDv4 } from '@/utils/generateUUID';
-
 import {
   JobSuggestionsContainer,
   JobSuggestionsLeft,
@@ -18,9 +13,18 @@ import {
   SuggestionCard,
   SuggestionCardHeader,
   NumberBadge,
-} from './styled';
+} from '@/components/Landing/Wizard/Step3/MoreFeatures/styled';
+import ResumeMoreTemplates from '@/components/MoreFeature/ResumeTemplates';
+import MuiButton from '@/components/UI/MuiButton';
+import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
-const MoreFeaturesPage = () => {
+interface MoreFeaturesProps {
+  setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES') => void;
+}
+
+const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
+  const { setStage } = props;
   const router = useRouter();
 
   const jobSuggestions = [
@@ -135,7 +139,7 @@ const MoreFeaturesPage = () => {
           You can utilize these features with your resume
         </Typography>
       </Stack>
-      <Grid container spacing={2} mt={2}>
+      <Grid container spacing={3} mt={2}>
         <Grid size={{ xs: 6 }}>
           <ResumeMoreTemplates />
           <Box mt={2.5}>
@@ -198,17 +202,20 @@ const MoreFeaturesPage = () => {
         </Grid>
       </Grid>
 
-      <Stack direction='row' spacing={2} justifyContent='center' p={5}>
+      <Stack direction='row' gap={3} justifyContent='center' p={5}>
         <MuiButton
           text='Back'
           variant='outlined'
           color='secondary'
+          size='large'
           startIcon={<ArrowBackIcon style={{ color: '#111113' }} />}
+          onClick={() => setStage('RESUME_EDITOR')}
         />
         <MuiButton
           text='Submit'
           variant='contained'
           color='secondary'
+          size='large'
           onClick={() => router.push('/resume-generator')}
         />
       </Stack>
@@ -216,4 +223,4 @@ const MoreFeaturesPage = () => {
   );
 };
 
-export default MoreFeaturesPage;
+export default MoreFeatures;

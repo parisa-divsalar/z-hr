@@ -2,14 +2,12 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Check, Close } from '@mui/icons-material';
 import { Box, CardContent, IconButton } from '@mui/material';
-import { useRouter } from 'next/navigation';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 import MuiButton from '@/components/UI/MuiButton';
-import { PublicRoutes } from '@/config/routes';
 
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import SectionHeader from './ResumeEditor/SectionHeader';
@@ -38,12 +36,12 @@ import {
 } from './ResumeEditor/styled';
 
 interface ResumeEditorProps {
+  setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES') => void;
   setActiveStep: (activeStep: number) => void;
 }
 
 const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
-  const { setActiveStep } = props;
-  const router = useRouter();
+  const { setStage, setActiveStep } = props;
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   const [summary, setSummary] = useState(
@@ -87,10 +85,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
   const handleExperienceChange = (id: number, field: string, value: string) => {
     setExperiences(experiences.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)));
-  };
-
-  const handleSubmit = () => {
-    router.push(PublicRoutes.moreFeatures);
   };
 
   return (
@@ -281,7 +275,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
           size='large'
           variant='contained'
           text='Submit'
-          onClick={handleSubmit}
+          onClick={() => setStage('MORE_FEATURES')}
           sx={{ width: '188px' }}
         />
       </FooterContainer>

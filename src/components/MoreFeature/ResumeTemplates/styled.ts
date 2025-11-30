@@ -9,7 +9,7 @@ export const Container = styled(Box)(({ theme }) => ({
   borderRadius: '12px',
   border: `1px solid ${theme.palette.grey[200]}`,
   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-  width: '588px',
+  width: '100%',
   height: '218px',
 
   [theme.breakpoints.down('md')]: {
@@ -25,7 +25,7 @@ export const LeftSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
-  flex: '0 0 235px',
+  flex: 1,
 
   [theme.breakpoints.down('md')]: {
     flex: 'none',
@@ -82,7 +82,7 @@ export const ResumeCardGrid = styled(Box)(() => ({
   gap: 12,
   maxWidth: 'fit-content',
   marginTop: '-50px',
-  transition: 'transform 0.5s ease-in-out',
+  transition: 'transform 5.5s ease-in-out',
   position: 'relative',
 
   '&:hover': {
