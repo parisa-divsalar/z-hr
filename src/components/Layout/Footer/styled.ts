@@ -1,4 +1,4 @@
-import { Divider, Stack } from '@mui/material';
+import { Divider, IconButton, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const MainFooterContainer = styled(Stack)(({ theme }) => ({
@@ -19,4 +19,14 @@ export const MainFooterContent = styled(Stack)(() => ({
 
 export const VerticalDivider = styled(Divider)(({ theme }) => ({
   backgroundColor: theme.palette.grey[300],
+}));
+
+export const IconButtonWrapper = styled(IconButton)(({ theme }) => ({
+  '& svg': {
+    color: theme.palette.grey[300],
+    transition: 'color 0.3s ease',
+  },
+  '&:hover svg': {
+    color: theme.palette.secondary.main,
+  },
 }));

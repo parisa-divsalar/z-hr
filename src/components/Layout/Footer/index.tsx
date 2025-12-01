@@ -1,12 +1,16 @@
-'use client';
-import { IconButton, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { usePathname } from 'next/navigation';
 
 import Instagram from '@/assets/images/icons/instagram.svg';
 import SocialIcons from '@/assets/images/icons/social-icons.svg';
 import SocialInIcon from '@/assets/images/icons/social-in.svg';
 import SocialZ from '@/assets/images/icons/social-z.svg';
-import { MainFooterContainer, VerticalDivider, MainFooterContent } from '@/components/Layout/Footer/styled';
+import {
+  MainFooterContainer,
+  VerticalDivider,
+  MainFooterContent,
+  IconButtonWrapper,
+} from '@/components/Layout/Footer/styled';
 import { VisibilityLayout } from '@/config/routes';
 
 const Footer = () => {
@@ -30,19 +34,19 @@ const Footer = () => {
           </Typography>
         </Stack>
 
-        <Stack direction='row' gap={1}>
-          <IconButton>
+        <Stack direction='row' gap={0.5}>
+          <IconButtonWrapper>
             <SocialIcons />
-          </IconButton>
-          <IconButton>
+          </IconButtonWrapper>
+          <IconButtonWrapper>
             <SocialInIcon />
-          </IconButton>
-          <IconButton>
+          </IconButtonWrapper>
+          <IconButtonWrapper>
             <Instagram />
-          </IconButton>
-          <IconButton>
+          </IconButtonWrapper>
+          <IconButtonWrapper>
             <SocialZ />
-          </IconButton>
+          </IconButtonWrapper>
         </Stack>
       </MainFooterContent>
     </MainFooterContainer>

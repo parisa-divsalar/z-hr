@@ -27,7 +27,7 @@ export const VoiceLabel = styled(Typography)(({ theme }) => ({
 export const OrDivider = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
-  width: '11rem',
+  width: '11.5rem',
   marginTop: '2rem',
   marginBottom: '1rem',
 }));
@@ -35,5 +35,5 @@ export const OrDivider = styled(Box)(() => ({
 export const DividerLine = styled(Box)(({ theme }) => ({
   flex: 1,
   height: 1,
-  backgroundColor: theme.palette.divider,
+  backgroundColor: theme.palette.grey[100],
 }));
