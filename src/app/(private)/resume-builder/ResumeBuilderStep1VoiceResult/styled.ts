@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const ResultContainer = styled(Box)(({ theme }) => ({
@@ -44,4 +44,3 @@ export const ResultStatus = styled(Typography)(() => ({
   fontWeight: 600,
   color: '#00C853',
 }));
-

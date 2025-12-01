@@ -48,4 +48,3 @@ export const InputContent = styled('textarea')(({ theme }) => ({
     color: theme.palette.grey[400],
   },
 }));
-
