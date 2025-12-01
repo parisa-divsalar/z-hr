@@ -74,3 +74,4 @@ export const NumberBadge = styled(Box)(({ theme }) => ({
   fontWeight: 600,
 }));
 
+

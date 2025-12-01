@@ -14,7 +14,7 @@ export const DashboardRoot = styled(Stack)(({ theme }) => ({
   width: '100%',
   height: 'auto',
   boxSizing: 'border-box',
-  padding: 24,
+  padding: 20,
   border: `1px solid ${theme.palette.grey[100]}`,
   borderRadius: '8px',
   gap: 24,
@@ -93,8 +93,8 @@ export const SmallCardBase = styled(CardBase)(({ theme }) => ({
 }));
 
 export const StatTitle = styled(Typography)(() => ({
-  fontSize: 12,
-  fontWeight: 500,
+  fontSize: 14,
+  fontWeight: 400,
   color: DASHBOARD_COLORS.lightText,
   marginBottom: 8,
 }));

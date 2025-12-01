@@ -278,7 +278,6 @@ export const SkillInputContent = styled('textarea')(({ theme }) => ({
   },
 }));
 
-// === Select skill step (from Wizard/Step1/SlectSkill) ===
 export const SelectSkillSkillContainer = styled(Stack)(() => ({
   display: 'flex',
   alignItems: 'center',
@@ -306,7 +305,6 @@ export const SelectSkillContainerSkill = styled(Stack, {
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
 }));
 
-// === More features / resume templates ===
 export const MoreFeaturesTemplatesWrapper = styled(Box)(() => ({
   width: '100%',
 }));
@@ -322,7 +320,6 @@ export const MoreFeaturesTemplateCard = styled(Box)(({ theme }) => ({
   height: 102,
 }));
 
-// keep CardActionArea import used for potential future reuse
 export const VoiceButton = styled(CardActionArea)(() => ({
   width: 76,
   height: 76,

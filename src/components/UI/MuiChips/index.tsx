@@ -44,7 +44,7 @@ const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
           <CloseRoundedIcon color='primary' />
         </IconButton>
       )}
-      <Typography variant='subtitle1' color={color} fontWeight={500} noWrap>
+      <Typography variant='subtitle2' color={color} fontWeight={400} noWrap>
         {chipLabel}
       </Typography>
     </ChipContainer>
@@ -52,5 +52,3 @@ const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
 };
 
 export default MuiChips;
-
-
