@@ -112,9 +112,10 @@ export const StatValue = styled(Typography)(() => ({
 }));
 
 export const TagPill = styled(Typography)(({ theme }) => ({
-  borderRadius: 999,
+  borderRadius: ' 4px',
   padding: '4px 10px',
-  fontSize: 11,
+  fontSize: 14,
+  height: '20px',
   fontWeight: 500,
   display: 'inline-flex',
   alignItems: 'center',

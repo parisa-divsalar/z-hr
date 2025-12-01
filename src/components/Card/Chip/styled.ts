@@ -9,5 +9,5 @@ export const ChipContainer = styled(Stack)(() => ({
   gap: '0.25rem',
   marginTop: '0.5rem',
   cursor: 'pointer',
-  borderRadius: '8px',
+  borderRadius: '24px',
 }));

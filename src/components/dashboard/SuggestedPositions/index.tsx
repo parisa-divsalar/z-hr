@@ -1,11 +1,11 @@
 import { Stack, Typography, Divider } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
+import ArrowRightIcon from '@/assets/images/dashboard/arrow-right.svg';
 import Box1Icon from '@/assets/images/dashboard/box1.svg';
 import Box2Icon from '@/assets/images/dashboard/box2.svg';
 import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
 import Location from '@/assets/images/dashboard/location.svg';
-import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import { SectionHeader, SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
