@@ -18,7 +18,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
 
   return (
     <>
-      <Stack textAlign='center' mt={2} mb={4}>
+      <Stack textAlign='center' mt={2} mb={2}>
         <Typography variant='h5' color='text.primary' fontWeight='500' mt={0.5}>
           More Features
         </Typography>
