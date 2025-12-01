@@ -4,6 +4,7 @@ import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
+import ResumeMoreTemplates from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplates';
 import {
   JobSuggestionsContainer,
   JobSuggestionsLeft,
@@ -14,7 +15,6 @@ import {
   SuggestionCardHeader,
   NumberBadge,
 } from '@/components/Landing/Wizard/Step3/MoreFeatures/styled';
-import ResumeMoreTemplates from '@/components/MoreFeature/ResumeTemplates';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';

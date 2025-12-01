@@ -13,7 +13,7 @@ import {
   NumberBadge,
   SuggestionCard,
   SuggestionCardHeader,
-} from '@/app/(public)/more-features/styled';
+} from '@/app/(private)/resume-builder/more/styled';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
