@@ -123,13 +123,13 @@ const ResumeAIInput: FunctionComponent<ResumeAIInputProps> = ({ setAiStatus }) =
   return (
     <MainContainer>
       {!voiceUrl && uploadedFiles.length === 0 && (
-        <Typography variant='h6' color='text.primary'>
+        <Typography variant='h6' color='text.primary' fontWeight='400'>
           Create your resume with
         </Typography>
       )}
 
       {!voiceUrl && uploadedFiles.length === 0 && (
-        <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
+        <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.5}>
           Voice, Video, Photo and Text
         </Typography>
       )}
