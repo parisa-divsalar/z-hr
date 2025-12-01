@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import bgAI from '@/assets/images/bg/Ellipse.svg';
+import bgAI from '@/assets/images/bg/Ellipse1.png';
 
 export const MainContainer = styled(Stack)(() => ({
   width: '100%',
@@ -15,4 +15,3 @@ export const MainContainer = styled(Stack)(() => ({
   backgroundSize: 'cover',
   backgroundPosition: 'center center',
 }));
-

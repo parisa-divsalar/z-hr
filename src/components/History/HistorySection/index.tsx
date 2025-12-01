@@ -93,7 +93,7 @@ const HistoryCard = ({
           </HistoryImage>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={3}>
+        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={5}>
           <Stack direction='row' gap={2}>
             <Typography variant='h6' fontWeight='500' color='text.primary'>
               {name}
@@ -116,6 +116,9 @@ const HistoryCard = ({
               {position}
             </Typography>
             <StyledDivider orientation='vertical' flexItem />
+            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+              {level}
+            </Typography>
             <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
               {level}
             </Typography>

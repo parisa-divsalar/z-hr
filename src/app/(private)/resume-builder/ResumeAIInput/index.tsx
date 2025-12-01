@@ -40,7 +40,7 @@ const ResumeAIInput: FunctionComponent<{ setAiStatus: (status: AIStatus) => void
       )}
 
       {!voiceUrl && uploadedFiles.length === 0 && (
-        <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.5}>
+        <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.3}>
           Voice, Video, Photo and Text
         </Typography>
       )}
@@ -69,7 +69,7 @@ const ResumeAIInput: FunctionComponent<{ setAiStatus: (status: AIStatus) => void
       />
 
       {(search !== '' || voiceUrl) && (
-        <Stack width='10rem' mt={6}>
+        <Stack width='10rem' mt={3}>
           <MuiButton fullWidth color='secondary' onClick={() => setAiStatus('WIZARD')}>
             submit
           </MuiButton>

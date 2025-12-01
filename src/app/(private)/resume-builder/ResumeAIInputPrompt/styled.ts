@@ -9,7 +9,7 @@ export const InputContainer = styled(Stack, {
   borderRadius: '1rem',
   border: `1px solid ${active ? '#1976d2' : '#e0e0e0'}`,
   padding: '1rem 1rem 0.5rem 1rem',
-  maxWidth: '588px',
+  maxWidth: '650px',
   height: 'auto',
   marginTop: '2rem',
   display: 'flex',

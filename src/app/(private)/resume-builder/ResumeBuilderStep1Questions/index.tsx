@@ -44,7 +44,7 @@ const ResumeBuilderStep1Questions: FunctionComponent<ResumeBuilderStep1Questions
     <QuestionsContainer>
       <QuestionsMiddleSection>
         <QuestionsTopSection>
-          <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>
+          <Typography variant='subtitle1' fontWeight={400} color='text.primary' textAlign='center'>
             File uploaded
           </Typography>
 
@@ -67,10 +67,6 @@ const ResumeBuilderStep1Questions: FunctionComponent<ResumeBuilderStep1Questions
             ))}
           </QuestionsMediaRow>
         </QuestionsTopSection>
-
-        <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center' mt={3}>
-          Questions
-        </Typography>
 
         <QuestionsQuestionList>
           {questionNumbers.map((num, index) => (
@@ -111,11 +107,17 @@ const ResumeBuilderStep1Questions: FunctionComponent<ResumeBuilderStep1Questions
 
       <QuestionsBottomSection>
         <Stack direction='row' spacing={2} justifyContent='center' m={4}>
-          <MuiButton color='secondary' variant='outlined' startIcon={<AddIcon />} onClick={() => setAiStatus('START')}>
+          <MuiButton
+            color='secondary'
+            size='large'
+            variant='outlined'
+            startIcon={<AddIcon />}
+            onClick={() => setAiStatus('START')}
+          >
             Add more
           </MuiButton>
 
-          <MuiButton color='secondary' onClick={onNext} endIcon={<ArrowRightIcon />}>
+          <MuiButton color='secondary' size='large' onClick={onNext} endIcon={<ArrowRightIcon />}>
             Submit
           </MuiButton>
         </Stack>

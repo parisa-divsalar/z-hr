@@ -43,9 +43,10 @@ const ResumeBuilderStep1SkillInput: FunctionComponent<ResumeBuilderStep1SkillInp
         )}
       </SkillInputContainer>
 
-      <Stack mt={4} mb={6} direction='row' spacing={2}>
+      <Stack mt={30} mb={6} direction='row' spacing={2}>
         <MuiButton
           color='secondary'
+          size='large'
           variant='outlined'
           startIcon={<ArrowBackIcon />}
           onClick={() => setStage('SELECT_SKILL')}
@@ -55,6 +56,7 @@ const ResumeBuilderStep1SkillInput: FunctionComponent<ResumeBuilderStep1SkillInp
 
         <MuiButton
           color='secondary'
+          size='large'
           endIcon={<ArrowRightIcon />}
           onClick={() => setStage('QUESTIONS')}
           disabled={answer === ''}

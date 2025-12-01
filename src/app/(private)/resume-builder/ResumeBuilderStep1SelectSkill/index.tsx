@@ -34,7 +34,7 @@ const ResumeBuilderStep1SelectSkill: FunctionComponent<ResumeBuilderStep1SelectS
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
-      <Typography variant='h5' color='text.primary' fontWeight='600' mt={5}>
+      <Typography variant='h5' color='text.primary' fontWeight='600' mt={3}>
         What is your main skill?
       </Typography>
 
@@ -46,7 +46,7 @@ const ResumeBuilderStep1SelectSkill: FunctionComponent<ResumeBuilderStep1SelectS
 
       <OrDivider>
         <DividerLine />
-        <Typography variant='body2' color='text.primary' px={2}>
+        <Typography variant='body2' color='text.primary' px={1}>
           Or
         </Typography>
         <DividerLine />

@@ -2,7 +2,7 @@
 
 import React, { FunctionComponent, useState } from 'react';
 
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
 import ResumeAIInput from '@/app/(private)/resume-builder/ResumeAIInput';
 import ResumeBuilderStep1 from '@/app/(private)/resume-builder/ResumeBuilderStep1';
@@ -18,6 +18,9 @@ const ResumeBuilder: FunctionComponent = () => {
 
   return (
     <ResumeBuilderRoot>
+      <Typography variant='h5' fontWeight='500' color='text.primary'>
+        Resume Builder
+      </Typography>
       {aiStatus === 'START' ? (
         <ResumeAIInput setAiStatus={setAiStatus} />
       ) : aiStatus === 'WIZARD' ? (

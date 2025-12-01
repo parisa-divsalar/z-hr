@@ -25,7 +25,7 @@ const ResumeBuilderStep1VoiceResult: FunctionComponent<ResumeBuilderStep1VoiceRe
 }) => {
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
-      <Typography color='text.primary' variant='h6'>
+      <Typography color='text.primary' variant='h6' fontWeight='400'>
         Uploaded
       </Typography>
       <Typography color='text.primary' variant='h5' fontWeight='600' textAlign='center' mt={0.5}>
@@ -69,7 +69,7 @@ const ResumeBuilderStep1VoiceResult: FunctionComponent<ResumeBuilderStep1VoiceRe
           <ResultStatus>Done</ResultStatus>
         </ResultRow>
 
-        <Stack mt={6} direction='row' gap={2} width='22rem'>
+        <Stack mt={6} direction='row' gap={3} width='22rem'>
           <MuiButton
             color='secondary'
             variant='outlined'
