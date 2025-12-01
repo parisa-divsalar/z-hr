@@ -44,7 +44,7 @@ const SideBar = () => {
             </ItemIcon>
             <ListItemText primary='Dashboard' />
 
-            <KeyboardArrowRightRoundedIcon />
+            {pathname === PrivateRoutes.dashboard && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton
@@ -55,6 +55,8 @@ const SideBar = () => {
               <ArticleRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Resume Builder' />
+
+            {pathname === PrivateRoutes.resumeBuilder && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.history} onClick={() => router.push(PrivateRoutes.history)}>
@@ -62,6 +64,7 @@ const SideBar = () => {
               <HistoryRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='History' />
+            {pathname === PrivateRoutes.history && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.payment} onClick={() => router.push(PrivateRoutes.payment)}>
@@ -69,6 +72,7 @@ const SideBar = () => {
               <CreditCardRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Payment' />
+            {pathname === PrivateRoutes.payment && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton
@@ -79,6 +83,8 @@ const SideBar = () => {
               <SchoolRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Learning Hub' />
+
+            {pathname === PrivateRoutes.learningHub && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton
@@ -89,6 +95,7 @@ const SideBar = () => {
               <MicRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Interview' />
+            {pathname === PrivateRoutes.interView && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.setting} onClick={() => router.push(PrivateRoutes.setting)}>
@@ -96,6 +103,7 @@ const SideBar = () => {
               <SettingsRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Setting' />
+            {pathname === PrivateRoutes.setting && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.support} onClick={() => router.push(PrivateRoutes.support)}>
@@ -103,6 +111,7 @@ const SideBar = () => {
               <HeadphonesRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='Support' />
+            {pathname === PrivateRoutes.support && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
         </List>
       </Stack>

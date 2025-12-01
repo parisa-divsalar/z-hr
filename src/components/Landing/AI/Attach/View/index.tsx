@@ -28,9 +28,12 @@ const AttachView: FunctionComponent<AttachViewProps> = (props) => {
 
   return (
     <>
-      <Typography variant='h6' color='secondary.main'>
-        Your prompt
-      </Typography>
+      {uploadedFiles.length > 0 && (
+        <Typography variant='h6' color='secondary.main'>
+          Your prompt
+        </Typography>
+      )}
+
       <FilesStack direction='row' spacing={1}>
         {uploadedFiles.map((file, index) => (
           <FilePreviewContainer key={`${file.name}-${index}`}>

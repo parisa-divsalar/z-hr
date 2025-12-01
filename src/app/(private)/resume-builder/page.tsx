@@ -129,7 +129,7 @@ const ResumeAIInput: FunctionComponent<ResumeAIInputProps> = ({ setAiStatus }) =
       )}
 
       {!voiceUrl && uploadedFiles.length === 0 && (
-        <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
+        <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.5}>
           Voice, Video, Photo and Text
         </Typography>
       )}
@@ -256,7 +256,7 @@ const ResumeBuilderStep1SelectSkill: FunctionComponent<ResumeBuilderStep1SelectS
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
-      <Typography variant='h5' color='text.primary' fontWeight='700' mt={5}>
+      <Typography variant='h5' color='text.primary' fontWeight='600' mt={5}>
         What is your main skill?
       </Typography>
 
@@ -326,7 +326,7 @@ const ResumeBuilderStep1SkillInput: FunctionComponent<ResumeBuilderStep1SkillInp
 
   return (
     <SkillInputMainContainer>
-      <Typography variant='h5' color='text.primary' fontWeight='700'>
+      <Typography variant='h5' color='text.primary' fontWeight='600'>
         What is your main skill?
       </Typography>
       <SkillInputContainer direction='row' sx={{ borderColor: answer === '' ? 'grey.100' : 'primary.main' }}>

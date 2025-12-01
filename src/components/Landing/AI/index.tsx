@@ -42,7 +42,7 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
       )}
 
       {!voiceUrl && uploadedFiles.length === 0 && (
-        <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
+        <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.5}>
           Voice, Video, Photo and Text
         </Typography>
       )}

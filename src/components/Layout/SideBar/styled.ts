@@ -40,7 +40,7 @@ export const ItemButton = styled(ListItemButton, {
     },
   }),
   '&:hover': {
-    backgroundColor: active ? theme.palette.primary.main : theme.palette.secondary.main,
+    backgroundColor: active ? theme.palette.primary.main : theme.palette.grey.A700,
   },
 }));
 

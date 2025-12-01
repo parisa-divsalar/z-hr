@@ -3,7 +3,7 @@ import { styled } from '@mui/material/styles';
 
 export const DialogContainer = styled(Dialog)<DialogProps>(({ theme }) => ({
   '& .MuiDialog-container': {
-    backgroundColor: '#003034',
+    backgroundColor: '#4d49fc',
     padding: theme.spacing(2),
   },
 

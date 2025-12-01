@@ -130,7 +130,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
   return (
     <Stack>
       <Stack textAlign='center' mt={2}>
-        <Typography variant='h5' color='text.primary' fontWeight='700' mt={0.5}>
+        <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.5}>
           More Features
         </Typography>
         <Typography variant='h6' color='text.primary' mt={2}>

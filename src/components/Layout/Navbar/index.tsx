@@ -1,4 +1,3 @@
-'use client';
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -47,7 +46,7 @@ const Navbar = () => {
           <Link href='/' style={{ textDecoration: 'none' }}>
             <Typography
               variant='subtitle1'
-              fontWeight={isHomeActive ? '700' : '400'}
+              fontWeight={isHomeActive ? '600' : '400'}
               color={isHomeActive ? 'text.primary' : 'grey.500'}
             >
               Home

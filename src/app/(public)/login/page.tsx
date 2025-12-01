@@ -45,7 +45,7 @@ const LoginPage = () => {
         <FirstChild>
           <Stack width='100%'>
             <AuthHeader />
-            <Typography color='secondary.main' variant='h5' mt={4}>
+            <Typography color='secondary.main' variant='h5' mt={3}>
               Sign in
             </Typography>
             <Typography color='grey.300' variant='subtitle2'>
@@ -55,7 +55,7 @@ const LoginPage = () => {
               Enter your email and password
             </Typography>
 
-            <Stack spacing={1} mt={4}>
+            <Stack spacing={1} mt={3}>
               <MuiInput value={email} onChange={setEmail} label='Email' placeholder='Your email...' />
 
               <MuiInput
@@ -130,7 +130,7 @@ const LoginPage = () => {
             </Typography>
 
             <MuiButton color='secondary' variant='text'>
-              Sign in
+              Sign up
             </MuiButton>
           </Stack>
         </FirstChild>

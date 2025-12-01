@@ -88,7 +88,7 @@ const SplashScreen: FunctionComponent = () => {
     const timer = setTimeout(() => {
       setIsExiting(true);
       if (!isInstalledApp && !localStorage.getItem('installApp')) setOpen(true);
-    }, 3_000);
+    }, 2_000);
     return () => clearTimeout(timer);
   }, []);
 

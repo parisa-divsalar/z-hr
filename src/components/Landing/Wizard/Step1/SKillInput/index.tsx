@@ -18,7 +18,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
 
   return (
     <MainContainer>
-      <Typography variant='h5' color='text.primary' fontWeight='700'>
+      <Typography variant='h5' color='text.primary' fontWeight='600'>
         What is your main skill?
       </Typography>
       <InputContainer direction='row' sx={{ borderColor: answer === '' ? 'grey.100' : 'primary.main' }}>

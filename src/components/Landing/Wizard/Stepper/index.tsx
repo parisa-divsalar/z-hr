@@ -28,7 +28,7 @@ const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
             <Box>
               <Typography
                 variant='subtitle1'
-                fontWeight={700}
+                fontWeight={600}
                 color={activeStep >= step.id ? 'primary.main' : 'text.primary'}
               >
                 {step.label}
