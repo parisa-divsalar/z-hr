@@ -4,20 +4,9 @@ import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
-import ResumeMoreTemplates from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplates';
-import {
-  JobSuggestionsContainer,
-  JobSuggestionsLeft,
-  JobSuggestionsHeader,
-  JobSuggestionsRight,
-  CardsWrapper,
-  SuggestionCard,
-  SuggestionCardHeader,
-  NumberBadge,
-} from '@/components/Landing/Wizard/Step3/MoreFeatures/styled';
+import ResumeMoreTemplates from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesLeft';
+import ResumeTemplatesRight from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
 import MuiButton from '@/components/UI/MuiButton';
-import MuiCheckbox from '@/components/UI/MuiCheckbox';
-import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 interface MoreFeaturesProps {
   setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES') => void;
@@ -27,178 +16,30 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const { setStage } = props;
   const router = useRouter();
 
-  const jobSuggestions = [
-    {
-      id: 1,
-      title: 'Job Position Suggestions',
-      description:
-        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
-      cards: [
-        {
-          number: 1,
-          title: 'Questions',
-          tag: 'Soft skill',
-          answer: 'Communication is key. I excel at articulating ideas clearly and listening actively.',
-        },
-        {
-          number: 2,
-          title: 'Questions',
-          tag: 'Soft skill',
-          answer: 'I thrive in collaborative environments and enjoy working with.',
-        },
-        {
-          number: 3,
-          title: 'Questions',
-          tag: 'Soft skill',
-          answer: 'Problem-solving is my strength. I approach challenges metho.',
-        },
-        {
-          number: 3,
-          title: 'Project Management',
-          tag: 'Soft skill',
-          answer: 'I use Agile methodologies to deliver projects on  budget.',
-        },
-      ],
-    },
-
-    {
-      id: 2,
-      title: 'Skill Assessment Tools',
-      description:
-        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
-
-      cards: [
-        {
-          number: 1,
-          title: 'Technical Skills',
-          tag: 'Hard skill',
-          answer: 'I have strong proficiency in React, TypeScript, and modern .',
-        },
-        {
-          number: 2,
-          title: 'Leadership',
-          tag: 'Soft skill',
-          answer: 'I excel at mentoring junior developers and leading  teams.',
-        },
-        {
-          number: 3,
-          title: 'Project Management',
-          tag: 'Soft skill',
-          answer: 'I use Agile methodologies to deliver projects on  budget.',
-        },
-        {
-          number: 3,
-          title: 'Project Management',
-          tag: 'Soft skill',
-          answer: 'I use Agile methodologies to deliver projects on  budget.',
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: 'Career Development',
-      description:
-        'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
-
-      cards: [
-        {
-          number: 1,
-          title: 'Goal Setting',
-          tag: 'Career planning',
-          answer: 'I set SMART goals and regularly review progress to ensure .',
-        },
-        {
-          number: 2,
-          title: 'Networking',
-          tag: 'Professional development',
-          answer: 'I actively build and maintain professional relationships .',
-        },
-        {
-          number: 3,
-          title: 'Continuous Learning',
-          tag: 'Education  ',
-          answer: 'I dedicate time weekly to learning new technologies and .',
-        },
-        {
-          number: 3,
-          title: 'Project Management',
-          tag: 'Soft skill',
-          answer: 'I use Agile methodologies to deliver projects on  budget.',
-        },
-      ],
-    },
-  ];
-
   return (
     <>
-      <Stack textAlign='center' mt={2}>
-        <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.5}>
+      <Stack textAlign='center' mt={2} mb={2}>
+        <Typography variant='h5' color='text.primary' fontWeight='500' mt={0.5}>
           More Features
         </Typography>
-        <Typography variant='h6' color='text.primary' mt={2}>
+        <Typography variant='h6' color='text.primary' mt={2} fontWeight='400'>
           You can utilize these features with your resume
         </Typography>
       </Stack>
       <Grid container spacing={3} mt={2}>
         <Grid size={{ xs: 6 }}>
-          <ResumeMoreTemplates />
-          <Box mt={2.5}>
-            <ResumeMoreTemplates />
-          </Box>
-          <Box mt={2.5}>
-            <ResumeMoreTemplates />
-          </Box>
+          {Array.from({ length: 3 }).map((_, index) =>
+            index === 0 ? (
+              <ResumeMoreTemplates key={index} />
+            ) : (
+              <Box key={index} mt={2.5}>
+                <ResumeMoreTemplates />
+              </Box>
+            ),
+          )}
         </Grid>
         <Grid size={{ xs: 6 }}>
-          {jobSuggestions.map((suggestion) => (
-            <Box key={suggestion.id} sx={{ border: `1px solid`, borderColor: 'grey.200', borderRadius: '8px', mb: 2 }}>
-              <JobSuggestionsContainer>
-                <JobSuggestionsLeft>
-                  <JobSuggestionsHeader>
-                    <MuiCheckbox
-                      label={
-                        <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-                          suggestion.title
-                        </Typography>
-                      }
-                    />
-                    <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={1.5} ml={0.7}>
-                      {suggestion.description}
-                    </Typography>
-                  </JobSuggestionsHeader>
-                  <MuiButton
-                    text='More'
-                    variant='contained'
-                    color='secondary'
-                    sx={{ backgroundColor: '#F0F0F2', color: 'secondary.main' }}
-                  />
-                </JobSuggestionsLeft>
-                <JobSuggestionsRight>
-                  <CardsWrapper>
-                    {suggestion.cards.map((card) => (
-                      <SuggestionCard key={generateFakeUUIDv4()}>
-                        <SuggestionCardHeader>
-                          <NumberBadge>{card.number}</NumberBadge>
-                          <Box>
-                            <Typography variant='body2' fontWeight='600' color='text.primary'>
-                              {card.title}
-                            </Typography>
-                            {/*<SoftSkillTag>{card.tag}</SoftSkillTag>*/}
-                          </Box>
-                        </SuggestionCardHeader>
-                        <Typography variant='body2' color='text.secondary'>
-                          <Box component='span' sx={{ fontWeight: 600, color: 'text.primary' }}>
-                            Answer:{' '}
-                          </Box>
-                          {card.answer}
-                        </Typography>
-                      </SuggestionCard>
-                    ))}
-                  </CardsWrapper>
-                </JobSuggestionsRight>
-              </JobSuggestionsContainer>
-            </Box>
-          ))}
+          <ResumeTemplatesRight />
         </Grid>
       </Grid>
 

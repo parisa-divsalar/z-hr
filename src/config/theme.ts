@@ -287,7 +287,7 @@ export const darkTheme = createTheme({
     },
     success: {
       main: '#1A9121',
-      light: '#25BC2D',
+      light: '#9FFC49',
       dark: '#106915',
     },
     warning: {
@@ -348,7 +348,7 @@ export const lightTheme = createTheme({
     },
     success: {
       main: '#106915',
-      light: '#25BC2D',
+      light: '#F4FEF4',
       dark: '#106915',
     },
     warning: {

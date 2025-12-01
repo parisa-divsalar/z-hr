@@ -71,9 +71,9 @@ export const InfoRow = styled(Box)(({ theme }) => ({
 
 export const FitScoreBadge = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.success.light,
-  color: ' theme.palette.success.main',
+  color: theme.palette.success.main,
   padding: '4px 8px',
-  borderRadius: 8,
+  borderRadius: '8px',
   border: `1px solid ${theme.palette.success.main}`,
   fontSize: '0.875rem',
   fontWeight: 500,
@@ -108,7 +108,7 @@ export const FeatureCard = styled(Paper)(({ theme }) => ({
   minHeight: 135,
   padding: theme.spacing(3),
   background: 'none',
-  borderRadius: 8,
+  borderRadius: 16,
   border: `1px solid ${theme.palette.grey[100]}`,
   cursor: 'pointer',
   transition: 'box-shadow 0.2s ease-in-out',

@@ -23,7 +23,7 @@ import {
   HeaderLeft,
   PurplePill,
   StyledDivider,
-} from './ResumeGeneratorPage.styled';
+} from './styled';
 
 const ResumeGeneratorPage = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
@@ -79,7 +79,7 @@ const ResumeGeneratorPage = () => {
           </ResumePreview>
         </Grid>
 
-        <Grid size={{ xs: 12, lg: 8 }}>
+        <Grid size={{ xs: 12, lg: 9 }}>
           <InfoTable>
             <HeaderSection>
               <HeaderLeft>

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import ArrowIcon from '@/assets/images/icons/Icon.svg';
+import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
 import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
 import ArrowRightIcon from '@/assets/images/icons/links.svg';
 import MuiButton from '@/components/UI/MuiButton';
@@ -84,9 +84,9 @@ const ResumeGeneratorPage = () => {
             <HeaderSection>
               <HeaderLeft>
                 <Typography
-                  variant='h4'
+                  variant='h5'
                   color='text.primary'
-                  fontWeight='700'
+                  fontWeight='500'
                   sx={{
                     fontSize: { xs: '1.5rem', sm: '2.125rem' },
                   }}
@@ -95,7 +95,13 @@ const ResumeGeneratorPage = () => {
                 </Typography>
                 <PurplePill>AI Generation</PurplePill>
               </HeaderLeft>
-              <MuiButton size='small' variant='outlined' endIcon={<ArrowIcon />} color='secondary'>
+              <MuiButton
+                size='medium'
+                variant='outlined'
+                endIcon={<ArrowIcon />}
+                color='secondary'
+                href='/dashboard'
+              >
                 Go to panel
               </MuiButton>
             </HeaderSection>
@@ -104,13 +110,13 @@ const ResumeGeneratorPage = () => {
               <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
                 {resumeInfo.map((info, index) => (
                   <InfoRow key={index}>
-                    <Typography variant='body1' color='text.secondary' fontWeight='500'>
+                    <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
                       {info.label}
                     </Typography>
                     {info.isBadge ? (
                       <FitScoreBadge>{info.value}</FitScoreBadge>
                     ) : (
-                      <Typography variant='body1' color='text.primary'>
+                      <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
                         {info.value}
                       </Typography>
                     )}
@@ -140,23 +146,10 @@ const ResumeGeneratorPage = () => {
             <FeatureCard onMouseEnter={() => setHoveredCard(index)} onMouseLeave={() => setHoveredCard(null)}>
               <FeatureCardIcon>{hoveredCard === index ? <LinkDarkIcon /> : <ArrowRightIcon />}</FeatureCardIcon>
               <Stack spacing={2}>
-                <Typography
-                  variant='h6'
-                  color='text.primary'
-                  fontWeight='600'
-                  sx={{
-                    fontSize: { xs: '1.125rem', sm: '1.25rem' },
-                  }}
-                >
+                <Typography variant='body1' color='text.primary' fontWeight='500'>
                   {card.title}
                 </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{
-                    fontSize: { xs: '0.875rem', sm: '0.875rem' },
-                  }}
-                >
+                <Typography variant='body2' color='text.primary' fontWeight='400'>
                   {truncateText(card.description, 110)}
                 </Typography>
               </Stack>

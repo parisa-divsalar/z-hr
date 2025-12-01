@@ -1,61 +1,5 @@
-import { Stack, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
-
-export const Container = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(3),
-  maxWidth: 600,
-  margin: '0 auto',
-  minHeight: '100vh',
-}));
-
-export const HeaderSection = styled(Box)(() => ({
-  alignItems: 'center',
-}));
-
-export const HeaderLeft = styled(Box)(() => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-}));
-
-export const PurplePill = styled(Box)(() => ({
-  backgroundColor: '#8B5CF6',
-  color: 'white',
-  padding: '4px 12px',
-  borderRadius: 16,
-  fontSize: '0.75rem',
-  fontWeight: 500,
-}));
-
-export const FeatureCard = styled(Stack)(({ theme }) => ({
-  flexDirection: 'column',
-  alignItems: 'stretch',
-  borderRadius: '8px',
-  padding: theme.spacing(2),
-  gap: theme.spacing(1),
-  border: `1px solid ${theme.palette.grey[100]}`,
-  width: 600,
-  height: 102,
-}));
-
-export const FeatureCardContent = styled(Box)(() => ({
-  flex: 1,
-}));
-
-export const NavigationListItem = styled(Stack)(({ theme }) => ({
-  justifyContent: 'space-between',
-  padding: '24px',
-  border: `1px solid ${theme.palette.grey[100]}`,
-  borderRadius: '8px',
-  cursor: 'pointer',
-  width: 600,
-  height: 102,
-}));
-
-export const NavigationListItemContent = styled(Box)(() => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-}));
 
 export const JobSuggestionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -78,22 +22,6 @@ export const JobSuggestionsHeader = styled(Box)(() => ({
   gap: 10,
 }));
 
-export const MoreButton = styled(Box)(({ theme }) => ({
-  backgroundColor: '#f3f4f6',
-  color: '#374151',
-  padding: '8px 16px',
-  borderRadius: '20px',
-  fontSize: '14px',
-  fontWeight: 500,
-  cursor: 'pointer',
-  border: 'none',
-  alignSelf: 'flex-start',
-  marginTop: theme.spacing(2),
-  '&:hover': {
-    backgroundColor: '#e5e7eb',
-  },
-}));
-
 export const JobSuggestionsRight = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
@@ -109,15 +37,17 @@ export const CardsWrapper = styled(Box)(() => ({
   flexDirection: 'column',
   gap: 12,
   marginTop: '-30px',
-  transition: 'transform 4s ease-out',
+  transform: 'translateY(0)',
+  transition: 'none',
   '&:hover': {
-    transform: 'translateY(-45px)',
+    transform: 'translateY(-120px)',
+    transition: 'transform 4s ease-out',
   },
 }));
 
 export const SuggestionCard = styled(Box)(({ theme }) => ({
   backgroundColor: '#ffffff',
-  border: `1px solid ${theme.palette.grey[200]}`,
+  border: `1px solid ${theme.palette.grey[100]}`,
   borderRadius: '12px',
   padding: theme.spacing(1),
   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
@@ -133,24 +63,15 @@ export const SuggestionCardHeader = styled(Box)(() => ({
   marginBottom: 2,
 }));
 
-export const NumberBadge = styled(Box)(() => ({
-  backgroundColor: '#3b82f6',
-  color: 'white',
-  width: 24,
-  height: 24,
-  borderRadius: '50%',
+export const NumberBadge = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.light,
+  color: theme.palette.primary.main,
+  width: 28,
+  height: 33,
+  borderRadius: '8px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   fontSize: '12px',
   fontWeight: 600,
-}));
-
-export const SoftSkillTag = styled(Box)(() => ({
-  backgroundColor: '#fef3c7',
-  color: '#92400e',
-  padding: '1px 8px',
-  borderRadius: '12px',
-  fontSize: '12px',
-  fontWeight: 500,
 }));
