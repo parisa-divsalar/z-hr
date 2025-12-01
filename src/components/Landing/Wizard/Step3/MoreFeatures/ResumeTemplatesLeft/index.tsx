@@ -45,7 +45,7 @@ const ResumeMoreTemplates: React.FC = () => {
   return (
     <Container>
       <LeftSection>
-        <TitleSection>
+        <TitleSection mt={1}>
           <MuiCheckbox
             label={
               <Typography variant='subtitle1' fontWeight='500' color='text.primary'>

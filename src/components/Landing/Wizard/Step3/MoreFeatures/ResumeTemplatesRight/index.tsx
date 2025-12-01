@@ -21,7 +21,8 @@ const jobSuggestions = [
   {
     id: 1,
     title: 'Job Position Suggestions',
-    description: 'Choose from our  to make your application stand out.\n' + '\n',
+    description:
+      'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
     cards: [
       {
         number: 1,
@@ -133,7 +134,7 @@ const ResumeTemplatesRight: FunctionComponent = () => {
                     </Typography>
                   }
                 />
-                <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={1.5} ml={0.7}>
+                <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={2} ml={0.7}>
                   {suggestion.description}
                 </Typography>
               </JobSuggestionsHeader>

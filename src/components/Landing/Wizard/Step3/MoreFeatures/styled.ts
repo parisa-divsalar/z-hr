@@ -22,22 +22,6 @@ export const JobSuggestionsHeader = styled(Box)(() => ({
   gap: 10,
 }));
 
-export const MoreButton = styled(Box)(({ theme }) => ({
-  backgroundColor: '#f3f4f6',
-  color: '#374151',
-  padding: '8px 16px',
-  borderRadius: '20px',
-  fontSize: '14px',
-  fontWeight: 500,
-  cursor: 'pointer',
-  border: 'none',
-  alignSelf: 'flex-start',
-  marginTop: theme.spacing(2),
-  '&:hover': {
-    backgroundColor: '#e5e7eb',
-  },
-}));
-
 export const JobSuggestionsRight = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
