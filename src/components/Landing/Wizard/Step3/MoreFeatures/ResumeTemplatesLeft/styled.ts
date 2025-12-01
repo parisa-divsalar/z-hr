@@ -1,6 +1,10 @@
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+interface FrameFeaturesImageProps {
+  offset: number;
+}
+
 export const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(4),
@@ -8,7 +12,7 @@ export const Container = styled(Box)(({ theme }) => ({
   paddingRight: theme.spacing(2),
   backgroundColor: '#ffffff',
   borderRadius: '8px',
-  border: `1px solid ${theme.palette.grey[200]}`,
+  border: `1px solid ${theme.palette.grey[100]}`,
   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   width: '100%',
   height: '218px',
@@ -51,7 +55,9 @@ export const RightSection = styled(Box)(() => ({
   position: 'relative',
 }));
 
-export const FrameFeaturesImage = styled(Box)(() => ({
+export const FrameFeaturesImage = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'offset',
+})<FrameFeaturesImageProps>(({ offset }) => ({
   width: '100%',
   maxWidth: 380,
   height: '100%',
@@ -60,28 +66,12 @@ export const FrameFeaturesImage = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'stretch',
   justifyContent: 'stretch',
-  transform: 'translateY(0)',
-  animation: 'frameRoll 12s ease-in-out infinite',
+  transform: `translateY(${offset}px)`,
 
   '& svg': {
     width: '100%',
     height: '100%',
     objectFit: 'contain',
     display: 'block',
-  },
-
-  '@keyframes frameRoll': {
-    '0%': {
-      transform: 'translateY(0)',
-    },
-    '35%': {
-      transform: 'translateY(-24px)',
-    },
-    '65%': {
-      transform: 'translateY(-24px)',
-    },
-    '100%': {
-      transform: 'translateY(0)',
-    },
   },
 }));
