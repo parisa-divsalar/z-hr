@@ -25,7 +25,7 @@ import {
   StyledDivider,
 } from './styled';
 
-const ResumeGeneratorPage = () => {
+const ResumeGeneratorFrame = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   const resumeInfo = [
@@ -158,4 +158,4 @@ const ResumeGeneratorPage = () => {
   );
 };
 
-export default ResumeGeneratorPage;
+export default ResumeGeneratorFrame;

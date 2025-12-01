@@ -10,7 +10,7 @@ export const HistoryRoot = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.palette.grey[100]}`,
   overflowY: 'auto',
   overflowX: 'hidden',
-  marginTop: '10px',
+  marginTop: '2px',
 }));
 
 export const HistoryCommunityCardRoot = styled(Stack)(({ theme }) => ({

@@ -5,7 +5,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
 
 import MoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
-import ResumeGenerator from '@/app/(private)/resume-builder/ResumeGenerator';
 import {
   CircleContainer,
   DividerLine,
@@ -54,6 +53,7 @@ import Thinking from '@/components/Landing/Wizard/Step2/Thinking';
 import Step3 from '@/components/Landing/Wizard/Step3';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
+import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeGeneratorFrame';
 
 interface ResumeAIInputPromptProps {
   setAiStatus: (status: AIStatus) => void;
@@ -480,7 +480,7 @@ const ResumeBuilderStep1: FunctionComponent<ResumeBuilderStep1Props> = ({ setAiS
   const [showResumeGenerator, setShowResumeGenerator] = useState<boolean>(false);
 
   if (showResumeGenerator) {
-    return <ResumeGenerator />;
+    return <ResumeGeneratorFrame />;
   }
 
   if (showMoreFeatures) {

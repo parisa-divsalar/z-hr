@@ -99,10 +99,6 @@ export const ActionButtons = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const FeatureGrid = styled(Box)(({ theme }) => ({
-  marginTop: theme.spacing(4),
-}));
-
 export const FeatureCard = styled(Paper)(({ theme }) => ({
   width: '100%',
   minHeight: 135,

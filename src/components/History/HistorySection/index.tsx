@@ -337,8 +337,8 @@ const HistorySection = () => {
       </SectionHeader>
       <Grid container>
         {displayedItems.map((channel) => (
-          <Grid key={channel.id} size={{ xs: 12 }}>
-            <HistoryCard {...channel} />
+          <Grid>
+            <HistoryCard {...channel} key={channel.id} />
           </Grid>
         ))}
       </Grid>
