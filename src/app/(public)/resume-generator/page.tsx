@@ -95,7 +95,13 @@ const ResumeGeneratorPage = () => {
                 </Typography>
                 <PurplePill>AI Generation</PurplePill>
               </HeaderLeft>
-              <MuiButton size='medium' variant='outlined' endIcon={<ArrowIcon />} color='secondary'>
+              <MuiButton
+                size='medium'
+                variant='outlined'
+                endIcon={<ArrowIcon />}
+                color='secondary'
+                href='/dashboard'
+              >
                 Go to panel
               </MuiButton>
             </HeaderSection>
