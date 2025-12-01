@@ -129,24 +129,7 @@ export const SubText = styled(Typography)(() => ({
   color: DASHBOARD_COLORS.lightText,
 }));
 
-export const AvatarGlowWrapper = styled(Box)(() => ({
-  position: 'relative',
-  width: 44,
-  height: 44,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-export const AvatarGlow = styled(Box)(() => ({
-  position: 'absolute',
-  inset: 0,
-  borderRadius: '50%',
-  background: `radial-gradient(circle at center, ${DASHBOARD_COLORS.blueAccent}55, transparent 70%)`,
-  opacity: 0.9,
-}));
-
-export const AvatarInnerWrapper = styled(Box)(() => ({
-  position: 'relative',
-  zIndex: 1,
+export const SectionJob = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[100],
+  padding: '15px',
 }));

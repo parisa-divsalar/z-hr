@@ -28,16 +28,18 @@ const UpcomingInterview = () => {
               9/2
             </Typography>
 
-            <MuiChips
-              label='7 Steps'
-              color='white'
-              sx={{
-                bgcolor: 'warning.main',
-                Radius: '8px',
-                height: '26px',
-                width: '85px',
-              }}
-            />
+            <Stack mb={1}>
+              <MuiChips
+                label='7 Steps'
+                color='white'
+                sx={{
+                  bgcolor: 'warning.main',
+                  Radius: '8px',
+                  height: '26px',
+                  width: '85px',
+                }}
+              />
+            </Stack>
           </Stack>
         </Stack>
       </Stack>

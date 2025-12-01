@@ -48,16 +48,16 @@ const MuiButton = (props: PrimaryButtonProps) => {
     alignItems: 'center',
     '& .MuiButton-startIcon': {
       marginLeft: 0,
-      marginRight: 0.5, // theme spacing unit (4px)
+      marginRight: 0.5,
       display: 'inline-flex',
       alignItems: 'center',
     },
     '& .MuiButton-endIcon': {
       marginRight: 0,
-      marginLeft: 0.5, // theme spacing unit (4px)
+      marginLeft: 0.5,
       display: 'inline-flex',
       alignItems: 'center',
-      marginTop: 0.25, // small top margin to move icon slightly down
+      marginTop: '2px',
     },
     ...sx,
   };
