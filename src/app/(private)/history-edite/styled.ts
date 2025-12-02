@@ -1,7 +1,7 @@
 import { Box, Stack, Typography, Tabs } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const HistoryEditeRoot = styled(Box)(({ theme }) => ({
+export const HistoryEditeRoot = styled(Box)(() => ({
   width: '100%',
   height: 'calc(100vh - 200px)',
   margin: '1 auto',
