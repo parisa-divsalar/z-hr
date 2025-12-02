@@ -12,7 +12,7 @@ interface Step3Props {
 
 const Step3: FunctionComponent<Step3Props> = (props) => {
   const { setActiveStep } = props;
-  const [stage, setStage] = useState<'RESUME_EDITOR' | 'MORE_FEATURES'>('RESUME_EDITOR');
+  const [stage, setStage] = useState<'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME'>('RESUME_EDITOR');
 
   if (stage === 'RESUME_EDITOR')
     return (
