@@ -32,25 +32,12 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
     router.push('/history');
   };
 
-  const handleMoreClick = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
   const handleEditResume = () => {
     if (setActiveStep) {
       setActiveStep(3);
     } else {
       router.push('/?step=3');
     }
-  };
-
-  const handleFavorite = () => {
-    setIsMenuOpen(false);
-  };
-
-  const handleDelete = () => {
-    console.log('Delete clicked');
-    setIsMenuOpen(false);
   };
 
   useEffect(() => {
