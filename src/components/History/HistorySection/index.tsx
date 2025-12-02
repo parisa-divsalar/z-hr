@@ -14,7 +14,6 @@ import ResumeIcon from '@/assets/images/dashboard/resume.svg?url';
 import TrashIcon from '@/assets/images/dashboard/trash-01.svg';
 import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
-import { SectionHeader } from '@/components/dashboard/styled';
 import { communityChannels } from '@/components/History/mockData';
 import {
   HeaderDivider,
@@ -24,7 +23,9 @@ import {
   MenuItemStack,
   MoreButton,
   PopupMenu,
+  TagPill,
   RelativeStack,
+  SectionHeader,
   SortMenuContentStack,
   StyledDivider,
 } from '@/components/History/styled';
@@ -93,17 +94,16 @@ const HistoryCard = ({
           </HistoryImage>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={3}>
+        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={5}>
           <Stack direction='row' gap={2}>
-            <Typography variant='h6' fontWeight='500' color='text.primary'>
+            <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
               {name}
             </Typography>
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary' mt={1}>
-              {Percentage}
-            </Typography>
+
+            <TagPill>{Percentage}</TagPill>
           </Stack>
 
-          <Stack direction='row' gap={2} mt={1} alignItems='center'>
+          <Stack direction='row' gap={1} mt={1} alignItems='center'>
             <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
               {date}
             </Typography>
@@ -116,6 +116,9 @@ const HistoryCard = ({
               {position}
             </Typography>
             <StyledDivider orientation='vertical' flexItem />
+            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+              {level}
+            </Typography>
             <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
               {level}
             </Typography>
@@ -335,9 +338,10 @@ const HistorySection = () => {
           </RelativeStack>
         </Stack>
       </SectionHeader>
+
       <Grid container>
         {displayedItems.map((channel) => (
-          <Grid key={channel.id} size={{ xs: 12 }}>
+          <Grid key={channel.id}>
             <HistoryCard {...channel} />
           </Grid>
         ))}

@@ -1,13 +1,11 @@
 import { Box, Stack, Typography, Tabs } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const HistoryEditeRoot = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
+export const HistoryEditeRoot = styled(Box)(() => ({
   width: '100%',
   height: 'calc(100vh - 200px)',
   margin: '1 auto',
   borderRadius: '8px',
-  border: `1px solid ${theme.palette.grey[100]}`,
   overflowY: 'auto',
   overflowX: 'hidden',
 }));
@@ -47,13 +45,13 @@ export const QuestionList = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(2.5),
 }));
 
-export const QuestionCard = styled(Stack)(({ theme }) => ({
+export const QuestionCard = styled(Stack)(() => ({
   flexDirection: 'column',
   alignItems: 'flex-start',
-  padding: theme.spacing(1, 2),
   borderRadius: 16,
   width: '100%',
   overflow: 'hidden',
+  marginTop: '10px',
 }));
 
 export const QuestionBadge = styled(Box)(({ theme }) => ({
@@ -102,15 +100,12 @@ export const HorizontalScrollContainer = styled(Stack)(({ theme }) => ({
   paddingBottom: theme.spacing(2),
 }));
 
-export const HorizontalItem = styled(Stack)(({ theme }) => ({
-  minWidth: 150,
-  padding: theme.spacing(2),
+export const HorizontalItem = styled(Stack)(() => ({
   textAlign: 'center',
   transition: 'all 0.3s ease',
   cursor: 'pointer',
 
   '&:hover': {
-    boxShadow: '0 1px 1px rgba(0, 0, 0, 0.1)',
     transform: 'translateY(-4px)',
   },
 }));
@@ -130,7 +125,7 @@ export const StyledTabs = styled(Tabs)(({ theme }) => ({
   '& .MuiTab-root': {
     textTransform: 'none',
     fontSize: '1rem',
-    fontWeight: 500,
+    fontWeight: 400,
     minWidth: 'auto',
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3),
@@ -139,12 +134,11 @@ export const StyledTabs = styled(Tabs)(({ theme }) => ({
     color: theme.palette.text.secondary,
     transition: 'all 0.3s ease',
     '&.Mui-selected': {
-      color: theme.palette.primary.main,
-      fontWeight: 600,
+      color: theme.palette.text.secondary,
+      fontWeight: 500,
     },
     '&:hover': {
       color: theme.palette.primary.main,
-      backgroundColor: 'rgba(25, 118, 210, 0.04)',
     },
   },
   '& .MuiTabs-indicator': {

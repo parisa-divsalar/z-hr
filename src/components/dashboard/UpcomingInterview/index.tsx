@@ -1,7 +1,7 @@
 import { Stack, Typography } from '@mui/material';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
-import { CardBaseiNTER, SectionHeader, SectionTitle } from '@/components/dashboard/styled';
+import { CardBaseiNTER, SectionHeader } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 
@@ -9,14 +9,16 @@ const UpcomingInterview = () => {
   return (
     <CardBaseiNTER>
       <SectionHeader>
-        <SectionTitle>Interview</SectionTitle>
+        <Typography color='text.primary' variant='subtitle1' fontWeight='500'>
+          Interview
+        </Typography>
         <MuiButton text='Continue' color='secondary' variant='contained' endIcon={<ArrowRightIcon />} />
       </SectionHeader>
 
       <Stack>
         <Stack gap={1}>
           <Stack direction='row' gap={1.5} alignItems='center'>
-            <Typography variant='subtitle2' color='text.primary' fontWeight='400'>
+            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
               Chat Interview
             </Typography>
             <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
@@ -26,18 +28,18 @@ const UpcomingInterview = () => {
               9/2
             </Typography>
 
-            <MuiChips
-              label='7 Steps left'
-              color='white'
-              sx={{
-                width: 120,
-                height: 25,
-                fontSize: '12px',
-                px: 3,
-                py: 1,
-                bgcolor: 'warning.main',
-              }}
-            />
+            <Stack mb={1}>
+              <MuiChips
+                label='7 Steps'
+                color='white'
+                sx={{
+                  bgcolor: 'warning.main',
+                  Radius: '8px',
+                  height: '26px',
+                  width: '85px',
+                }}
+              />
+            </Stack>
           </Stack>
         </Stack>
       </Stack>

@@ -16,7 +16,7 @@ export interface MuiChipsProps {
 }
 
 const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
-  const { skill, label: labelProp, onUpdateSkill, sx } = props;
+  const { skill, label: labelProp, color = 'text.primary', onUpdateSkill, sx } = props;
   const { id, label = '', selected = false } = skill || {};
   const chipLabel = labelProp ?? label;
 
@@ -35,7 +35,7 @@ const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
     <ChipContainer
       direction='row'
       bgcolor={selected ? 'primary.light' : 'transparent'}
-      border={selected ? `2px solid #4D49FC` : '1px solid #07656814'}
+      border={selected ? `2px solid #4d49fc` : '1px solid #07656814'}
       onClick={handleSelect}
       sx={sx}
     >
@@ -44,7 +44,7 @@ const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
           <CloseRoundedIcon color='primary' />
         </IconButton>
       )}
-      <Typography variant='subtitle1' color={selected ? 'primary.main' : 'text.primary'} fontWeight={500} noWrap>
+      <Typography variant='subtitle2' color={color} fontWeight={400} noWrap>
         {chipLabel}
       </Typography>
     </ChipContainer>

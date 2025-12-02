@@ -14,7 +14,7 @@ export const DashboardRoot = styled(Stack)(({ theme }) => ({
   width: '100%',
   height: 'auto',
   boxSizing: 'border-box',
-  padding: 24,
+  padding: 20,
   border: `1px solid ${theme.palette.grey[100]}`,
   borderRadius: '8px',
   gap: 24,
@@ -25,12 +25,6 @@ export const SectionHeader = styled(Stack)(() => ({
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'space-between',
-}));
-
-export const SectionTitle = styled(Typography)(() => ({
-  fontSize: 20,
-  fontWeight: 600,
-  color: DASHBOARD_COLORS.darkText,
 }));
 
 export const CardBase = styled(Box)(() => ({
@@ -92,29 +86,17 @@ export const SmallCardBase = styled(CardBase)(({ theme }) => ({
   border: `1px solid ${theme.palette.grey[100]}`,
 }));
 
-export const StatTitle = styled(Typography)(() => ({
-  fontSize: 12,
-  fontWeight: 500,
-  color: DASHBOARD_COLORS.lightText,
-  marginBottom: 8,
-}));
-
 export const StatValueRow = styled(Stack)(() => ({
   flexDirection: 'row',
   alignItems: 'center',
   gap: 8,
 }));
 
-export const StatValue = styled(Typography)(() => ({
-  fontSize: 24,
-  fontWeight: 600,
-  color: DASHBOARD_COLORS.darkText,
-}));
-
 export const TagPill = styled(Typography)(({ theme }) => ({
-  borderRadius: 999,
+  borderRadius: ' 4px',
   padding: '4px 10px',
-  fontSize: 11,
+  fontSize: 14,
+  height: '20px',
   fontWeight: 500,
   display: 'inline-flex',
   alignItems: 'center',
@@ -124,29 +106,7 @@ export const TagPill = styled(Typography)(({ theme }) => ({
   color: theme.palette.warning.main,
 }));
 
-export const SubText = styled(Typography)(() => ({
-  fontSize: 12,
-  color: DASHBOARD_COLORS.lightText,
-}));
-
-export const AvatarGlowWrapper = styled(Box)(() => ({
-  position: 'relative',
-  width: 44,
-  height: 44,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-export const AvatarGlow = styled(Box)(() => ({
-  position: 'absolute',
-  inset: 0,
-  borderRadius: '50%',
-  background: `radial-gradient(circle at center, ${DASHBOARD_COLORS.blueAccent}55, transparent 70%)`,
-  opacity: 0.9,
-}));
-
-export const AvatarInnerWrapper = styled(Box)(() => ({
-  position: 'relative',
-  zIndex: 1,
+export const SectionJob = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[100],
+  padding: '15px',
 }));

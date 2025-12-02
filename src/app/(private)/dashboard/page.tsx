@@ -12,7 +12,7 @@ import UpcomingInterview from '@/components/dashboard/UpcomingInterview';
 const DashboardPage = () => {
   return (
     <DashboardRoot>
-      <Typography variant='subtitle1' color='text.primary' fontWeight='600'>
+      <Typography variant='h5' color='text.primary' fontWeight='500'>
         Dashboard
       </Typography>
       <Stack direction='row' alignItems='center' justifyContent='space-between'>

@@ -46,20 +46,18 @@ const MuiButton = (props: PrimaryButtonProps) => {
   const mergedSx = {
     display: 'inline-flex',
     alignItems: 'center',
-    // ensure icons and text are vertically centered on one line
     '& .MuiButton-startIcon': {
-      // a little space between start icon and label
       marginLeft: 0,
-      marginRight: 0.5, // theme spacing unit (4px)
+      marginRight: 0.5,
       display: 'inline-flex',
       alignItems: 'center',
     },
     '& .MuiButton-endIcon': {
-      // a little space between label and end icon
       marginRight: 0,
-      marginLeft: 0.5, // theme spacing unit (4px)
+      marginLeft: 0.5,
       display: 'inline-flex',
       alignItems: 'center',
+      marginTop: '2px',
     },
     ...sx,
   };

@@ -10,8 +10,8 @@ export const PublicRoutes = {
 
 export const PrivateRoutes = {
   dashboard: '/dashboard',
-  history: '/History',
-  historyEdite: '/History-edite',
+  history: '/history',
+  historyEdite: '/history-edite',
   payment: '/payment',
   setting: '/setting',
   support: '/support',

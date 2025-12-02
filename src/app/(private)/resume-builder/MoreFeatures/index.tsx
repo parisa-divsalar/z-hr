@@ -2,10 +2,9 @@ import React, { FunctionComponent } from 'react';
 
 import { Checkbox, FormControlLabel, Grid, Stack, Typography } from '@mui/material';
 
+import { MoreFeaturesTemplateCard, MoreFeaturesTemplatesWrapper } from '@/app/(private)/resume-builder/styled';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import MuiButton from '@/components/UI/MuiButton';
-
-import { MoreFeaturesTemplateCard, MoreFeaturesTemplatesWrapper } from './styled';
 
 const TemplateCard: FunctionComponent<{ title: string; description: string }> = ({ title, description }) => {
   return (

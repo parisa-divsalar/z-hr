@@ -3,8 +3,8 @@ import React from 'react';
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import HeadIcon from '@/assets/images/dashboard/head.svg';
-import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import ArrowRightIcon from '@/assets/images/dashboard/arrow-right.svg';
+import HeadIcon from '@/assets/images/dashboard/comm.svg';
 import { SectionHeader, SuggestedJobCardItem, TagPill } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
@@ -27,15 +27,15 @@ const SkillCard = ({ items }: SkillCardProps) => {
           <Stack key={title} direction='row' alignItems='center' gap={1} pt={1}>
             {index === 0 ? (
               <>
-                <Typography variant='body1' color='text.primary' fontWeight='400'>
-                  {title}:
+                <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
+                  {title}
                 </Typography>
                 <TagPill>{value}</TagPill>
               </>
             ) : (
               <>
                 <Typography variant='body2' color='text.secondary' fontWeight='400'>
-                  {title}:
+                  {title}
                 </Typography>
                 <Typography variant='body2' color='text.primary' fontWeight='400'>
                   {value}
@@ -45,11 +45,11 @@ const SkillCard = ({ items }: SkillCardProps) => {
           </Stack>
         ))}
         <Stack direction='row' alignItems='center' justifyContent='cnter'>
-          <MuiButton color='secondary' fullWidth variant='text'>
+          <MuiButton color='secondary' size='medium' fullWidth variant='text'>
             View{' '}
           </MuiButton>
 
-          <MuiButton fullWidth color='secondary'>
+          <MuiButton size='medium' fullWidth color='secondary'>
             add
           </MuiButton>
         </Stack>

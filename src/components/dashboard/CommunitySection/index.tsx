@@ -2,10 +2,10 @@ import React from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
+import ArrowRightIcon from '@/assets/images/dashboard/arrow-right.svg';
 import HeadIcon from '@/assets/images/dashboard/comm.svg';
 import InstaIcon from '@/assets/images/dashboard/insta.svg';
 import TelIcon from '@/assets/images/dashboard/tel.svg';
-import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import {
   CommunityCardRoot,
   CommunityIconCircle,
