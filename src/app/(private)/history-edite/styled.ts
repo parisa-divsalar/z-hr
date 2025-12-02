@@ -100,7 +100,7 @@ export const HorizontalScrollContainer = styled(Stack)(({ theme }) => ({
   paddingBottom: theme.spacing(2),
 }));
 
-export const HorizontalItem = styled(Stack)(({ theme }) => ({
+export const HorizontalItem = styled(Stack)(() => ({
   textAlign: 'center',
   transition: 'all 0.3s ease',
   cursor: 'pointer',
