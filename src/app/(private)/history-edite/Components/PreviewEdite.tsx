@@ -5,7 +5,6 @@ import Grid from '@mui/material/Grid';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import Dotsvertical from '@/assets/images/dashboard/dots-vertical.svg';
 import FrameFaw from '@/assets/images/dashboard/FrameFaw.svg';
 import BackIcon from '@/assets/images/dashboard/imag/backIcon.svg';
 import ImageIcon from '@/assets/images/dashboard/image.svg';
@@ -14,16 +13,7 @@ import ResumeIcon from '@/assets/images/dashboard/resume.svg?url';
 import TrashIcon from '@/assets/images/dashboard/trash-01.svg';
 import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
-import {
-  HistoryImage,
-  MenuContentStack,
-  MenuItemStack,
-  MoreButton,
-  PopupMenu,
-  RelativeStack,
-  StyledDivider,
-  TagPill,
-} from '@/components/History/styled';
+import { HistoryImage, StyledDivider, TagPill } from '@/components/History/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
 import { PreviewEditeRoot } from '../styled';
@@ -37,6 +27,10 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleBackClick = () => {
+    router.push('/history');
+  };
 
   const handleMoreClick = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -80,16 +74,16 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
 
   return (
     <PreviewEditeRoot>
-      <Grid container spacing={2} alignItems='center'>
+      <Grid container spacing={2} alignItems='stretch'>
         <Grid size={{ xs: 12, sm: 12, md: 12 }}>
           <Stack direction='row' alignItems='center' gap={2}>
-            <BackIcon />
+            <BackIcon onClick={handleBackClick} style={{ cursor: 'pointer' }} />
             <Typography variant='h5' color='text.primary' fontWeight='500'>
               Zayd Al-Mansoori's Resume
             </Typography>
           </Stack>
         </Grid>
-        <Grid size={{ xs: 12, sm: 12, md: 2 }}>
+        <Grid size={{ xs: 12, sm: 12, md: 2 }} pt={2}>
           <HistoryImage p={2}>
             <Image src={ResumeIcon} alt='Resume preview' fill />
           </HistoryImage>
@@ -158,44 +152,20 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
           </Stack>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-          <Stack gap={11} alignItems='flex-end'>
-            <RelativeStack direction='row' gap={3}>
-              <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label='More options'>
-                <Dotsvertical />
-              </MoreButton>
-
-              <PopupMenu ref={menuRef} isOpen={isMenuOpen}>
-                <MenuContentStack>
-                  <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleFavorite}>
-                    <FrameFaw />
-                    <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                      Favorite
-                    </Typography>
-                  </MenuItemStack>
-                  <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleDelete}>
-                    <TrashIcon />
-                    <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                      Delete
-                    </Typography>
-                  </MenuItemStack>
-                </MenuContentStack>
-              </PopupMenu>
-            </RelativeStack>
-            <Stack direction='row' gap={2}>
-              <MuiButton
-                variant='outlined'
-                size='small'
-                color='secondary'
-                onClick={handleEditResume}
-                sx={{ width: 138 }}
-              >
-                Edit In Preview
-              </MuiButton>
-              <MuiButton variant='contained' size='small' color='secondary' onClick={handleEditResume}>
-                Download
-              </MuiButton>
-            </Stack>
+        <Grid size={{ xs: 12, sm: 3, md: 3 }} display='flex' alignItems='flex-end' justifyContent='flex-end'>
+          <Stack direction='row' gap={1}>
+            <MuiButton
+              variant='outlined'
+              size='medium'
+              color='secondary'
+              onClick={handleEditResume}
+              sx={{ width: 140 }}
+            >
+              Edit In Preview
+            </MuiButton>
+            <MuiButton variant='contained' size='medium' color='secondary' onClick={handleEditResume}>
+              Download
+            </MuiButton>
           </Stack>
         </Grid>
       </Grid>

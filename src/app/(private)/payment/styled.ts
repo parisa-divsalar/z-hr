@@ -2,7 +2,6 @@ import { Box, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const PaymentRoot = styled(Box)(({ theme }) => ({
-  width: '100%',
   maxHeight: '100vh', // limit height to viewport
   overflowY: 'auto', // scroll only inside this content
   boxSizing: 'border-box',
@@ -10,8 +9,8 @@ export const PaymentRoot = styled(Box)(({ theme }) => ({
   border: `1px solid ${theme.palette.grey[100]}`,
   borderRadius: '8px',
   gap: 24,
-  margin: '1px',
-  marginTop: '10px',
+  // Avoid forcing full width so margins don't get cut off on the right side
+  marginTop: 10,
 }));
 
 export const ViewButton = styled(Button)(({ theme }) => ({

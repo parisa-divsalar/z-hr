@@ -1,4 +1,6 @@
 'use client';
+import { useState } from 'react';
+
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { List, ListItemText, Stack, Typography } from '@mui/material';
@@ -12,6 +14,7 @@ import SchoolRoundedIcon from '@/assets/images/menu/Icon5.svg';
 import SettingsRoundedIcon from '@/assets/images/menu/Icon6.svg';
 import HeadphonesRoundedIcon from '@/assets/images/menu/Icon7.svg';
 import MicRoundedIcon from '@/assets/images/menu/Icon8.svg';
+import LogoutDialog from '@/components/Layout/SideBar/LogoutDialog';
 import { ItemButton, SidebarContainer, ItemIcon } from '@/components/Layout/SideBar/styled';
 import { PrivateRoutes, PublicRoutes, VisibilitySideBar } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
@@ -21,9 +24,12 @@ const SideBar = () => {
   const router = useRouter();
   const { logout } = useAuthStore();
 
-  const handleLogout = () => {
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+
+  const handleConfirmLogout = () => {
     logout();
     router.replace(PublicRoutes.landing);
+    setOpenLogoutDialog(false);
   };
 
   if (!VisibilitySideBar.includes(pathname)) return null;
@@ -117,7 +123,7 @@ const SideBar = () => {
       </Stack>
 
       <Stack>
-        <ItemButton onClick={handleLogout}>
+        <ItemButton onClick={() => setOpenLogoutDialog(true)}>
           <ListItemText primary='Log out' sx={{ color: '#F77A79' }} />
 
           <LogoutRoundedIcon sx={{ color: '#F77A79' }} fontSize='small' />
@@ -127,6 +133,12 @@ const SideBar = () => {
           Version 1.3.23
         </Typography>
       </Stack>
+
+      <LogoutDialog
+        open={openLogoutDialog}
+        onClose={() => setOpenLogoutDialog(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </SidebarContainer>
   );
 };

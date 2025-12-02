@@ -111,15 +111,24 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
 
   return (
     <Box sx={{ flexShrink: 0, ml: 2.5 }}>
+      {/* Previous page ( < ) */}
+      <IconButton
+        onClick={handleBackButtonClick}
+        disabled={page === 0}
+        aria-label='previous page'
+        color='primary'
+      >
+        <KeyboardArrowLeft />
+      </IconButton>
+
+      {/* Next page ( > ) */}
       <IconButton
         onClick={handleNextButtonClick}
         disabled={page >= Math.ceil(count / rowsPerPage) - 1}
         aria-label='next page'
+        color='primary'
       >
         <KeyboardArrowRight />
-      </IconButton>
-      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label='previous page'>
-        <KeyboardArrowLeft />
       </IconButton>
     </Box>
   );

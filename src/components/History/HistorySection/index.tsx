@@ -338,14 +338,10 @@ const HistorySection = () => {
           </RelativeStack>
         </Stack>
       </SectionHeader>
-
-      <Grid container>
-        {displayedItems.map((channel) => (
-          <Grid key={channel.id}>
-            <HistoryCard {...channel} />
-          </Grid>
-        ))}
-      </Grid>
+      
+      {displayedItems.map((channel, index) => (
+        <HistoryCard key={`${channel.id}-${index}`} {...channel} />
+      ))}
 
       <Stack ref={observerTarget} alignItems='center' justifyContent='center' py={2}>
         {isLoading && <CircularProgress size={30} />}

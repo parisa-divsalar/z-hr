@@ -1,9 +1,9 @@
 'use client';
 
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Typography } from '@mui/material';
 
 import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
+import ArrowForwardIcon from '@/assets/images/dashboard/IconTp.svg';
 import RectangleImage from '@/assets/images/dashboard/imag/rectangle2.svg';
 import MuiButton from '@/components/UI/MuiButton';
 

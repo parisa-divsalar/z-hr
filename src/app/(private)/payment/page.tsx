@@ -1,6 +1,7 @@
 'use client';
 
 import { Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 import MuiBadge from '@/components/UI/MuiBadge';
 import MuiButton from '@/components/UI/MuiButton';
@@ -42,6 +43,8 @@ const paymentData = [
 ];
 
 const PaymentPage = () => {
+  const theme = useTheme();
+
   const handleViewClick = (paymentCode: string) => {
     console.log('View payment:', paymentCode);
   };
@@ -71,7 +74,21 @@ const PaymentPage = () => {
       id: 'status',
       label: 'Status',
       sortable: true,
-      render: (value: 'success' | 'pending' | 'failed') => <MuiBadge label={value} color={value} />,
+      render: (value: 'success' | 'pending' | 'failed') => {
+        const paletteKey =
+          value === 'success' ? 'success' : value === 'pending' ? 'warning' : 'error';
+        const paletteColor = theme.palette[paletteKey];
+
+        return (
+          <MuiBadge
+            label={value}
+            color={value}
+            border={`1px solid ${paletteColor.main}`}
+            backgroundColor={paletteColor.light || paletteColor.main}
+            textColor={paletteColor.main}
+          />
+        );
+      },
     },
     {
       id: 'action',
