@@ -1,9 +1,8 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
 import ThinkingIcon from '@/assets/images/icons/thinking.svg';
-import SignUpDialog from '@/components/Landing/Wizard/Step2/SignUpDialog';
 import MuiButton from '@/components/UI/MuiButton';
 
 interface ThinkingProps {
@@ -13,13 +12,14 @@ interface ThinkingProps {
 
 const Thinking: FunctionComponent<ThinkingProps> = (props) => {
   const { onCancel, setActiveStep } = props;
-  const [openSignUpDialog, setOpenSignUpDialog] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      setOpenSignUpDialog(true);
+    const timer = setTimeout(() => {
+      setActiveStep(3);
     }, 3_000);
-  }, []);
+
+    return () => clearTimeout(timer);
+  }, [setActiveStep]);
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
@@ -37,12 +37,6 @@ const Thinking: FunctionComponent<ThinkingProps> = (props) => {
           Cancel
         </MuiButton>
       </Stack>
-
-      <SignUpDialog
-        open={openSignUpDialog}
-        closeDialog={() => setOpenSignUpDialog(false)}
-        setActiveStep={setActiveStep}
-      />
     </Stack>
   );
 };

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Checkbox, FormControlLabel, Grid, Stack, Typography } from '@mui/material';
+import { Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
 
 import { MoreFeaturesTemplateCard, MoreFeaturesTemplatesWrapper } from '@/app/(private)/resume-builder/styled';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
@@ -41,33 +41,30 @@ interface MoreFeaturesProps {
 
 const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }) => {
   return (
-    <Stack>
+    <Stack width='100%'>
       <Stack textAlign='center' mt={2}>
         <Typography variant='h5' color='text.primary' fontWeight='600' mt={0.5}>
           More Features
         </Typography>
-        <Typography variant='h6' color='text.primary' fontWeight='400' mt={2}>
+        <Typography variant='h6' color='text.primary' fontWeight='400' mt={1} mb={3}>
           Choose your preferred resume template
         </Typography>
       </Stack>
 
-      <Grid container spacing={2} mt={2}>
-        <Grid size={{ xs: 12, md: 12 }}>
-          <MoreFeaturesTemplatesWrapper>
-            <ResumeTemplates />
-          </MoreFeaturesTemplatesWrapper>
-        </Grid>
-      </Grid>
+      <MoreFeaturesTemplatesWrapper>
+        <ResumeTemplates />
+      </MoreFeaturesTemplatesWrapper>
 
       <Stack direction='row' spacing={2} justifyContent='center' p={4}>
         <MuiButton
           text='Back'
           variant='outlined'
+          size='large'
           color='secondary'
           startIcon={<ArrowBackIcon style={{ color: '#111113' }} />}
           onClick={onBack}
         />
-        <MuiButton text='Submit' variant='contained' color='secondary' onClick={onSubmit} />
+        <MuiButton size='large' text='Submit' variant='contained' color='secondary' onClick={onSubmit} />
       </Stack>
     </Stack>
   );

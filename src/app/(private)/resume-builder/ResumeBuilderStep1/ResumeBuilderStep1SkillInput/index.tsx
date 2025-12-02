@@ -21,7 +21,7 @@ const ResumeBuilderStep1SkillInput: FunctionComponent<ResumeBuilderStep1SkillInp
 
   return (
     <SkillInputMainContainer>
-      <Typography variant='h5' color='text.primary' fontWeight='600'>
+      <Typography variant='h5' color='text.primary' fontWeight='600' mt={10}>
         What is your main skill?
       </Typography>
       <SkillInputContainer direction='row' sx={{ borderColor: answer === '' ? 'grey.100' : 'primary.main' }}>

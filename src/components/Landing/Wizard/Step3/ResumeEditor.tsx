@@ -36,7 +36,7 @@ import {
 } from './ResumeEditor/styled';
 
 interface ResumeEditorProps {
-  setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES') => void;
+  setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
   setActiveStep: (activeStep: number) => void;
 }
 

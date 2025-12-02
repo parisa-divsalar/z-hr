@@ -2,9 +2,10 @@
 
 import React, { FunctionComponent, useState } from 'react';
 
-import MoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
-import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeBuilderStep1/ResumeGeneratorFrame';
+import { Stack } from '@mui/material';
+
 import { StageWizard, AIStatus } from '@/components/Landing/type';
+import StepWrapper from '@/components/Landing/Wizard/Stepper';
 
 import ResumeBuilderStep1Questions from './ResumeBuilderStep1Questions';
 import ResumeBuilderStep1SelectSkill from './ResumeBuilderStep1SelectSkill';
@@ -17,47 +18,48 @@ interface ResumeBuilderStep1Props {
   setActiveStep: (step: number) => void;
 }
 
-const ResumeBuilderStep1: FunctionComponent<ResumeBuilderStep1Props> = ({ setAiStatus }) => {
+const ResumeBuilderStep1: FunctionComponent<ResumeBuilderStep1Props> = ({ setAiStatus, setActiveStep }) => {
   const [stage, setStage] = useState<StageWizard>('RESULT');
-  const [showMoreFeatures, setShowMoreFeatures] = useState<boolean>(false);
-  const [showResumeGenerator, setShowResumeGenerator] = useState<boolean>(false);
 
-  if (showResumeGenerator) {
-    return <ResumeGeneratorFrame />;
-  }
-
-  if (showMoreFeatures) {
+  if (stage === 'RESULT') {
     return (
-      <MoreFeatures
-        onBack={() => setShowMoreFeatures(false)}
-        onSubmit={() => {
-          setShowResumeGenerator(true);
-        }}
-      />
+      <Stack width='100%' height='100%' alignItems='center' p={5}>
+        <StepWrapper activeStep={1} />
+        <ResumeBuilderStep1VoiceResult onSubmit={() => setStage('SELECT_SKILL')} setAiStatus={setAiStatus} />
+      </Stack>
     );
   }
 
-  if (stage === 'RESULT') {
-    return <ResumeBuilderStep1VoiceResult onSubmit={() => setStage('SELECT_SKILL')} setAiStatus={setAiStatus} />;
-  }
-
   if (stage === 'SELECT_SKILL') {
-    return <ResumeBuilderStep1SelectSkill setStage={setStage} />;
+    return (
+      <Stack width='100%' height='100%' alignItems='center' p={5}>
+        <StepWrapper activeStep={1} />
+        <ResumeBuilderStep1SelectSkill setStage={setStage} />
+      </Stack>
+    );
   }
 
   if (stage === 'SKILL_INPUT') {
-    return <ResumeBuilderStep1SkillInput setStage={setStage} />;
+    return (
+      <Stack width='100%' height='100%' alignItems='center' p={5}>
+        <StepWrapper activeStep={1} />
+        <ResumeBuilderStep1SkillInput setStage={setStage} />
+      </Stack>
+    );
   }
 
   return (
-    <Step1Wrapper>
-      <ResumeBuilderStep1Questions
-        onNext={() => {
-          setShowMoreFeatures(true);
-        }}
-        setAiStatus={setAiStatus}
-      />
-    </Step1Wrapper>
+    <Stack width='100%' height='100%' alignItems='center' p={5}>
+      <StepWrapper activeStep={1} />
+      <Step1Wrapper>
+        <ResumeBuilderStep1Questions
+          onNext={() => {
+            setActiveStep(2);
+          }}
+          setAiStatus={setAiStatus}
+        />
+      </Step1Wrapper>
+    </Stack>
   );
 };
 
