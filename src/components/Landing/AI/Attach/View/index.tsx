@@ -8,12 +8,13 @@ import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import { FilePreviewContainer, FilesStack, RemoveFileButton } from '@/components/Landing/AI/Attach/View/styled';
 
 interface AttachViewProps {
+  voiceUrl: string | null;
   uploadedFiles: File[];
   setUploadedFiles: (value: File[] | ((prev: File[]) => File[])) => void;
 }
 
 const AttachView: FunctionComponent<AttachViewProps> = (props) => {
-  const { uploadedFiles, setUploadedFiles } = props;
+  const { uploadedFiles, setUploadedFiles, voiceUrl } = props;
 
   const handleRemoveFile = (index: number) => {
     setUploadedFiles((prev) => {
@@ -28,11 +29,12 @@ const AttachView: FunctionComponent<AttachViewProps> = (props) => {
 
   return (
     <>
-      {uploadedFiles.length > 0 && (
-        <Typography variant='h6' color='secondary.main'>
-          Your prompt
-        </Typography>
-      )}
+      {uploadedFiles.length > 0 ||
+        (voiceUrl && (
+          <Typography variant='h6' color='secondary.main'>
+            Your prompt
+          </Typography>
+        ))}
 
       <FilesStack direction='row' spacing={1}>
         {uploadedFiles.map((file, index) => (

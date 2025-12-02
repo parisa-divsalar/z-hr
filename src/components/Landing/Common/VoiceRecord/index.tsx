@@ -3,14 +3,15 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 
 import { Typography, IconButton, Stack } from '@mui/material';
 
+import ButtonDIcon from '@/assets/images/icons/button-d.svg';
 import ButtonPIcon from '@/assets/images/icons/button-play.svg';
 import ButtonPuseIcon from '@/assets/images/icons/button-puse.svg';
+import ButtonStopIcon from '@/assets/images/icons/button-stop.svg';
 import CleanIcon from '@/assets/images/icons/clean.svg';
+import { RecordingState } from '@/components/Landing/AI';
 import { FilePreviewVoiceContainer, FilesStack, RemoveFileButton } from '@/components/Landing/AI/Attach/View/styled';
-import VoiceBoxRecording from '@/components/Landing/AI/Recording';
 import VoiceBox from '@/components/Landing/AI/VoiceBox';
 
-export type RecordingState = 'idle' | 'recording';
 export type PlaybackState = 'idle' | 'playing' | 'paused';
 
 export interface VoiceRecordingProps {
@@ -22,6 +23,8 @@ export interface VoiceRecordingProps {
   initialAudioUrl?: string | null;
   initialAudioBlob?: Blob | null;
   onClearRecording?: () => void;
+  recordingState: RecordingState;
+  setRecordingState: (recordingState: RecordingState) => void;
 }
 
 const VoiceRecord = ({
@@ -33,8 +36,9 @@ const VoiceRecord = ({
   initialAudioUrl = null,
   initialAudioBlob = null,
   onClearRecording,
+  recordingState,
+  setRecordingState,
 }: VoiceRecordingProps) => {
-  const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl);
   const [_audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -345,12 +349,39 @@ const VoiceRecord = ({
         <>
           {recordingState !== 'recording' && <VoiceBox onClick={startRecording} />}
 
-          {recordingState === 'recording' && <VoiceBoxRecording onClick={stopRecording} />}
+          {/*{recordingState === 'recording' && <VoiceBoxRecording onClick={stopRecording} />}*/}
 
           {recordingState === 'recording' && (
-            <Typography variant='body2' color='error' mt={4}>
+            <Typography color='secondary.main' variant='subtitle1' mt={2}>
+              Recording...
+            </Typography>
+          )}
+
+          {recordingState === 'recording' && (
+            <Typography variant='body2' color='error'>
               {formatTime(recordingTime)}
             </Typography>
+          )}
+
+          {recordingState === 'recording' && (
+            <Stack direction='row' gap={3} mt={4}>
+              <IconButton>
+                <ButtonPuseIcon />
+              </IconButton>
+
+              <IconButton onClick={stopRecording}>
+                <ButtonStopIcon />
+              </IconButton>
+
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearRecording();
+                }}
+              >
+                <ButtonDIcon />
+              </IconButton>
+            </Stack>
           )}
         </>
       )}

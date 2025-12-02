@@ -22,13 +22,13 @@ const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
       {steps.map((step, index) => (
         <React.Fragment key={step.id}>
           <StepItem key={step.id} active={activeStep === step.id}>
-            <StepCircle active={activeStep >= step.id}>
+            <StepCircle active={activeStep >= step.id} current={activeStep + 1 === index + 1}>
               {activeStep > step.id ? <CheckRoundedIcon /> : step.id}
             </StepCircle>
             <Box>
               <Typography
                 variant='subtitle1'
-                fontWeight={600}
+                fontWeight={500}
                 color={activeStep >= step.id ? 'primary.main' : 'text.primary'}
               >
                 {step.label}

@@ -19,18 +19,18 @@ export const StepItem = styled(Box, {
 }));
 
 export const StepCircle = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'active',
-})<{ active?: boolean }>(({ theme, active }) => ({
+  shouldForwardProp: (prop) => prop !== 'active' && prop !== 'current',
+})<{ active?: boolean; current: boolean }>(({ theme, active, current }) => ({
   width: 40,
   height: 40,
   borderRadius: '50%',
-  border: `2px solid ${active ? theme.palette.primary.main : '#F0F0F2'}`,
+  border: `2px solid ${active || current ? theme.palette.primary.main : '#F0F0F2'}`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: active ? theme.palette.primary.main : '#F0F0F2',
+  background: active ? theme.palette.primary.main : current ? '#F1F1FE' : '#F0F0F2',
   color: active ? '#fff' : theme.palette.text.primary,
-  fontWeight: 600,
+  fontWeight: 500,
 }));
 
 export const Divider = styled('div', {
