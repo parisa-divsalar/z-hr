@@ -7,8 +7,6 @@ import { Stack, Typography } from '@mui/material';
 import ResumeAIInput from '@/app/(private)/resume-builder/ResumeAIInput';
 import ResumeBuilderStep1 from '@/app/(private)/resume-builder/ResumeBuilderStep1';
 import { AIStatus } from '@/components/Landing/type';
-import Thinking from '@/components/Landing/Wizard/Step2/Thinking';
-import Step3 from '@/components/Landing/Wizard/Step3';
 
 import { ResumeBuilderRoot } from './styled';
 
@@ -26,16 +24,6 @@ const ResumeBuilder: FunctionComponent = () => {
       ) : aiStatus === 'WIZARD' ? (
         activeStep === 1 ? (
           <ResumeBuilderStep1 setAiStatus={setAiStatus} setActiveStep={setActiveStep} />
-        ) : activeStep === 2 ? (
-          <Thinking
-            onCancel={() => {
-              setAiStatus('START');
-              setActiveStep(1);
-            }}
-            setActiveStep={setActiveStep}
-          />
-        ) : activeStep === 3 ? (
-          <Step3 setActiveStep={setActiveStep} />
         ) : (
           <Stack />
         )

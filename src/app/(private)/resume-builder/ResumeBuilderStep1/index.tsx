@@ -3,13 +3,13 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import MoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
-import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeGeneratorFrame';
+import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeBuilderStep1/ResumeGeneratorFrame';
 import { StageWizard, AIStatus } from '@/components/Landing/type';
 
-import ResumeBuilderStep1Questions from '../ResumeBuilderStep1Questions';
-import ResumeBuilderStep1SelectSkill from '../ResumeBuilderStep1SelectSkill';
-import ResumeBuilderStep1SkillInput from '../ResumeBuilderStep1SkillInput';
-import ResumeBuilderStep1VoiceResult from '../ResumeBuilderStep1VoiceResult';
+import ResumeBuilderStep1Questions from './ResumeBuilderStep1Questions';
+import ResumeBuilderStep1SelectSkill from './ResumeBuilderStep1SelectSkill';
+import ResumeBuilderStep1SkillInput from './ResumeBuilderStep1SkillInput';
+import ResumeBuilderStep1VoiceResult from './ResumeBuilderStep1VoiceResult';
 import { Step1Wrapper } from './styled';
 
 interface ResumeBuilderStep1Props {
