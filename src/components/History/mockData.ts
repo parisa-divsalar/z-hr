@@ -17,7 +17,7 @@ export const communityChannels: THistoryChannel[] = [
   },
   {
     id: '2',
-    name: "Sarah Ahmed's Portfolio",
+    name: "Zayd Al-Mansoori's Resume",
     date: '11/15/2025',
     Percentage: '95%',
     size: '3.2 MB',
@@ -31,7 +31,7 @@ export const communityChannels: THistoryChannel[] = [
   },
   {
     id: '3',
-    name: 'Mohammed Hassan CV',
+    name: "Zayd Al-Mansoori's Resume",
     date: '10/22/2025',
     Percentage: '78%',
     size: '1.95 MB',
@@ -45,7 +45,7 @@ export const communityChannels: THistoryChannel[] = [
   },
   {
     id: '4',
-    name: "Fatima Ali's Resume",
+    name: "Zayd Al-Mansoori's Resume",
     date: '11/01/2025',
     Percentage: '92%',
     size: '2.5 MB',
@@ -59,7 +59,7 @@ export const communityChannels: THistoryChannel[] = [
   },
   {
     id: '5',
-    name: 'Omar Khalil Portfolio',
+    name: "Zayd Al-Mansoori's Resume",
     date: '08/30/2025',
     Percentage: '85%',
     size: '3.8 MB',
@@ -73,7 +73,7 @@ export const communityChannels: THistoryChannel[] = [
   },
   {
     id: '6',
-    name: 'Layla Ibrahim CV',
+    name: "Zayd Al-Mansoori's Resume",
     date: '11/20/2025',
     Percentage: '88%',
     size: '2.1 MB',

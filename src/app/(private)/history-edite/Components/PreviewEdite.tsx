@@ -22,6 +22,7 @@ import {
   PopupMenu,
   RelativeStack,
   StyledDivider,
+  TagPill,
 } from '@/components/History/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
@@ -94,14 +95,13 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
           </HistoryImage>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2}>
+        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={4}>
           <Stack direction='row' gap={1}>
             <Typography variant='h6' fontWeight='500' color='text.primary'>
               Resume Name
             </Typography>
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary' mt={0.5}>
-              85%
-            </Typography>
+
+            <TagPill sx={{ marginTop: '5px' }}> 85%</TagPill>
           </Stack>
 
           <Stack direction='row' gap={2} alignItems='center'>
@@ -122,7 +122,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
             </Typography>
           </Stack>
 
-          <Stack direction='row' gap={3} alignItems='center' mt={2}>
+          <Stack direction='row' gap={4} alignItems='center' mt={2}>
             <Stack direction='row' gap={0.5} alignItems='center'>
               <VoiceIcon />
               <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
@@ -143,7 +143,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
             </Stack>
           </Stack>
 
-          <Stack direction='row' gap={1} mt={2}>
+          <Stack direction='row' gap={1} mt={3}>
             <Position />
 
             <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
@@ -151,7 +151,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
             </Typography>
           </Stack>
 
-          <Stack direction='row' gap={1} mt={2} alignItems='center'>
+          <Stack direction='row' gap={1} mt={3} alignItems='center'>
             <FrameFaw />
             <Divider orientation='vertical' flexItem sx={{ bgcolor: 'grey.100' }} />
             <TrashIcon />
@@ -183,10 +183,16 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
               </PopupMenu>
             </RelativeStack>
             <Stack direction='row' gap={2}>
-              <MuiButton variant='outlined' color='secondary' onClick={handleEditResume}>
-                Edit
+              <MuiButton
+                variant='outlined'
+                size='small'
+                color='secondary'
+                onClick={handleEditResume}
+                sx={{ width: 138 }}
+              >
+                Edit In Preview
               </MuiButton>
-              <MuiButton variant='contained' color='secondary' onClick={handleEditResume}>
+              <MuiButton variant='contained' size='small' color='secondary' onClick={handleEditResume}>
                 Download
               </MuiButton>
             </Stack>

@@ -11,7 +11,7 @@ export const PublicRoutes = {
 export const PrivateRoutes = {
   dashboard: '/dashboard',
   history: '/history',
-  historyEdite: '/History-edite',
+  historyEdite: '/history-edite',
   payment: '/payment',
   setting: '/setting',
   support: '/support',

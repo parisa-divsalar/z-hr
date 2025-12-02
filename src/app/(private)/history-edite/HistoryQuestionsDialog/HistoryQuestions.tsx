@@ -71,27 +71,17 @@ const HistoryQuestions = () => {
     {
       id: 1,
       image: RectangleIcon,
-      title: 'Item 1',
+      title: ' Image',
     },
     {
       id: 2,
       image: RectangleIcon,
-      title: 'Item 2',
+      title: 'Video',
     },
     {
       id: 3,
       image: RectangleIcon,
       title: 'Item 3',
-    },
-    {
-      id: 4,
-      image: RectangleIcon,
-      title: 'Item 4',
-    },
-    {
-      id: 5,
-      image: RectangleIcon,
-      title: 'Item 5',
     },
   ];
 
@@ -116,14 +106,14 @@ const HistoryQuestions = () => {
           />
         ))}
       </QuestionList>
-      <Typography variant='body1' color='text.primary' fontWeight='500' mt={3}>
-        Asset
+      <Typography variant='subtitle1' color='text.primary' fontWeight='500' mt={3}>
+        Other
       </Typography>
-      <HorizontalScrollContainer direction='row' spacing={2} mt={1}>
+      <HorizontalScrollContainer direction='row' gap={3} mt={3}>
         {mockItems.map((item) => (
-          <HorizontalItem key={item.id} spacing={1}>
+          <HorizontalItem key={item.id}>
             <Image src={item.image} alt={item.title} width={85} height={85} style={{ margin: '0 auto' }} />
-            <Typography variant='body2' fontWeight={600} color='text.primary'>
+            <Typography variant='subtitle2' fontWeight={400} color='text.primary' pt={1}>
               {item.title}
             </Typography>
           </HorizontalItem>

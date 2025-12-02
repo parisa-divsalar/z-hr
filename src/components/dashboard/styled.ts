@@ -27,12 +27,6 @@ export const SectionHeader = styled(Stack)(() => ({
   justifyContent: 'space-between',
 }));
 
-export const SectionTitle = styled(Typography)(() => ({
-  fontSize: 20,
-  fontWeight: 600,
-  color: DASHBOARD_COLORS.darkText,
-}));
-
 export const CardBase = styled(Box)(() => ({
   borderRadius: 8,
   padding: 20,
@@ -92,23 +86,10 @@ export const SmallCardBase = styled(CardBase)(({ theme }) => ({
   border: `1px solid ${theme.palette.grey[100]}`,
 }));
 
-export const StatTitle = styled(Typography)(() => ({
-  fontSize: 14,
-  fontWeight: 400,
-  color: DASHBOARD_COLORS.lightText,
-  marginBottom: 8,
-}));
-
 export const StatValueRow = styled(Stack)(() => ({
   flexDirection: 'row',
   alignItems: 'center',
   gap: 8,
-}));
-
-export const StatValue = styled(Typography)(() => ({
-  fontSize: 24,
-  fontWeight: 600,
-  color: DASHBOARD_COLORS.darkText,
 }));
 
 export const TagPill = styled(Typography)(({ theme }) => ({
@@ -123,11 +104,6 @@ export const TagPill = styled(Typography)(({ theme }) => ({
   backgroundColor: theme.palette.warning.light,
   border: `1px solid ${theme.palette.warning.main}`,
   color: theme.palette.warning.main,
-}));
-
-export const SubText = styled(Typography)(() => ({
-  fontSize: 12,
-  color: DASHBOARD_COLORS.lightText,
 }));
 
 export const SectionJob = styled(Box)(({ theme }) => ({

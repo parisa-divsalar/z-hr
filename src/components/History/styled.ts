@@ -1,20 +1,30 @@
-import { Box, Divider, Stack } from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const HistoryRoot = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
   width: '100%',
   flex: 1,
   margin: '1 auto',
   borderRadius: '8px',
   border: `1px solid ${theme.palette.grey[100]}`,
+  backgroundColor: theme.palette.common.white,
   overflowY: 'auto',
   overflowX: 'hidden',
   marginTop: '2px',
 }));
 
+export const SectionHeader = styled(Stack)(() => ({
+  direction: 'ltr',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+}));
+
 export const HistoryCommunityCardRoot = styled(Stack)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.grey[100]}`,
+  paddingTop: '10px',
+  paddingBottom: '10px',
 }));
 
 export const HistoryImage = styled(Box)(() => ({
@@ -109,7 +119,17 @@ export const MenuItemStack = styled(Stack)(() => ({
   },
 }));
 
-export const DownloadButton = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.grey[100],
-  color: theme.palette.text.primary,
+export const TagPill = styled(Typography)(({ theme }) => ({
+  borderRadius: ' 4px',
+  fontSize: 14,
+  padding: '1px 3px',
+  marginTop: '4px',
+  height: '20px',
+  fontWeight: 500,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: theme.palette.warning.light,
+  border: `1px solid ${theme.palette.warning.main}`,
+  color: theme.palette.warning.main,
 }));
