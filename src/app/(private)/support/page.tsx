@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type KeyboardEvent, type ReactNode, useState } from 'react';
 
 import { Typography } from '@mui/material';
 import { ChevronDown } from 'lucide-react';
@@ -22,7 +22,7 @@ interface AccordionItemData {
   id: string;
   title: string;
   description?: string;
-  content?: React.ReactNode;
+  content?: ReactNode;
   defaultExpanded?: boolean;
 }
 
@@ -76,7 +76,7 @@ const Support = () => {
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, id: string) => {
+  const handleKeyDown = (e: KeyboardEvent, id: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       toggleItem(id);
