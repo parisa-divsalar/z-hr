@@ -5,9 +5,9 @@ import React, { FunctionComponent, useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 
 import ResumeAIInputPrompt from '@/app/(private)/resume-builder/ResumeAIInputPrompt';
+import { RecordingState } from '@/components/Landing/AI';
 import AttachView from '@/components/Landing/AI/Attach/View';
 import VoiceRecord from '@/components/Landing/Common/VoiceRecord';
-import { RecordingState } from '@/components/Landing/AI';
 import { AIStatus } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 
