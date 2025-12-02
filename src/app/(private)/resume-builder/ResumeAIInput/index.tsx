@@ -7,6 +7,7 @@ import { Stack, Typography } from '@mui/material';
 import ResumeAIInputPrompt from '@/app/(private)/resume-builder/ResumeAIInputPrompt';
 import AttachView from '@/components/Landing/AI/Attach/View';
 import VoiceRecord from '@/components/Landing/Common/VoiceRecord';
+import { RecordingState } from '@/components/Landing/AI';
 import { AIStatus } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 
@@ -14,6 +15,7 @@ import { MainContainer } from './styled';
 
 const ResumeAIInput: FunctionComponent<{ setAiStatus: (status: AIStatus) => void }> = ({ setAiStatus }) => {
   const [search, setSearch] = useState('');
+  const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
@@ -45,10 +47,12 @@ const ResumeAIInput: FunctionComponent<{ setAiStatus: (status: AIStatus) => void
         </Typography>
       )}
 
-      <AttachView uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles} />
+      <AttachView uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles} voiceUrl={voiceUrl} />
 
       {voiceUrl && (
         <VoiceRecord
+          recordingState={recordingState}
+          setRecordingState={setRecordingState}
           initialAudioUrl={voiceUrl}
           initialAudioBlob={voiceBlob}
           showRecordingControls={showRecordingControls}
@@ -57,7 +61,12 @@ const ResumeAIInput: FunctionComponent<{ setAiStatus: (status: AIStatus) => void
       )}
 
       {!voiceUrl && (
-        <VoiceRecord onRecordingComplete={handleVoiceRecordingComplete} showRecordingControls={showRecordingControls} />
+        <VoiceRecord
+          onRecordingComplete={handleVoiceRecordingComplete}
+          showRecordingControls={showRecordingControls}
+          recordingState={recordingState}
+          setRecordingState={setRecordingState}
+        />
       )}
 
       <ResumeAIInputPrompt
