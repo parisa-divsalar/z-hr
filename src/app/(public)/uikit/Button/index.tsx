@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material';
 
-import Edit from '@/assets/images/icons/edit.svg';
+import AddIcon from '@/assets/images/icons/add.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
 const AllButton = () => {
@@ -18,127 +18,127 @@ const AllButton = () => {
         </MuiButton>
 
         <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />}>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />}>
             Title
           </MuiButton>
 
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />}>
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />}>
             Title
           </MuiButton>
 
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />}>
-            Title
-          </MuiButton>
-        </Stack>
-
-        <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} color='secondary'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} color='secondary'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} color='secondary'>
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />}>
             Title
           </MuiButton>
         </Stack>
 
         <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} color='secondary' variant='outlined'>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} color='secondary'>
             Title
           </MuiButton>
 
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} color='secondary' variant='outlined'>
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} color='secondary'>
             Title
           </MuiButton>
 
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} color='secondary' variant='outlined'>
-            Title
-          </MuiButton>
-        </Stack>
-
-        <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} color='error'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} color='error'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} color='error'>
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} color='secondary'>
             Title
           </MuiButton>
         </Stack>
 
         <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} disabled>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} color='secondary' variant='outlined'>
             Title
           </MuiButton>
 
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} disabled>
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} color='secondary' variant='outlined'>
             Title
           </MuiButton>
 
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} disabled>
-            Title
-          </MuiButton>
-        </Stack>
-
-        <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} variant='outlined'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} variant='outlined'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} variant='outlined'>
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} color='secondary' variant='outlined'>
             Title
           </MuiButton>
         </Stack>
 
         <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} variant='outlined' disabled>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} color='error'>
             Title
           </MuiButton>
 
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} variant='outlined' disabled>
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} color='error'>
             Title
           </MuiButton>
 
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} variant='outlined' disabled>
-            Title
-          </MuiButton>
-        </Stack>
-
-        <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} variant='text'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} variant='text'>
-            Title
-          </MuiButton>
-
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} variant='text'>
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} color='error'>
             Title
           </MuiButton>
         </Stack>
 
         <Stack direction='row' gap={1} alignItems='end'>
-          <MuiButton size='large' startIcon={<Edit />} endIcon={<Edit />} variant='text' disabled>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} disabled>
             Title
           </MuiButton>
 
-          <MuiButton size='medium' startIcon={<Edit />} endIcon={<Edit />} variant='text' disabled>
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} disabled>
             Title
           </MuiButton>
 
-          <MuiButton size='small' startIcon={<Edit />} endIcon={<Edit />} variant='text' disabled>
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} disabled>
+            Title
+          </MuiButton>
+        </Stack>
+
+        <Stack direction='row' gap={1} alignItems='end'>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='outlined'>
+            Title
+          </MuiButton>
+
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='outlined'>
+            Title
+          </MuiButton>
+
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='outlined'>
+            Title
+          </MuiButton>
+        </Stack>
+
+        <Stack direction='row' gap={1} alignItems='end'>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='outlined' disabled>
+            Title
+          </MuiButton>
+
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='outlined' disabled>
+            Title
+          </MuiButton>
+
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='outlined' disabled>
+            Title
+          </MuiButton>
+        </Stack>
+
+        <Stack direction='row' gap={1} alignItems='end'>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='text'>
+            Title
+          </MuiButton>
+
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='text'>
+            Title
+          </MuiButton>
+
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='text'>
+            Title
+          </MuiButton>
+        </Stack>
+
+        <Stack direction='row' gap={1} alignItems='end'>
+          <MuiButton size='large' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='text' disabled>
+            Title
+          </MuiButton>
+
+          <MuiButton size='medium' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='text' disabled>
+            Title
+          </MuiButton>
+
+          <MuiButton size='small' startIcon={<AddIcon />} endIcon={<AddIcon />} variant='text' disabled>
             Title
           </MuiButton>
         </Stack>

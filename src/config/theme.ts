@@ -64,6 +64,7 @@ const commonSettings: ThemeOptions = {
         },
         outlined: {
           borderWidth: '2px',
+          borderColor: '#F0F0F2',
         },
         fullWidth: {
           width: '100%',
@@ -116,6 +117,13 @@ const commonSettings: ThemeOptions = {
         root: {
           height: 42,
           borderRadius: '0.5rem',
+
+          '&.Mui-focused:not(.Mui-error)': {
+            boxShadow: '0 0 0 3px rgba(25,118,210,0.25)',
+          },
+          '&.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#4D49FC',
+          },
         },
       },
     },

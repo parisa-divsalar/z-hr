@@ -12,7 +12,7 @@ export const MainContainer = styled(Stack)(() => ({
 
 export const MainContent = styled(Stack)(() => ({
   width: '100%',
-  height: 'calc(100% - 7.5rem)',
+  height: 'calc(100% - 5rem)',
   borderRadius: '0.75rem',
   display: 'flex',
   boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',

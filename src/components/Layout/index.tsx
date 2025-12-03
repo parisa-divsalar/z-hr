@@ -9,7 +9,7 @@ import classes from '@/components/Layout/layout.module.css';
 import Navbar from '@/components/Layout/Navbar';
 import SideBar from '@/components/Layout/SideBar';
 import AddToHomeScreen from '@/components/Other/AddToHomeScreen';
-import SplashScreen from '@/components/Other/SplashScreen';
+// import SplashScreen from '@/components/Other/SplashScreen';
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
@@ -25,7 +25,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <Footer />
       </Stack>
 
-      <SplashScreen />
+      {/*<SplashScreen />*/}
 
       <AddToHomeScreen />
     </Stack>
