@@ -15,4 +15,10 @@ export const SecondChild = styled(Stack)(({ theme }) => ({
   backgroundRepeat: 'no-repeat',
   backgroundSize: 'cover',
   backgroundPosition: 'center center',
+  [theme.breakpoints.down('lg')]: {
+    padding: '2.5rem',
+  },
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
 }));
