@@ -4,6 +4,7 @@ export const PublicRoutes = {
   forgetPassword: '/reset-password',
   newPassword: '/new-password',
   register: '/register',
+  congrats: '/congrats',
   moreFeatures: '/more-features',
   resumeGenerator: '/resume-generator',
 };

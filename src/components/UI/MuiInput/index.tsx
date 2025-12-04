@@ -1,4 +1,4 @@
-import { ForwardedRef, forwardRef, ReactNode } from 'react';
+import React, { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
 
 import { InputAdornment, Stack, Typography } from '@mui/material';
 import TextField from '@mui/material/TextField';
@@ -66,6 +66,8 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
     },
     ref: ForwardedRef<HTMLInputElement>,
   ) => {
+    const [focused, setFocused] = useState(false);
+
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const val = event.target.value;
 
@@ -87,12 +89,20 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
 
     return (
       <Stack>
-        <Typography variant='caption' color={disabled ? 'grey.100' : error ? 'error.main' : 'text.secondary'}>
+        <Typography
+          variant='caption'
+          color={disabled ? 'grey.100' : error ? 'error.main' : focused ? 'primary.main' : 'text.secondary'}
+        >
           {label}
         </Typography>
         <TextField
           variant={variant}
           placeholder={placeholder}
+          onFocus={() => setFocused(true)}
+          onBlur={() => {
+            setFocused(false);
+            onBlur?.();
+          }}
           fullWidth
           label=''
           value={inputMode === 'decimal' ? (value ? commafy(value) : '') : value}
@@ -108,7 +118,6 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
           inputMode={inputMode}
           autoComplete={autoComplete}
           onKeyDown={handleKeyDown}
-          onBlur={onBlur}
           disabled={disabled}
           inputRef={ref}
           InputLabelProps={{

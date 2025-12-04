@@ -39,6 +39,7 @@ const LoginPage = () => {
       .catch(() => loginFailure())
       .finally(() => setLoading(false));
   };
+
   return (
     <MainContainer>
       <MainContent direction='row'>
@@ -129,7 +130,7 @@ const LoginPage = () => {
               Already have an account?
             </Typography>
 
-            <MuiButton color='secondary' variant='text'>
+            <MuiButton color='secondary' variant='text' onClick={() => router.push(PublicRoutes.register)}>
               Sign up
             </MuiButton>
           </Stack>
