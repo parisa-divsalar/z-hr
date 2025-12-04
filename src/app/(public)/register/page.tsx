@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 import AppleIcon from '@mui/icons-material/Apple';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -13,11 +14,44 @@ import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
 import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
-import { DividerLine, OrDivider } from '@/components/Landing/AI/VoiceBox/styled';
+import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import { PublicRoutes } from '@/config/routes';
+import axiosInstance from '@/app/api/axiosInstance';
 import { checkPasswordLength, validateSpecialChar } from '@/utils/validation';
+
+const REGISTER_ENDPOINT = 'https://apisrv.zenonrobotics.ae/api/Apps/Register';
+
+const getRegisterErrorMessage = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (typeof responseData === 'string' && responseData.length > 0) {
+      return responseData;
+    }
+
+    if (typeof responseData === 'object' && responseData !== null) {
+      if ('message' in responseData && typeof responseData.message === 'string') {
+        return responseData.message;
+      }
+
+      if ('status' in responseData && typeof responseData.status?.message === 'string') {
+        return responseData.status.message;
+      }
+
+      if ('error' in responseData && typeof responseData.error?.message === 'string') {
+        return responseData.error.message;
+      }
+    }
+
+    return error.message || 'Registration failed. Please try again.';
+  }
+
+  if (error instanceof Error) return error.message;
+
+  return 'Registration failed. Please try again.';
+};
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -27,15 +61,36 @@ const RegisterPage = () => {
   const [disabled, setDisabled] = useState<boolean>(true);
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
+    if (disabled || loading) return;
+
     setLoading(true);
+    setErrorMessage(null);
 
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await axiosInstance.post(REGISTER_ENDPOINT, {
+        email,
+        password,
+      });
 
       router.replace(PublicRoutes.congrats);
-    }, 3000);
+    } catch (error) {
+      setErrorMessage(getRegisterErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setErrorMessage(null);
+    setEmail(value);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setErrorMessage(null);
+    setPassword(value);
   };
 
   useEffect(() => {
@@ -62,11 +117,11 @@ const RegisterPage = () => {
             </Typography>
 
             <Stack spacing={1} mt={3}>
-              <MuiInput value={email} onChange={setEmail} label='Email' placeholder='Your email...' />
+              <MuiInput value={email} onChange={handleEmailChange} label='Email' placeholder='Your email...' />
 
               <MuiInput
                 value={password}
-                onChange={setPassword}
+                onChange={handlePasswordChange}
                 type={typeInput}
                 label='Password'
                 endIcon={
@@ -102,6 +157,11 @@ const RegisterPage = () => {
             <MuiButton color='secondary' fullWidth onClick={onSubmit} disabled={disabled} loading={loading}>
               Sign up
             </MuiButton>
+            {errorMessage && (
+              <Typography color='error.main' variant='body2' mt={1.5}>
+                {errorMessage}
+              </Typography>
+            )}
 
             <Stack alignItems='center'>
               <OrDivider sx={{ marginTop: '0.75rem' }}>
