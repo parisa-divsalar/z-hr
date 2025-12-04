@@ -179,7 +179,7 @@ const commonSettings: ThemeOptions = {
       ],
       styleOverrides: {
         root: {
-          // اگر بخوای بصورت عمومی تغییر بدی همه سایزها
+          //
           // مثلا رنگ یا padding
         },
       },
@@ -306,6 +306,7 @@ export const darkTheme = createTheme({
     grey: {
       '50': '#1c1c1c',
       '100': '#90a4ae36',
+      '200': '#b0b0b5',
     },
     background: {
       default: '#1e1e1e',

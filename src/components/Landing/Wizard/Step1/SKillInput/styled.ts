@@ -49,3 +49,21 @@ export const InputContent = styled('textarea')(({ theme }) => ({
     outline: 'none',
   },
 }));
+
+export const ContactListContainer = styled(Stack)(({ theme }) => ({
+  width: '100%',
+  maxWidth: '588px',
+  marginTop: '10px',
+  marginBottom: '10px',
+  gap: '0.75rem',
+  borderTop: `1px solid ${theme.palette.grey[100]}`,
+}));
+
+export const ContactRow = styled(Stack)(() => ({
+  width: '100%',
+  padding: '0.2rem 1rem',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  flexDirection: 'row',
+  gap: '0.2rem',
+}));
