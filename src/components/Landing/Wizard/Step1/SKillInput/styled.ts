@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { IconButton, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const MainContainer = styled(Stack)(() => ({
@@ -10,19 +10,31 @@ export const MainContainer = styled(Stack)(() => ({
   padding: '1rem',
 }));
 
-export const InputContainer = styled(Stack)(({ theme }) => ({
+interface InputContainerProps {
+  highlight?: boolean;
+  grow?: boolean;
+  noMarginTop?: boolean;
+}
+
+const shouldForwardInputContainerProp = (prop: PropertyKey) =>
+  !['highlight', 'grow', 'noMarginTop'].includes(prop.toString());
+
+export const InputContainer = styled(Stack, { shouldForwardProp: shouldForwardInputContainerProp })<
+  InputContainerProps
+>(({ theme, highlight, grow, noMarginTop }) => ({
   backgroundColor: 'white',
   borderRadius: '1rem',
-  border: `1px solid ${theme.palette.grey[200]}`,
+  border: `1px solid ${highlight ? theme.palette.primary.main : theme.palette.grey[100]}`,
   padding: '0.5rem 1rem',
   width: '100%',
   maxWidth: '588px',
   height: 'auto',
-  marginTop: '1rem',
+  marginTop: noMarginTop ? 0 : '1rem',
   display: 'flex',
   alignItems: 'start',
   justifyContent: 'center',
   gap: '0.25rem',
+  flex: grow ? 1 : undefined,
 }));
 
 export const InputContent = styled('textarea')(({ theme }) => ({
@@ -66,4 +78,24 @@ export const ContactRow = styled(Stack)(() => ({
   alignItems: 'center',
   flexDirection: 'row',
   gap: '0.2rem',
+}));
+
+export const ContactMethodText = styled(Typography)(() => ({
+  flex: 1,
+  wordBreak: 'break-word',
+}));
+
+export const ContactIconButton = styled(IconButton)(() => ({
+  padding: 0.5,
+}));
+
+export const AddContactIconButton = styled(IconButton)(() => ({
+  minWidth: 0,
+}));
+
+export const BottomActionsStack = styled(Stack)(() => ({
+  '& > *': {
+    flex: 1,
+    minWidth: 0,
+  },
 }));

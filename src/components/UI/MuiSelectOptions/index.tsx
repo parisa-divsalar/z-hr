@@ -141,7 +141,7 @@ const MuiSelectOptions = forwardRef<HTMLInputElement, MuiSelectOptionsProps>(
           disabled={disabled}
           required={required}
           variant={variant}
-          sx={{ width: '100%', ...sx }}
+          sx={{ width: fullWidth ? '100%' : 'auto', ...sx }}
         >
           <Select
             {...restSelectProps}

@@ -9,13 +9,36 @@ import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import PropertyIcon from '@/assets/images/icons/property.svg';
 import { StageWizard } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
-import MuiSelectOptions from '@/components/UI/MuiSelectOptions';
+import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
 
-import { ContactListContainer, ContactRow, InputContainer, InputContent, MainContainer } from './styled';
+import {
+  AddContactIconButton,
+  BottomActionsStack,
+  ContactIconButton,
+  ContactListContainer,
+  ContactMethodText,
+  ContactRow,
+  InputContainer,
+  InputContent,
+  MainContainer,
+} from './styled';
 
 interface SKillInputProps {
   setStage: (stage: StageWizard) => void;
 }
+
+const languageOptions: SelectOption[] = [
+  { value: 'arabic', label: 'arabic' },
+  { value: 'persian', label: 'persian' },
+  { value: 'english', label: 'english' },
+];
+
+const levelOptions: SelectOption[] = [
+  { value: 'a', label: 'A' },
+  { value: 'b', label: 'B' },
+  { value: 'c', label: 'C' },
+  { value: 'd', label: 'D' },
+];
 
 const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
   const [visaStatus, setVisaStatus] = useState('');
@@ -83,7 +106,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         1. Your visa status?{' '}
       </Typography>
 
-      <InputContainer direction='row' sx={{ borderColor: visaStatus === '' ? 'grey.100' : 'primary.main' }}>
+      <InputContainer direction='row' highlight={visaStatus !== ''}>
         <InputContent
           placeholder='Type your answer...'
           value={visaStatus}
@@ -96,14 +119,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
       </Typography>
 
       <Stack mt={1} direction='row' alignItems='center' gap={2} width='100%' maxWidth='588px'>
-        <InputContainer
-          direction='row'
-          sx={{
-            borderColor: contactInput.trim() === '' ? 'grey.100' : 'primary.main',
-            flex: 1,
-            mt: 0,
-          }}
-        >
+        <InputContainer direction='row' highlight={contactInput.trim() !== ''} grow noMarginTop>
           <InputContent
             placeholder='Type your answer...'
             value={contactInput}
@@ -124,41 +140,52 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         <ContactListContainer>
           {contactMethods.map((method, index) => (
             <ContactRow key={`${method}-${index}`}>
-              <Typography variant='body2' color='text.primary' sx={{ flex: 1, wordBreak: 'break-word' }}>
+              <ContactMethodText variant='body2' color='text.primary'>
                 {method}
-              </Typography>
+              </ContactMethodText>
 
               <Stack direction='row' spacing={1}>
-                <IconButton
+                <ContactIconButton
                   aria-label='Edit contact method'
                   onClick={() => handleEditContact(index)}
                   size='small'
-                  sx={{ padding: 0.5 }}
                 >
                   <EditIcon fontSize='small' />
-                </IconButton>
-                <IconButton
+                </ContactIconButton>
+                <ContactIconButton
                   aria-label='Delete contact method'
                   onClick={() => handleDeleteContact(index)}
                   size='small'
-                  sx={{ padding: 0.5 }}
                 >
                   <DeleteOutlineIcon fontSize='small' />
-                </IconButton>
+                </ContactIconButton>
               </Stack>
             </ContactRow>
           ))}
         </ContactListContainer>
       )}
-
-      <MuiSelectOptions
-        label='Preferred method'
-        placeholder='Select an option'
-        value={preferredContactMethod}
-        options={contactMethodOptions}
-        onChange={(value) => setPreferredContactMethod(value as string)}
-        sx={{ width: '100%' }}
-      />
+      <BottomActionsStack mt={1} direction='row' alignItems='stretch' gap={2} width='100%' maxWidth='588px'>
+        <MuiSelectOptions
+          placeholder='Language'
+          value={preferredContactMethod}
+          options={languageOptions}
+          onChange={(value) => setPreferredContactMethod(value as string)}
+          fullWidth
+        />
+        <MuiSelectOptions
+          placeholder='Level'
+          value={preferredContactMethod}
+          options={levelOptions}
+          onChange={(value) => setPreferredContactMethod(value as string)}
+        />
+        <AddContactIconButton
+          aria-label={editingIndex !== null ? 'Save contact method' : 'Add contact method'}
+          onClick={handleAddContact}
+          disabled={isAddDisabled}
+        >
+          <PropertyIcon />
+        </AddContactIconButton>
+      </BottomActionsStack>
       <Stack mt={4} mb={6} direction='row' gap={3}>
         <MuiButton
           color='secondary'
