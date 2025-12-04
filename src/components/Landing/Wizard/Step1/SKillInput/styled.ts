@@ -10,20 +10,19 @@ export const MainContainer = styled(Stack)(() => ({
   padding: '1rem',
 }));
 
-export const InputContainer = styled(Stack)(() => ({
+export const InputContainer = styled(Stack)(({ theme }) => ({
   backgroundColor: 'white',
   borderRadius: '1rem',
-  border: `1px solid`,
+  border: `1px solid ${theme.palette.grey[200]}`,
   padding: '0.5rem 1rem',
   width: '100%',
   maxWidth: '588px',
   height: 'auto',
-  marginTop: '2rem',
+  marginTop: '1rem',
   display: 'flex',
   alignItems: 'start',
   justifyContent: 'center',
   gap: '0.25rem',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
 }));
 
 export const InputContent = styled('textarea')(({ theme }) => ({

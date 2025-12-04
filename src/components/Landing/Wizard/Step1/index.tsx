@@ -15,7 +15,7 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
   const [stage, setStage] = useState<StageWizard>('RESULT');
 
   if (stage === 'RESULT') {
-    return <VoiceResult onSubmit={() => setStage('SELECT_SKILL')} setAiStatus={setAiStatus} />;
+    return <VoiceResult onSubmit={() => setStage('SKILL_INPUT')} setAiStatus={setAiStatus} />;
   }
 
   if (stage === 'SELECT_SKILL') {
