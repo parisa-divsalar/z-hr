@@ -8,9 +8,9 @@ import ButtonPIcon from '@/assets/images/icons/button-play.svg';
 import ButtonPuseIcon from '@/assets/images/icons/button-puse.svg';
 import ButtonStopIcon from '@/assets/images/icons/button-stop.svg';
 import CleanIcon from '@/assets/images/icons/clean.svg';
-import { RecordingState } from '@/components/Landing/AI';
-import { FilePreviewVoiceContainer, FilesStack, RemoveFileButton } from '@/components/Landing/AI/Attach/View/styled';
-import VoiceBox from '@/components/Landing/AI/VoiceBox';
+import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
+import { FilePreviewVoiceContainer, FilesStack, RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import VoiceBox from '@/components/Landing/Wizard/Step1/AI/VoiceBox';
 
 export type PlaybackState = 'idle' | 'playing' | 'paused';
 

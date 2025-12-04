@@ -5,7 +5,7 @@ import { IconButton, Stack, Typography } from '@mui/material';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ArrowTopIcon from '@/assets/images/icons/arrow-top.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
-import { CircleContainer } from '@/components/Landing/AI/Text/styled';
+import { CircleContainer } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
 import { CenterGrayBox, ChatInputContainer, ChatInputContent } from './styled';

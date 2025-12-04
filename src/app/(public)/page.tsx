@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Stack } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
 
-import AIInput from '@/components/Landing/AI';
+import AIInput from '@/components/Landing/Wizard/Step1/AI';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
 

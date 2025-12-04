@@ -12,7 +12,7 @@ import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)
 import { verifyCode } from '@/app/api/auth';
 import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
-import { DividerLine, OrDivider } from '@/components/Landing/AI/VoiceBox/styled';
+import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import { PrivateRoutes, PublicRoutes } from '@/config/routes';

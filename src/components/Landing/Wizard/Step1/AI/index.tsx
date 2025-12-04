@@ -2,10 +2,10 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
-import AttachView from '@/components/Landing/AI/Attach/View';
-import { MainContainer } from '@/components/Landing/AI/styled';
-import AIInputPrompt from '@/components/Landing/AI/Text';
-import VoiceRecord from '@/components/Landing/Common/VoiceRecord';
+import AttachView from '@/components/Landing/Wizard/Step1/AI/Attach/View';
+import { MainContainer } from '@/components/Landing/Wizard/Step1/AI/styled';
+import AIInputPrompt from '@/components/Landing/Wizard/Step1/AI/Text';
+import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import { AIStatus } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 

@@ -5,7 +5,8 @@ import { Typography } from '@mui/material';
 import CleanIcon from '@/assets/images/icons/clean.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
 import VideoIcon from '@/assets/images/icons/Icon-play.svg';
-import { FilePreviewContainer, FilesStack, RemoveFileButton } from '@/components/Landing/AI/Attach/View/styled';
+import { FilePreviewContainer, FilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 
 interface AttachViewProps {
   voiceUrl: string | null;
