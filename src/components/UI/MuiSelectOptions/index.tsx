@@ -1,10 +1,11 @@
 import React, { ForwardedRef, forwardRef, ReactNode, useMemo, useState } from 'react';
 
 import { FormControl, MenuItem, Select, SelectProps, Stack, Typography } from '@mui/material';
-import type { MenuProps } from '@mui/material/Menu';
 import { useTheme } from '@mui/material/styles';
 
 import InfoIcon from '@/assets/images/icons/info.svg';
+
+import type { MenuProps } from '@mui/material/Menu';
 
 type SelectOptionValue = string | number;
 

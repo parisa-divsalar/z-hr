@@ -1,15 +1,17 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 import AppleIcon from '@mui/icons-material/Apple';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { IconButton, Stack, Typography } from '@mui/material';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
 import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
+import axiosInstance from '@/app/api/axiosInstance';
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
 import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
@@ -18,7 +20,6 @@ import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/Voi
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import { PublicRoutes } from '@/config/routes';
-import axiosInstance from '@/app/api/axiosInstance';
 import { checkPasswordLength, validateSpecialChar } from '@/utils/validation';
 
 const REGISTER_ENDPOINT = 'https://apisrv.zenonrobotics.ae/api/Apps/Register';

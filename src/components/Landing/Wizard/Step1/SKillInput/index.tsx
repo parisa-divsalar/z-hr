@@ -59,8 +59,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
   const [skillEntries, setSkillEntries] = useState<SkillEntry[]>([]);
   const [editingSkillIndex, setEditingSkillIndex] = useState<number | null>(null);
 
-  const canProceed =
-    visaStatus.trim() !== '' && contactMethods.length > 0 && skillEntries.length > 0;
+  const canProceed = visaStatus.trim() !== '' && contactMethods.length > 0 && skillEntries.length > 0;
   const hasLanguageSelection = selectedLanguage.trim() !== '' && selectedLevel.trim() !== '';
   const isAddDisabled = contactInput.trim() === '' || (contactMethods.length >= 2 && editingIndex === null);
   const isAddSkillDisabled = !hasLanguageSelection;
@@ -238,18 +237,10 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
                 {entry.language} - {entry.level}
               </SkillText>
               <Stack direction='row' spacing={1}>
-                <SkillIconButton
-                  aria-label='Edit skill entry'
-                  onClick={() => handleEditSkill(index)}
-                  size='small'
-                >
+                <SkillIconButton aria-label='Edit skill entry' onClick={() => handleEditSkill(index)} size='small'>
                   <EditIcon fontSize='small' />
                 </SkillIconButton>
-                <SkillIconButton
-                  aria-label='Delete skill entry'
-                  onClick={() => handleDeleteSkill(index)}
-                  size='small'
-                >
+                <SkillIconButton aria-label='Delete skill entry' onClick={() => handleDeleteSkill(index)} size='small'>
                   <DeleteOutlineIcon fontSize='small' />
                 </SkillIconButton>
               </Stack>

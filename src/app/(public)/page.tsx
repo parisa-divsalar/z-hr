@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { Stack } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
 
-import AIInput from '@/components/Landing/Wizard/Step1/AI';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
+import AIInput from '@/components/Landing/Wizard/Step1/AI';
 
 export default function LandingPage() {
   const searchParams = useSearchParams();

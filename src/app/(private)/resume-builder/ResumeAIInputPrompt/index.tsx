@@ -5,8 +5,8 @@ import React, { FunctionComponent } from 'react';
 import { IconButton } from '@mui/material';
 
 import ArrowTopIcon from '@/assets/images/icons/arrow-top.svg';
-import AddAttachFile from '@/components/Landing/Wizard/Step1/AI/Attach';
 import { AIStatus } from '@/components/Landing/type';
+import AddAttachFile from '@/components/Landing/Wizard/Step1/AI/Attach';
 
 import { CircleContainer, InputContainer, InputContent } from './styled';
 

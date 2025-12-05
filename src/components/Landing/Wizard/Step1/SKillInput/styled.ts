@@ -1,5 +1,5 @@
 import { IconButton, Stack, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, type Theme } from '@mui/material/styles';
 
 export const MainContainer = styled(Stack)(() => ({
   width: '100%',
@@ -62,7 +62,7 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   },
 }));
 
-const listContainerStyles = ({ theme }: { theme: any }) => ({
+const getListContainerStyles = (theme: Theme) => ({
   width: '100%',
   maxWidth: '588px',
   marginTop: '10px',
@@ -71,43 +71,50 @@ const listContainerStyles = ({ theme }: { theme: any }) => ({
   borderTop: `1px solid ${theme.palette.grey[100]}`,
 });
 
-const listRowStyles = () => ({
-  width: '100%',
-  padding: '0.2rem 1rem',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  flexDirection: 'row',
-  gap: '0.2rem',
-});
 
-const listTextStyles = () => ({
-  flex: 1,
-  wordBreak: 'break-word',
-});
+export const ContactListContainer = styled(Stack)(({ theme }) => getListContainerStyles(theme));
 
-const iconButtonStyles = () => ({
-  padding: 0.5,
-});
+export const ContactRow = styled(Stack)`
+  width: 100%;
+  padding: 0.2rem 1rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  gap: 0.2rem;
+`;
 
-export const ContactListContainer = styled(Stack)(listContainerStyles);
+export const ContactMethodText = styled(Typography)`
+  flex: 1;
+  word-break: break-word;
+`;
 
-export const ContactRow = styled(Stack)(listRowStyles);
-
-export const ContactMethodText = styled(Typography)(listTextStyles);
-
-export const ContactIconButton = styled(IconButton)(iconButtonStyles);
+export const ContactIconButton = styled(IconButton)`
+  padding: 0.5px;
+`;
 
 export const AddSkillIconButton = styled(IconButton)(() => ({
   minWidth: 0,
 }));
 
-export const SkillListContainer = styled(Stack)(listContainerStyles);
+export const SkillListContainer = styled(Stack)(({ theme }) => getListContainerStyles(theme));
 
-export const SkillRow = styled(Stack)(listRowStyles);
+export const SkillRow = styled(Stack)`
+  width: 100%;
+  padding: 0.2rem 1rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  gap: 0.2rem;
+`;
 
-export const SkillText = styled(Typography)(listTextStyles);
+export const SkillText = styled(Typography)`
+  flex: 1;
+  word-break: break-word;
+`;
 
-export const SkillIconButton = styled(IconButton)(iconButtonStyles);
+export const SkillIconButton = styled(IconButton)`
+  padding: 0.5px;
+`;
 
 export const BottomActionsStack = styled(Stack)(() => ({
   '& > *': {

@@ -4,9 +4,9 @@ import { Stack, Typography } from '@mui/material';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
+import { StageWizard } from '@/components/Landing/type';
 import { InputContent } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
-import { StageWizard } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 

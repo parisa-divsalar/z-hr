@@ -5,10 +5,10 @@ import React, { FunctionComponent, useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 
 import ResumeAIInputPrompt from '@/app/(private)/resume-builder/ResumeAIInputPrompt';
+import { AIStatus } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import AttachView from '@/components/Landing/Wizard/Step1/AI/Attach/View';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
-import { AIStatus } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 
 import { MainContainer } from './styled';
