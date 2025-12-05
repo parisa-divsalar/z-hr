@@ -27,7 +27,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
 
   return (
-    <Stack alignItems='center' justifyContent='center' height='100%'>
+    <Stack alignItems='center' justifyContent='center' height='100%' overflow={'auto'} maxWidth={'426px'}>
       <Typography variant='h6' color='text.primary' fontWeight='500' mt={5}>
         1.
       </Typography>

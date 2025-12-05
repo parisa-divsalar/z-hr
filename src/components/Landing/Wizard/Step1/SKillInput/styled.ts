@@ -19,20 +19,22 @@ interface InputContainerProps {
 const shouldForwardInputContainerProp = (prop: PropertyKey) =>
   !['highlight', 'grow', 'noMarginTop'].includes(prop.toString());
 
-export const InputContainer = styled(Stack, { shouldForwardProp: shouldForwardInputContainerProp })<
-  InputContainerProps
->(({ theme, highlight, grow, noMarginTop }) => ({
+export const InputContainer = styled(Stack, {
+  shouldForwardProp: shouldForwardInputContainerProp,
+})<InputContainerProps>(({ theme, highlight, grow, noMarginTop }) => ({
   backgroundColor: 'white',
   borderRadius: '1rem',
   border: `1px solid ${highlight ? theme.palette.primary.main : theme.palette.grey[100]}`,
-  padding: '0.5rem 1rem',
+  padding: '1rem',
   width: '100%',
-  maxWidth: '588px',
-  height: 'auto',
+  maxWidth: '458px',
+  height: '52px',
   marginTop: noMarginTop ? 0 : '1rem',
   display: 'flex',
-  alignItems: 'start',
+  alignItems: 'center',
   justifyContent: 'center',
+  overflow: 'hidden',
+
   gap: '0.25rem',
   flex: grow ? 1 : undefined,
 }));
@@ -42,12 +44,11 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   textAlign: 'left',
   fontFamily: theme.typography.fontFamily,
   border: 'none',
-  color: theme.palette.text.primary,
   fontSize: '1rem',
   outline: 'none',
-  padding: '0.5rem 0',
-  resize: 'none',
   overflow: 'hidden',
+  color: theme.palette.grey[400],
+  resize: 'none',
   letterSpacing: '0',
   lineHeight: '1.5rem',
 
@@ -71,7 +72,6 @@ const getListContainerStyles = (theme: Theme) => ({
   borderTop: `1px solid ${theme.palette.grey[100]}`,
 });
 
-
 export const ContactListContainer = styled(Stack)(({ theme }) => getListContainerStyles(theme));
 
 export const ContactRow = styled(Stack)`
@@ -80,7 +80,7 @@ export const ContactRow = styled(Stack)`
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  gap: 0.2rem;
+  gap: 1rem;
 `;
 
 export const ContactMethodText = styled(Typography)`

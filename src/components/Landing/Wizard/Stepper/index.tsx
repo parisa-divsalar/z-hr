@@ -12,9 +12,9 @@ interface StepWrapperProps {
 
 const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
   const steps = [
-    { id: 1, label: 'First Step', subtitle: 'User’s Prompt' },
-    { id: 2, label: 'Second Step', subtitle: 'Answer questions' },
-    { id: 3, label: 'Final Step', subtitle: 'Review and Submit' },
+    { id: 1, label: 'First Step', subtitle: 'Answer questions' },
+    { id: 2, label: 'Second Step', subtitle: 'Review and Submit' },
+    { id: 3, label: 'Final Step', subtitle: 'Download a resumet' },
   ];
 
   return (
@@ -23,17 +23,25 @@ const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
         <React.Fragment key={step.id}>
           <StepItem key={step.id} active={activeStep === step.id}>
             <StepCircle active={activeStep >= step.id} current={activeStep + 1 === index + 1}>
-              {activeStep > step.id ? <CheckRoundedIcon /> : step.id}
+              {activeStep >= step.id ? <CheckRoundedIcon /> : step.id}
             </StepCircle>
+
             <Box>
               <Typography
-                variant='subtitle1'
-                fontWeight={500}
-                color={activeStep >= step.id ? 'primary.main' : 'text.primary'}
+                variant='body1'
+                sx={{
+                  fontWeight: 492,
+                  color: (theme) => {
+                    if (activeStep >= step.id) return theme.palette.primary.main;
+                    if (activeStep + 1 === index + 1) return theme.palette.grey[700];
+                    return theme.palette.grey[300];
+                  },
+                }}
               >
                 {step.label}
               </Typography>
-              <Typography variant='subtitle2' color='text.secondary'>
+
+              <Typography variant='subtitle2' sx={{ color: (theme) => theme.palette.grey[300], fontWeight: 400 }}>
                 {step.subtitle}
               </Typography>
             </Box>

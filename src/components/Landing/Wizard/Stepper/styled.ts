@@ -24,12 +24,12 @@ export const StepCircle = styled(Box, {
   width: 40,
   height: 40,
   borderRadius: '50%',
-  border: `2px solid ${active || current ? theme.palette.primary.main : '#F0F0F2'}`,
+  border: `2px solid ${active || current ? theme.palette.primary.main : theme.palette.grey[50]}`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: active ? theme.palette.primary.main : current ? '#F1F1FE' : '#F0F0F2',
-  color: active ? '#fff' : theme.palette.text.primary,
+  background: active ? theme.palette.primary.main : current ? theme.palette.primary.light : theme.palette.primary.light,
+  color: active ? theme.palette.primary.contrastText : current ? theme.palette.primary.main : theme.palette.grey[500],
   fontWeight: 500,
 }));
 

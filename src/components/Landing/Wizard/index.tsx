@@ -31,10 +31,16 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
   };
 
   return (
-    <Stack width='100%' height='100%' alignItems='center' p={5}>
+    <Stack
+      width='100%'
+      height='100%'
+      alignItems='center'
+      py={5}
+      style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflow: 'hidden' }}
+    >
       <StepWrapper activeStep={activeStep} />
 
-      {getSubChildWizard()}
+      <div style={{ display: 'flex', width: '100%', flex: '2', overflow: 'auto' }}>{getSubChildWizard()}</div>
     </Stack>
   );
 };

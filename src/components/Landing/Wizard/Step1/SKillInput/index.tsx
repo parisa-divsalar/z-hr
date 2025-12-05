@@ -138,15 +138,16 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
 
   return (
     <MainContainer>
-      <Typography variant='h5' color='text.primary' fontWeight='600'>
+      <Typography variant='h5' color='text.primary' fontWeight='584'>
         Very good Ayla 😊{' '}
       </Typography>
-      <Typography variant='h5' color='text.primary' fontWeight='600'>
+      <Typography variant='h5' color='text.primary' fontWeight='584'>
         You should answer a few questions about your resume.
       </Typography>
 
-      <Typography variant='h5' color='text.primary' fontWeight='600' mt={6}>
-        1. Your visa status?{' '}
+      <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
+        <span style={{ fontWeight: 'normal' }}> 1. </span>
+        Your visa status?
       </Typography>
 
       <InputContainer direction='row' highlight={visaStatus !== ''}>
@@ -157,11 +158,12 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         />
       </InputContainer>
 
-      <Typography variant='h5' color='text.primary' fontWeight='600' mt={6}>
-        2. Best way for employers to contact you?{' '}
+      <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
+        <span style={{ fontWeight: 'normal' }}> 1. </span>
+        Best way for employers to contact you?
       </Typography>
 
-      <Stack mt={1} direction='row' alignItems='center' gap={2} width='100%' maxWidth='588px'>
+      <Stack mt={1} direction='row' alignItems='center' gap={1} width='100%' maxWidth='458px'>
         <InputContainer direction='row' highlight={contactInput.trim() !== ''} grow noMarginTop>
           <InputContent
             placeholder='Type your answer...'
@@ -180,14 +182,14 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
       </Stack>
 
       {contactMethods.length > 0 && (
-        <ContactListContainer>
+        <ContactListContainer pt={2} style={{ maxWidth: '458px' }}>
           {contactMethods.map((method, index) => (
-            <ContactRow key={`${method}-${index}`}>
+            <ContactRow key={`${method}-${index}`} maxWidth='458px'>
               <ContactMethodText variant='body2' color='text.primary'>
                 {method}
               </ContactMethodText>
 
-              <Stack direction='row' spacing={1}>
+              <Stack direction='row' spacing={2}>
                 <ContactIconButton
                   aria-label='Edit contact method'
                   onClick={() => handleEditContact(index)}
@@ -207,7 +209,19 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
           ))}
         </ContactListContainer>
       )}
-      <BottomActionsStack mt={1} direction='row' alignItems='stretch' gap={2} width='100%' maxWidth='588px'>
+      <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
+        <span style={{ fontWeight: 'normal' }}> 3. </span>
+        Your language skills?
+      </Typography>
+
+      <BottomActionsStack
+        mt={1}
+        direction='row'
+        alignItems='stretch'
+        gap={1}
+        width='100%'
+        style={{ maxWidth: '458px' }}
+      >
         <MuiSelectOptions
           placeholder='Language'
           value={selectedLanguage}
@@ -222,6 +236,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
           onChange={(value) => setSelectedLevel(value as string)}
         />
         <AddSkillIconButton
+          style={{ margin: 0 }}
           aria-label={editingSkillIndex !== null ? 'Save skill entry' : 'Add skill entry'}
           onClick={handleAddSkill}
           disabled={isAddSkillDisabled}
