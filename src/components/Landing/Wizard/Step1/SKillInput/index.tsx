@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 
 import { IconButton, Stack, Typography } from '@mui/material';
 
@@ -12,7 +12,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
 
 import {
-  AddContactIconButton,
+  AddSkillIconButton,
   BottomActionsStack,
   ContactIconButton,
   ContactListContainer,
@@ -21,6 +21,10 @@ import {
   InputContainer,
   InputContent,
   MainContainer,
+  SkillIconButton,
+  SkillListContainer,
+  SkillRow,
+  SkillText,
 } from './styled';
 
 interface SKillInputProps {
@@ -40,15 +44,26 @@ const levelOptions: SelectOption[] = [
   { value: 'd', label: 'D' },
 ];
 
+interface SkillEntry {
+  language: string;
+  level: string;
+}
+
 const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
   const [visaStatus, setVisaStatus] = useState('');
   const [contactInput, setContactInput] = useState('');
   const [contactMethods, setContactMethods] = useState<string[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [preferredContactMethod, setPreferredContactMethod] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [selectedLevel, setSelectedLevel] = useState<string>('');
+  const [skillEntries, setSkillEntries] = useState<SkillEntry[]>([]);
+  const [editingSkillIndex, setEditingSkillIndex] = useState<number | null>(null);
 
-  const canProceed = visaStatus.trim() !== '' && contactMethods.length > 0 && preferredContactMethod.trim() !== '';
+  const canProceed =
+    visaStatus.trim() !== '' && contactMethods.length > 0 && skillEntries.length > 0;
+  const hasLanguageSelection = selectedLanguage.trim() !== '' && selectedLevel.trim() !== '';
   const isAddDisabled = contactInput.trim() === '' || (contactMethods.length >= 2 && editingIndex === null);
+  const isAddSkillDisabled = !hasLanguageSelection;
 
   const handleAddContact = () => {
     const trimmedValue = contactInput.trim();
@@ -82,16 +97,45 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
     }
   };
 
-  useEffect(() => {
-    if (preferredContactMethod && !contactMethods.includes(preferredContactMethod)) {
-      setPreferredContactMethod('');
+  const handleAddSkill = () => {
+    if (!hasLanguageSelection) {
+      return;
     }
-  }, [contactMethods, preferredContactMethod]);
 
-  const contactMethodOptions = useMemo(
-    () => contactMethods.map((method) => ({ value: method, label: method })),
-    [contactMethods],
-  );
+    const newEntry: SkillEntry = {
+      language: selectedLanguage,
+      level: selectedLevel,
+    };
+
+    setSkillEntries((previousEntries) =>
+      editingSkillIndex !== null
+        ? previousEntries.map((entry, index) => (index === editingSkillIndex ? newEntry : entry))
+        : [...previousEntries, newEntry],
+    );
+    setSelectedLanguage('');
+    setSelectedLevel('');
+    setEditingSkillIndex(null);
+  };
+
+  const handleEditSkill = (index: number) => {
+    const entry = skillEntries[index];
+    if (!entry) {
+      return;
+    }
+
+    setSelectedLanguage(entry.language);
+    setSelectedLevel(entry.level);
+    setEditingSkillIndex(index);
+  };
+
+  const handleDeleteSkill = (index: number) => {
+    setSkillEntries((previousEntries) => previousEntries.filter((_, idx) => idx !== index));
+    if (editingSkillIndex !== null) {
+      setEditingSkillIndex(null);
+      setSelectedLanguage('');
+      setSelectedLevel('');
+    }
+  };
 
   return (
     <MainContainer>
@@ -167,25 +211,52 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
       <BottomActionsStack mt={1} direction='row' alignItems='stretch' gap={2} width='100%' maxWidth='588px'>
         <MuiSelectOptions
           placeholder='Language'
-          value={preferredContactMethod}
+          value={selectedLanguage}
           options={languageOptions}
-          onChange={(value) => setPreferredContactMethod(value as string)}
+          onChange={(value) => setSelectedLanguage(value as string)}
           fullWidth
         />
         <MuiSelectOptions
           placeholder='Level'
-          value={preferredContactMethod}
+          value={selectedLevel}
           options={levelOptions}
-          onChange={(value) => setPreferredContactMethod(value as string)}
+          onChange={(value) => setSelectedLevel(value as string)}
         />
-        <AddContactIconButton
-          aria-label={editingIndex !== null ? 'Save contact method' : 'Add contact method'}
-          onClick={handleAddContact}
-          disabled={isAddDisabled}
+        <AddSkillIconButton
+          aria-label={editingSkillIndex !== null ? 'Save skill entry' : 'Add skill entry'}
+          onClick={handleAddSkill}
+          disabled={isAddSkillDisabled}
         >
           <PropertyIcon />
-        </AddContactIconButton>
+        </AddSkillIconButton>
       </BottomActionsStack>
+      {skillEntries.length > 0 && (
+        <SkillListContainer>
+          {skillEntries.map((entry, index) => (
+            <SkillRow key={`${entry.language}-${entry.level}-${index}`}>
+              <SkillText variant='body2' color='text.primary'>
+                {entry.language} - {entry.level}
+              </SkillText>
+              <Stack direction='row' spacing={1}>
+                <SkillIconButton
+                  aria-label='Edit skill entry'
+                  onClick={() => handleEditSkill(index)}
+                  size='small'
+                >
+                  <EditIcon fontSize='small' />
+                </SkillIconButton>
+                <SkillIconButton
+                  aria-label='Delete skill entry'
+                  onClick={() => handleDeleteSkill(index)}
+                  size='small'
+                >
+                  <DeleteOutlineIcon fontSize='small' />
+                </SkillIconButton>
+              </Stack>
+            </SkillRow>
+          ))}
+        </SkillListContainer>
+      )}
       <Stack mt={4} mb={6} direction='row' gap={3}>
         <MuiButton
           color='secondary'

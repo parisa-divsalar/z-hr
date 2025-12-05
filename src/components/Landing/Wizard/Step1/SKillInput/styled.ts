@@ -62,36 +62,52 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   },
 }));
 
-export const ContactListContainer = styled(Stack)(({ theme }) => ({
+const listContainerStyles = ({ theme }: { theme: any }) => ({
   width: '100%',
   maxWidth: '588px',
   marginTop: '10px',
   marginBottom: '10px',
   gap: '0.75rem',
   borderTop: `1px solid ${theme.palette.grey[100]}`,
-}));
+});
 
-export const ContactRow = styled(Stack)(() => ({
+const listRowStyles = () => ({
   width: '100%',
   padding: '0.2rem 1rem',
   justifyContent: 'space-between',
   alignItems: 'center',
   flexDirection: 'row',
   gap: '0.2rem',
-}));
+});
 
-export const ContactMethodText = styled(Typography)(() => ({
+const listTextStyles = () => ({
   flex: 1,
   wordBreak: 'break-word',
-}));
+});
 
-export const ContactIconButton = styled(IconButton)(() => ({
+const iconButtonStyles = () => ({
   padding: 0.5,
-}));
+});
 
-export const AddContactIconButton = styled(IconButton)(() => ({
+export const ContactListContainer = styled(Stack)(listContainerStyles);
+
+export const ContactRow = styled(Stack)(listRowStyles);
+
+export const ContactMethodText = styled(Typography)(listTextStyles);
+
+export const ContactIconButton = styled(IconButton)(iconButtonStyles);
+
+export const AddSkillIconButton = styled(IconButton)(() => ({
   minWidth: 0,
 }));
+
+export const SkillListContainer = styled(Stack)(listContainerStyles);
+
+export const SkillRow = styled(Stack)(listRowStyles);
+
+export const SkillText = styled(Typography)(listTextStyles);
+
+export const SkillIconButton = styled(IconButton)(iconButtonStyles);
 
 export const BottomActionsStack = styled(Stack)(() => ({
   '& > *': {
