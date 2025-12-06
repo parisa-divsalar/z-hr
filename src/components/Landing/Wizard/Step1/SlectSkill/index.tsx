@@ -1,18 +1,18 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import { StageWizard } from '@/components/Landing/type';
-import { InputContent } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
-import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 
 import { AllSkill } from './data';
 import { ContainerSkill, SkillContainer } from './styled';
 import { TSkill } from './type';
+import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 
 interface SelectSkillProps {
   setStage: (stage: StageWizard) => void;
@@ -20,6 +20,7 @@ interface SelectSkillProps {
 
 const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const { setStage } = props;
+  const theme = useTheme();
   const [skills, setSkills] = useState<TSkill[]>(AllSkill);
   const [customSkill, setCustomSkill] = useState<string>('');
 
@@ -28,26 +29,23 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
-      <Typography variant='h6' color='text.primary' fontWeight='500' mt={5}>
-        1.
+      <Typography variant='h6' color='text.primary' fontWeight='500' mt={5}></Typography>
+      <Typography variant='h5' color='text.primary' fontWeight='584'>
+        4. Briefly tell us about your background{' '}
       </Typography>
-      <Typography variant='h5' color='text.primary' fontWeight='600'>
-        What is your main skill?
-      </Typography>
+      <Stack direction='row' alignItems='center' gap={1} mt={2}>
+        <MuiChips
+          color='warning.main'
+          sx={{
+            border: `1px solid ${theme.palette.warning.main}`,
 
-      <SkillContainer direction='row'>
-        {skills.map((skill: TSkill) => (
-          <MuiChips key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
-        ))}
-      </SkillContainer>
-
-      <OrDivider>
-        <DividerLine />
-        <Typography variant='body2' color='text.primary' px={2}>
-          Or
-        </Typography>
-        <DividerLine />
-      </OrDivider>
+            bgcolor: 'warning.light',
+            Radius: '8px',
+            height: '26px',
+          }}
+          label='ATS Friendly'
+        />
+      </Stack>
 
       <ContainerSkill direction='row' active={!!customSkill}>
         <InputContent
@@ -56,6 +54,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setCustomSkill(event.target.value)}
         />
       </ContainerSkill>
+
+      <SkillContainer direction='row'>
+        {skills.map((skill: TSkill) => (
+          <MuiChips key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
+        ))}
+      </SkillContainer>
 
       <Stack mt={4} mb={6} direction='row' gap={3}>
         <MuiButton
