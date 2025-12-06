@@ -4,6 +4,12 @@ import { styled } from '@mui/material/styles';
 export const MainNavbarContainer = styled(Stack)(({ theme }) => ({
   width: '100%',
   borderBottom: `1px solid ${theme.palette.divider}`,
+  position: 'sticky',
+  top: 0,
+  zIndex: theme.zIndex.appBar,
+  backgroundColor: theme.palette.background.paper,
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
 }));
 
 export const MainNavbarContent = styled(Stack)(() => ({

@@ -114,7 +114,9 @@ const MuiSelectOptions = forwardRef<HTMLInputElement, MuiSelectOptionsProps>(
     const providedMenuPropsWithPaper = providedMenuProps as MenuProps | undefined;
     const providedPaperProps = providedMenuPropsWithPaper?.PaperProps ?? {};
     const providedPaperSx = (providedPaperProps as any).sx;
-    const mergedPaperSx = providedPaperSx ? ([defaultMenuPaperSx, providedPaperSx] as MenuPaperProps['sx']) : defaultMenuPaperSx;
+    const mergedPaperSx = providedPaperSx
+      ? ([defaultMenuPaperSx, providedPaperSx] as MenuPaperProps['sx'])
+      : defaultMenuPaperSx;
     const menuPropsValue = providedMenuPropsWithPaper
       ? ({
           ...providedMenuPropsWithPaper,
@@ -122,7 +124,7 @@ const MuiSelectOptions = forwardRef<HTMLInputElement, MuiSelectOptionsProps>(
             ...providedPaperProps,
             sx: mergedPaperSx,
           },
-        }) as SelectProps['MenuProps']
+        } as SelectProps['MenuProps'])
       : (defaultMenuProps as SelectProps['MenuProps']);
 
     const handleChange: SelectProps['onChange'] = (event, child) => {
@@ -189,8 +191,12 @@ const MuiSelectOptions = forwardRef<HTMLInputElement, MuiSelectOptionsProps>(
         </FormControl>
         {error && helperText && (
           <Stack direction='row' gap={1} alignItems='center'>
-            <InfoIcon color={disabled ? '#D8D8DA' : error ? '#EC2C27' : '#66666E'} />
-            <Typography variant='caption' color={disabled ? 'grey.100' : error ? 'error.main' : 'text.secondary'}>
+            <InfoIcon color={disabled ? '#D8D8DAD8DA' : error ? '#EC2C27' : '#66666E'} />
+            <Typography
+              variant='subtitle1'
+              fontWeight='400'
+              color={disabled ? 'grey.100' : error ? 'error.main' : 'text.secondary'}
+            >
               {helperText}
             </Typography>
           </Stack>

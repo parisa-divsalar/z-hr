@@ -12,8 +12,10 @@ export const SidebarContainer = styled(Box)(() => ({
   justifyContent: 'space-between',
   alignSelf: 'flex-start',
   position: 'sticky',
-  top: 'var(--navbar-height)',
+  top: 'calc(var(--navbar-height) + 1rem)',
   height: '85vh',
+  maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
+  zIndex: 2,
   padding: '0 0 1rem',
 
   '&::before': {

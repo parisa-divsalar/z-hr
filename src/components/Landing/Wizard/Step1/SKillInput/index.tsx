@@ -195,7 +195,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
                 {method}
               </ContactMethodText>
 
-              <Stack direction='row' spacing={2}>
+              <Stack direction='row' gap={1}>
                 <ContactIconButton
                   aria-label='Edit contact method'
                   onClick={() => handleEditContact(index)}

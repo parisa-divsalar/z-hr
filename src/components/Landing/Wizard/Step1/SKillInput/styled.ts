@@ -76,7 +76,6 @@ export const ContactListContainer = styled(Stack)(({ theme }) => getListContaine
 
 export const ContactRow = styled(Stack)`
   width: 100%;
-  padding: 0.2rem 1rem;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
