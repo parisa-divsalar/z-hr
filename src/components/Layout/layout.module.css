@@ -56,7 +56,7 @@
     margin: 0 auto;
     display: flex;
     gap: 1.5rem;
-    align-items: stretch;
+    align-items: flex-start;
     min-height: calc(100vh - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding));
     box-sizing: border-box;
 }

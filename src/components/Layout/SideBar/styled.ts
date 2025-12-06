@@ -3,22 +3,25 @@ import { styled } from '@mui/material/styles';
 
 export const SidebarContainer = styled(Box)(() => ({
   width: 282,
-  minHeight: ' max(var(--app-height))',
-  height: ' fix',
   backgroundColor: '#25252a',
   borderRadius: '0.5rem',
   display: 'flex',
   flexDirection: 'column',
-  overflow: 'hidden',
+  overflowX: 'hidden',
+  overflowY: 'auto',
   justifyContent: 'space-between',
-  position: 'relative', // مهم
+  alignSelf: 'flex-start',
+  position: 'sticky',
+  top: 'var(--navbar-height)',
+  height: '85vh',
+  padding: '0 0 1rem',
 
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 150, // می‌تونی مقدارشو تغییر بدی
+    width: 150,
     height: 150,
     pointerEvents: 'none',
     background: 'radial-gradient(circle at top right, rgba(255,255,255,0.25), rgba(255,255,255,0) 70%)',
