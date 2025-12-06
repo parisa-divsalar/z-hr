@@ -40,7 +40,7 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
     >
       <StepWrapper activeStep={activeStep} />
 
-      <div style={{ display: 'flex', width: '100%', flex: '2', overflow: 'auto' }}>{getSubChildWizard()}</div>
+      {getSubChildWizard()}
     </Stack>
   );
 };

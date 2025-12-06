@@ -4,6 +4,8 @@ import { styled } from '@mui/material/styles';
 export const MainFooterContainer = styled(Stack)(({ theme }) => ({
   width: '100%',
   borderTop: `1px solid ${theme.palette.divider}`,
+  height: '73px',
+  justifyContent: 'center',
 }));
 
 export const MainFooterContent = styled(Stack)(() => ({

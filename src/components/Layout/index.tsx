@@ -14,13 +14,17 @@ import AddToHomeScreen from '@/components/Other/AddToHomeScreen';
 const Layout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
+  const isHome = pathname === '/';
+
   return (
     <Stack className={classes.mainLayout}>
       <Stack className={classes.layoutContainer} bgcolor='background.default'>
         <Navbar />
-        <Stack direction='row' className={classes.childrenContainer} py={pathname === '/' ? 0 : 5}>
-          <SideBar />
-          <Stack className={classes.children}>{children}</Stack>
+        <Stack className={`${classes.childrenContainer} ${isHome ? classes.homeChildren : ''}`}>
+          <Stack direction='row' className={classes.childrenInner}>
+            <SideBar />
+            <Stack className={classes.children}>{children}</Stack>
+          </Stack>
         </Stack>
         <Footer />
       </Stack>

@@ -3,7 +3,8 @@ import { styled } from '@mui/material/styles';
 
 export const SidebarContainer = styled(Box)(() => ({
   width: 282,
-  height: '100%',
+  minHeight: ' max(var(--app-height))',
+  height: ' fix',
   backgroundColor: '#25252a',
   borderRadius: '0.5rem',
   display: 'flex',

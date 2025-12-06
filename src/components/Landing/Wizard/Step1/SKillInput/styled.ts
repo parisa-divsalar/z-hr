@@ -100,11 +100,9 @@ export const SkillListContainer = styled(Stack)(({ theme }) => getListContainerS
 
 export const SkillRow = styled(Stack)`
   width: 100%;
-  padding: 0.2rem 1rem;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  gap: 0.2rem;
 `;
 
 export const SkillText = styled(Typography)`

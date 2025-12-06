@@ -185,7 +185,13 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         <ContactListContainer pt={2} style={{ maxWidth: '458px' }}>
           {contactMethods.map((method, index) => (
             <ContactRow key={`${method}-${index}`} maxWidth='458px'>
-              <ContactMethodText variant='body2' color='text.primary'>
+              <ContactMethodText
+                variant='body2'
+                fontWeight='492
+
+'
+                color='text.primary'
+              >
                 {method}
               </ContactMethodText>
 
@@ -245,13 +251,19 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         </AddSkillIconButton>
       </BottomActionsStack>
       {skillEntries.length > 0 && (
-        <SkillListContainer>
+        <SkillListContainer pt={2} style={{ maxWidth: '458px' }}>
           {skillEntries.map((entry, index) => (
             <SkillRow key={`${entry.language}-${entry.level}-${index}`}>
-              <SkillText variant='body2' color='text.primary'>
+              <SkillText
+                fontWeight='492
+
+'
+                variant='body2'
+                color='text.primary'
+              >
                 {entry.language} - {entry.level}
               </SkillText>
-              <Stack direction='row' spacing={1}>
+              <Stack direction='row' gap={1}>
                 <SkillIconButton aria-label='Edit skill entry' onClick={() => handleEditSkill(index)} size='small'>
                   <EditIcon fontSize='small' />
                 </SkillIconButton>
