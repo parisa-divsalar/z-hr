@@ -47,13 +47,15 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   fontSize: '1rem',
   outline: 'none',
   fontWeight: '492',
-  overflow: 'hidden',
+  overflowY: 'auto',
   color: theme.palette.text.primary,
-  resize: 'none',
+  resize: 'vertical',
   letterSpacing: '0',
   lineHeight: '1.5rem',
+  minHeight: '96px',
+  maxHeight: '220px',
+  padding: '0.75rem 0.75rem',
 
-  height: 'auto',
   fieldSizing: 'content',
   '&::placeholder': {
     color: theme.palette.grey[400],

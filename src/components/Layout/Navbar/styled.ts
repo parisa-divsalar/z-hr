@@ -6,7 +6,8 @@ export const MainNavbarContainer = styled(Stack)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
   position: 'sticky',
   top: 0,
-  zIndex: theme.zIndex.appBar,
+  // Raise z-index above other overlays to keep the fixed navbar always visible.
+  zIndex: Math.max(theme.zIndex.appBar, theme.zIndex.drawer) + 1,
   backdropFilter: 'blur(12px)',
   WebkitBackdropFilter: 'blur(12px)',
 }));
