@@ -63,7 +63,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           variant='outlined'
           size='large'
           startIcon={<ArrowBackIcon />}
-          onClick={() => setStage('RESULT')}
+          onClick={() => setStage('SKILL_INPUT')}
         >
           Back
         </MuiButton>
@@ -72,7 +72,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           color='secondary'
           endIcon={<ArrowRightIcon />}
           size='large'
-          onClick={() => setStage('SKILL_INPUT')}
+          onClick={() => setStage('QUESTIONS')}
           disabled={customSkill === ''}
         >
           Next

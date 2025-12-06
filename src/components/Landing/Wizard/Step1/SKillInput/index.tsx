@@ -59,10 +59,12 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
   const [skillEntries, setSkillEntries] = useState<SkillEntry[]>([]);
   const [editingSkillIndex, setEditingSkillIndex] = useState<number | null>(null);
 
-  const canProceed = visaStatus.trim() !== '' && contactMethods.length > 0 && skillEntries.length > 0;
   const normalizedSelectedLanguage = selectedLanguage.trim();
   const normalizedSelectedLevel = selectedLevel.trim().toUpperCase();
   const hasLanguageSelection = normalizedSelectedLanguage !== '' && normalizedSelectedLevel !== '';
+  const hasContactInfo = contactMethods.length > 0 || contactInput.trim() !== '';
+  const hasLanguageData = skillEntries.length > 0 || hasLanguageSelection;
+  const canProceed = visaStatus.trim() !== '' && hasContactInfo && hasLanguageData;
   const isDuplicateSkillEntry = skillEntries.some(
     (entry, index) =>
       entry.language === normalizedSelectedLanguage &&
@@ -142,6 +144,18 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
       setSelectedLanguage('');
       setSelectedLevel('');
     }
+  };
+
+  const handleNext = () => {
+    if (contactInput.trim() !== '') {
+      handleAddContact();
+    }
+
+    if (skillEntries.length === 0 && hasLanguageSelection) {
+      handleAddSkill();
+    }
+
+    setStage('SELECT_SKILL');
   };
 
   return (
@@ -298,7 +312,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
           color='secondary'
           endIcon={<ArrowRightIcon />}
           size='large'
-          onClick={() => setStage('QUESTIONS')}
+          onClick={handleNext}
           disabled={!canProceed}
         >
           Next

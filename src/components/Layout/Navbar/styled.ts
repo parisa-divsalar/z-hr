@@ -7,7 +7,6 @@ export const MainNavbarContainer = styled(Stack)(({ theme }) => ({
   position: 'sticky',
   top: 0,
   zIndex: theme.zIndex.appBar,
-  backgroundColor: theme.palette.background.paper,
   backdropFilter: 'blur(12px)',
   WebkitBackdropFilter: 'blur(12px)',
 }));

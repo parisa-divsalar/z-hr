@@ -19,12 +19,15 @@ const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
 
   return (
     <Container>
-      {steps.map((step, index) => (
-        <React.Fragment key={step.id}>
-          <StepItem key={step.id} active={activeStep === step.id}>
-            <StepCircle active={activeStep >= step.id} current={activeStep + 1 === index + 1}>
-              {activeStep >= step.id ? <CheckRoundedIcon /> : step.id}
-            </StepCircle>
+      {steps.map((step, index) => {
+        const isCompleted = activeStep > step.id;
+        const isCurrent = activeStep === step.id;
+        return (
+          <React.Fragment key={step.id}>
+            <StepItem key={step.id} active={isCurrent}>
+              <StepCircle active={isCompleted} current={isCurrent}>
+                {isCompleted ? <CheckRoundedIcon /> : step.id}
+              </StepCircle>
 
             <Box>
               <Typography
@@ -32,7 +35,7 @@ const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
                 sx={{
                   fontWeight: 492,
                   color: (theme) => {
-                    if (activeStep >= step.id) return theme.palette.primary.main;
+                    if (isCompleted || isCurrent) return theme.palette.primary.main;
                     if (activeStep + 1 === index + 1) return theme.palette.grey[700];
                     return theme.palette.grey[300];
                   },
@@ -49,7 +52,8 @@ const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
 
           {index < steps.length - 1 && <Divider active={activeStep > step.id} />}
         </React.Fragment>
-      ))}
+      );
+    })}
     </Container>
   );
 };
