@@ -18,108 +18,116 @@ import { useAuthStore } from '@/store/auth';
 import { useThemeStore } from '@/store/common';
 
 const Navbar = () => {
-  const { mode, setMode } = useThemeStore();
-  const { accessToken } = useAuthStore();
-  const pathname = usePathname();
-  const router = useRouter();
+    const { mode, setMode } = useThemeStore();
+    const { accessToken } = useAuthStore();
+    const pathname = usePathname();
+    const router = useRouter();
 
-  const isHomeActive = pathname === '/' || pathname === '/(public)';
+    const isHomeActive = pathname === '/' || pathname === '/(public)';
 
-  if (!VisibilityLayout.includes(pathname)) return null;
+    if (!VisibilityLayout.includes(pathname)) return null;
 
-  return (
-    <MainNavbarContainer>
-      <MainNavbarContent direction='row'>
-        <Stack direction='row' alignItems='center' gap={2}>
-          <AppImage src={logo} width={24} height={34} />
+    return (
+        <MainNavbarContainer>
+            <MainNavbarContent direction='row'>
+                <Stack direction='row' alignItems='center' gap={2}>
+                    <AppImage src={logo} width={24} height={34} />
 
-          <Typography variant='h4' fontWeight='700' color='text.primary'>
-            Z-CV
-          </Typography>
+                    <Typography variant='h4' fontWeight='700' color='text.primary'>
+                        Z-CV
+                    </Typography>
 
-          <Typography variant='subtitle2' color='text.secondary'>
-            AI Resume Maker
-          </Typography>
-        </Stack>
+                    <Typography variant='subtitle2' color='text.secondary'>
+                        AI Resume Maker
+                    </Typography>
+                </Stack>
 
-        <Stack direction='row' gap={2}>
-          <Link href='/' style={{ textDecoration: 'none' }}>
-            <Typography
-              variant='subtitle1'
-              fontWeight={isHomeActive ? '600' : '400'}
-              color={isHomeActive ? 'text.primary' : 'grey.500'}
-            >
-              Home
-            </Typography>
-          </Link>
+                <Stack direction='row' gap={2}>
+                    <Link href='/' style={{ textDecoration: 'none' }}>
+                        <Typography
+                            variant='subtitle1'
+                            fontWeight={isHomeActive ? '600' : '400'}
+                            color={isHomeActive ? 'text.primary' : 'grey.500'}
+                        >
+                            Home
+                        </Typography>
+                    </Link>
 
-          <Typography variant='subtitle1' color='grey.500'>
-            About Us
-          </Typography>
+                    <Typography variant='subtitle1' color='grey.500'>
+                        About Us
+                    </Typography>
 
-          <Typography variant='subtitle1' color='grey.500'>
-            Our Plans
-          </Typography>
+                    <Typography variant='subtitle1' color='grey.500'>
+                        Our Plans
+                    </Typography>
 
-          <Typography variant='subtitle1' color='grey.500'>
-            Contact Us
-          </Typography>
-        </Stack>
+                    <Typography variant='subtitle1' color='grey.500'>
+                        Contact Us
+                    </Typography>
+                </Stack>
 
-        {accessToken ? (
-          <Stack direction='row' gap={3}>
-            <Stack direction='row' gap={0.5} alignItems='center'>
-              <CoinIcon />
-              <Typography color='secondary.main' variant='subtitle2'>
-                85 Credit
-              </Typography>
-            </Stack>
-            <MuiButton color='secondary'>Create New</MuiButton>
+                {accessToken ? (
+                    <Stack direction='row' gap={3}>
+                        <Stack direction='row' gap={0.5} alignItems='center'>
+                            <CoinIcon />
+                            <Typography color='secondary.main' variant='subtitle2'>
+                                85 Credit
+                            </Typography>
+                        </Stack>
+                        <MuiButton color='secondary'>Create New</MuiButton>
 
-            <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
+                        <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
 
-            <Stack className={classes.themeContainer}>
-              <NotifyIcon />
-            </Stack>
+                        <Stack className={classes.themeContainer}>
+                            <NotifyIcon />
+                        </Stack>
 
-            <Stack className={classes.themeContainer}>
-              <IconButton disabled color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
-                {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
-              </IconButton>
-            </Stack>
+                        <Stack className={classes.themeContainer}>
+                            <IconButton
+                                disabled
+                                color='inherit'
+                                onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+                            >
+                                {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                            </IconButton>
+                        </Stack>
 
-            <MuiAvatar size='medium' color='primary'>
-              <Typography variant='subtitle2' fontWeight='bold'>
-                ZA
-              </Typography>
-            </MuiAvatar>
-          </Stack>
-        ) : (
-          <Stack direction='row' gap={3}>
-            <MuiButton color='secondary' variant='outlined' onClick={() => router.push(PublicRoutes.login)}>
-              Login
-            </MuiButton>
+                        <MuiAvatar size='medium' color='primary'>
+                            <Typography variant='subtitle2' fontWeight='bold'>
+                                ZA
+                            </Typography>
+                        </MuiAvatar>
+                    </Stack>
+                ) : (
+                    <Stack direction='row' gap={3}>
+                        <MuiButton color='secondary' variant='outlined' onClick={() => router.push(PublicRoutes.login)}>
+                            Login
+                        </MuiButton>
 
-            <MuiButton
-              color='secondary'
-              startIcon={<UserPlusIcon />}
-              onClick={() => router.push(PublicRoutes.register)}
-            >
-              Sign Up
-            </MuiButton>
+                        <MuiButton
+                            color='secondary'
+                            startIcon={<UserPlusIcon />}
+                            onClick={() => router.push(PublicRoutes.register)}
+                        >
+                            Sign Up
+                        </MuiButton>
 
-            <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
+                        <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
 
-            <Stack className={classes.themeContainer}>
-              <IconButton disabled color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
-                {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
-              </IconButton>
-            </Stack>
-          </Stack>
-        )}
-      </MainNavbarContent>
-    </MainNavbarContainer>
-  );
+                        <Stack className={classes.themeContainer}>
+                            <IconButton
+                                disabled
+                                color='inherit'
+                                onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+                            >
+                                {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                            </IconButton>
+                        </Stack>
+                    </Stack>
+                )}
+            </MainNavbarContent>
+        </MainNavbarContainer>
+    );
 };
 
 export default Navbar;
