@@ -38,10 +38,10 @@ const languageOptions: SelectOption[] = [
 ];
 
 const levelOptions: SelectOption[] = [
-  { value: 'a', label: 'A' },
-  { value: 'b', label: 'B' },
-  { value: 'c', label: 'C' },
-  { value: 'd', label: 'D' },
+  { value: 'A', label: 'A' },
+  { value: 'B', label: 'B' },
+  { value: 'C', label: 'C' },
+  { value: 'D', label: 'D' },
 ];
 
 interface SkillEntry {
@@ -60,9 +60,17 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
   const [editingSkillIndex, setEditingSkillIndex] = useState<number | null>(null);
 
   const canProceed = visaStatus.trim() !== '' && contactMethods.length > 0 && skillEntries.length > 0;
-  const hasLanguageSelection = selectedLanguage.trim() !== '' && selectedLevel.trim() !== '';
+  const normalizedSelectedLanguage = selectedLanguage.trim();
+  const normalizedSelectedLevel = selectedLevel.trim().toUpperCase();
+  const hasLanguageSelection = normalizedSelectedLanguage !== '' && normalizedSelectedLevel !== '';
+  const isDuplicateSkillEntry = skillEntries.some(
+    (entry, index) =>
+      entry.language === normalizedSelectedLanguage &&
+      entry.level === normalizedSelectedLevel &&
+      index !== editingSkillIndex,
+  );
   const isAddDisabled = contactInput.trim() === '' || (contactMethods.length >= 2 && editingIndex === null);
-  const isAddSkillDisabled = !hasLanguageSelection;
+  const isAddSkillDisabled = !hasLanguageSelection || isDuplicateSkillEntry;
 
   const handleAddContact = () => {
     const trimmedValue = contactInput.trim();
@@ -97,13 +105,13 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
   };
 
   const handleAddSkill = () => {
-    if (!hasLanguageSelection) {
+    if (!hasLanguageSelection || isDuplicateSkillEntry) {
       return;
     }
 
     const newEntry: SkillEntry = {
-      language: selectedLanguage,
-      level: selectedLevel,
+      language: normalizedSelectedLanguage,
+      level: normalizedSelectedLevel,
     };
 
     setSkillEntries((previousEntries) =>
@@ -123,7 +131,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
     }
 
     setSelectedLanguage(entry.language);
-    setSelectedLevel(entry.level);
+    setSelectedLevel(entry.level.toUpperCase());
     setEditingSkillIndex(index);
   };
 
