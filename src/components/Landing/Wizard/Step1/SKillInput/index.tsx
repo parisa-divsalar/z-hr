@@ -172,20 +172,22 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         Your visa status?
       </Typography>
 
-      <InputContainer direction='row' highlight={visaStatus !== ''}>
-        <InputContent
-          placeholder='Type your answer...'
-          value={visaStatus}
-          onChange={(event: any) => setVisaStatus(event.target.value)}
+      <Stack mt={2} direction='row' style={{ width: '100%', maxWidth: '426px' }}>
+        <MuiSelectOptions
+          placeholder='Language'
+          value={selectedLanguage}
+          options={languageOptions}
+          onChange={(value) => setSelectedLanguage(value as string)}
+          fullWidth
         />
-      </InputContainer>
+      </Stack>
 
       <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
-        <span style={{ fontWeight: 'normal' }}> 1. </span>
+        <span style={{ fontWeight: 'normal' }}> 2. </span>
         Best way for employers to contact you?
       </Typography>
 
-      <Stack mt={1} direction='row' alignItems='center' gap={1} width='100%' maxWidth='458px'>
+      <Stack mt={2} direction='row' alignItems='center' gap={1} width='100%' maxWidth='426px'>
         <InputContainer direction='row' highlight={contactInput.trim() !== ''} grow noMarginTop>
           <InputContent
             placeholder='Type your answer...'
@@ -204,7 +206,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
       </Stack>
 
       {contactMethods.length > 0 && (
-        <ContactListContainer pt={2} style={{ maxWidth: '458px' }}>
+        <ContactListContainer pt={2} style={{ maxWidth: '426px' }}>
           {contactMethods.map((method, index) => (
             <ContactRow key={`${method}-${index}`} maxWidth='458px'>
               <ContactMethodText
@@ -243,12 +245,12 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
       </Typography>
 
       <BottomActionsStack
-        mt={1}
+        mt={2}
         direction='row'
         alignItems='stretch'
         gap={1}
         width='100%'
-        style={{ maxWidth: '458px' }}
+        style={{ maxWidth: '426px' }}
       >
         <MuiSelectOptions
           placeholder='Language'
@@ -273,7 +275,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         </AddSkillIconButton>
       </BottomActionsStack>
       {skillEntries.length > 0 && (
-        <SkillListContainer pt={2} style={{ maxWidth: '458px' }}>
+        <SkillListContainer pt={2} style={{ maxWidth: '426px' }}>
           {skillEntries.map((entry, index) => (
             <SkillRow key={`${entry.language}-${entry.level}-${index}`}>
               <SkillText

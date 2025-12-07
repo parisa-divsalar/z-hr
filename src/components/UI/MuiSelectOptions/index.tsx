@@ -134,7 +134,7 @@ const MuiSelectOptions = forwardRef<HTMLInputElement, MuiSelectOptionsProps>(
     };
 
     return (
-      <Stack gap={0.5}>
+      <Stack gap={0.5} sx={{ width: '100%' }}>
         <Typography variant='caption' color={labelColor}>
           {label}
         </Typography>

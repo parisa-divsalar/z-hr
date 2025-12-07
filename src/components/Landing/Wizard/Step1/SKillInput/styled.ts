@@ -27,8 +27,8 @@ export const InputContainer = styled(Stack, {
   border: `1px solid ${highlight ? theme.palette.primary.main : theme.palette.grey[100]}`,
   padding: '1rem',
   width: '100%',
-  maxWidth: '458px',
-  height: '52px',
+  maxWidth: '426px',
+  height: 'auto',
   marginTop: noMarginTop ? 0 : '1rem',
   display: 'flex',
   alignItems: 'center',
@@ -49,12 +49,6 @@ export const InputContent = styled('textarea')(({ theme }) => ({
   fontWeight: '492',
   overflowY: 'auto',
   color: theme.palette.text.primary,
-  resize: 'vertical',
-  letterSpacing: '0',
-  lineHeight: '1.5rem',
-  minHeight: '96px',
-  maxHeight: '220px',
-  padding: '0.75rem 0.75rem',
 
   fieldSizing: 'content',
   '&::placeholder': {
