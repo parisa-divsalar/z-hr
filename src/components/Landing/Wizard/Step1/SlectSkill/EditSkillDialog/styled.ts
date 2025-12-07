@@ -10,7 +10,8 @@ export const DialogContainer = styled(Dialog)<DialogProps>(({ theme }) => ({
     borderRadius: '1rem',
     overflow: 'hidden',
     margin: '0',
-    maxWidth: '20rem',
+    maxWidth: '306px',
+    width: '306px',
     padding: theme.spacing(1),
   },
 }));
@@ -25,8 +26,9 @@ export const StackContainer = styled(Stack)(() => ({
 export const StackContent = styled(Stack)(() => ({
   flexGrow: '1',
   width: '258px',
-  padding: '5px ',
   alignItems: 'left',
+  paddingTop: '5px',
+  paddingBottom: '5px',
   textAlign: 'left',
 }));
 
@@ -35,16 +37,17 @@ export const HeaderContainer = styled(Stack)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '0.5rem 1rem',
+  padding: '1rem 1rem',
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
 export const ActionContainer = styled(Stack)(({ theme }) => ({
   width: '100%',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '1rem',
-  padding: '1rem',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1.5),
   borderTop: `1px solid ${theme.palette.divider}`,
+  marginTop: '3px',
 }));

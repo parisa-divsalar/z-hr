@@ -1,7 +1,7 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import { Divider, IconButton, Typography } from '@mui/material';
+import { Divider, IconButton, SelectProps, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption, SelectOptionValue } from '@/components/UI/MuiSelectOptions';
@@ -13,6 +13,17 @@ const skillOptions: SelectOption[] = AllSkill.map((skill) => ({
   value: skill.id,
   label: skill.label,
 }));
+
+const selectMenuProps: SelectProps['MenuProps'] = {
+  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+  transformOrigin: { vertical: 'top', horizontal: 'left' },
+  PaperProps: {
+    sx: {
+      maxHeight: '180px',
+      overflowY: 'auto',
+    },
+  },
+};
 
 interface EditSkillDialogProps {
   open: boolean;
@@ -49,16 +60,20 @@ const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
             value={selectedSkillId}
             options={skillOptions}
             onChange={(value) => setSelectedSkillId(value)}
+            menuProps={selectMenuProps}
+            fullWidth={false}
+            sx={{ width: '258px' }}
           />
         </StackContent>
 
         <Divider />
 
-        <ActionContainer direction='row'>
+        <ActionContainer>
           <MuiButton
             fullWidth
             variant='contained'
             color='secondary'
+            sx={{ width: '258px' }}
             onClick={() => {
               const selectedOption =
                 skillOptions.find((option) => option.value === selectedSkillId) ?? skillOptions[0];
