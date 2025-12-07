@@ -65,10 +65,10 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const backgroundRef = useRef<HTMLTextAreaElement>(null);
   const customSkillRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isVoiceRecorderVisible, setIsVoiceRecorderVisible] = useState<boolean>(false);
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
-  const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
-  const [hasVoiceRecording, setHasVoiceRecording] = useState<boolean>(false);
+  const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
+  const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
+  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const onUpdateSkill = (id: string, selected: boolean) =>
@@ -107,27 +107,28 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     backgroundRef.current?.focus();
   };
 
-  // const handleClearBackground = () => {
-  //   setBackgroundText('');
-  //   backgroundRef.current?.focus();
-  // };
+  const handleClearBackground = () => {
+    setBackgroundText('');
+    backgroundRef.current?.focus();
+  };
 
   const handleShowVoiceRecorder = () => {
-    setIsVoiceRecorderVisible(true);
     setShowRecordingControls(true);
-    setHasVoiceRecording(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
     handleFocusBackground();
   };
 
-  const handleVoiceRecordingComplete = (_audioUrl: string, _audioBlob: Blob) => {
+  const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
     setShowRecordingControls(false);
-    setHasVoiceRecording(true);
+    setVoiceUrl(audioUrl);
+    setVoiceBlob(audioBlob);
   };
 
   const handleClearVoiceRecording = () => {
-    setShowRecordingControls(true);
-    setIsVoiceRecorderVisible(false);
-    setHasVoiceRecording(false);
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
   };
 
   const hasBackgroundText = backgroundText.trim() !== '';
@@ -262,21 +263,30 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             <AttachIcon />
           </ActionIconButton>
           <Stack direction='column' alignItems='center' gap={1}>
-            {recordingState !== 'recording' && (
-              <ActionIconButton
-                aria-label='Record draft action'
-                onClick={handleShowVoiceRecorder}
-                disabled={showRecordingControls && isVoiceRecorderVisible}
-              >
-                <RecordIcon />
-              </ActionIconButton>
-            )}
-            {(isVoiceRecorderVisible || hasVoiceRecording) && (
+            <ActionIconButton
+              aria-label='Record draft action'
+              onClick={handleShowVoiceRecorder}
+              disabled={recordingState === 'recording'}
+            >
+              <RecordIcon />
+            </ActionIconButton>
+            {voiceUrl && (
               <VoiceRecord
                 recordingState={recordingState}
                 setRecordingState={setRecordingState}
+                initialAudioUrl={voiceUrl}
+                initialAudioBlob={voiceBlob}
                 showRecordingControls={showRecordingControls}
+                onClearRecording={handleClearVoiceRecording}
+                stackDirection='column'
+              />
+            )}
+            {!voiceUrl && (
+              <VoiceRecord
                 onRecordingComplete={handleVoiceRecordingComplete}
+                showRecordingControls={showRecordingControls}
+                recordingState={recordingState}
+                setRecordingState={setRecordingState}
                 onClearRecording={handleClearVoiceRecording}
                 stackDirection='column'
               />

@@ -102,12 +102,22 @@ const VoiceRecord = ({
   const [recordingTime, setRecordingTime] = useState(0);
   const [isInternalUrl, setIsInternalUrl] = useState(false); // Track if URL was created internally
   const [showFilesStackPreview, setShowFilesStackPreview] = useState(false);
+  const audioUrlRef = useRef<string | null>(audioUrl);
+  const isInternalUrlRef = useRef<boolean>(isInternalUrl);
 
   useEffect(() => {
     setAudioUrl(initialAudioUrl);
     setAudioBlob(initialAudioBlob);
     setIsInternalUrl(false);
   }, [initialAudioUrl, initialAudioBlob]);
+
+  useEffect(() => {
+    audioUrlRef.current = audioUrl;
+  }, [audioUrl]);
+
+  useEffect(() => {
+    isInternalUrlRef.current = isInternalUrl;
+  }, [isInternalUrl]);
 
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [_playbackTime, setPlaybackTime] = useState(0);
@@ -142,9 +152,9 @@ const VoiceRecord = ({
       audioRef.current = null;
     }
 
-    if (audioUrl && isInternalUrl) {
+    if (audioUrlRef.current && isInternalUrlRef.current) {
       try {
-        URL.revokeObjectURL(audioUrl);
+        URL.revokeObjectURL(audioUrlRef.current);
       } catch {
         // ignore cleanup errors
         void 0;
@@ -158,7 +168,7 @@ const VoiceRecord = ({
     setAudioDuration(0);
     setWaveBarsCount(100);
     setShowFilesStackPreview(false);
-  }, [audioUrl, isInternalUrl]);
+  }, []);
 
   const startRecording = useCallback(async () => {
     try {
@@ -243,8 +253,12 @@ const VoiceRecord = ({
       timerRef.current = null;
     }
     setRecordingState('idle');
-    setShowFilesStackPreview(true);
   }, []);
+
+  const handleStopRecordingClick = useCallback(() => {
+    setShowFilesStackPreview(true);
+    stopRecording();
+  }, [stopRecording]);
 
   /** PLAYBACK: create audio element lazily and attach events */
   const playRecording = useCallback(async () => {
@@ -410,11 +424,7 @@ const VoiceRecord = ({
     }
   }, [audioUrl]);
 
-  useEffect(() => {
-    return () => {
-      cleanup();
-    };
-  }, [cleanup]);
+  useEffect(() => () => cleanup(), [cleanup]);
 
   useEffect(() => {
     if (showRecordingControls && recordingState === 'idle' && !audioUrl) {
@@ -432,7 +442,7 @@ const VoiceRecord = ({
     >
       {showRecordingControls && recordingState === 'recording' && (
         <RecordingControlsStack direction='row' alignItems='center' mt={4}>
-          <ButtonPuse onClick={stopRecording} style={{ cursor: 'pointer' }} />
+          <ButtonPuse onClick={handleStopRecordingClick} style={{ cursor: 'pointer' }} />
           <RecordingPulseButton aria-label='Stop recording'>
             <RecordingPulseDot />
           </RecordingPulseButton>
