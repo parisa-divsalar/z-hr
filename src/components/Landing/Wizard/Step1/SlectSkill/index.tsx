@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
@@ -15,6 +15,7 @@ import { StageWizard } from '@/components/Landing/type';
 import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
+import { SelectOption } from '@/components/UI/MuiSelectOptions';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AllSkill } from './data';
@@ -109,8 +110,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     setIsEditDialogOpen(false);
   };
 
-  const handleConfirmEditDialog = () => {
+  const defaultSkill = AllSkill[0] ?? { id: '', label: 'Motion Designer', selected: false };
+  const [mainSkillId, setMainSkillId] = useState<string>(defaultSkill.id);
+  const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(defaultSkill.label);
+
+  const handleConfirmEditDialog = (selectedOption: SelectOption) => {
     setIsEditDialogOpen(false);
+    setMainSkillLabel(selectedOption.label);
+    setMainSkillId(String(selectedOption.value));
   };
 
   return (
@@ -212,7 +219,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             Main skill
           </Typography>
           <Typography variant='h5' color='text.primary' fontWeight='584'>
-            Motion Designer{' '}
+            {mainSkillLabel}{' '}
           </Typography>
           <ActionIconButton aria-label='Edit main skill' onClick={handleOpenEditDialog}>
             <EdiIcon />
@@ -254,7 +261,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           Next
         </MuiButton>
       </Stack>
-      <EditSkillDialog open={isEditDialogOpen} onClose={handleCloseEditDialog} onConfirm={handleConfirmEditDialog} />
+      <EditSkillDialog
+        open={isEditDialogOpen}
+        onClose={handleCloseEditDialog}
+        onConfirm={handleConfirmEditDialog}
+        initialSkillId={mainSkillId}
+      />
     </Stack>
   );
 };

@@ -7,7 +7,7 @@ import InfoIcon from '@/assets/images/icons/info.svg';
 
 import type { MenuProps } from '@mui/material/Menu';
 
-type SelectOptionValue = string | number;
+export type SelectOptionValue = string | number;
 
 export interface SelectOption {
   value: SelectOptionValue;
