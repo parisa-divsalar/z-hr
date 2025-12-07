@@ -25,7 +25,23 @@ export const ContainerSkill = styled(Stack, {
   alignItems: 'center',
   justifyContent: 'center',
   gap: '0.25rem',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+}));
+
+export const ContainerSkillAttach = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active?: boolean }>(({ theme, active }) => ({
+  backgroundColor: 'white',
+  width: '350px',
+  borderRadius: '1rem',
+  border: `1px solid ${theme.palette.grey[100]}`,
+  padding: '1rem',
+  maxWidth: '350px',
+  height: 'auto',
+  marginTop: '1rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '0.25rem',
 }));
 
 export const ActionRow = styled(Stack)(() => ({

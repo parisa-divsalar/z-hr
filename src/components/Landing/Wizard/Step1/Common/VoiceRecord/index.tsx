@@ -14,7 +14,6 @@ import {
   FilesStack,
   RemoveFileButton,
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
-import VoiceBox from '@/components/Landing/Wizard/Step1/AI/VoiceBox';
 
 import { RecordingControlsStack } from './styled';
 
@@ -82,6 +81,7 @@ export interface VoiceRecordingProps {
   onClearRecording?: () => void;
   recordingState: RecordingState;
   setRecordingState: (recordingState: RecordingState) => void;
+  stackDirection?: 'row' | 'column';
 }
 
 const VoiceRecord = ({
@@ -95,11 +95,13 @@ const VoiceRecord = ({
   onClearRecording,
   recordingState,
   setRecordingState,
+  stackDirection = 'row',
 }: VoiceRecordingProps) => {
   const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl);
   const [_audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isInternalUrl, setIsInternalUrl] = useState(false); // Track if URL was created internally
+  const [showFilesStackPreview, setShowFilesStackPreview] = useState(false);
 
   useEffect(() => {
     setAudioUrl(initialAudioUrl);
@@ -155,6 +157,7 @@ const VoiceRecord = ({
     setAudioProgress(0);
     setAudioDuration(0);
     setWaveBarsCount(100);
+    setShowFilesStackPreview(false);
   }, [audioUrl, isInternalUrl]);
 
   const startRecording = useCallback(async () => {
@@ -208,6 +211,7 @@ const VoiceRecord = ({
       mediaRecorder.start(100); // timeslice
       setRecordingState('recording');
       onRecordingStart?.();
+      setShowFilesStackPreview(false);
 
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => {
@@ -239,6 +243,7 @@ const VoiceRecord = ({
       timerRef.current = null;
     }
     setRecordingState('idle');
+    setShowFilesStackPreview(true);
   }, []);
 
   /** PLAYBACK: create audio element lazily and attach events */
@@ -343,6 +348,11 @@ const VoiceRecord = ({
     }
   }, [playbackState, playRecording, pauseRecording]);
 
+  const handlePlaybackClick = useCallback(() => {
+    setShowFilesStackPreview(true);
+    togglePlayback();
+  }, [togglePlayback]);
+
   const clearRecording = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.onerror = null;
@@ -366,7 +376,7 @@ const VoiceRecord = ({
     setAudioProgress(0);
     setAudioDuration(0);
     setRecordingTime(0);
-
+    setShowFilesStackPreview(false);
     onClearRecording?.();
   }, [audioUrl, isInternalUrl, onClearRecording]);
 
@@ -395,57 +405,76 @@ const VoiceRecord = ({
   }, [audioUrl]);
 
   useEffect(() => {
+    if (audioUrl) {
+      setShowFilesStackPreview(true);
+    }
+  }, [audioUrl]);
+
+  useEffect(() => {
     return () => {
       cleanup();
     };
   }, [cleanup]);
 
-  return (
-    <Stack alignItems='center' direction='row' justifyContent='center' sx={{ width: '100%' }}>
-      {showRecordingControls && (
-        <>
-          {recordingState !== 'recording' && <VoiceBox onClick={startRecording} />}
+  useEffect(() => {
+    if (showRecordingControls && recordingState === 'idle' && !audioUrl) {
+      void startRecording();
+    }
+  }, [showRecordingControls, recordingState, startRecording, audioUrl]);
 
-          {recordingState === 'recording' && (
-            <RecordingControlsStack direction='row' alignItems='center' mt={4}>
-              <ButtonPuse onClick={stopRecording} style={{ cursor: 'pointer' }} />
-              <RecordingPulseButton aria-label='Stop recording'>
-                <RecordingPulseDot />
-              </RecordingPulseButton>
-              <Typography variant='body1' color='text.primary' fontWeight='584'>
-                {formatTime(recordingTime)}
-              </Typography>
-            </RecordingControlsStack>
-          )}
-        </>
+  return (
+    <Stack
+      alignItems='center'
+      direction={stackDirection}
+      justifyContent='center'
+      sx={{ width: '100%' }}
+      gap={stackDirection === 'column' ? 2 : 0}
+    >
+      {showRecordingControls && recordingState === 'recording' && (
+        <RecordingControlsStack direction='row' alignItems='center' mt={4}>
+          <ButtonPuse onClick={stopRecording} style={{ cursor: 'pointer' }} />
+          <RecordingPulseButton aria-label='Stop recording'>
+            <RecordingPulseDot />
+          </RecordingPulseButton>
+          <Typography variant='body1' color='text.primary' fontWeight='584'>
+            {formatTime(recordingTime)}
+          </Typography>
+        </RecordingControlsStack>
       )}
 
-      {audioUrl && recordingState === 'idle' && (
+      {showFilesStackPreview && (
         <FilesStack direction='row' gap={2}>
           <FilePreviewVoiceContainer>
-            <IconButton onClick={togglePlayback}>
-              {playbackState === 'playing' ? <ButtonPuseIcon /> : <ButtonPIcon />}
-            </IconButton>
+            {audioUrl ? (
+              <>
+                <IconButton onClick={handlePlaybackClick} disabled={!audioUrl}>
+                  {playbackState === 'playing' ? <ButtonPuseIcon /> : <ButtonPIcon />}
+                </IconButton>
 
-            <Typography variant='body2' color='error'>
-              {formatTime(audioDuration)}
-            </Typography>
+                <Typography variant='body2' color='error'>
+                  {formatTime(audioDuration)}
+                </Typography>
 
-            <RemoveFileButton
-              onClick={clearRecording}
-              sx={{
-                width: 24,
-                height: 24,
-
-                padding: 0,
-                backgroundColor: 'transparent',
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                },
-              }}
-            >
-              <CleanIcon width={24} height={24} />
-            </RemoveFileButton>
+                <RemoveFileButton
+                  onClick={clearRecording}
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    padding: 0,
+                    backgroundColor: 'transparent',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                    },
+                  }}
+                >
+                  <CleanIcon width={24} height={24} />
+                </RemoveFileButton>
+              </>
+            ) : (
+              <Typography variant='body2' color='text.secondary'>
+                Preparing your recording…
+              </Typography>
+            )}
           </FilePreviewVoiceContainer>
         </FilesStack>
       )}

@@ -10,3 +10,4 @@ export const RecordingControlsStack = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
 }));
+

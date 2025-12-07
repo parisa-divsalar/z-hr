@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
@@ -7,11 +7,18 @@ import Tooltip from '@mui/material/Tooltip';
 import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import AttachIcon from '@/assets/images/icons/attach.svg';
+import CleanIcon from '@/assets/images/icons/clean.svg';
 import EdiIcon from '@/assets/images/icons/Frame42731.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
+import FileIcon from '@/assets/images/icons/icon-file.svg';
+import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import RecordIcon from '@/assets/images/icons/recordV.svg';
 import TooltipIcon from '@/assets/images/icons/tooltip.svg';
 import { StageWizard } from '@/components/Landing/type';
+import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
+import { FilePreviewContainer, FilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
+import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
@@ -20,7 +27,7 @@ import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
-import { ActionIconButton, ActionRow, ContainerSkill, SkillContainer } from './styled';
+import { ActionIconButton, ActionRow, ContainerSkill, ContainerSkillAttach, SkillContainer } from './styled';
 import { TSkill } from './type';
 
 interface SelectSkillProps {
@@ -57,6 +64,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const backgroundRef = useRef<HTMLTextAreaElement>(null);
   const customSkillRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isVoiceRecorderVisible, setIsVoiceRecorderVisible] = useState<boolean>(false);
+  const [recordingState, setRecordingState] = useState<RecordingState>('idle');
+  const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
+  const [hasVoiceRecording, setHasVoiceRecording] = useState<boolean>(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const onUpdateSkill = (id: string, selected: boolean) =>
     setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
@@ -94,13 +107,66 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     backgroundRef.current?.focus();
   };
 
-  const handleClearBackground = () => {
-    setBackgroundText('');
-    backgroundRef.current?.focus();
+  // const handleClearBackground = () => {
+  //   setBackgroundText('');
+  //   backgroundRef.current?.focus();
+  // };
+
+  const handleShowVoiceRecorder = () => {
+    setIsVoiceRecorderVisible(true);
+    setShowRecordingControls(true);
+    setHasVoiceRecording(false);
+    handleFocusBackground();
+  };
+
+  const handleVoiceRecordingComplete = (_audioUrl: string, _audioBlob: Blob) => {
+    setShowRecordingControls(false);
+    setHasVoiceRecording(true);
+  };
+
+  const handleClearVoiceRecording = () => {
+    setShowRecordingControls(true);
+    setIsVoiceRecorderVisible(false);
+    setHasVoiceRecording(false);
   };
 
   const hasBackgroundText = backgroundText.trim() !== '';
   const hasSelectedSkills = skills.some((skill) => skill.selected);
+  const filePreviews = useMemo(
+    () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
+    [uploadedFiles],
+  );
+
+  useEffect(() => {
+    return () => {
+      filePreviews.forEach((preview) => {
+        if (preview) {
+          URL.revokeObjectURL(preview);
+        }
+      });
+    };
+  }, [filePreviews]);
+
+  const handleOpenFileDialog = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files) {
+      return;
+    }
+
+    const fileList = Array.from(files);
+    setUploadedFiles((prev) => [...prev, ...fileList]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveUploadedFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+  };
 
   const handleOpenEditDialog = () => {
     setIsEditDialogOpen(true);
@@ -191,25 +257,94 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       </ContainerSkill>
 
       <ActionRow>
-        <Stack direction='row' gap={0.5}>
-          <ActionIconButton aria-label='Attach draft action' onClick={handleClearBackground}>
+        <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
+          <ActionIconButton aria-label='Attach file' onClick={handleOpenFileDialog}>
             <AttachIcon />
           </ActionIconButton>
-          <ActionIconButton aria-label='Record draft action' onClick={handleFocusBackground}>
-            <RecordIcon />
-          </ActionIconButton>
+          <Stack direction='column' alignItems='center' gap={1}>
+            {recordingState !== 'recording' && (
+              <ActionIconButton
+                aria-label='Record draft action'
+                onClick={handleShowVoiceRecorder}
+                disabled={showRecordingControls && isVoiceRecorderVisible}
+              >
+                <RecordIcon />
+              </ActionIconButton>
+            )}
+            {(isVoiceRecorderVisible || hasVoiceRecording) && (
+              <VoiceRecord
+                recordingState={recordingState}
+                setRecordingState={setRecordingState}
+                showRecordingControls={showRecordingControls}
+                onRecordingComplete={handleVoiceRecordingComplete}
+                onClearRecording={handleClearVoiceRecording}
+                stackDirection='column'
+              />
+            )}
+          </Stack>
         </Stack>
-
         <MuiButton
           color='secondary'
           size='medium'
           variant='outlined'
           startIcon={<AddIcon />}
           onClick={handleAddCustomSkill}
+          sx={{ flexShrink: 0 }}
         >
           Add
         </MuiButton>
       </ActionRow>
+
+      {uploadedFiles.length > 0 && (
+        <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
+          <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
+            {uploadedFiles.map((file, index) => (
+              <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
+                {file.type.startsWith('image/') ? (
+                  <img
+                    src={filePreviews[index]}
+                    alt={file.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                ) : file.type.startsWith('video/') ? (
+                  <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                ) : (
+                  <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                )}
+
+                <RemoveFileButton
+                  onClick={() => handleRemoveUploadedFile(index)}
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    padding: 0,
+                    backgroundColor: 'transparent',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                    },
+                  }}
+                >
+                  <CleanIcon width={24} height={24} />
+                </RemoveFileButton>
+              </FilePreviewContainer>
+            ))}
+          </FilesStack>
+        </ContainerSkillAttach>
+      )}
+
+      <input
+        ref={fileInputRef}
+        type='file'
+        multiple
+        accept='*/*'
+        onChange={(event) => handleFileUpload(event.target.files)}
+        style={{ display: 'none' }}
+      />
+
       <Typography variant='h5' color='text.primary' fontWeight='584' mt={5}>
         5. Your skills?
       </Typography>

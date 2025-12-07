@@ -7,13 +7,15 @@ export const FilesStack = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(2),
 }));
 
-export const FilePreviewContainer = styled(Box)(() => ({
+export const FilePreviewContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'size',
+})<{ size?: number }>(({ size = 100, theme }) => ({
   position: 'relative',
-  width: 100,
-  height: 100,
+  width: size,
+  height: size,
   borderRadius: '8px',
   border: '1px solid',
-  borderColor: 'grey.300',
+  borderColor: theme.palette.grey[100],
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
