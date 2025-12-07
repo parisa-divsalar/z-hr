@@ -31,6 +31,14 @@ interface SKillInputProps {
   setStage: (stage: StageWizard) => void;
 }
 
+const visaStatusOptions: SelectOption[] = [
+  { value: 'citizen', label: 'Citizen' },
+  { value: 'permanent_resident', label: 'Permanent resident' },
+  { value: 'work_visa', label: 'Work visa' },
+  { value: 'student_visa', label: 'Student visa' },
+  { value: 'other', label: 'Other' },
+];
+
 const languageOptions: SelectOption[] = [
   { value: 'arabic', label: 'arabic' },
   { value: 'persian', label: 'persian' },
@@ -174,10 +182,10 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
 
       <Stack mt={2} direction='row' style={{ width: '100%', maxWidth: '426px' }}>
         <MuiSelectOptions
-          placeholder='Language'
-          value={selectedLanguage}
-          options={languageOptions}
-          onChange={(value) => setSelectedLanguage(value as string)}
+          placeholder='Select visa status'
+          value={visaStatus}
+          options={visaStatusOptions}
+          onChange={(value) => setVisaStatus(value as string)}
           fullWidth
         />
       </Stack>

@@ -50,14 +50,16 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
   const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
   const [skills, setSkills] = useState<TSkill[]>(AllSkill);
-  const [customSkill, setCustomSkill] = useState<string>('');
+  const [backgroundText, setBackgroundText] = useState<string>('');
+  const [customSkillInput, setCustomSkillInput] = useState<string>('');
+  const backgroundRef = useRef<HTMLTextAreaElement>(null);
   const customSkillRef = useRef<HTMLTextAreaElement>(null);
 
   const onUpdateSkill = (id: string, selected: boolean) =>
     setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
 
   const handleAddCustomSkill = () => {
-    const trimmedValue = customSkill.trim();
+    const trimmedValue = customSkillInput.trim();
     if (!trimmedValue) {
       return;
     }
@@ -81,18 +83,21 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       ];
     });
 
-    setCustomSkill('');
+    setCustomSkillInput('');
     customSkillRef.current?.focus();
   };
 
-  const handleEditCustomSkill = () => {
-    customSkillRef.current?.focus();
+  const handleFocusBackground = () => {
+    backgroundRef.current?.focus();
   };
 
-  const handleClearCustomSkill = () => {
-    setCustomSkill('');
-    customSkillRef.current?.focus();
+  const handleClearBackground = () => {
+    setBackgroundText('');
+    backgroundRef.current?.focus();
   };
+
+  const hasBackgroundText = backgroundText.trim() !== '';
+  const hasSelectedSkills = skills.some((skill) => skill.selected);
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
@@ -149,21 +154,21 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         <AtsFriendlyChip color='warning.main' label='ATS Friendly' />
       </Stack>
 
-      <ContainerSkill direction='row' active={!!customSkill}>
+      <ContainerSkill direction='row' active={!!backgroundText}>
         <InputContent
           placeholder='Type your answer...'
-          value={customSkill}
-          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setCustomSkill(event.target.value)}
-          ref={customSkillRef}
+          value={backgroundText}
+          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setBackgroundText(event.target.value)}
+          ref={backgroundRef}
         />
       </ContainerSkill>
 
       <ActionRow>
         <Stack direction='row' gap={0.5}>
-          <ActionIconButton aria-label='Attach draft action' onClick={handleClearCustomSkill}>
+          <ActionIconButton aria-label='Attach draft action' onClick={handleClearBackground}>
             <AttachIcon />
           </ActionIconButton>
-          <ActionIconButton aria-label='Record draft action' onClick={handleEditCustomSkill}>
+          <ActionIconButton aria-label='Record draft action' onClick={handleFocusBackground}>
             <RecordIcon />
           </ActionIconButton>
         </Stack>
@@ -198,11 +203,11 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         ))}
       </SkillContainer>
 
-      <ContainerSkill direction='row' active={!!customSkill}>
+      <ContainerSkill direction='row' active={!!customSkillInput}>
         <InputContent
           placeholder='Your another skills: Designer, Motion...'
-          value={customSkill}
-          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setCustomSkill(event.target.value)}
+          value={customSkillInput}
+          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setCustomSkillInput(event.target.value)}
           ref={customSkillRef}
         />
       </ContainerSkill>
@@ -222,7 +227,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           endIcon={<ArrowRightIcon />}
           size='large'
           onClick={() => setStage('QUESTIONS')}
-          disabled={customSkill === ''}
+          disabled={!hasBackgroundText || !hasSelectedSkills}
         >
           Next
         </MuiButton>
