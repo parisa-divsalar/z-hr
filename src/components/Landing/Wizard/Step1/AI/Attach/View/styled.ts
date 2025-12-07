@@ -1,9 +1,10 @@
 import { Box, IconButton, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const FilesStack = styled(Stack)(() => ({
-  margin: '1rem 0',
+export const FilesStack = styled(Stack)(({ theme }) => ({
+  margin: theme.spacing(1.75, 0),
   flexWrap: 'wrap',
+  gap: theme.spacing(2),
 }));
 
 export const FilePreviewContainer = styled(Box)(() => ({
@@ -22,21 +23,19 @@ export const FilePreviewContainer = styled(Box)(() => ({
 }));
 
 export const FilePreviewVoiceContainer = styled(Box)(({ theme }) => ({
-  width: 198,
+  width: 145,
   height: 64,
   border: `1px solid ${theme.palette.grey[100]}`,
-
   borderRadius: '8px',
-  borderColor: '#d3d3fb',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'white',
+  gap: theme.spacing(1),
 }));
 
 export const RemoveFileButton = styled(IconButton)(() => ({
-  width: 20,
-  height: 20,
+  width: 24,
+  height: 24,
   backgroundColor: 'rgba(0, 0, 0, 0.6)',
   color: 'white',
   '&:hover': {

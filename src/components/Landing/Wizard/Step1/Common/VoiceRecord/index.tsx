@@ -353,14 +353,6 @@ const VoiceRecord = ({
         <>
           {recordingState !== 'recording' && <VoiceBox onClick={startRecording} />}
 
-          {/*{recordingState === 'recording' && <VoiceBoxRecording onClick={stopRecording} />}*/}
-
-          {recordingState === 'recording' && (
-            <Typography color='secondary.main' variant='subtitle1' mt={2}>
-              Recording...
-            </Typography>
-          )}
-
           {recordingState === 'recording' && (
             <Typography variant='body2' color='error'>
               {formatTime(recordingTime)}
