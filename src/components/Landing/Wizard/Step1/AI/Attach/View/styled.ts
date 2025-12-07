@@ -4,7 +4,6 @@ import { styled } from '@mui/material/styles';
 export const FilesStack = styled(Stack)(() => ({
   margin: '1rem 0',
   flexWrap: 'wrap',
-  gap: '0.25rem',
 }));
 
 export const FilePreviewContainer = styled(Box)(() => ({
@@ -22,24 +21,20 @@ export const FilePreviewContainer = styled(Box)(() => ({
   backgroundColor: 'grey.50',
 }));
 
-export const FilePreviewVoiceContainer = styled(Box)(() => ({
-  position: 'relative',
-  width: 100,
-  height: 146,
+export const FilePreviewVoiceContainer = styled(Box)(({ theme }) => ({
+  width: 198,
+  height: 64,
+  border: `1px solid ${theme.palette.grey[100]}`,
+
   borderRadius: '8px',
-  border: '1px solid',
   borderColor: '#d3d3fb',
   display: 'flex',
-  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   backgroundColor: 'white',
 }));
 
 export const RemoveFileButton = styled(IconButton)(() => ({
-  position: 'absolute',
-  top: 4,
-  right: 4,
   width: 20,
   height: 20,
   backgroundColor: 'rgba(0, 0, 0, 0.6)',

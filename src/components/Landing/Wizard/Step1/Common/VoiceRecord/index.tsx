@@ -9,7 +9,11 @@ import ButtonPuseIcon from '@/assets/images/icons/button-puse.svg';
 import ButtonStopIcon from '@/assets/images/icons/button-stop.svg';
 import CleanIcon from '@/assets/images/icons/clean.svg';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
-import { FilePreviewVoiceContainer, FilesStack, RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import {
+  FilePreviewVoiceContainer,
+  FilesStack,
+  RemoveFileButton,
+} from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import VoiceBox from '@/components/Landing/Wizard/Step1/AI/VoiceBox';
 
 export type PlaybackState = 'idle' | 'playing' | 'paused';
@@ -387,7 +391,7 @@ const VoiceRecord = ({
       )}
 
       {audioUrl && recordingState === 'idle' && (
-        <FilesStack direction='row' spacing={1}>
+        <FilesStack direction='row' gap={2}>
           <FilePreviewVoiceContainer>
             <IconButton onClick={togglePlayback}>
               {playbackState === 'playing' ? <ButtonPuseIcon /> : <ButtonPIcon />}
@@ -402,10 +406,8 @@ const VoiceRecord = ({
               sx={{
                 width: 24,
                 height: 24,
-                top: -12,
-                right: -12,
+
                 padding: 0,
-                position: 'absolute',
                 backgroundColor: 'transparent',
                 '&:hover': {
                   backgroundColor: 'transparent',
