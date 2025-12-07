@@ -2,12 +2,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 import { Typography, IconButton, Stack } from '@mui/material';
+import { alpha, keyframes, styled } from '@mui/material/styles';
 
-import ButtonDIcon from '@/assets/images/icons/button-d.svg';
 import ButtonPIcon from '@/assets/images/icons/button-play.svg';
 import ButtonPuseIcon from '@/assets/images/icons/button-puse.svg';
-import ButtonStopIcon from '@/assets/images/icons/button-stop.svg';
 import CleanIcon from '@/assets/images/icons/clean.svg';
+import ButtonPuse from '@/assets/images/icons/stop-circle.svg';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import {
   FilePreviewVoiceContainer,
@@ -15,6 +15,59 @@ import {
   RemoveFileButton,
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import VoiceBox from '@/components/Landing/Wizard/Step1/AI/VoiceBox';
+
+import { RecordingControlsStack } from './styled';
+
+const createRecordingPulse = (color: string) => keyframes`
+  0% {
+    box-shadow: 0 0 0 0 ${alpha(color, 0.5)};
+  }
+  70% {
+    box-shadow: 0 0 0 18px ${alpha(color, 0)};
+  }
+  100% {
+    box-shadow: 0 0 0 0 ${alpha(color, 0)};
+  }
+`;
+
+const createRecordingScale = keyframes`
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+`;
+
+const RecordingPulseButton = styled(IconButton)(({ theme }) => ({
+  position: 'relative',
+  width: 56,
+  height: 56,
+  borderRadius: '50%',
+  padding: 0,
+  backgroundColor: 'transparent',
+  boxShadow: 'none',
+  transformOrigin: 'center',
+  animation: `${createRecordingScale} 1.6s ease-in-out infinite`,
+  '&:hover': {
+    backgroundColor: 'transparent',
+  },
+  cursor: 'default',
+}));
+
+const RecordingPulseDot = styled('span')(({ theme }) => {
+  const pulseAnimation = createRecordingPulse(theme.palette.error.main);
+  return {
+    width: 9,
+    height: 9,
+    borderRadius: '50%',
+    backgroundColor: theme.palette.error.main,
+    animation: `${pulseAnimation} 2s infinite`,
+    display: 'block',
+    cursor: 'default',
+  };
+});
 
 export type PlaybackState = 'idle' | 'playing' | 'paused';
 
@@ -348,36 +401,21 @@ const VoiceRecord = ({
   }, [cleanup]);
 
   return (
-    <Stack alignItems='center'>
+    <Stack alignItems='center' direction='row' justifyContent='center' sx={{ width: '100%' }}>
       {showRecordingControls && (
         <>
           {recordingState !== 'recording' && <VoiceBox onClick={startRecording} />}
 
           {recordingState === 'recording' && (
-            <Typography variant='body2' color='error'>
-              {formatTime(recordingTime)}
-            </Typography>
-          )}
-
-          {recordingState === 'recording' && (
-            <Stack direction='row' gap={3} mt={4}>
-              <IconButton>
-                <ButtonPuseIcon />
-              </IconButton>
-
-              <IconButton onClick={stopRecording}>
-                <ButtonStopIcon />
-              </IconButton>
-
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearRecording();
-                }}
-              >
-                <ButtonDIcon />
-              </IconButton>
-            </Stack>
+            <RecordingControlsStack direction='row' alignItems='center' mt={4}>
+              <ButtonPuse onClick={stopRecording} style={{ cursor: 'pointer' }} />
+              <RecordingPulseButton aria-label='Stop recording'>
+                <RecordingPulseDot />
+              </RecordingPulseButton>
+              <Typography variant='body1' color='text.primary' fontWeight='584'>
+                {formatTime(recordingTime)}
+              </Typography>
+            </RecordingControlsStack>
           )}
         </>
       )}
