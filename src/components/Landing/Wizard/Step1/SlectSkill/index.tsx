@@ -150,10 +150,16 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           </span>
         </Tooltip>
       </Stack>
+
       <Stack direction='row' alignItems='center' gap={1} mt={2}>
         <AtsFriendlyChip color='warning.main' label='ATS Friendly' />
       </Stack>
-
+      <Stack sx={{ width: '498px' }}>
+        <Typography fontWeight='400' variant='body1' color='text.secondry'>
+          Your summary shows employers you’re right for their job. We’ll help you write a great one with expert content
+          you can customize.
+        </Typography>
+      </Stack>
       <ContainerSkill direction='row' active={!!backgroundText}>
         <InputContent
           placeholder='Type your answer...'
