@@ -18,6 +18,7 @@ import MuiChips from '@/components/UI/MuiChips';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AllSkill } from './data';
+import EditSkillDialog from './EditSkillDialog';
 import { ActionIconButton, ActionRow, ContainerSkill, SkillContainer } from './styled';
 import { TSkill } from './type';
 
@@ -52,6 +53,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const [skills, setSkills] = useState<TSkill[]>(AllSkill);
   const [backgroundText, setBackgroundText] = useState<string>('');
   const [customSkillInput, setCustomSkillInput] = useState<string>('');
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const backgroundRef = useRef<HTMLTextAreaElement>(null);
   const customSkillRef = useRef<HTMLTextAreaElement>(null);
 
@@ -98,6 +100,18 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
   const hasBackgroundText = backgroundText.trim() !== '';
   const hasSelectedSkills = skills.some((skill) => skill.selected);
+
+  const handleOpenEditDialog = () => {
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+  };
+
+  const handleConfirmEditDialog = () => {
+    setIsEditDialogOpen(false);
+  };
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
@@ -200,7 +214,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           <Typography variant='h5' color='text.primary' fontWeight='584'>
             Motion Designer{' '}
           </Typography>
-          <EdiIcon />
+          <ActionIconButton aria-label='Edit main skill' onClick={handleOpenEditDialog}>
+            <EdiIcon />
+          </ActionIconButton>
         </Stack>
       </Stack>
       <SkillContainer direction='row'>
@@ -238,6 +254,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           Next
         </MuiButton>
       </Stack>
+      <EditSkillDialog open={isEditDialogOpen} onClose={handleCloseEditDialog} onConfirm={handleConfirmEditDialog} />
     </Stack>
   );
 };
