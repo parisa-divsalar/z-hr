@@ -26,16 +26,30 @@ export const ContainerSkill = styled(Stack, {
   justifyContent: 'center',
   gap: '0.25rem',
 }));
-
 export const ContainerSkillAttach = styled(Stack, {
   shouldForwardProp: (prop) => prop !== 'active',
 })<{ active?: boolean }>(({ theme, active }) => ({
   backgroundColor: 'white',
-  width: '350px',
+  width: '550px',
   borderRadius: '1rem',
   border: `1px solid ${theme.palette.grey[100]}`,
   padding: '1rem',
-  maxWidth: '350px',
+  maxWidth: '550px',
+  height: 'auto',
+  marginTop: '1rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '0.25rem',
+}));
+export const ContainerSkillAttachItem = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active?: boolean }>(({ theme, active }) => ({
+  backgroundColor: 'white',
+  width: '550px',
+  borderTop: `1px solid ${theme.palette.grey[100]}`,
+  padding: '1rem',
+  maxWidth: '550px',
   height: 'auto',
   marginTop: '1rem',
   display: 'flex',
