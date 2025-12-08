@@ -69,6 +69,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
+  const [recorderKey, setRecorderKey] = useState<number>(0);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const onUpdateSkill = (id: string, selected: boolean) =>
@@ -113,9 +115,22 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   };
 
   const handleShowVoiceRecorder = () => {
-    setShowRecordingControls(true);
+    // اگر ویس فعلی داریم، قبل از شروع رکورد جدید، آن را به لیست ویس‌های قبلی اضافه کن
+    if (voiceUrl && voiceBlob) {
+      setVoiceRecordings((prev) => [
+        ...prev,
+        {
+          id: generateFakeUUIDv4(),
+          url: voiceUrl,
+          blob: voiceBlob,
+        },
+      ]);
+    }
+
     setVoiceUrl(null);
     setVoiceBlob(null);
+    setShowRecordingControls(true);
+    setRecorderKey((prev) => prev + 1); // ری‌مانت برای شروع رکورد جدید
     handleFocusBackground();
   };
 
@@ -129,6 +144,10 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     setShowRecordingControls(false);
     setVoiceUrl(null);
     setVoiceBlob(null);
+  };
+
+  const handleRemoveSavedRecording = (id: string) => {
+    setVoiceRecordings((prev) => prev.filter((item) => item.id !== id));
   };
 
   const hasBackgroundText = backgroundText.trim() !== '';
@@ -270,19 +289,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             >
               <RecordIcon />
             </ActionIconButton>
-            {voiceUrl && (
+            {/* ویس فعلی (آخرین رکورد) */}
+
+            {/* رکوردر برای گرفتن ویس جدید */}
+            {!voiceUrl && showRecordingControls && (
               <VoiceRecord
-                recordingState={recordingState}
-                setRecordingState={setRecordingState}
-                initialAudioUrl={voiceUrl}
-                initialAudioBlob={voiceBlob}
-                showRecordingControls={showRecordingControls}
-                onClearRecording={handleClearVoiceRecording}
-                stackDirection='column'
-              />
-            )}
-            {!voiceUrl && (
-              <VoiceRecord
+                key={recorderKey}
                 onRecordingComplete={handleVoiceRecordingComplete}
                 showRecordingControls={showRecordingControls}
                 recordingState={recordingState}
@@ -293,6 +305,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             )}
           </Stack>
         </Stack>
+
         <MuiButton
           color='secondary'
           size='medium'
@@ -304,6 +317,41 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           Add
         </MuiButton>
       </ActionRow>
+      <Stack sx={{ backgroundColor: 'red' }}>
+        {' '}
+        {voiceUrl && (
+          <VoiceRecord
+            recordingState={recordingState}
+            setRecordingState={setRecordingState}
+            initialAudioUrl={voiceUrl}
+            initialAudioBlob={voiceBlob}
+            showRecordingControls={showRecordingControls}
+            onClearRecording={handleClearVoiceRecording}
+            stackDirection='column'
+          />
+        )}
+      </Stack>
+
+      {/* لیست ویس‌های قبلی که کنار هم نمایش داده می‌شوند */}
+      {voiceRecordings.length > 0 && (
+        <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
+          <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+            {voiceRecordings.map((item) => (
+              <VoiceRecord
+                key={item.id}
+                recordingState='idle'
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                setRecordingState={() => {}}
+                initialAudioUrl={item.url}
+                initialAudioBlob={item.blob}
+                showRecordingControls={false}
+                onClearRecording={() => handleRemoveSavedRecording(item.id)}
+                stackDirection='column'
+              />
+            ))}
+          </Stack>
+        </ContainerSkillAttach>
+      )}
 
       {uploadedFiles.length > 0 && (
         <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
