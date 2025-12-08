@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Divider, Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -445,87 +445,94 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       {backgroundEntries.length > 0 && (
         <Stack sx={{ maxWidth: '550px', width: '550px', mt: 3 }} spacing={1}>
           {backgroundEntries.map((entry, index) => (
-            <ContainerSkillAttachItem
-              key={entry.id}
-              direction='row'
-              active
-              sx={{ alignItems: 'stretch', justifyContent: 'space-between' }}
-            >
-              <BackgroundEntryIndex>
-                <Typography justifyContent='center' fontWeight='584' variant='subtitle1' color='primary.main'>
-                  #{index + 1}
-                </Typography>
-              </BackgroundEntryIndex>
-              <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
-                <Stack
-                  sx={{
-                    minWidth: 32,
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    pt: 0.5,
-                  }}
-                ></Stack>
+            <React.Fragment key={entry.id}>
+              <Divider
+                sx={{
+                  borderColor: theme.palette.grey[100],
+                }}
+              />
 
-                <Stack spacing={1} sx={{ flex: 1 }}>
-                  {entry.text && (
-                    <Typography variant='body2' color='text.primary' fontWeight='400'>
-                      {entry.text}
-                    </Typography>
-                  )}
+              <ContainerSkillAttachItem
+                direction='row'
+                active
+                sx={{ alignItems: 'stretch', justifyContent: 'space-between' }}
+              >
+                <BackgroundEntryIndex>
+                  <Typography justifyContent='center' fontWeight='584' variant='subtitle1' color='primary.main'>
+                    #{index + 1}
+                  </Typography>
+                </BackgroundEntryIndex>
+                <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
+                  <Stack
+                    sx={{
+                      minWidth: 32,
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
+                      pt: 0.5,
+                    }}
+                  ></Stack>
 
-                  {entry.voices.length > 0 && (
-                    <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
-                      {entry.voices.map((voice) => (
-                        <VoiceRecord
-                          key={voice.id}
-                          recordingState='idle'
-                          // eslint-disable-next-line @typescript-eslint/no-empty-function
-                          setRecordingState={() => {}}
-                          initialAudioUrl={voice.url}
-                          initialAudioBlob={voice.blob}
-                          showRecordingControls={false}
-                          onClearRecording={() => {}}
-                          stackDirection='column'
-                          fullWidth={false}
-                        />
-                      ))}
-                    </Stack>
-                  )}
+                  <Stack spacing={1} sx={{ flex: 1 }}>
+                    {entry.text && (
+                      <Typography variant='body2' color='text.primary' fontWeight='400'>
+                        {entry.text}
+                      </Typography>
+                    )}
 
-                  {entry.files.length > 0 && (
-                    <FilesStack direction='row' spacing={1} sx={{ width: '100%', border: 'none' }}>
-                      {entry.files.map((file, idx) => (
-                        <FilePreviewContainer key={`${file.name}-${idx}`} size={50}>
-                          {file.type.startsWith('image/') ? (
-                            <img
-                              src={URL.createObjectURL(file)}
-                              alt={file.name}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                              }}
-                            />
-                          ) : file.type.startsWith('video/') ? (
-                            <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                          ) : (
-                            <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                          )}
-                        </FilePreviewContainer>
-                      ))}
-                    </FilesStack>
-                  )}
+                    {entry.voices.length > 0 && (
+                      <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+                        {entry.voices.map((voice) => (
+                          <VoiceRecord
+                            key={voice.id}
+                            recordingState='idle'
+                            // eslint-disable-next-line @typescript-eslint/no-empty-function
+                            setRecordingState={() => {}}
+                            initialAudioUrl={voice.url}
+                            initialAudioBlob={voice.blob}
+                            showRecordingControls={false}
+                            onClearRecording={() => {}}
+                            stackDirection='column'
+                            fullWidth={false}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+
+                    {entry.files.length > 0 && (
+                      <FilesStack direction='row' spacing={1} sx={{ width: '100%', border: 'none' }}>
+                        {entry.files.map((file, idx) => (
+                          <FilePreviewContainer key={`${file.name}-${idx}`} size={50}>
+                            {file.type.startsWith('image/') ? (
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={file.name}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                }}
+                              />
+                            ) : file.type.startsWith('video/') ? (
+                              <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                            ) : (
+                              <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                            )}
+                          </FilePreviewContainer>
+                        ))}
+                      </FilesStack>
+                    )}
+                  </Stack>
                 </Stack>
-              </Stack>
-              <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
-                <ActionIconButton aria-label='Edit item' onClick={() => handleEditBackgroundEntry(entry.id)}>
-                  <EdiIcon />
-                </ActionIconButton>
-                <ActionIconButton aria-label='Delete item' onClick={() => handleDeleteBackgroundEntry(entry.id)}>
-                  <CleanIcon width={24} height={24} />
-                </ActionIconButton>
-              </Stack>
-            </ContainerSkillAttachItem>
+                <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
+                  <ActionIconButton aria-label='Edit item' onClick={() => handleEditBackgroundEntry(entry.id)}>
+                    <EdiIcon />
+                  </ActionIconButton>
+                  <ActionIconButton aria-label='Delete item' onClick={() => handleDeleteBackgroundEntry(entry.id)}>
+                    <CleanIcon width={24} height={24} />
+                  </ActionIconButton>
+                </Stack>
+              </ContainerSkillAttachItem>
+            </React.Fragment>
           ))}
         </Stack>
       )}
