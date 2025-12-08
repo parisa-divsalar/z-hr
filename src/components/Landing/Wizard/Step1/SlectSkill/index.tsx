@@ -30,6 +30,7 @@ import EditSkillDialog from './EditSkillDialog';
 import {
   ActionIconButton,
   ActionRow,
+  BackgroundEntryIndex,
   ContainerSkill,
   ContainerSkillAttach,
   ContainerSkillAttachItem,
@@ -448,16 +449,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
               key={entry.id}
               direction='row'
               active
-              sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}
+              sx={{ alignItems: 'stretch', justifyContent: 'space-between' }}
             >
-              <Stack sx={{ backgroundColor: 'red', width: '40px', height: 'auto' }}>
-                {' '}
-                <Typography justifyContent='center' variant='subtitle2' color='text.secondary'>
+              <BackgroundEntryIndex>
+                <Typography justifyContent='center' fontWeight='584' variant='subtitle1' color='primary.main'>
                   #{index + 1}
                 </Typography>
-              </Stack>
-
-              <Stack direction='row' spacing={2} sx={{ flex: 1, alignItems: 'flex-start' }}>
+              </BackgroundEntryIndex>
+              <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
                 <Stack
                   sx={{
                     minWidth: 32,
@@ -469,7 +468,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
                 <Stack spacing={1} sx={{ flex: 1 }}>
                   {entry.text && (
-                    <Typography variant='body2' color='text.primary'>
+                    <Typography variant='body2' color='text.primary' fontWeight='400'>
                       {entry.text}
                     </Typography>
                   )}
@@ -494,9 +493,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                   )}
 
                   {entry.files.length > 0 && (
-                    <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
+                    <FilesStack direction='row' spacing={1} sx={{ width: '100%', border: 'none' }}>
                       {entry.files.map((file, idx) => (
-                        <FilePreviewContainer key={`${file.name}-${idx}`} size={68}>
+                        <FilePreviewContainer key={`${file.name}-${idx}`} size={50}>
                           {file.type.startsWith('image/') ? (
                             <img
                               src={URL.createObjectURL(file)}

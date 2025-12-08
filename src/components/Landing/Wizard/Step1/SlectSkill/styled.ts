@@ -53,8 +53,6 @@ export const ContainerSkillAttachItem = styled(Stack, {
   height: 'auto',
   marginTop: '1rem',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
   gap: '0.25rem',
 }));
 
@@ -71,4 +69,14 @@ export const ActionIconButton = styled(IconButton)(() => ({
   padding: '0.25rem',
   transition: 'border-color 0.2s ease, background-color 0.2s ease',
   '&:hover': {},
+}));
+export const BackgroundEntryIndex = styled(Stack)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.light,
+  width: '38px',
+  alignSelf: 'stretch',
+  padding: '5px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '8px',
 }));
