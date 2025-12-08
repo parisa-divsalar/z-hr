@@ -49,7 +49,6 @@ const levelOptions: SelectOption[] = [
   { value: 'A', label: 'A' },
   { value: 'B', label: 'B' },
   { value: 'C', label: 'C' },
-  { value: 'D', label: 'D' },
 ];
 
 interface SkillEntry {
@@ -252,14 +251,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         Your language skills?
       </Typography>
 
-      <BottomActionsStack
-        mt={2}
-        direction='row'
-        alignItems='center'
-        gap={1}
-        width='100%'
-        style={{ maxWidth: '426px' }}
-      >
+      <BottomActionsStack mt={2} direction='row' alignItems='center' gap={1} width='100%' style={{ maxWidth: '426px' }}>
         <MuiSelectOptions
           placeholder='Language'
           value={selectedLanguage}
