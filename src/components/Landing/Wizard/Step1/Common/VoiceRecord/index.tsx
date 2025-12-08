@@ -82,6 +82,8 @@ export interface VoiceRecordingProps {
   recordingState: RecordingState;
   setRecordingState: (recordingState: RecordingState) => void;
   stackDirection?: 'row' | 'column';
+  /** اگر false باشد، کامپوننت تمام عرض را نمی‌گیرد و برای استفاده در لیست‌های افقی مناسب است */
+  fullWidth?: boolean;
 }
 
 const VoiceRecord = ({
@@ -96,6 +98,7 @@ const VoiceRecord = ({
   recordingState,
   setRecordingState,
   stackDirection = 'row',
+  fullWidth = true,
 }: VoiceRecordingProps) => {
   const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl);
   const [_audioBlob, setAudioBlob] = useState<Blob | null>(initialAudioBlob);
@@ -437,7 +440,7 @@ const VoiceRecord = ({
       alignItems='center'
       direction={stackDirection}
       justifyContent='center'
-      sx={{ width: '100%' }}
+      sx={{ width: fullWidth ? '100%' : 'auto' }}
       gap={stackDirection === 'column' ? 2 : 0}
     >
       {showRecordingControls && recordingState === 'recording' && (

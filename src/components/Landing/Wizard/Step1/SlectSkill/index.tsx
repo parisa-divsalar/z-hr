@@ -328,6 +328,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 showRecordingControls={false}
                 onClearRecording={() => handleRemoveSavedRecording(item.id)}
                 stackDirection='column'
+                fullWidth={false}
               />
             ))}
           </Stack>
