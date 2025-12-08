@@ -30,6 +30,17 @@ import EditSkillDialog from './EditSkillDialog';
 import { ActionIconButton, ActionRow, ContainerSkill, ContainerSkillAttach, SkillContainer } from './styled';
 import { TSkill } from './type';
 
+interface BackgroundEntry {
+  id: string;
+  text: string;
+  files: File[];
+  voices: {
+    id: string;
+    url: string;
+    blob: Blob;
+  }[];
+}
+
 interface SelectSkillProps {
   setStage: (stage: StageWizard) => void;
 }
@@ -72,6 +83,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
   const [recorderKey, setRecorderKey] = useState<number>(0);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
 
   const onUpdateSkill = (id: string, selected: boolean) =>
     setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
@@ -184,6 +196,52 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
   const handleRemoveUploadedFile = (index: number) => {
     setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+  };
+
+  const handleAddBackgroundEntry = () => {
+    const hasText = backgroundText.trim() !== '';
+    const hasFiles = uploadedFiles.length > 0;
+    const hasVoices = voiceRecordings.length > 0;
+
+    if (!hasText && !hasFiles && !hasVoices) {
+      return;
+    }
+
+    const newEntry: BackgroundEntry = {
+      id: generateFakeUUIDv4(),
+      text: backgroundText.trim(),
+      files: uploadedFiles,
+      voices: voiceRecordings,
+    };
+
+    setBackgroundEntries((prev) => [...prev, newEntry]);
+
+    setBackgroundText('');
+    setUploadedFiles([]);
+    setVoiceRecordings([]);
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  const handleEditBackgroundEntry = (id: string) => {
+    setBackgroundEntries((prev) => {
+      const entry = prev.find((item) => item.id === id);
+
+      if (!entry) {
+        return prev;
+      }
+
+      setBackgroundText(entry.text);
+      setUploadedFiles(entry.files);
+      setVoiceRecordings(entry.voices);
+
+      return prev.filter((item) => item.id !== id);
+    });
+  };
+
+  const handleDeleteBackgroundEntry = (id: string) => {
+    setBackgroundEntries((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleOpenEditDialog = () => {
@@ -307,7 +365,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           size='medium'
           variant='outlined'
           startIcon={<AddIcon />}
-          onClick={handleAddCustomSkill}
+          onClick={handleAddBackgroundEntry}
           sx={{ flexShrink: 0 }}
         >
           Add
@@ -374,6 +432,79 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             ))}
           </FilesStack>
         </ContainerSkillAttach>
+      )}
+
+      {backgroundEntries.length > 0 && (
+        <Stack sx={{ width: '100%', mt: 3 }} spacing={1}>
+          {backgroundEntries.map((entry) => (
+            <ContainerSkillAttach
+              key={entry.id}
+              direction='row'
+              active
+              sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}
+            >
+              <Stack spacing={1} sx={{ flex: 1 }}>
+                {entry.text && (
+                  <Typography variant='body2' color='text.primary'>
+                    {entry.text}
+                  </Typography>
+                )}
+
+                {entry.voices.length > 0 && (
+                  <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+                    {entry.voices.map((voice) => (
+                      <VoiceRecord
+                        key={voice.id}
+                        recordingState='idle'
+                        // eslint-disable-next-line @typescript-eslint/no-empty-function
+                        setRecordingState={() => {}}
+                        initialAudioUrl={voice.url}
+                        initialAudioBlob={voice.blob}
+                        showRecordingControls={false}
+                        onClearRecording={() => {}}
+                        stackDirection='column'
+                        fullWidth={false}
+                      />
+                    ))}
+                  </Stack>
+                )}
+
+                {entry.files.length > 0 && (
+                  <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
+                    {entry.files.map((file, index) => (
+                      <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
+                        {file.type.startsWith('image/') ? (
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        ) : file.type.startsWith('video/') ? (
+                          <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                        ) : (
+                          <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                        )}
+                      </FilePreviewContainer>
+                    ))}
+                  </FilesStack>
+                )}
+              </Stack>
+
+              <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
+                <ActionIconButton aria-label='Edit item' onClick={() => handleEditBackgroundEntry(entry.id)}>
+                  <EdiIcon />
+                </ActionIconButton>
+                <ActionIconButton aria-label='Delete item' onClick={() => handleDeleteBackgroundEntry(entry.id)}>
+                  <CleanIcon width={24} height={24} />
+                </ActionIconButton>
+              </Stack>
+            </ContainerSkillAttach>
+          ))}
+        </Stack>
       )}
 
       <input
