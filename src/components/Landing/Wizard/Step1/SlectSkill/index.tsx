@@ -285,7 +285,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             <ActionIconButton
               aria-label='Record draft action'
               onClick={handleShowVoiceRecorder}
-              disabled={recordingState === 'recording'}
+              disabled={showRecordingControls}
             >
               <RecordIcon />
             </ActionIconButton>
