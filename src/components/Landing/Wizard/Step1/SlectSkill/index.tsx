@@ -115,29 +115,27 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   };
 
   const handleShowVoiceRecorder = () => {
-    // اگر ویس فعلی داریم، قبل از شروع رکورد جدید، آن را به لیست ویس‌های قبلی اضافه کن
-    if (voiceUrl && voiceBlob) {
-      setVoiceRecordings((prev) => [
-        ...prev,
-        {
-          id: generateFakeUUIDv4(),
-          url: voiceUrl,
-          blob: voiceBlob,
-        },
-      ]);
-    }
-
-    setVoiceUrl(null);
-    setVoiceBlob(null);
+    // شروع رکورد جدید
     setShowRecordingControls(true);
     setRecorderKey((prev) => prev + 1); // ری‌مانت برای شروع رکورد جدید
     handleFocusBackground();
   };
 
   const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
+    // وقتی رکورد تموم شد، همون لحظه به لیست ویس‌های قبلی اضافه کن
+    setVoiceRecordings((prev) => [
+      ...prev,
+      {
+        id: generateFakeUUIDv4(),
+        url: audioUrl,
+        blob: audioBlob,
+      },
+    ]);
+
+    // کنترل‌های رکورد بسته می‌شن و state موقت خالی می‌شه
     setShowRecordingControls(false);
-    setVoiceUrl(audioUrl);
-    setVoiceBlob(audioBlob);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
   };
 
   const handleClearVoiceRecording = () => {
@@ -290,7 +288,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             )}
 
             {/* رکوردر برای گرفتن ویس جدید */}
-            {!voiceUrl && showRecordingControls && (
+            {showRecordingControls && (
               <VoiceRecord
                 key={recorderKey}
                 onRecordingComplete={handleVoiceRecordingComplete}
@@ -298,7 +296,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 recordingState={recordingState}
                 setRecordingState={setRecordingState}
                 onClearRecording={handleClearVoiceRecording}
-                stackDirection='column'
+                stackDirection='row'
               />
             )}
           </Stack>
@@ -315,24 +313,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           Add
         </MuiButton>
       </ActionRow>
-      <Stack sx={{ backgroundColor: 'red' }}>
-        {' '}
-        {voiceUrl && (
-          <VoiceRecord
-            recordingState={recordingState}
-            setRecordingState={setRecordingState}
-            initialAudioUrl={voiceUrl}
-            initialAudioBlob={voiceBlob}
-            showRecordingControls={showRecordingControls}
-            onClearRecording={handleClearVoiceRecording}
-            stackDirection='column'
-          />
-        )}
-      </Stack>
-
       {/* لیست ویس‌های قبلی که کنار هم نمایش داده می‌شوند */}
       {voiceRecordings.length > 0 && (
-        <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
+        <ContainerSkillAttach direction='row' active sx={{ mt: 2, alignItems: 'flex-start' }}>
           <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
             {voiceRecordings.map((item) => (
               <VoiceRecord

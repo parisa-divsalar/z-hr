@@ -441,7 +441,11 @@ const VoiceRecord = ({
       gap={stackDirection === 'column' ? 2 : 0}
     >
       {showRecordingControls && recordingState === 'recording' && (
-        <RecordingControlsStack direction='row' alignItems='center' mt={4}>
+        <RecordingControlsStack
+          direction='row'
+          alignItems='center'
+          mt={stackDirection === 'column' ? 4 : 0}
+        >
           <ButtonPuse onClick={handleStopRecordingClick} style={{ cursor: 'pointer' }} />
           <RecordingPulseButton aria-label='Stop recording'>
             <RecordingPulseDot />
