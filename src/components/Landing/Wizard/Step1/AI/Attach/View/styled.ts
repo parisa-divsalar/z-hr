@@ -24,7 +24,7 @@ export const FilePreviewContainer = styled(Box, {
   backgroundColor: 'grey.50',
 }));
 
-export const FilePreviewVoiceContainer = styled(Box)(({ theme }) => ({
+export const FilePreviewVoiceContainer = styled(Box)(({ theme: _theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

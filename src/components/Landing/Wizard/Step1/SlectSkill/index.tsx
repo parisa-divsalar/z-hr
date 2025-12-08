@@ -167,6 +167,11 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   };
 
   const handleAddBackgroundEntry = () => {
+    // فقط اجازه یک بار Add دادن
+    if (backgroundEntries.length > 0) {
+      return;
+    }
+
     const hasText = backgroundText.trim() !== '';
     const hasFiles = uploadedFiles.length > 0;
     const hasVoices = voiceRecordings.length > 0;
@@ -396,6 +401,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             variant='outlined'
             startIcon={<AddIcon />}
             onClick={handleAddBackgroundEntry}
+            disabled={backgroundEntries.length > 0}
             sx={{ flexShrink: 0 }}
           >
             Add
