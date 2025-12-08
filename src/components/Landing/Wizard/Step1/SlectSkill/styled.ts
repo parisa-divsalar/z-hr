@@ -28,7 +28,7 @@ export const ContainerSkill = styled(Stack, {
 }));
 export const ContainerSkillAttach = styled(Stack, {
   shouldForwardProp: (prop) => prop !== 'active',
-})<{ active?: boolean }>(({ theme, active }) => ({
+})<{ active?: boolean }>(({ theme }) => ({
   backgroundColor: 'white',
   width: '350px',
   borderRadius: '1rem',
@@ -44,7 +44,7 @@ export const ContainerSkillAttach = styled(Stack, {
 }));
 export const ContainerSkillAttachItem = styled(Stack, {
   shouldForwardProp: (prop) => prop !== 'active',
-})<{ active?: boolean }>(({ theme, active }) => ({
+})<{ active?: boolean }>(() => ({
   backgroundColor: 'white',
   width: '550px',
   padding: '1rem',
@@ -57,7 +57,7 @@ export const ContainerSkillAttachItem = styled(Stack, {
 
 export const ContainerSkillAttachVoice = styled(Stack, {
   shouldForwardProp: (prop) => prop !== 'active',
-})<{ active?: boolean }>(({ theme, active }) => ({
+})<{ active?: boolean }>(() => ({
   backgroundColor: 'white',
   width: '350px',
   maxWidth: '350px',

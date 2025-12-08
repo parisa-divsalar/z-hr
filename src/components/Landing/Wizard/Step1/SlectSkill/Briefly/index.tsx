@@ -352,3 +352,4 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 };
 
 export default BrieflySection;
+

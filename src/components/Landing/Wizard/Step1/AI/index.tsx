@@ -15,12 +15,12 @@ export type RecordingState = 'idle' | 'recording';
 
 const AIInput: FunctionComponent<AIInputProps> = (props) => {
   const { setAiStatus } = props;
-  const [search, setSearch] = useState('');
+  const [search, _setSearch] = useState('');
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [_uploadedFiles, _setUploadedFiles] = useState<File[]>([]);
 
   const handleVoiceRecordingComplete = (url: string, blob: Blob) => {
     setVoiceUrl(url);

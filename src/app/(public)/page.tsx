@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react';
 import { Stack } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
 
+import IntroDialog from '@/components/Landing/IntroDialog';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
-import IntroDialog from '@/components/Landing/IntroDialog';
 
 export default function LandingPage() {
   const searchParams = useSearchParams();
-  const [aiStatus, setAiStatus] = useState<AIStatus>('START');
+  const [_aiStatus, setAiStatus] = useState<AIStatus>('START');
   const [initialStep, setInitialStep] = useState<number>(1);
   const [isIntroOpen, setIsIntroOpen] = useState<boolean>(true);
 

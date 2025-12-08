@@ -39,7 +39,7 @@ const createRecordingScale = keyframes`
   }
 `;
 
-const RecordingPulseButton = styled(IconButton)(({ theme }) => ({
+const RecordingPulseButton = styled(IconButton)(() => ({
   position: 'relative',
   width: 56,
   height: 56,

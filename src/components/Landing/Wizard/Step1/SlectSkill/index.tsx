@@ -25,9 +25,9 @@ import MuiChips from '@/components/UI/MuiChips';
 import { SelectOption } from '@/components/UI/MuiSelectOptions';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
+import { BackgroundEntry } from './Briefly';
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
-import BrieflySection, { BackgroundEntry } from './Briefly';
 import {
   ActionIconButton,
   ActionRow,
@@ -80,8 +80,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
-  const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
-  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
+  const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
   const [recorderKey, setRecorderKey] = useState<number>(0);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -97,12 +97,11 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const handleShowVoiceRecorder = () => {
     // شروع رکورد جدید
     setShowRecordingControls(true);
-    setRecorderKey((prev) => prev + 1); // ری‌مانت برای شروع رکورد جدید
+    setRecorderKey((prev) => prev + 1);
     handleFocusBackground();
   };
 
   const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
-    // وقتی رکورد تموم شد، همون لحظه به لیست ویس‌های قبلی اضافه کن
     setVoiceRecordings((prev) => [
       ...prev,
       {
