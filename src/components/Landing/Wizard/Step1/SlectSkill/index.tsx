@@ -435,13 +435,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       )}
 
       {backgroundEntries.length > 0 && (
-        <Stack sx={{ width: '100%', mt: 3 }} spacing={1}>
+        <Stack sx={{ maxWidth: '550px', width: '550px', mt: 3 }} spacing={1}>
           {backgroundEntries.map((entry) => (
             <ContainerSkillAttach
               key={entry.id}
               direction='row'
               active
-              sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}
+              sx={{ alignItems: 'flex-start', justifyContent: 'space-between', width: '550px', maxWidth: '550px' }}
             >
               <Stack spacing={1} sx={{ flex: 1 }}>
                 {entry.text && (
