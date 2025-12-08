@@ -80,6 +80,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
   const [skills, setSkills] = useState<TSkill[]>(AllSkill);
   const [backgroundText, setBackgroundText] = useState<string>('');
+  const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
   const [customSkillInput, setCustomSkillInput] = useState<string>('');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const backgroundRef = useRef<HTMLTextAreaElement>(null);
@@ -133,6 +134,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const handleClearBackground = () => {
     setBackgroundText('');
     backgroundRef.current?.focus();
+    setIsEditingEntry(false);
   };
 
   const handleShowVoiceRecorder = () => {
@@ -224,6 +226,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     setBackgroundEntries((prev) => [...prev, newEntry]);
+    setIsEditingEntry(false);
 
     setBackgroundText('');
     setUploadedFiles([]);
@@ -234,6 +237,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   };
 
   const handleEditBackgroundEntry = (id: string) => {
+    setIsEditingEntry(true);
     setBackgroundEntries((prev) => {
       const entry = prev.find((item) => item.id === id);
 
@@ -525,7 +529,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                   </Stack>
                 </Stack>
                 <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
-                  <ActionIconButton onClick={() => handleEditBackgroundEntry(entry.id)}>
+                  <ActionIconButton onClick={() => handleEditBackgroundEntry(entry.id)} disabled={isEditingEntry}>
                     <EdiIcon />
                   </ActionIconButton>
                   <ActionIconButton onClick={() => handleDeleteBackgroundEntry(entry.id)}>
