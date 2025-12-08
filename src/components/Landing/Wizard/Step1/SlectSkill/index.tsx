@@ -444,14 +444,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       )}
       <Divider
         sx={{
-          width: '100%',
+          width: '550px',
           my: 2,
-          borderColor: theme.palette.grey[300],
-          borderBottomWidth: 1,
+          borderColor: theme.palette.grey[100],
         }}
       />
       {backgroundEntries.length > 0 && (
-        <Stack sx={{ maxWidth: '550px', width: '550px', mt: 3 }} spacing={1}>
+        <Stack sx={{ maxWidth: '550px', width: '550px' }} spacing={1}>
           {backgroundEntries.map((entry, index) => (
             <React.Fragment key={entry.id}>
               <ContainerSkillAttachItem
