@@ -264,7 +264,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     #{index + 1}
                   </Typography>
                 </BackgroundEntryIndex>
-                <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
+                <Stack direction='row' sx={{ flex: 1, alignItems: 'flex-start', backgroundColor: 'red' }}>
                   <Stack
                     sx={{
                       minWidth: 32,
@@ -352,4 +352,3 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 };
 
 export default BrieflySection;
-

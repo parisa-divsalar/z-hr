@@ -127,6 +127,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
   const hasBackgroundText = backgroundText.trim() !== '';
   const hasSelectedSkills = skills.some((skill) => skill.selected);
+  const hasCustomSkillInput = customSkillInput.trim() !== '';
+  const hasBackgroundEntry = backgroundEntries.length > 0;
+  const canProceedBackground = hasBackgroundText || hasBackgroundEntry;
   const filePreviews = useMemo(
     () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
     [uploadedFiles],
@@ -490,15 +493,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                   </Typography>
                 </BackgroundEntryIndex>
                 <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
-                  <Stack
-                    sx={{
-                      minWidth: 32,
-                      alignItems: 'center',
-                      justifyContent: 'flex-start',
-                      pt: 0.5,
-                    }}
-                  ></Stack>
-
                   <Stack spacing={1} sx={{ flex: 1 }}>
                     {entry.text && (
                       <Typography variant='body2' color='text.primary' fontWeight='400'>
@@ -618,8 +612,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           color='secondary'
           endIcon={<ArrowRightIcon />}
           size='large'
-          onClick={() => setStage('QUESTIONS')}
-          disabled={!hasBackgroundText || !hasSelectedSkills}
+          onClick={() => setStage('EXPERIENCE')}
+          disabled={!canProceedBackground || (!hasSelectedSkills && !hasCustomSkillInput)}
         >
           Next
         </MuiButton>

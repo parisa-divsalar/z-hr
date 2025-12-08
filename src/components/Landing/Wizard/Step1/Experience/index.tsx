@@ -1,0 +1,270 @@
+import React, { FunctionComponent, RefObject, useEffect, useMemo, useRef, useState } from 'react';
+
+import { Stack, Typography } from '@mui/material';
+
+import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
+import { StageWizard } from '@/components/Landing/type';
+import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
+import MuiButton from '@/components/UI/MuiButton';
+import { generateFakeUUIDv4 } from '@/utils/generateUUID';
+
+import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
+
+interface ExperienceProps {
+  setStage: (stage: StageWizard) => void;
+}
+
+const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
+  const [backgroundText, setBackgroundText] = useState<string>('');
+  const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
+  const [recordingState, setRecordingState] = useState<RecordingState>('idle');
+  const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
+  const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
+  const [recorderKey, setRecorderKey] = useState<number>(0);
+
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
+
+  const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
+
+  const filePreviews = useMemo(
+    () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
+    [uploadedFiles],
+  );
+
+  useEffect(() => {
+    return () => {
+      filePreviews.forEach((preview) => {
+        if (preview) {
+          URL.revokeObjectURL(preview);
+        }
+      });
+    };
+  }, [filePreviews]);
+
+  const handleFocusBackground = () => {
+    backgroundRef.current?.focus();
+  };
+
+  const handleShowVoiceRecorder = () => {
+    setShowRecordingControls(true);
+    setRecorderKey((prev) => prev + 1);
+    handleFocusBackground();
+  };
+
+  const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
+    setVoiceRecordings((prev) => [
+      ...prev,
+      {
+        id: generateFakeUUIDv4(),
+        url: audioUrl,
+        blob: audioBlob,
+      },
+    ]);
+
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  const handleClearVoiceRecording = () => {
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  const handleRemoveSavedRecording = (id: string) => {
+    setVoiceRecordings((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleOpenFileDialog = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files) {
+      return;
+    }
+
+    const fileList = Array.from(files);
+    setUploadedFiles((prev) => [...prev, ...fileList]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveUploadedFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+  };
+
+  const handleAddBackgroundEntry = () => {
+    const hasText = backgroundText.trim() !== '';
+    const hasFiles = uploadedFiles.length > 0;
+    const hasVoices = voiceRecordings.length > 0;
+
+    if (!hasText && !hasFiles && !hasVoices) {
+      return;
+    }
+
+    const newEntry: BackgroundEntry = {
+      id: generateFakeUUIDv4(),
+      text: backgroundText.trim(),
+      files: uploadedFiles,
+      voices: voiceRecordings,
+    };
+
+    setBackgroundEntries((prev) => [...prev, newEntry]);
+    setIsEditingEntry(false);
+    setEditingEntryId(null);
+    setEditingEntryBackup(null);
+
+    setBackgroundText('');
+    setUploadedFiles([]);
+    setVoiceRecordings([]);
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  const handleEditBackgroundEntry = (id: string) => {
+    setIsEditingEntry(true);
+    setBackgroundEntries((prev) => {
+      const entry = prev.find((item) => item.id === id);
+
+      if (!entry) {
+        return prev;
+      }
+
+      setEditingEntryId(entry.id);
+      setEditingEntryBackup(entry);
+      setBackgroundText(entry.text);
+      setUploadedFiles(entry.files);
+      setVoiceRecordings(entry.voices);
+
+      return prev.filter((item) => item.id !== id);
+    });
+  };
+
+  const handleSaveBackgroundEntry = () => {
+    const hasText = backgroundText.trim() !== '';
+    const hasFiles = uploadedFiles.length > 0;
+    const hasVoices = voiceRecordings.length > 0;
+
+    if (!hasText && !hasFiles && !hasVoices) {
+      return;
+    }
+
+    const updatedEntry: BackgroundEntry = {
+      id: editingEntryId ?? generateFakeUUIDv4(),
+      text: backgroundText.trim(),
+      files: uploadedFiles,
+      voices: voiceRecordings,
+    };
+
+    setBackgroundEntries((prev) => [...prev, updatedEntry]);
+
+    setIsEditingEntry(false);
+    setEditingEntryId(null);
+    setEditingEntryBackup(null);
+
+    setBackgroundText('');
+    setUploadedFiles([]);
+    setVoiceRecordings([]);
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  const handleCancelEditBackgroundEntry = () => {
+    if (editingEntryBackup) {
+      setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
+    }
+
+    setIsEditingEntry(false);
+    setEditingEntryId(null);
+    setEditingEntryBackup(null);
+
+    setBackgroundText('');
+    setUploadedFiles([]);
+    setVoiceRecordings([]);
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  const handleDeleteBackgroundEntry = (id: string) => {
+    setBackgroundEntries((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const hasExperience = backgroundText.trim() !== '' || backgroundEntries.length > 0;
+
+  return (
+    <Stack alignItems='center' justifyContent='center' height='100%'>
+      <Typography variant='h5' color='text.primary' fontWeight='584'>
+        Tell us about your experience
+      </Typography>
+
+      <BrieflySection
+        backgroundText={backgroundText}
+        onBackgroundTextChange={setBackgroundText}
+        backgroundRef={backgroundRef as RefObject<HTMLTextAreaElement>}
+        showRecordingControls={showRecordingControls}
+        onShowVoiceRecorder={handleShowVoiceRecorder}
+        recordingState={recordingState}
+        setRecordingState={setRecordingState}
+        recorderKey={recorderKey}
+        voiceRecordings={voiceRecordings}
+        onRecordingComplete={handleVoiceRecordingComplete}
+        onClearRecording={handleClearVoiceRecording}
+        onRemoveSavedRecording={handleRemoveSavedRecording}
+        uploadedFiles={uploadedFiles}
+        filePreviews={filePreviews}
+        onOpenFileDialog={handleOpenFileDialog}
+        onFileUpload={handleFileUpload}
+        onRemoveUploadedFile={handleRemoveUploadedFile}
+        isEditingEntry={isEditingEntry}
+        onAddBackgroundEntry={handleAddBackgroundEntry}
+        onCancelEditBackgroundEntry={handleCancelEditBackgroundEntry}
+        onSaveBackgroundEntry={handleSaveBackgroundEntry}
+        backgroundEntries={backgroundEntries}
+        onEditBackgroundEntry={handleEditBackgroundEntry}
+        onDeleteBackgroundEntry={handleDeleteBackgroundEntry}
+        fileInputRef={fileInputRef as RefObject<HTMLInputElement>}
+      />
+
+      <Stack mt={4} mb={6} direction='row' gap={3}>
+        <MuiButton
+          color='secondary'
+          variant='outlined'
+          size='large'
+          startIcon={<ArrowBackIcon />}
+          onClick={() => setStage('SELECT_SKILL')}
+        >
+          Back
+        </MuiButton>
+
+        <MuiButton
+          color='secondary'
+          endIcon={<ArrowRightIcon />}
+          size='large'
+          onClick={() => setStage('QUESTIONS')}
+          disabled={!hasExperience}
+        >
+          Next
+        </MuiButton>
+      </Stack>
+    </Stack>
+  );
+};
+
+export default Experience;
+
+
