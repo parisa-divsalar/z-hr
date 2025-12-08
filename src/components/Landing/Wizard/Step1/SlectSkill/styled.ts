@@ -47,7 +47,6 @@ export const ContainerSkillAttachItem = styled(Stack, {
 })<{ active?: boolean }>(({ theme, active }) => ({
   backgroundColor: 'white',
   width: '550px',
-  borderTop: `1px solid ${theme.palette.grey[100]}`,
   padding: '1rem',
   maxWidth: '550px',
   height: 'auto',
