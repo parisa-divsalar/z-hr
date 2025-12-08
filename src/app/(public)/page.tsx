@@ -6,11 +6,13 @@ import { useSearchParams } from 'next/navigation';
 
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
+import IntroDialog from '@/components/Landing/IntroDialog';
 
 export default function LandingPage() {
   const searchParams = useSearchParams();
   const [aiStatus, setAiStatus] = useState<AIStatus>('START');
   const [initialStep, setInitialStep] = useState<number>(1);
+  const [isIntroOpen, setIsIntroOpen] = useState<boolean>(true);
 
   useEffect(() => {
     const stepParam = searchParams.get('step');
@@ -25,6 +27,7 @@ export default function LandingPage() {
 
   return (
     <Stack width='100%' height='100%'>
+      <IntroDialog open={isIntroOpen} onClose={() => setIsIntroOpen(false)} />
       <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
     </Stack>
   );
