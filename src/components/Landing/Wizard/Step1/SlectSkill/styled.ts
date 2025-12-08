@@ -78,8 +78,14 @@ export const ActionRow = styled(Stack)(() => ({
 
 export const ActionIconButton = styled(IconButton)(() => ({
   padding: '0.25rem',
-  transition: 'border-color 0.2s ease, background-color 0.2s ease',
-  '&:hover': {},
+  backgroundColor: 'transparent',
+  boxShadow: 'none',
+  '&:hover': {
+    backgroundColor: 'transparent',
+  },
+  '&:focus-visible': {
+    backgroundColor: 'transparent',
+  },
 }));
 export const BackgroundEntryIndex = styled(Stack)(({ theme }) => ({
   backgroundColor: theme.palette.primary.light,

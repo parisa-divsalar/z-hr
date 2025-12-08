@@ -7,7 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import AttachIcon from '@/assets/images/icons/attach.svg';
-import CleanIcon from '@/assets/images/icons/clean.svg';
+import CleanIcon from '@/assets/images/icons/clearButton.svg';
 import EdiIcon from '@/assets/images/icons/edit.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
@@ -524,12 +524,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     )}
                   </Stack>
                 </Stack>
-                <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
-                  <ActionIconButton aria-label='Edit item' onClick={() => handleEditBackgroundEntry(entry.id)}>
+                <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
+                  <ActionIconButton onClick={() => handleEditBackgroundEntry(entry.id)}>
                     <EdiIcon />
                   </ActionIconButton>
-                  <ActionIconButton aria-label='Delete item' onClick={() => handleDeleteBackgroundEntry(entry.id)}>
-                    <CleanIcon width={24} height={24} />
+                  <ActionIconButton onClick={() => handleDeleteBackgroundEntry(entry.id)}>
+                    <CleanIcon />
                   </ActionIconButton>
                 </Stack>
               </ContainerSkillAttachItem>
