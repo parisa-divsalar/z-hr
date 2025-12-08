@@ -81,6 +81,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const [skills, setSkills] = useState<TSkill[]>(AllSkill);
   const [backgroundText, setBackgroundText] = useState<string>('');
   const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
   const [customSkillInput, setCustomSkillInput] = useState<string>('');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const backgroundRef = useRef<HTMLTextAreaElement>(null);
@@ -98,43 +100,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   const onUpdateSkill = (id: string, selected: boolean) =>
     setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
 
-  const handleAddCustomSkill = () => {
-    const trimmedValue = customSkillInput.trim();
-    if (!trimmedValue) {
-      return;
-    }
-
-    setSkills((previousSkills) => {
-      const normalizedLabel = trimmedValue.toLowerCase();
-
-      const existingIndex = previousSkills.findIndex((skill) => skill.label.toLowerCase() === normalizedLabel);
-
-      if (existingIndex >= 0) {
-        return previousSkills.map((skill, index) => (index === existingIndex ? { ...skill, selected: true } : skill));
-      }
-
-      return [
-        ...previousSkills,
-        {
-          id: generateFakeUUIDv4(),
-          label: trimmedValue,
-          selected: true,
-        },
-      ];
-    });
-
-    setCustomSkillInput('');
-    customSkillRef.current?.focus();
-  };
-
   const handleFocusBackground = () => {
     backgroundRef.current?.focus();
-  };
-
-  const handleClearBackground = () => {
-    setBackgroundText('');
-    backgroundRef.current?.focus();
-    setIsEditingEntry(false);
   };
 
   const handleShowVoiceRecorder = () => {
@@ -227,6 +194,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     setBackgroundEntries((prev) => [...prev, newEntry]);
     setIsEditingEntry(false);
+    setEditingEntryId(null);
+    setEditingEntryBackup(null);
 
     setBackgroundText('');
     setUploadedFiles([]);
@@ -245,12 +214,61 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         return prev;
       }
 
+      setEditingEntryId(entry.id);
+      setEditingEntryBackup(entry);
       setBackgroundText(entry.text);
       setUploadedFiles(entry.files);
       setVoiceRecordings(entry.voices);
 
       return prev.filter((item) => item.id !== id);
     });
+  };
+
+  const handleSaveBackgroundEntry = () => {
+    const hasText = backgroundText.trim() !== '';
+    const hasFiles = uploadedFiles.length > 0;
+    const hasVoices = voiceRecordings.length > 0;
+
+    if (!hasText && !hasFiles && !hasVoices) {
+      return;
+    }
+
+    const updatedEntry: BackgroundEntry = {
+      id: editingEntryId ?? generateFakeUUIDv4(),
+      text: backgroundText.trim(),
+      files: uploadedFiles,
+      voices: voiceRecordings,
+    };
+
+    setBackgroundEntries((prev) => [...prev, updatedEntry]);
+
+    setIsEditingEntry(false);
+    setEditingEntryId(null);
+    setEditingEntryBackup(null);
+
+    setBackgroundText('');
+    setUploadedFiles([]);
+    setVoiceRecordings([]);
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
+  };
+
+  const handleCancelEditBackgroundEntry = () => {
+    if (editingEntryBackup) {
+      setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
+    }
+
+    setIsEditingEntry(false);
+    setEditingEntryId(null);
+    setEditingEntryBackup(null);
+
+    setBackgroundText('');
+    setUploadedFiles([]);
+    setVoiceRecordings([]);
+    setShowRecordingControls(false);
+    setVoiceUrl(null);
+    setVoiceBlob(null);
   };
 
   const handleDeleteBackgroundEntry = (id: string) => {
@@ -330,8 +348,15 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       <Stack direction='row' alignItems='center' gap={1} mt={2}>
         <AtsFriendlyChip color='warning.main' label='ATS Friendly' />
       </Stack>
-      <Stack sx={{ width: '498px' }}>
-        <Typography fontWeight='400' variant='body1' color='text.secondry'>
+      <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
+        <Typography
+          fontWeight='400'
+          variant='body1'
+          color='text.secondry'
+          justifyContent='center'
+          alignItems='center'
+          textAlign='center'
+        >
           Your summary shows employers you’re right for their job. We’ll help you write a great one with expert content
           you can customize.
         </Typography>
@@ -373,16 +398,27 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           </Stack>
         </Stack>
 
-        <MuiButton
-          color='secondary'
-          size='medium'
-          variant='outlined'
-          startIcon={<AddIcon />}
-          onClick={handleAddBackgroundEntry}
-          sx={{ flexShrink: 0 }}
-        >
-          Add
-        </MuiButton>
+        {!isEditingEntry ? (
+          <MuiButton
+            color='secondary'
+            size='medium'
+            variant='outlined'
+            startIcon={<AddIcon />}
+            onClick={handleAddBackgroundEntry}
+            sx={{ flexShrink: 0 }}
+          >
+            Add
+          </MuiButton>
+        ) : (
+          <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
+            <MuiButton color='error' size='medium' variant='text' onClick={handleCancelEditBackgroundEntry}>
+              Cancel
+            </MuiButton>
+            <MuiButton color='primary' size='medium' variant='contained' onClick={handleSaveBackgroundEntry}>
+              Save
+            </MuiButton>
+          </Stack>
+        )}
       </ActionRow>
       {/* لیست ویس‌های قبلی که کنار هم نمایش داده می‌شوند */}
       {voiceRecordings.length > 0 && (
