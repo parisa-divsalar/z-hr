@@ -1,45 +1,56 @@
 'use client';
-import React, { useState } from 'react';
 
-import AppleIcon from '@mui/icons-material/Apple';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import { IconButton, Stack, Typography } from '@mui/material';
-import { useRouter } from 'next/navigation';
-
-import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
-import { verifyCode } from '@/app/api/auth';
+import * as yup from 'yup';
 import AdAuth from '@/components/Auth/AdAuth';
-import AuthHeader from '@/components/Auth/Header';
-import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
-import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
-import { PrivateRoutes, PublicRoutes } from '@/config/routes';
-import { useAuthStore } from '@/store/auth';
+import MuiButton from '@/components/UI/MuiButton';
+import AppleIcon from '@mui/icons-material/Apple';
+import AuthHeader from '@/components/Auth/Header';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import { useState } from 'react';
+import { useFormik } from 'formik';
+import { useRouter } from 'next/navigation';
+import { PublicRoutes } from '@/config/routes';
+import { apiClientClient } from '@/services/api-client';
+import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
+import { IconButton, Stack, Typography } from '@mui/material';
+import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
 
 const LoginPage = () => {
   const router = useRouter();
-  const { loginStart, loginFailure, loginSuccess } = useAuthStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [typeInput, setTypeInput] = useState<'password' | 'text'>('password');
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const validationSchema = yup.object({
+    username: yup.string().required('Email is required!'),
+    password: yup.string().required('Password is required!'),
+  });
 
-  const onSubmit = () => {
-    loginStart();
-    setLoading(true);
+  const formik = useFormik({
+    validationSchema: validationSchema,
+    initialValues: {
+      username: '',
+      password: '',
+    },
 
-    verifyCode()
-      .then((res: any) => {
-        loginSuccess(res.accessToken, res.refreshToken);
-        router.replace(PrivateRoutes.dashboard);
-      })
-      .catch(() => loginFailure())
-      .finally(() => setLoading(false));
-  };
+    onSubmit: async (values) => {
+      setIsLoading(true);
 
+      try {
+        const { data } = await apiClientClient.post('auth/login', values);
+        router.push('/');
+        localStorage.setItem('user', JSON.stringify(data?.data));
+      } catch (error: any) {
+        setIsLoading(false);
+        console.error('login Error', error);
+      }
+    },
+  });
+
+  const isDisabled = !formik.isValid || isLoading || formik.values === formik.initialValues;
   return (
     <MainContainer>
       <MainContent direction='row'>
@@ -57,11 +68,16 @@ const LoginPage = () => {
             </Typography>
 
             <Stack spacing={1} mt={3}>
-              <MuiInput value={email} onChange={setEmail} label='Email' placeholder='Your email...' />
+              <MuiInput
+                label='Email'
+                placeholder='Your email...'
+                value={formik.values.username}
+                onChange={(event) => formik.setFieldValue('username', event)}
+              />
 
               <MuiInput
-                value={password}
-                onChange={setPassword}
+                value={formik.values.password}
+                onChange={(event) => formik.setFieldValue('password', event)}
                 type={typeInput}
                 label='Password'
                 endIcon={
@@ -81,11 +97,11 @@ const LoginPage = () => {
 
             <Stack mt={4} spacing={1}>
               <MuiButton
-                color='secondary'
                 fullWidth
-                onClick={onSubmit}
-                disabled={!email || !password}
-                loading={loading}
+                color='secondary'
+                loading={isLoading}
+                disabled={isDisabled}
+                onClick={() => formik.handleSubmit()}
               >
                 Login
               </MuiButton>
