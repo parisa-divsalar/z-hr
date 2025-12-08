@@ -261,7 +261,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     )}
 
                     {entry.voices.length > 0 && (
-                      <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+                      <Stack direction='row' sx={{ flexWrap: 'wrap' }}>
                         {entry.voices.map((voice) => (
                           <VoiceRecord
                             key={voice.id}
