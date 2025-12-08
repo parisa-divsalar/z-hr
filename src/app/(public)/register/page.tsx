@@ -1,104 +1,69 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-
-import AppleIcon from '@mui/icons-material/Apple';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import { IconButton, Stack, Typography } from '@mui/material';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-
-import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
-import axiosInstance from '@/app/api/axiosInstance';
-import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
-import InfoIcon from '@/assets/images/icons/info.svg';
+import * as yup from 'yup';
 import AdAuth from '@/components/Auth/AdAuth';
-import AuthHeader from '@/components/Auth/Header';
-import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
-import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
+import InfoIcon from '@/assets/images/icons/info.svg';
+import MuiButton from '@/components/UI/MuiButton';
+import AppleIcon from '@mui/icons-material/Apple';
+import AuthHeader from '@/components/Auth/Header';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import { useState } from 'react';
+import { useFormik } from 'formik';
+import { useRouter } from 'next/navigation';
 import { PublicRoutes } from '@/config/routes';
+import { apiClientClient } from '@/services/api-client';
+import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
+import { IconButton, Stack, Typography } from '@mui/material';
 import { checkPasswordLength, validateSpecialChar } from '@/utils/validation';
-
-const REGISTER_ENDPOINT = 'https://apisrv.zenonrobotics.ae/api/Apps/Register';
-
-const getRegisterErrorMessage = (error: unknown) => {
-  if (axios.isAxiosError(error)) {
-    const responseData = error.response?.data;
-
-    if (typeof responseData === 'string' && responseData.length > 0) {
-      return responseData;
-    }
-
-    if (typeof responseData === 'object' && responseData !== null) {
-      if ('message' in responseData && typeof responseData.message === 'string') {
-        return responseData.message;
-      }
-
-      if ('status' in responseData && typeof responseData.status?.message === 'string') {
-        return responseData.status.message;
-      }
-
-      if ('error' in responseData && typeof responseData.error?.message === 'string') {
-        return responseData.error.message;
-      }
-    }
-
-    return error.message || 'Registration failed. Please try again.';
-  }
-
-  if (error instanceof Error) return error.message;
-
-  return 'Registration failed. Please try again.';
-};
+import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
 
 const RegisterPage = () => {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [typeInput, setTypeInput] = useState<'password' | 'text'>('password');
-  const [disabled, setDisabled] = useState<boolean>(true);
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const validationSchema = yup.object({
+    email: yup.string().required('Email is required!'),
+    password: yup.string().required('Password is required!'),
+  });
 
-  const onSubmit = async () => {
-    if (disabled || loading) return;
+  const formik = useFormik({
+    validationSchema: validationSchema,
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      username: '',
+      password: '',
+      email: '',
+    },
 
-    setLoading(true);
-    setErrorMessage(null);
+    onSubmit: async (values) => {
+      setIsLoading(true);
 
-    try {
-      await axiosInstance.post(REGISTER_ENDPOINT, {
-        email,
-        password,
-      });
+      const body = {
+        email: values.email,
+        lastName: 'lastName',
+        firstName: 'lastName',
+        username: values.email,
+        password: values.password,
+      };
 
-      router.replace(PublicRoutes.congrats);
-    } catch (error) {
-      setErrorMessage(getRegisterErrorMessage(error));
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        await apiClientClient.post('auth/register', body);
+        router.push('/login');
+      } catch (error: any) {
+        setIsLoading(false);
+        console.error('Register Error', error);
+      }
+    },
+  });
 
-  const handleEmailChange = (value: string) => {
-    setErrorMessage(null);
-    setEmail(value);
-  };
-
-  const handlePasswordChange = (value: string) => {
-    setErrorMessage(null);
-    setPassword(value);
-  };
-
-  useEffect(() => {
-    if (email !== '' && password.length > 4 && !validateSpecialChar(password) && checkPasswordLength(password))
-      setDisabled(false);
-    else setDisabled(true);
-  }, [password, email]);
+  const isDisabled = !formik.isValid || isLoading || formik.values === formik.initialValues;
 
   return (
     <MainContainer>
@@ -118,13 +83,19 @@ const RegisterPage = () => {
             </Typography>
 
             <Stack spacing={1} mt={3}>
-              <MuiInput value={email} onChange={handleEmailChange} label='Email' placeholder='Your email...' />
+              <MuiInput
+                label='Email'
+                placeholder='Your email...'
+                value={formik.values.email}
+                onChange={(event) => formik.setFieldValue('email', event)}
+              />
 
               <MuiInput
-                value={password}
-                onChange={handlePasswordChange}
-                type={typeInput}
                 label='Password'
+                type={typeInput}
+                placeholder='Your password...'
+                value={formik.values.password}
+                onChange={(event) => formik.setFieldValue('password', event)}
                 endIcon={
                   typeInput === 'password' ? (
                     <IconButton onClick={() => setTypeInput('text')}>
@@ -136,33 +107,39 @@ const RegisterPage = () => {
                     </IconButton>
                   )
                 }
-                placeholder='Your password...'
               />
             </Stack>
 
             <Stack direction='row' alignItems='center' gap={0.5} mt={1}>
-              {checkPasswordLength(password) ? <CheckCircleIcon /> : <InfoIcon color='#66666E' />}
+              {checkPasswordLength(formik.values.password) ? <CheckCircleIcon /> : <InfoIcon color='#66666E' />}
 
-              <Typography color={checkPasswordLength(password) ? 'success.main' : 'grey.300'} variant='subtitle2'>
+              <Typography
+                color={checkPasswordLength(formik.values.password) ? 'success.main' : 'grey.300'}
+                variant='subtitle2'
+              >
                 Must be at least 8 characters
               </Typography>
             </Stack>
 
             <Stack direction='row' alignItems='center' gap={0.5} mb={2}>
-              {!validateSpecialChar(password) ? <CheckCircleIcon /> : <InfoIcon color='#66666E' />}
-              <Typography color={!validateSpecialChar(password) ? 'success.main' : 'grey.300'} variant='subtitle2'>
+              {!validateSpecialChar(formik.values.password) ? <CheckCircleIcon /> : <InfoIcon color='#66666E' />}
+              <Typography
+                color={!validateSpecialChar(formik.values.password) ? 'success.main' : 'grey.300'}
+                variant='subtitle2'
+              >
                 Must contain one special character
               </Typography>
             </Stack>
 
-            <MuiButton color='secondary' fullWidth onClick={onSubmit} disabled={disabled} loading={loading}>
+            <MuiButton
+              fullWidth
+              color='secondary'
+              loading={isLoading}
+              disabled={isDisabled}
+              onClick={() => formik.handleSubmit()}
+            >
               Sign up
             </MuiButton>
-            {errorMessage && (
-              <Typography color='error.main' variant='body2' mt={1.5}>
-                {errorMessage}
-              </Typography>
-            )}
 
             <Stack alignItems='center'>
               <OrDivider sx={{ marginTop: '0.75rem' }}>
