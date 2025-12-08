@@ -95,7 +95,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
   };
 
   const handleShowVoiceRecorder = () => {
-    // شروع رکورد جدید
     setShowRecordingControls(true);
     setRecorderKey((prev) => prev + 1);
     handleFocusBackground();
@@ -111,7 +110,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       },
     ]);
 
-    // کنترل‌های رکورد بسته می‌شن و state موقت خالی می‌شه
     setShowRecordingControls(false);
     setVoiceUrl(null);
     setVoiceBlob(null);
@@ -409,7 +407,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           </Stack>
         )}
       </ActionRow>
-      {/* لیست ویس‌های قبلی که کنار هم نمایش داده می‌شوند */}
       {voiceRecordings.length > 0 && (
         <ContainerSkillAttachVoice direction='row' active sx={{ mt: 2, alignItems: 'flex-start' }}>
           <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>

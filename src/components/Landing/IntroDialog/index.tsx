@@ -57,8 +57,14 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
 
     const dob = dateOfBirth.trim();
     const dobParts = dob.split('/');
+
     const isDobComplete =
-      dobParts.length === 3 && dobParts[0].length === 2 && dobParts[1].length === 2 && dobParts[2].length === 4;
+      dobParts.length === 3 &&
+      dobParts[0].length >= 1 &&
+      dobParts[0].length <= 2 &&
+      dobParts[1].length >= 1 &&
+      dobParts[1].length <= 2 &&
+      dobParts[2].length === 4;
 
     return !(hasFullName && hasMainSkill && isDobComplete);
   }, [fullName, mainSkillId, dateOfBirth]);
@@ -72,7 +78,6 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
   }, [open]);
 
   const handleConfirm = () => {
-    // TODO: connect with state / API when needed
     onClose();
   };
 
@@ -103,11 +108,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
         </HeaderContainer>
 
         <StackContent gap={1.5}>
-          <MuiInput
-            label='Full name'
-            value={fullName}
-            onChange={(value) => setFullName(String(value ?? ''))}
-          />
+          <MuiInput label='Full name' value={fullName} onChange={(value) => setFullName(String(value ?? ''))} />
 
           <MuiSelectOptions
             label='Your main skill'
