@@ -27,6 +27,7 @@ import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
+import BrieflySection, { BackgroundEntry } from './Briefly';
 import {
   ActionIconButton,
   ActionRow,
@@ -38,17 +39,6 @@ import {
   SkillContainer,
 } from './styled';
 import { TSkill } from './type';
-
-interface BackgroundEntry {
-  id: string;
-  text: string;
-  files: File[];
-  voices: {
-    id: string;
-    url: string;
-    blob: Blob;
-  }[];
-}
 
 interface SelectSkillProps {
   setStage: (stage: StageWizard) => void;

@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
-import AIInput from '@/components/Landing/Wizard/Step1/AI';
 
 export default function LandingPage() {
   const searchParams = useSearchParams();
@@ -26,13 +25,7 @@ export default function LandingPage() {
 
   return (
     <Stack width='100%' height='100%'>
-      {aiStatus === 'START' ? (
-        <AIInput setAiStatus={setAiStatus} />
-      ) : aiStatus === 'WIZARD' ? (
-        <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
-      ) : (
-        <Stack />
-      )}
+      <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
     </Stack>
   );
 }
