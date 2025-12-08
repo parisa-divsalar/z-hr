@@ -255,7 +255,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
       <BottomActionsStack
         mt={2}
         direction='row'
-        alignItems='stretch'
+        alignItems='center'
         gap={1}
         width='100%'
         style={{ maxWidth: '426px' }}

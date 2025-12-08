@@ -111,7 +111,8 @@ export const SkillIconButton = styled(IconButton)`
 `;
 
 export const BottomActionsStack = styled(Stack)(() => ({
-  '& > *': {
+  // Make the select boxes expand while keeping the add button at its natural width
+  '& > :not(:last-child)': {
     flex: 1,
     minWidth: 0,
   },
