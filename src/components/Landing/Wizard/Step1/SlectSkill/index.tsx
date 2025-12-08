@@ -8,7 +8,7 @@ import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import AttachIcon from '@/assets/images/icons/attach.svg';
 import CleanIcon from '@/assets/images/icons/clean.svg';
-import EdiIcon from '@/assets/images/icons/Frame42731.svg';
+import EdiIcon from '@/assets/images/icons/edit.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
 import VideoIcon from '@/assets/images/icons/Icon-play.svg';
@@ -34,6 +34,7 @@ import {
   ContainerSkill,
   ContainerSkillAttach,
   ContainerSkillAttachItem,
+  ContainerSkillAttachVoice,
   SkillContainer,
 } from './styled';
 import { TSkill } from './type';
@@ -381,7 +382,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
       </ActionRow>
       {/* لیست ویس‌های قبلی که کنار هم نمایش داده می‌شوند */}
       {voiceRecordings.length > 0 && (
-        <ContainerSkillAttach direction='row' active sx={{ mt: 2, alignItems: 'flex-start' }}>
+        <ContainerSkillAttachVoice direction='row' active sx={{ mt: 2, alignItems: 'flex-start' }}>
           <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
             {voiceRecordings.map((item) => (
               <VoiceRecord
@@ -398,7 +399,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
               />
             ))}
           </Stack>
-        </ContainerSkillAttach>
+        </ContainerSkillAttachVoice>
       )}
 
       {uploadedFiles.length > 0 && (
@@ -441,17 +442,18 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           </FilesStack>
         </ContainerSkillAttach>
       )}
-
+      <Divider
+        sx={{
+          width: '100%',
+          my: 2,
+          borderColor: theme.palette.grey[300],
+          borderBottomWidth: 1,
+        }}
+      />
       {backgroundEntries.length > 0 && (
         <Stack sx={{ maxWidth: '550px', width: '550px', mt: 3 }} spacing={1}>
           {backgroundEntries.map((entry, index) => (
             <React.Fragment key={entry.id}>
-              <Divider
-                sx={{
-                  borderColor: theme.palette.grey[100],
-                }}
-              />
-
               <ContainerSkillAttachItem
                 direction='row'
                 active
