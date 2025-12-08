@@ -108,19 +108,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
         {/* ATS Friendly chip is rendered from parent via AtsFriendlyChip */}
         {/* This wrapper keeps layout consistent if chip render logic changes */}
       </Stack>
-      <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
-        <Typography
-          fontWeight='400'
-          variant='body1'
-          color='text.secondry'
-          justifyContent='center'
-          alignItems='center'
-          textAlign='center'
-        >
-          Your summary shows employers you’re right for their job. We’ll help you write a great one with expert content
-          you can customize.
-        </Typography>
-      </Stack>
+
       <ContainerSkill direction='row' active={hasBackgroundText}>
         <InputContent
           placeholder='Type your answer...'
@@ -264,16 +252,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     #{index + 1}
                   </Typography>
                 </BackgroundEntryIndex>
-                <Stack direction='row' sx={{ flex: 1, alignItems: 'flex-start', backgroundColor: 'red' }}>
-                  <Stack
-                    sx={{
-                      minWidth: 32,
-                      alignItems: 'center',
-                      justifyContent: 'flex-start',
-                      pt: 0.5,
-                    }}
-                  ></Stack>
-
+                <Stack direction='row' sx={{ flex: 1, alignItems: 'flex-start' }}>
                   <Stack spacing={1} sx={{ flex: 1 }}>
                     {entry.text && (
                       <Typography variant='body2' color='text.primary' fontWeight='400'>

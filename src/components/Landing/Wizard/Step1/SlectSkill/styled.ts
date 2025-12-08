@@ -47,12 +47,12 @@ export const ContainerSkillAttachItem = styled(Stack, {
 })<{ active?: boolean }>(() => ({
   backgroundColor: 'white',
   width: '550px',
-  padding: '1rem',
   maxWidth: '550px',
+  paddingTop: '5px',
   height: 'auto',
-  marginTop: '1rem',
+  marginTop: '0.5rem',
   display: 'flex',
-  gap: '0.25rem',
+  gap: '1rem',
 }));
 
 export const ContainerSkillAttachVoice = styled(Stack, {

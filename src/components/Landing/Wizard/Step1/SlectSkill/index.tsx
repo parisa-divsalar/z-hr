@@ -293,7 +293,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           arrow
           placement='right'
           title={
-            <TooltipContent spacing={1}>
+            <TooltipContent>
               {tooltipLines.map((line) => (
                 <Typography key={line} variant='body2' color='inherit'>
                   {line}
@@ -335,7 +335,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         </Tooltip>
       </Stack>
 
-      <Stack direction='row' alignItems='center' gap={1} mt={2}>
+      <Stack direction='row' alignItems='center' gap={1} mt={1}>
         <AtsFriendlyChip color='warning.main' label='ATS Friendly' />
       </Stack>
       <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
@@ -346,6 +346,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
           justifyContent='center'
           alignItems='center'
           textAlign='center'
+          mt={1}
         >
           Your summary shows employers you’re right for their job. We’ll help you write a great one with expert content
           you can customize.

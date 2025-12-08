@@ -25,14 +25,9 @@ export const FilePreviewContainer = styled(Box, {
 }));
 
 export const FilePreviewVoiceContainer = styled(Box)(({ theme }) => ({
-  width: 135,
-  height: 60,
-  border: `1px solid ${theme.palette.grey[100]}`,
-  borderRadius: '8px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: theme.spacing(0.5),
 }));
 
 export const RemoveFileButton = styled(IconButton)(() => ({

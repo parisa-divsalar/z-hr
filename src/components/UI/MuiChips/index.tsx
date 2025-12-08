@@ -13,11 +13,12 @@ export interface MuiChipsProps {
   color?: string;
   onUpdateSkill?: (id: string, selected: boolean) => void;
   sx?: SxProps<Theme>;
+  className?: string;
 }
 
 const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
   const theme = useTheme<Theme>();
-  const { skill, label: labelProp, color = 'text.primary', onUpdateSkill, sx } = props;
+  const { skill, label: labelProp, color = 'text.primary', onUpdateSkill, sx, className } = props;
   const { id, label = '', selected = false } = skill || {};
   const chipLabel = labelProp ?? label;
 
@@ -34,6 +35,7 @@ const MuiChips: FunctionComponent<MuiChipsProps> = (props) => {
 
   return (
     <ChipContainer
+      className={className}
       direction='row'
       bgcolor={selected ? 'primary.light' : 'transparent'}
       border={selected ? `2px solid ${theme.palette.primary.main}` : `2px solid ${theme.palette.grey[50]}`}

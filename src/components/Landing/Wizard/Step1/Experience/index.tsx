@@ -209,7 +209,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
       <Typography variant='h5' color='text.primary' fontWeight='584'>
-        Tell us about your experience
+        6. Your work experience history{' '}
       </Typography>
 
       <BrieflySection
@@ -266,5 +266,3 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 };
 
 export default Experience;
-
-
