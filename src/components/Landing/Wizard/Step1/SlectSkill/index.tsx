@@ -282,14 +282,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             <AttachIcon />
           </ActionIconButton>
           <Stack direction='column' alignItems='center' gap={1}>
-            <ActionIconButton
-              aria-label='Record draft action'
-              onClick={handleShowVoiceRecorder}
-              disabled={showRecordingControls}
-            >
-              <RecordIcon />
-            </ActionIconButton>
-            {/* ویس فعلی (آخرین رکورد) */}
+            {/* دکمه رکورد فقط وقتی نشون داده میشه که در حال رکورد نباشیم */}
+            {!showRecordingControls && (
+              <ActionIconButton aria-label='Record draft action' onClick={handleShowVoiceRecorder}>
+                <RecordIcon />
+              </ActionIconButton>
+            )}
 
             {/* رکوردر برای گرفتن ویس جدید */}
             {!voiceUrl && showRecordingControls && (
