@@ -34,6 +34,8 @@ interface MuiInputProps {
   multiline?: boolean;
   readOnly?: boolean;
   onBlur?: () => void;
+  // allow passing MUI `sx` and other TextField props through
+  sx?: any;
 }
 
 const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(

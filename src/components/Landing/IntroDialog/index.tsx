@@ -33,12 +33,10 @@ const selectMenuProps: SelectProps['MenuProps'] = {
     sx: {
       maxHeight: '180px',
       overflowY: 'auto',
-      // کمی فاصله از لبه‌های لیست
       py: 1,
       '& .MuiMenu-list': {
         py: 0.5,
       },
-      // هاور با رنگ سبز تم (primary.light)
       '& .MuiMenuItem-root:hover': {
         bgcolor: 'primary.light',
       },
@@ -54,7 +52,15 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
 
   const isSaveDisabled = useMemo(() => {
-    return !fullName.trim() || !mainSkillId || !dateOfBirth.trim();
+    const hasFullName = fullName.trim().length > 0;
+    const hasMainSkill = Boolean(mainSkillId);
+
+    const dob = dateOfBirth.trim();
+    const dobParts = dob.split('/');
+    const isDobComplete =
+      dobParts.length === 3 && dobParts[0].length === 2 && dobParts[1].length === 2 && dobParts[2].length === 4;
+
+    return !(hasFullName && hasMainSkill && isDobComplete);
   }, [fullName, mainSkillId, dateOfBirth]);
 
   useEffect(() => {
@@ -71,13 +77,21 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
   };
 
   const handleDateChange = (value: string) => {
-    // اجازه فقط عدد و / و حداکثر 10 کاراکتر (فرمت DD/MM/YYYY)
     const cleaned = value.replace(/[^\d/]/g, '').slice(0, 10);
     setDateOfBirth(cleaned);
   };
 
   return (
-    <DialogContainer onClose={onClose} open={open} maxWidth='xs'>
+    <DialogContainer
+      onClose={onClose}
+      open={open}
+      maxWidth='xs'
+      PaperProps={{
+        sx: {
+          height: '413px',
+        },
+      }}
+    >
       <StackContainer>
         <HeaderContainer direction='row'>
           <Typography color='text.primary' variant='body1' fontWeight={500}>
@@ -93,14 +107,6 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
             label='Full name'
             value={fullName}
             onChange={(value) => setFullName(String(value ?? ''))}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '8px',
-              },
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderRadius: '8px',
-              },
-            }}
           />
 
           <MuiSelectOptions
@@ -128,14 +134,6 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
             placeholder='DD/MM/Year'
             value={dateOfBirth}
             onChange={(value) => handleDateChange(String(value ?? ''))}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '8px',
-              },
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderRadius: '8px',
-              },
-            }}
           />
         </StackContent>
 
