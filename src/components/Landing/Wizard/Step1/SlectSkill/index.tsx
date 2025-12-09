@@ -24,7 +24,6 @@ import MuiChips from '@/components/UI/MuiChips';
 import { SelectOption } from '@/components/UI/MuiSelectOptions';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
-import { BackgroundEntry } from './Briefly';
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
 import {
@@ -80,7 +79,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
     const [recorderKey, setRecorderKey] = useState<number>(0);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-    const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
 
     const onUpdateSkill = (id: string, selected: boolean) =>
         setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
@@ -123,8 +121,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const hasBackgroundText = backgroundText.trim() !== '';
     const hasSelectedSkills = skills.some((skill) => skill.selected);
     const hasCustomSkillInput = customSkillInput.trim() !== '';
-    const hasBackgroundEntry = backgroundEntries.length > 0;
-    const canProceedBackground = hasBackgroundText || hasBackgroundEntry;
+    const canProceedBackground = hasBackgroundText;
     const filePreviews = useMemo(
         () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
         [uploadedFiles],
@@ -232,13 +229,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             </Stack>
 
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
-                <AtsFriendlyChip color='warning.main' label='ATS Friendly' />
+                <AtsFriendlyChip color='warning' label='ATS Friendly' />
             </Stack>
             <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
                 <Typography
                     fontWeight='400'
                     variant='body1'
-                    color='text.secondry'
+                    color='text.secondary'
                     justifyContent='center'
                     alignItems='center'
                     textAlign='center'
