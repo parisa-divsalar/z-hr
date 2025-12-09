@@ -1,4 +1,4 @@
-import React, { FunctionComponent, RefObject } from 'react';
+import React, { FunctionComponent, RefObject, useEffect, useRef } from 'react';
 
 import { Divider, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -109,6 +109,19 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
     const theme = useTheme();
 
     const hasBackgroundText = backgroundText.trim() !== '';
+    const entriesListRef = useRef<HTMLDivElement | null>(null);
+    const previousEntriesLengthRef = useRef<number>(backgroundEntries.length);
+
+    useEffect(() => {
+        if (backgroundEntries.length > previousEntriesLengthRef.current) {
+            entriesListRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }
+
+        previousEntriesLengthRef.current = backgroundEntries.length;
+    }, [backgroundEntries.length]);
 
     return (
         <>
@@ -141,7 +154,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                             </ActionIconButton>
                         )}
 
-                        {/* رکوردر برای گرفتن ویس جدید */}
                         {showRecordingControls && (
                             <VoiceRecord
                                 key={recorderKey}
@@ -179,7 +191,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                 )}
             </ActionRow>
 
-            {/* لیست ویس‌های قبلی که کنار هم نمایش داده می‌شوند */}
             {voiceRecordings.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
                     <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
@@ -187,7 +198,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                             <VoiceItem key={item.id}>
                                 <VoiceRecord
                                     recordingState='idle'
-                                    // eslint-disable-next-line @typescript-eslint/no-empty-function
                                     setRecordingState={() => {}}
                                     initialAudioUrl={item.url}
                                     initialAudioBlob={item.blob}
@@ -256,7 +266,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                 }}
             />
             {backgroundEntries.length > 0 && (
-                <Stack sx={{ maxWidth: '550px', width: '550px' }} spacing={1}>
+                <Stack ref={entriesListRef} sx={{ maxWidth: '550px', width: '550px' }} spacing={1}>
                     {backgroundEntries.map((entry, index) => (
                         <React.Fragment key={entry.id}>
                             <ContainerSkillAttachItem
