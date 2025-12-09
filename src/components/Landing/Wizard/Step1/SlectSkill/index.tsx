@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
@@ -22,6 +22,7 @@ import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/style
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 import { SelectOption } from '@/components/UI/MuiSelectOptions';
+import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AllSkill } from './data';
@@ -39,6 +40,17 @@ import { TSkill } from './type';
 
 interface SelectSkillProps {
     setStage: (stage: StageWizard) => void;
+}
+
+const MAX_VOICE_RECORDINGS = 3;
+const MAX_VOICE_DURATION_SECONDS = 90;
+
+type ToastSeverity = AlertWrapperProps['severity'];
+
+interface ToastInfo {
+    id: number;
+    message: string;
+    severity: ToastSeverity;
 }
 
 const TooltipContent = styled(Stack)(() => ({
@@ -79,6 +91,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>([]);
     const [recorderKey, setRecorderKey] = useState<number>(0);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isVoiceLimitReached = voiceRecordings.length >= MAX_VOICE_RECORDINGS;
 
     const onUpdateSkill = (id: string, selected: boolean) =>
         setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
@@ -87,7 +102,26 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         backgroundRef.current?.focus();
     };
 
+    const showToast = useCallback((message: string, severity: ToastSeverity = 'warning') => {
+        if (toastTimerRef.current) {
+            clearTimeout(toastTimerRef.current);
+        }
+
+        const id = Date.now();
+        setToastInfo({ id, message, severity });
+
+        toastTimerRef.current = setTimeout(() => {
+            setToastInfo((current) => (current?.id === id ? null : current));
+            toastTimerRef.current = null;
+        }, 4000);
+    }, []);
+
     const handleShowVoiceRecorder = () => {
+        if (isVoiceLimitReached) {
+            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            return;
+        }
+
         setShowRecordingControls(true);
         setRecorderKey((prev) => prev + 1);
         handleFocusBackground();
@@ -116,6 +150,10 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 duration,
             },
         ]);
+
+        if (duration >= MAX_VOICE_DURATION_SECONDS) {
+            showToast('Voice recordings are limited to 90 seconds.', 'info');
+        }
 
         setShowRecordingControls(false);
         setVoiceUrl(null);
@@ -156,6 +194,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             });
         };
     }, [filePreviews]);
+
+    useEffect(() => {
+        return () => {
+            if (toastTimerRef.current) {
+                clearTimeout(toastTimerRef.current);
+            }
+        };
+    }, []);
 
     const handleOpenFileDialog = () => {
         fileInputRef.current?.click();
@@ -280,14 +326,20 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                         <AttachIcon />
                     </ActionIconButton>
                     <Stack direction='column' alignItems='center' gap={1}>
-                        {/* دکمه رکورد فقط وقتی نشون داده میشه که در حال رکورد نباشیم */}
                         {!showRecordingControls && (
-                            <ActionIconButton aria-label='Record draft action' onClick={handleShowVoiceRecorder}>
+                            <ActionIconButton
+                                aria-label='Record draft action'
+                                onClick={handleShowVoiceRecorder}
+                                disabled={isVoiceLimitReached}
+                                sx={{
+                                    opacity: isVoiceLimitReached ? 0.4 : 1,
+                                    cursor: isVoiceLimitReached ? 'not-allowed' : 'pointer',
+                                }}
+                            >
                                 <RecordIcon />
                             </ActionIconButton>
                         )}
 
-                        {/* رکوردر برای گرفتن ویس جدید */}
                         {showRecordingControls && (
                             <VoiceRecord
                                 key={recorderKey}
@@ -296,12 +348,18 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                 recordingState={recordingState}
                                 setRecordingState={setRecordingState}
                                 onClearRecording={handleClearVoiceRecording}
+                                maxDuration={MAX_VOICE_DURATION_SECONDS}
                                 stackDirection='row'
                             />
                         )}
                     </Stack>
                 </Stack>
             </ActionRow>
+            {toastInfo && (
+                <Stack sx={{ width: '100%', maxWidth: '350px', mt: 2 }}>
+                    <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
+                </Stack>
+            )}
             {voiceRecordings.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
                     <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
