@@ -22,19 +22,20 @@ import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
 
-interface ExperienceProps {
+type ToastSeverity = AlertWrapperProps['severity'];
+
+interface JobDescriptionProps {
     setStage: (stage: StageWizard) => void;
 }
 
-type ToastSeverity = AlertWrapperProps['severity'];
-
-interface ToastInfo {
-    id: number;
-    message: string;
-    severity: ToastSeverity;
+interface VoiceRecording {
+    id: string;
+    url: string;
+    blob: Blob;
+    duration: number;
 }
 
-const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
+const useBrieflySectionState = (showToast: (message: string, severity?: ToastSeverity) => void) => {
     const [backgroundText, setBackgroundText] = useState<string>('');
     const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -43,44 +44,15 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     const [recordingState, setRecordingState] = useState<RecordingState>('idle');
     const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
     const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>(
-        [],
-    );
+    const [voiceRecordings, setVoiceRecordings] = useState<VoiceRecording[]>([]);
     const [recorderKey, setRecorderKey] = useState<number>(0);
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
 
-    const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
-    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
     const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
     const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
     const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
-
-    const isVoiceLimitReached = voiceRecordings.length >= MAX_VOICE_RECORDINGS;
-
-    const showToast = useCallback((message: string, severity: ToastSeverity = 'warning') => {
-        if (toastTimerRef.current) {
-            clearTimeout(toastTimerRef.current);
-        }
-
-        const id = Date.now();
-        setToastInfo({ id, message, severity });
-
-        toastTimerRef.current = setTimeout(() => {
-            setToastInfo((current) => (current?.id === id ? null : current));
-            toastTimerRef.current = null;
-        }, 4000);
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            if (toastTimerRef.current) {
-                clearTimeout(toastTimerRef.current);
-            }
-        };
-    }, []);
 
     const filePreviews = useMemo(
         () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
@@ -102,7 +74,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     };
 
     const handleShowVoiceRecorder = () => {
-        if (isVoiceLimitReached) {
+        if (voiceRecordings.length >= MAX_VOICE_RECORDINGS) {
             showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
             return;
         }
@@ -112,11 +84,11 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         handleFocusBackground();
     };
 
-    const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob, duration: number) => {
+    const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob, duration: number) => {
         const isRecordingValid = duration > 0 && audioBlob.size > 0;
         if (!isRecordingValid) {
-            if (_audioUrl) {
-                URL.revokeObjectURL(_audioUrl);
+            if (audioUrl) {
+                URL.revokeObjectURL(audioUrl);
             }
             setShowRecordingControls(false);
             setVoiceUrl(null);
@@ -177,53 +149,58 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         fileInputRef.current?.click();
     };
 
-    const handleFileUpload = async (files: FileList | null) => {
+    const handleFileUpload = (files: FileList | null) => {
         if (!files) {
             return;
         }
 
-        const fileList = Array.from(files);
-        const acceptedFiles: File[] = [];
+        const filesArray = Array.from(files);
 
-        for (const file of fileList) {
-            const category = getFileCategory(file);
-            const currentFiles = [...uploadedFiles, ...acceptedFiles];
+        const processFiles = async () => {
+            const acceptedFiles: File[] = [];
 
-            if (isDuplicateFile(file, currentFiles)) {
-                showToast('This file has already been uploaded.');
-                continue;
-            }
+            for (const file of filesArray) {
+                const category = getFileCategory(file);
+                const currentFiles = [...uploadedFiles, ...acceptedFiles];
 
-            if (category !== 'other') {
-                const limit = FILE_CATEGORY_LIMITS[category];
-                const currentCount =
-                    uploadedFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
-                    acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
-
-                if (currentCount >= limit) {
-                    showToast(`You can upload up to ${limit} ${FILE_CATEGORY_TOAST_LABELS[category]}.`);
+                if (isDuplicateFile(file, currentFiles)) {
+                    showToast('This file has already been uploaded.');
                     continue;
                 }
-            }
 
-            if (category === 'video') {
-                const isDurationValid = await isVideoDurationValid(file);
-                if (!isDurationValid) {
-                    showToast('Each video must be 60 seconds or shorter.');
-                    continue;
+                if (category !== 'other') {
+                    const limit = FILE_CATEGORY_LIMITS[category];
+                    const currentCount =
+                        uploadedFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
+                        acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
+
+                    if (currentCount >= limit) {
+                        showToast(`You can upload up to ${limit} ${FILE_CATEGORY_TOAST_LABELS[category]}.`);
+                        continue;
+                    }
                 }
+
+                if (category === 'video') {
+                    const isDurationValid = await isVideoDurationValid(file);
+                    if (!isDurationValid) {
+                        showToast('Each video must be 60 seconds or shorter.');
+                        continue;
+                    }
+                }
+
+                acceptedFiles.push(file);
             }
 
-            acceptedFiles.push(file);
-        }
+            if (acceptedFiles.length > 0) {
+                setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
+            }
 
-        if (acceptedFiles.length > 0) {
-            setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
-        }
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        };
 
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
+        void processFiles();
     };
 
     const handleRemoveUploadedFile = (index: number) => {
@@ -335,12 +312,72 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         });
     };
 
-    const hasExperience = backgroundText.trim() !== '' || backgroundEntries.length > 0;
+    return {
+        backgroundText,
+        setBackgroundText,
+        backgroundRef,
+        fileInputRef,
+        showRecordingControls,
+        onShowVoiceRecorder: handleShowVoiceRecorder,
+        recordingState,
+        setRecordingState,
+        recorderKey,
+        voiceRecordings,
+        onRecordingComplete: handleVoiceRecordingComplete,
+        onClearRecording: handleClearVoiceRecording,
+        onRemoveSavedRecording: handleRemoveSavedRecording,
+        uploadedFiles,
+        filePreviews,
+        onOpenFileDialog: handleOpenFileDialog,
+        onFileUpload: handleFileUpload,
+        onRemoveUploadedFile: handleRemoveUploadedFile,
+        isEditingEntry,
+        onAddBackgroundEntry: handleAddBackgroundEntry,
+        onCancelEditBackgroundEntry: handleCancelEditBackgroundEntry,
+        onSaveBackgroundEntry: handleSaveBackgroundEntry,
+        backgroundEntries,
+        onEditBackgroundEntry: handleEditBackgroundEntry,
+        onDeleteBackgroundEntry: handleDeleteBackgroundEntry,
+    };
+};
+
+const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) => {
+    const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const showToast = useCallback((message: string, severity: ToastSeverity = 'warning') => {
+        if (toastTimerRef.current) {
+            clearTimeout(toastTimerRef.current);
+        }
+
+        const id = Date.now();
+        setToastInfo({ id, message, severity });
+
+        toastTimerRef.current = setTimeout(() => {
+            setToastInfo((current) => (current?.id === id ? null : current));
+            toastTimerRef.current = null;
+        }, 4000);
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (toastTimerRef.current) {
+                clearTimeout(toastTimerRef.current);
+            }
+        };
+    }, []);
+
+    const sectionOne = useBrieflySectionState(showToast);
+    const sectionTwo = useBrieflySectionState(showToast);
+
+    const hasJobDescription = [sectionOne, sectionTwo].some(
+        (section) => section.backgroundText.trim() !== '' || section.backgroundEntries.length > 0,
+    );
 
     return (
         <Stack alignItems='center' justifyContent='center' height='100%'>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                6. Your work experience history{' '}
+                8. Could you share the job description?
             </Typography>
 
             {toastInfo && (
@@ -350,32 +387,65 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             )}
 
             <BrieflySection
-                backgroundText={backgroundText}
-                onBackgroundTextChange={setBackgroundText}
-                backgroundRef={backgroundRef as RefObject<HTMLTextAreaElement>}
-                showRecordingControls={showRecordingControls}
-                onShowVoiceRecorder={handleShowVoiceRecorder}
-                recordingState={recordingState}
-                setRecordingState={setRecordingState}
-                recorderKey={recorderKey}
-                voiceRecordings={voiceRecordings}
-                onRecordingComplete={handleVoiceRecordingComplete}
-                onClearRecording={handleClearVoiceRecording}
-                onRemoveSavedRecording={handleRemoveSavedRecording}
-                uploadedFiles={uploadedFiles}
-                filePreviews={filePreviews}
-                onOpenFileDialog={handleOpenFileDialog}
-                onFileUpload={handleFileUpload}
-                onRemoveUploadedFile={handleRemoveUploadedFile}
+                backgroundText={sectionOne.backgroundText}
+                onBackgroundTextChange={sectionOne.setBackgroundText}
+                backgroundRef={sectionOne.backgroundRef as RefObject<HTMLTextAreaElement>}
+                showRecordingControls={sectionOne.showRecordingControls}
+                onShowVoiceRecorder={sectionOne.onShowVoiceRecorder}
+                recordingState={sectionOne.recordingState}
+                setRecordingState={sectionOne.setRecordingState}
+                recorderKey={sectionOne.recorderKey}
+                voiceRecordings={sectionOne.voiceRecordings}
+                onRecordingComplete={sectionOne.onRecordingComplete}
+                onClearRecording={sectionOne.onClearRecording}
+                onRemoveSavedRecording={sectionOne.onRemoveSavedRecording}
+                uploadedFiles={sectionOne.uploadedFiles}
+                filePreviews={sectionOne.filePreviews}
+                onOpenFileDialog={sectionOne.onOpenFileDialog}
+                onFileUpload={sectionOne.onFileUpload}
+                onRemoveUploadedFile={sectionOne.onRemoveUploadedFile}
                 getFileTypeDisplayName={getFileTypeDisplayName}
-                isEditingEntry={isEditingEntry}
-                onAddBackgroundEntry={handleAddBackgroundEntry}
-                onCancelEditBackgroundEntry={handleCancelEditBackgroundEntry}
-                onSaveBackgroundEntry={handleSaveBackgroundEntry}
-                backgroundEntries={backgroundEntries}
-                onEditBackgroundEntry={handleEditBackgroundEntry}
-                onDeleteBackgroundEntry={handleDeleteBackgroundEntry}
-                fileInputRef={fileInputRef as RefObject<HTMLInputElement>}
+                isEditingEntry={sectionOne.isEditingEntry}
+                onAddBackgroundEntry={sectionOne.onAddBackgroundEntry}
+                onCancelEditBackgroundEntry={sectionOne.onCancelEditBackgroundEntry}
+                onSaveBackgroundEntry={sectionOne.onSaveBackgroundEntry}
+                backgroundEntries={sectionOne.backgroundEntries}
+                onEditBackgroundEntry={sectionOne.onEditBackgroundEntry}
+                onDeleteBackgroundEntry={sectionOne.onDeleteBackgroundEntry}
+                fileInputRef={sectionOne.fileInputRef as RefObject<HTMLInputElement>}
+            />
+
+            <Typography variant='h5' color='text.primary' fontWeight='584' mt={4}>
+                9. Anything else to add?
+            </Typography>
+
+            <BrieflySection
+                backgroundText={sectionTwo.backgroundText}
+                onBackgroundTextChange={sectionTwo.setBackgroundText}
+                backgroundRef={sectionTwo.backgroundRef as RefObject<HTMLTextAreaElement>}
+                showRecordingControls={sectionTwo.showRecordingControls}
+                onShowVoiceRecorder={sectionTwo.onShowVoiceRecorder}
+                recordingState={sectionTwo.recordingState}
+                setRecordingState={sectionTwo.setRecordingState}
+                recorderKey={sectionTwo.recorderKey}
+                voiceRecordings={sectionTwo.voiceRecordings}
+                onRecordingComplete={sectionTwo.onRecordingComplete}
+                onClearRecording={sectionTwo.onClearRecording}
+                onRemoveSavedRecording={sectionTwo.onRemoveSavedRecording}
+                uploadedFiles={sectionTwo.uploadedFiles}
+                filePreviews={sectionTwo.filePreviews}
+                onOpenFileDialog={sectionTwo.onOpenFileDialog}
+                onFileUpload={sectionTwo.onFileUpload}
+                onRemoveUploadedFile={sectionTwo.onRemoveUploadedFile}
+                getFileTypeDisplayName={getFileTypeDisplayName}
+                isEditingEntry={sectionTwo.isEditingEntry}
+                onAddBackgroundEntry={sectionTwo.onAddBackgroundEntry}
+                onCancelEditBackgroundEntry={sectionTwo.onCancelEditBackgroundEntry}
+                onSaveBackgroundEntry={sectionTwo.onSaveBackgroundEntry}
+                backgroundEntries={sectionTwo.backgroundEntries}
+                onEditBackgroundEntry={sectionTwo.onEditBackgroundEntry}
+                onDeleteBackgroundEntry={sectionTwo.onDeleteBackgroundEntry}
+                fileInputRef={sectionTwo.fileInputRef as RefObject<HTMLInputElement>}
             />
 
             <Stack mt={4} mb={6} direction='row' gap={3}>
@@ -384,7 +454,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                     variant='outlined'
                     size='large'
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => setStage('SELECT_SKILL')}
+                    onClick={() => setStage('CERTIFICATION')}
                 >
                     Back
                 </MuiButton>
@@ -393,8 +463,8 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                     color='secondary'
                     endIcon={<ArrowRightIcon />}
                     size='large'
-                    onClick={() => setStage('CERTIFICATION')}
-                    disabled={!hasExperience}
+                    onClick={() => setStage('QUESTIONS')}
+                    disabled={!hasJobDescription}
                 >
                     Next
                 </MuiButton>
@@ -403,4 +473,10 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     );
 };
 
-export default Experience;
+interface ToastInfo {
+    id: number;
+    message: string;
+    severity: ToastSeverity;
+}
+
+export default JobDescription;

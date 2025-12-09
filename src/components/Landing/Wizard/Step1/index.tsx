@@ -3,6 +3,7 @@ import { FunctionComponent, useState } from 'react';
 import { AIStatus, StageWizard } from '@/components/Landing/type';
 import Certification from '@/components/Landing/Wizard/Step1/Certification';
 import Experience from '@/components/Landing/Wizard/Step1/Experience';
+import JobDescription from '@/components/Landing/Wizard/Step1/JobDescription';
 import Questions from '@/components/Landing/Wizard/Step1/Questions';
 import SKillInput from '@/components/Landing/Wizard/Step1/SKillInput';
 import SelectSkill from '@/components/Landing/Wizard/Step1/SlectSkill';
@@ -29,6 +30,10 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
 
     if (stage === 'CERTIFICATION') {
         return <Certification setStage={setStage} />;
+    }
+
+    if (stage === 'DESCRIPTION') {
+        return <JobDescription setStage={setStage} />;
     }
 
     return <Questions onNext={() => setActiveStep(2)} setAiStatus={setAiStatus} />;

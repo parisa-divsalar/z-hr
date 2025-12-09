@@ -391,8 +391,7 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
                     color='secondary'
                     endIcon={<ArrowRightIcon />}
                     size='large'
-                    onClick={() => setStage('QUESTIONS')}
-                    disabled={!hasCertifications}
+                    onClick={() => setStage('DESCRIPTION')}
                 >
                     Next
                 </MuiButton>
@@ -402,4 +401,3 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
 };
 
 export default Certification;
-
