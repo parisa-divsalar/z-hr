@@ -195,7 +195,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 
             {voiceRecordings.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
-                    <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+                    <Stack direction='row' gap={1.5} sx={{ flexWrap: 'wrap' }}>
                         {voiceRecordings.map((item) => (
                             <VoiceItem key={item.id}>
                                 <VoiceRecord
@@ -295,7 +295,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                         )}
 
                                         {entry.voices.length > 0 && (
-                                            <Stack direction='row' sx={{ flexWrap: 'wrap' }}>
+                                            <Stack direction='row' gap={1.5} sx={{ flexWrap: 'wrap' }}>
                                                 {entry.voices.map((voice) => (
                                                     <VoiceItem key={voice.id}>
                                                         <VoiceRecord
