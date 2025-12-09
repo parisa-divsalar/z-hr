@@ -1,10 +1,9 @@
 import React, { FunctionComponent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Divider, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 
-import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import AttachIcon from '@/assets/images/icons/attach.svg';
 import CleanIcon from '@/assets/images/icons/clean.svg';
@@ -31,10 +30,8 @@ import EditSkillDialog from './EditSkillDialog';
 import {
     ActionIconButton,
     ActionRow,
-    BackgroundEntryIndex,
     ContainerSkill,
     ContainerSkillAttach,
-    ContainerSkillAttachItem,
     ContainerSkillAttachVoice,
     SkillContainer,
     VoiceItem,
@@ -71,9 +68,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
     const [skills, setSkills] = useState<TSkill[]>(AllSkill);
     const [backgroundText, setBackgroundText] = useState<string>('');
-    const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
-    const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
-    const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
     const [customSkillInput, setCustomSkillInput] = useState<string>('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
     const backgroundRef = useRef<HTMLTextAreaElement>(null);
@@ -165,110 +159,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     const handleRemoveUploadedFile = (index: number) => {
         setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
-    };
-
-    const handleAddBackgroundEntry = () => {
-        // فقط اجازه یک بار Add دادن
-        if (backgroundEntries.length > 0) {
-            return;
-        }
-
-        const hasText = backgroundText.trim() !== '';
-        const hasFiles = uploadedFiles.length > 0;
-        const hasVoices = voiceRecordings.length > 0;
-
-        if (!hasText && !hasFiles && !hasVoices) {
-            return;
-        }
-
-        const newEntry: BackgroundEntry = {
-            id: generateFakeUUIDv4(),
-            text: backgroundText.trim(),
-            files: uploadedFiles,
-            voices: voiceRecordings,
-        };
-
-        setBackgroundEntries((prev) => [...prev, newEntry]);
-        setIsEditingEntry(false);
-        setEditingEntryId(null);
-        setEditingEntryBackup(null);
-
-        setBackgroundText('');
-        setUploadedFiles([]);
-        setVoiceRecordings([]);
-        setShowRecordingControls(false);
-        setVoiceUrl(null);
-        setVoiceBlob(null);
-    };
-
-    const handleEditBackgroundEntry = (id: string) => {
-        setIsEditingEntry(true);
-        setBackgroundEntries((prev) => {
-            const entry = prev.find((item) => item.id === id);
-
-            if (!entry) {
-                return prev;
-            }
-
-            setEditingEntryId(entry.id);
-            setEditingEntryBackup(entry);
-            setBackgroundText(entry.text);
-            setUploadedFiles(entry.files);
-            setVoiceRecordings(entry.voices);
-
-            return prev.filter((item) => item.id !== id);
-        });
-    };
-
-    const handleSaveBackgroundEntry = () => {
-        const hasText = backgroundText.trim() !== '';
-        const hasFiles = uploadedFiles.length > 0;
-        const hasVoices = voiceRecordings.length > 0;
-
-        if (!hasText && !hasFiles && !hasVoices) {
-            return;
-        }
-
-        const updatedEntry: BackgroundEntry = {
-            id: editingEntryId ?? generateFakeUUIDv4(),
-            text: backgroundText.trim(),
-            files: uploadedFiles,
-            voices: voiceRecordings,
-        };
-
-        setBackgroundEntries((prev) => [...prev, updatedEntry]);
-
-        setIsEditingEntry(false);
-        setEditingEntryId(null);
-        setEditingEntryBackup(null);
-
-        setBackgroundText('');
-        setUploadedFiles([]);
-        setVoiceRecordings([]);
-        setShowRecordingControls(false);
-        setVoiceUrl(null);
-        setVoiceBlob(null);
-    };
-
-    const handleCancelEditBackgroundEntry = () => {
-        if (editingEntryBackup) {
-            setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
-        }
-
-        setIsEditingEntry(false);
-        setEditingEntryId(null);
-        setEditingEntryBackup(null);
-
-        setBackgroundText('');
-        setUploadedFiles([]);
-        setVoiceRecordings([]);
-        setShowRecordingControls(false);
-        setVoiceUrl(null);
-        setVoiceBlob(null);
-    };
-
-    const handleDeleteBackgroundEntry = (id: string) => {
-        setBackgroundEntries((prev) => prev.filter((item) => item.id !== id));
     };
 
     const handleOpenEditDialog = () => {
@@ -394,34 +284,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                         )}
                     </Stack>
                 </Stack>
-
-                {!isEditingEntry ? (
-                    <MuiButton
-                        color='secondary'
-                        size='medium'
-                        variant='outlined'
-                        startIcon={<AddIcon />}
-                        onClick={handleAddBackgroundEntry}
-                        disabled={backgroundEntries.length > 0}
-                        sx={{ flexShrink: 0 }}
-                    >
-                        Add
-                    </MuiButton>
-                ) : (
-                    <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
-                        <MuiButton color='error' size='medium' variant='text' onClick={handleCancelEditBackgroundEntry}>
-                            Cancel
-                        </MuiButton>
-                        <MuiButton
-                            color='primary'
-                            size='medium'
-                            variant='contained'
-                            onClick={handleSaveBackgroundEntry}
-                        >
-                            Save
-                        </MuiButton>
-                    </Stack>
-                )}
             </ActionRow>
             {voiceRecordings.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
@@ -484,109 +346,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                         ))}
                     </FilesStack>
                 </ContainerSkillAttach>
-            )}
-            <Divider
-                sx={{
-                    width: '550px',
-                    my: 2,
-                    borderColor: theme.palette.grey[100],
-                }}
-            />
-            {backgroundEntries.length > 0 && (
-                <Stack sx={{ maxWidth: '550px', width: '550px' }} spacing={1}>
-                    {backgroundEntries.map((entry, index) => (
-                        <React.Fragment key={entry.id}>
-                            <ContainerSkillAttachItem
-                                direction='row'
-                                active
-                                sx={{ alignItems: 'stretch', justifyContent: 'space-between' }}
-                            >
-                                <BackgroundEntryIndex>
-                                    <Typography
-                                        justifyContent='center'
-                                        fontWeight='584'
-                                        variant='subtitle1'
-                                        color='primary.main'
-                                    >
-                                        #{index + 1}
-                                    </Typography>
-                                </BackgroundEntryIndex>
-                                <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
-                                    <Stack spacing={1} sx={{ flex: 1 }}>
-                                        {entry.text && (
-                                            <Typography variant='body2' color='text.primary' fontWeight='400'>
-                                                {entry.text}
-                                            </Typography>
-                                        )}
-
-                                        {entry.voices.length > 0 && (
-                                            <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
-                                                {entry.voices.map((voice) => (
-                                                    <VoiceItem key={voice.id}>
-                                                        <VoiceRecord
-                                                            recordingState='idle'
-                                                            // eslint-disable-next-line @typescript-eslint/no-empty-function
-                                                            setRecordingState={() => {}}
-                                                            initialAudioUrl={voice.url}
-                                                            initialAudioBlob={voice.blob}
-                                                            showRecordingControls={false}
-                                                            onClearRecording={() => {}}
-                                                            stackDirection='column'
-                                                            fullWidth={false}
-                                                        />
-                                                    </VoiceItem>
-                                                ))}
-                                            </Stack>
-                                        )}
-
-                                        {entry.files.length > 0 && (
-                                            <FilesStack
-                                                direction='row'
-                                                spacing={1}
-                                                sx={{ width: '100%', border: 'none' }}
-                                            >
-                                                {entry.files.map((file, idx) => (
-                                                    <FilePreviewContainer key={`${file.name}-${idx}`} size={50}>
-                                                        {file.type.startsWith('image/') ? (
-                                                            <img
-                                                                src={URL.createObjectURL(file)}
-                                                                alt={file.name}
-                                                                style={{
-                                                                    width: '100%',
-                                                                    height: '100%',
-                                                                    objectFit: 'cover',
-                                                                }}
-                                                            />
-                                                        ) : file.type.startsWith('video/') ? (
-                                                            <VideoIcon
-                                                                style={{ width: '32px', height: '32px', color: '#666' }}
-                                                            />
-                                                        ) : (
-                                                            <FileIcon
-                                                                style={{ width: '32px', height: '32px', color: '#666' }}
-                                                            />
-                                                        )}
-                                                    </FilePreviewContainer>
-                                                ))}
-                                            </FilesStack>
-                                        )}
-                                    </Stack>
-                                </Stack>
-                                <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
-                                    <ActionIconButton
-                                        onClick={() => handleEditBackgroundEntry(entry.id)}
-                                        disabled={isEditingEntry}
-                                    >
-                                        <EdiIcon />
-                                    </ActionIconButton>
-                                    <ActionIconButton onClick={() => handleDeleteBackgroundEntry(entry.id)}>
-                                        <CleanIcon />
-                                    </ActionIconButton>
-                                </Stack>
-                            </ContainerSkillAttachItem>
-                        </React.Fragment>
-                    ))}
-                </Stack>
             )}
 
             <input
