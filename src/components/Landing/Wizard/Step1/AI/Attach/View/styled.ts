@@ -21,7 +21,6 @@ export const FilePreviewContainer = styled(Box, {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'grey.50',
 }));
 
 export const FilePreviewVoiceContainer = styled(Box)(({ theme }) => ({

@@ -7,7 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import AttachIcon from '@/assets/images/icons/attach.svg';
-import CleanIcon from '@/assets/images/icons/clearButton.svg';
+import CleanIcon from '@/assets/images/icons/clean.svg';
 import EdiIcon from '@/assets/images/icons/edit.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
@@ -29,613 +29,636 @@ import { BackgroundEntry } from './Briefly';
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
 import {
-  ActionIconButton,
-  ActionRow,
-  BackgroundEntryIndex,
-  ContainerSkill,
-  ContainerSkillAttach,
-  ContainerSkillAttachItem,
-  ContainerSkillAttachVoice,
-  SkillContainer,
-  VoiceItem,
+    ActionIconButton,
+    ActionRow,
+    BackgroundEntryIndex,
+    ContainerSkill,
+    ContainerSkillAttach,
+    ContainerSkillAttachItem,
+    ContainerSkillAttachVoice,
+    SkillContainer,
+    VoiceItem,
 } from './styled';
 import { TSkill } from './type';
 
 interface SelectSkillProps {
-  setStage: (stage: StageWizard) => void;
+    setStage: (stage: StageWizard) => void;
 }
 
 const TooltipContent = styled(Stack)(() => ({
-  width: '100%',
+    width: '100%',
 }));
 
 const AtsFriendlyChip = styled(MuiChips)(({ theme }) => ({
-  border: `1px solid ${theme.palette.warning.main}`,
-  backgroundColor: theme.palette.warning.light,
-  borderRadius: '8px',
-  height: '26px',
+    border: `1px solid ${theme.palette.warning.main}`,
+    backgroundColor: theme.palette.warning.light,
+    borderRadius: '8px',
+    height: '26px',
 }));
 
 const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
-  const { setStage } = props;
-  const theme = useTheme();
-  const tooltipLines = [
-    'Start with your job title or the role you are applying for.',
-    'Mention your years of experience.',
-    'Highlight your strongest skills and what makes you valuable.',
-    'Add 1–2 examples of what you have achieved in past companies.',
-    'Keep it short, clear, and professional (3–4 lines).',
-  ];
-  const tooltipSnippet =
-    'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
-  const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
-  const [skills, setSkills] = useState<TSkill[]>(AllSkill);
-  const [backgroundText, setBackgroundText] = useState<string>('');
-  const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
-  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
-  const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
-  const [customSkillInput, setCustomSkillInput] = useState<string>('');
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
-  const backgroundRef = useRef<HTMLTextAreaElement>(null);
-  const customSkillRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [recordingState, setRecordingState] = useState<RecordingState>('idle');
-  const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
-  const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
-  const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-  const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
-  const [recorderKey, setRecorderKey] = useState<number>(0);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
+    const { setStage } = props;
+    const theme = useTheme();
+    const tooltipLines = [
+        'Start with your job title or the role you are applying for.',
+        'Mention your years of experience.',
+        'Highlight your strongest skills and what makes you valuable.',
+        'Add 1–2 examples of what you have achieved in past companies.',
+        'Keep it short, clear, and professional (3–4 lines).',
+    ];
+    const tooltipSnippet =
+        'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
+    const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
+    const [skills, setSkills] = useState<TSkill[]>(AllSkill);
+    const [backgroundText, setBackgroundText] = useState<string>('');
+    const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
+    const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+    const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
+    const [customSkillInput, setCustomSkillInput] = useState<string>('');
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
+    const backgroundRef = useRef<HTMLTextAreaElement>(null);
+    const customSkillRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [recordingState, setRecordingState] = useState<RecordingState>('idle');
+    const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
+    const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
+    const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
+    const [recorderKey, setRecorderKey] = useState<number>(0);
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
 
-  const onUpdateSkill = (id: string, selected: boolean) =>
-    setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
+    const onUpdateSkill = (id: string, selected: boolean) =>
+        setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
 
-  const handleFocusBackground = () => {
-    backgroundRef.current?.focus();
-  };
+    const handleFocusBackground = () => {
+        backgroundRef.current?.focus();
+    };
 
-  const handleShowVoiceRecorder = () => {
-    setShowRecordingControls(true);
-    setRecorderKey((prev) => prev + 1);
-    handleFocusBackground();
-  };
+    const handleShowVoiceRecorder = () => {
+        setShowRecordingControls(true);
+        setRecorderKey((prev) => prev + 1);
+        handleFocusBackground();
+    };
 
-  const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
-    setVoiceRecordings((prev) => [
-      ...prev,
-      {
-        id: generateFakeUUIDv4(),
-        url: audioUrl,
-        blob: audioBlob,
-      },
-    ]);
+    const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
+        setVoiceRecordings((prev) => [
+            ...prev,
+            {
+                id: generateFakeUUIDv4(),
+                url: audioUrl,
+                blob: audioBlob,
+            },
+        ]);
 
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
 
-  const handleClearVoiceRecording = () => {
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
+    const handleClearVoiceRecording = () => {
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
 
-  const handleRemoveSavedRecording = (id: string) => {
-    setVoiceRecordings((prev) => prev.filter((item) => item.id !== id));
-  };
+    const handleRemoveSavedRecording = (id: string) => {
+        setVoiceRecordings((prev) => prev.filter((item) => item.id !== id));
+    };
 
-  const hasBackgroundText = backgroundText.trim() !== '';
-  const hasSelectedSkills = skills.some((skill) => skill.selected);
-  const hasCustomSkillInput = customSkillInput.trim() !== '';
-  const hasBackgroundEntry = backgroundEntries.length > 0;
-  const canProceedBackground = hasBackgroundText || hasBackgroundEntry;
-  const filePreviews = useMemo(
-    () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
-    [uploadedFiles],
-  );
+    const hasBackgroundText = backgroundText.trim() !== '';
+    const hasSelectedSkills = skills.some((skill) => skill.selected);
+    const hasCustomSkillInput = customSkillInput.trim() !== '';
+    const hasBackgroundEntry = backgroundEntries.length > 0;
+    const canProceedBackground = hasBackgroundText || hasBackgroundEntry;
+    const filePreviews = useMemo(
+        () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
+        [uploadedFiles],
+    );
 
-  useEffect(() => {
-    return () => {
-      filePreviews.forEach((preview) => {
-        if (preview) {
-          URL.revokeObjectURL(preview);
+    useEffect(() => {
+        return () => {
+            filePreviews.forEach((preview) => {
+                if (preview) {
+                    URL.revokeObjectURL(preview);
+                }
+            });
+        };
+    }, [filePreviews]);
+
+    const handleOpenFileDialog = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileUpload = (files: FileList | null) => {
+        if (!files) {
+            return;
         }
-      });
-    };
-  }, [filePreviews]);
 
-  const handleOpenFileDialog = () => {
-    fileInputRef.current?.click();
-  };
+        const fileList = Array.from(files);
+        setUploadedFiles((prev) => [...prev, ...fileList]);
 
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) {
-      return;
-    }
-
-    const fileList = Array.from(files);
-    setUploadedFiles((prev) => [...prev, ...fileList]);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleRemoveUploadedFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
-  };
-
-  const handleAddBackgroundEntry = () => {
-    // فقط اجازه یک بار Add دادن
-    if (backgroundEntries.length > 0) {
-      return;
-    }
-
-    const hasText = backgroundText.trim() !== '';
-    const hasFiles = uploadedFiles.length > 0;
-    const hasVoices = voiceRecordings.length > 0;
-
-    if (!hasText && !hasFiles && !hasVoices) {
-      return;
-    }
-
-    const newEntry: BackgroundEntry = {
-      id: generateFakeUUIDv4(),
-      text: backgroundText.trim(),
-      files: uploadedFiles,
-      voices: voiceRecordings,
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
-    setBackgroundEntries((prev) => [...prev, newEntry]);
-    setIsEditingEntry(false);
-    setEditingEntryId(null);
-    setEditingEntryBackup(null);
-
-    setBackgroundText('');
-    setUploadedFiles([]);
-    setVoiceRecordings([]);
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
-
-  const handleEditBackgroundEntry = (id: string) => {
-    setIsEditingEntry(true);
-    setBackgroundEntries((prev) => {
-      const entry = prev.find((item) => item.id === id);
-
-      if (!entry) {
-        return prev;
-      }
-
-      setEditingEntryId(entry.id);
-      setEditingEntryBackup(entry);
-      setBackgroundText(entry.text);
-      setUploadedFiles(entry.files);
-      setVoiceRecordings(entry.voices);
-
-      return prev.filter((item) => item.id !== id);
-    });
-  };
-
-  const handleSaveBackgroundEntry = () => {
-    const hasText = backgroundText.trim() !== '';
-    const hasFiles = uploadedFiles.length > 0;
-    const hasVoices = voiceRecordings.length > 0;
-
-    if (!hasText && !hasFiles && !hasVoices) {
-      return;
-    }
-
-    const updatedEntry: BackgroundEntry = {
-      id: editingEntryId ?? generateFakeUUIDv4(),
-      text: backgroundText.trim(),
-      files: uploadedFiles,
-      voices: voiceRecordings,
+    const handleRemoveUploadedFile = (index: number) => {
+        setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
     };
 
-    setBackgroundEntries((prev) => [...prev, updatedEntry]);
+    const handleAddBackgroundEntry = () => {
+        // فقط اجازه یک بار Add دادن
+        if (backgroundEntries.length > 0) {
+            return;
+        }
 
-    setIsEditingEntry(false);
-    setEditingEntryId(null);
-    setEditingEntryBackup(null);
+        const hasText = backgroundText.trim() !== '';
+        const hasFiles = uploadedFiles.length > 0;
+        const hasVoices = voiceRecordings.length > 0;
 
-    setBackgroundText('');
-    setUploadedFiles([]);
-    setVoiceRecordings([]);
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
+        if (!hasText && !hasFiles && !hasVoices) {
+            return;
+        }
 
-  const handleCancelEditBackgroundEntry = () => {
-    if (editingEntryBackup) {
-      setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
-    }
+        const newEntry: BackgroundEntry = {
+            id: generateFakeUUIDv4(),
+            text: backgroundText.trim(),
+            files: uploadedFiles,
+            voices: voiceRecordings,
+        };
 
-    setIsEditingEntry(false);
-    setEditingEntryId(null);
-    setEditingEntryBackup(null);
+        setBackgroundEntries((prev) => [...prev, newEntry]);
+        setIsEditingEntry(false);
+        setEditingEntryId(null);
+        setEditingEntryBackup(null);
 
-    setBackgroundText('');
-    setUploadedFiles([]);
-    setVoiceRecordings([]);
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
+        setBackgroundText('');
+        setUploadedFiles([]);
+        setVoiceRecordings([]);
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
 
-  const handleDeleteBackgroundEntry = (id: string) => {
-    setBackgroundEntries((prev) => prev.filter((item) => item.id !== id));
-  };
+    const handleEditBackgroundEntry = (id: string) => {
+        setIsEditingEntry(true);
+        setBackgroundEntries((prev) => {
+            const entry = prev.find((item) => item.id === id);
 
-  const handleOpenEditDialog = () => {
-    setIsEditDialogOpen(true);
-  };
+            if (!entry) {
+                return prev;
+            }
 
-  const handleCloseEditDialog = () => {
-    setIsEditDialogOpen(false);
-  };
+            setEditingEntryId(entry.id);
+            setEditingEntryBackup(entry);
+            setBackgroundText(entry.text);
+            setUploadedFiles(entry.files);
+            setVoiceRecordings(entry.voices);
 
-  const defaultSkill = AllSkill[0] ?? { id: '', label: 'Motion Designer', selected: false };
-  const [mainSkillId, setMainSkillId] = useState<string>(defaultSkill.id);
-  const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(defaultSkill.label);
+            return prev.filter((item) => item.id !== id);
+        });
+    };
 
-  const handleConfirmEditDialog = (selectedOption: SelectOption) => {
-    setIsEditDialogOpen(false);
-    setMainSkillLabel(selectedOption.label);
-    setMainSkillId(String(selectedOption.value));
-  };
+    const handleSaveBackgroundEntry = () => {
+        const hasText = backgroundText.trim() !== '';
+        const hasFiles = uploadedFiles.length > 0;
+        const hasVoices = voiceRecordings.length > 0;
 
-  return (
-    <Stack alignItems='center' justifyContent='center' height='100%'>
-      <Stack direction='row' alignItems='center' gap={1}>
-        <Typography variant='h5' color='text.primary' fontWeight='584'>
-          4. Briefly tell us about your background{' '}
-        </Typography>
-        <Tooltip
-          arrow
-          placement='right'
-          title={
-            <TooltipContent>
-              {tooltipLines.map((line) => (
-                <Typography key={line} variant='body2' color='inherit'>
-                  {line}
+        if (!hasText && !hasFiles && !hasVoices) {
+            return;
+        }
+
+        const updatedEntry: BackgroundEntry = {
+            id: editingEntryId ?? generateFakeUUIDv4(),
+            text: backgroundText.trim(),
+            files: uploadedFiles,
+            voices: voiceRecordings,
+        };
+
+        setBackgroundEntries((prev) => [...prev, updatedEntry]);
+
+        setIsEditingEntry(false);
+        setEditingEntryId(null);
+        setEditingEntryBackup(null);
+
+        setBackgroundText('');
+        setUploadedFiles([]);
+        setVoiceRecordings([]);
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
+
+    const handleCancelEditBackgroundEntry = () => {
+        if (editingEntryBackup) {
+            setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
+        }
+
+        setIsEditingEntry(false);
+        setEditingEntryId(null);
+        setEditingEntryBackup(null);
+
+        setBackgroundText('');
+        setUploadedFiles([]);
+        setVoiceRecordings([]);
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
+
+    const handleDeleteBackgroundEntry = (id: string) => {
+        setBackgroundEntries((prev) => prev.filter((item) => item.id !== id));
+    };
+
+    const handleOpenEditDialog = () => {
+        setIsEditDialogOpen(true);
+    };
+
+    const handleCloseEditDialog = () => {
+        setIsEditDialogOpen(false);
+    };
+
+    const defaultSkill = AllSkill[0] ?? { id: '', label: 'Motion Designer', selected: false };
+    const [mainSkillId, setMainSkillId] = useState<string>(defaultSkill.id);
+    const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(defaultSkill.label);
+
+    const handleConfirmEditDialog = (selectedOption: SelectOption) => {
+        setIsEditDialogOpen(false);
+        setMainSkillLabel(selectedOption.label);
+        setMainSkillId(String(selectedOption.value));
+    };
+
+    return (
+        <Stack alignItems='center' justifyContent='center' height='100%'>
+            <Stack direction='row' alignItems='center' gap={1}>
+                <Typography variant='h5' color='text.primary' fontWeight='584'>
+                    4. Briefly tell us about your background{' '}
                 </Typography>
-              ))}
-              <Stack>
-                <Typography variant='body2' fontStyle='italic' color='inherit'>
-                  {tooltipSnippet}
-                </Typography>
-              </Stack>
-            </TooltipContent>
-          }
-          slotProps={{
-            tooltip: {
-              style: {
-                width: 234,
-                height: 'auto',
-                backgroundColor: theme.palette.grey[600],
-                color: theme.palette.primary.contrastText,
-                borderRadius: 12,
-                padding: 10,
-                boxSizing: 'border-box',
-                display: 'flex',
-                alignItems: 'flex-start',
-                whiteSpace: 'normal',
-                fontWeight: 400,
-              },
-            },
-            arrow: {
-              style: {
-                color: tooltipBackground,
-              },
-            },
-          }}
-        >
-          <span>
-            <TooltipIcon />
-          </span>
-        </Tooltip>
-      </Stack>
-
-      <Stack direction='row' alignItems='center' gap={1} mt={1}>
-        <AtsFriendlyChip color='warning.main' label='ATS Friendly' />
-      </Stack>
-      <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
-        <Typography
-          fontWeight='400'
-          variant='body1'
-          color='text.secondry'
-          justifyContent='center'
-          alignItems='center'
-          textAlign='center'
-          mt={1}
-        >
-          Your summary shows employers you’re right for their job. We’ll help you write a great one with expert content
-          you can customize.
-        </Typography>
-      </Stack>
-      <ContainerSkill direction='row' active={!!backgroundText}>
-        <InputContent
-          placeholder='Type your answer...'
-          value={backgroundText}
-          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setBackgroundText(event.target.value)}
-          ref={backgroundRef}
-        />
-      </ContainerSkill>
-
-      <ActionRow>
-        <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
-          <ActionIconButton aria-label='Attach file' onClick={handleOpenFileDialog}>
-            <AttachIcon />
-          </ActionIconButton>
-          <Stack direction='column' alignItems='center' gap={1}>
-            {/* دکمه رکورد فقط وقتی نشون داده میشه که در حال رکورد نباشیم */}
-            {!showRecordingControls && (
-              <ActionIconButton aria-label='Record draft action' onClick={handleShowVoiceRecorder}>
-                <RecordIcon />
-              </ActionIconButton>
-            )}
-
-            {/* رکوردر برای گرفتن ویس جدید */}
-            {showRecordingControls && (
-              <VoiceRecord
-                key={recorderKey}
-                onRecordingComplete={handleVoiceRecordingComplete}
-                showRecordingControls={showRecordingControls}
-                recordingState={recordingState}
-                setRecordingState={setRecordingState}
-                onClearRecording={handleClearVoiceRecording}
-                stackDirection='row'
-              />
-            )}
-          </Stack>
-        </Stack>
-
-        {!isEditingEntry ? (
-          <MuiButton
-            color='secondary'
-            size='medium'
-            variant='outlined'
-            startIcon={<AddIcon />}
-            onClick={handleAddBackgroundEntry}
-            disabled={backgroundEntries.length > 0}
-            sx={{ flexShrink: 0 }}
-          >
-            Add
-          </MuiButton>
-        ) : (
-          <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
-            <MuiButton color='error' size='medium' variant='text' onClick={handleCancelEditBackgroundEntry}>
-              Cancel
-            </MuiButton>
-            <MuiButton color='primary' size='medium' variant='contained' onClick={handleSaveBackgroundEntry}>
-              Save
-            </MuiButton>
-          </Stack>
-        )}
-      </ActionRow>
-      {voiceRecordings.length > 0 && (
-        <ContainerSkillAttachVoice direction='row' active>
-          <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
-            {voiceRecordings.map((item) => (
-              <VoiceItem key={item.id}>
-                <VoiceRecord
-                  recordingState='idle'
-                  // eslint-disable-next-line @typescript-eslint/no-empty-function
-                  setRecordingState={() => {}}
-                  initialAudioUrl={item.url}
-                  initialAudioBlob={item.blob}
-                  showRecordingControls={false}
-                  onClearRecording={() => handleRemoveSavedRecording(item.id)}
-                  stackDirection='column'
-                  fullWidth={false}
-                />
-              </VoiceItem>
-            ))}
-          </Stack>
-        </ContainerSkillAttachVoice>
-      )}
-
-      {uploadedFiles.length > 0 && (
-        <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
-          <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
-            {uploadedFiles.map((file, index) => (
-              <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
-                {file.type.startsWith('image/') ? (
-                  <img
-                    src={filePreviews[index]}
-                    alt={file.name}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
+                <Tooltip
+                    arrow
+                    placement='right'
+                    title={
+                        <TooltipContent>
+                            {tooltipLines.map((line) => (
+                                <Typography key={line} variant='body2' color='inherit'>
+                                    {line}
+                                </Typography>
+                            ))}
+                            <Stack>
+                                <Typography variant='body2' fontStyle='italic' color='inherit'>
+                                    {tooltipSnippet}
+                                </Typography>
+                            </Stack>
+                        </TooltipContent>
+                    }
+                    slotProps={{
+                        tooltip: {
+                            style: {
+                                width: 234,
+                                height: 'auto',
+                                backgroundColor: theme.palette.grey[600],
+                                color: theme.palette.primary.contrastText,
+                                borderRadius: 12,
+                                padding: 10,
+                                boxSizing: 'border-box',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                whiteSpace: 'normal',
+                                fontWeight: 400,
+                            },
+                        },
+                        arrow: {
+                            style: {
+                                color: tooltipBackground,
+                            },
+                        },
                     }}
-                  />
-                ) : file.type.startsWith('video/') ? (
-                  <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                ) : (
-                  <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                )}
-
-                <RemoveFileButton
-                  onClick={() => handleRemoveUploadedFile(index)}
-                  sx={{
-                    width: 24,
-                    height: 24,
-                    padding: 0,
-                    backgroundColor: 'transparent',
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                    },
-                  }}
                 >
-                  <CleanIcon width={24} height={24} />
-                </RemoveFileButton>
-              </FilePreviewContainer>
-            ))}
-          </FilesStack>
-        </ContainerSkillAttach>
-      )}
-      <Divider
-        sx={{
-          width: '550px',
-          my: 2,
-          borderColor: theme.palette.grey[100],
-        }}
-      />
-      {backgroundEntries.length > 0 && (
-        <Stack sx={{ maxWidth: '550px', width: '550px' }} spacing={1}>
-          {backgroundEntries.map((entry, index) => (
-            <React.Fragment key={entry.id}>
-              <ContainerSkillAttachItem
-                direction='row'
-                active
-                sx={{ alignItems: 'stretch', justifyContent: 'space-between' }}
-              >
-                <BackgroundEntryIndex>
-                  <Typography justifyContent='center' fontWeight='584' variant='subtitle1' color='primary.main'>
-                    #{index + 1}
-                  </Typography>
-                </BackgroundEntryIndex>
-                <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
-                  <Stack spacing={1} sx={{ flex: 1 }}>
-                    {entry.text && (
-                      <Typography variant='body2' color='text.primary' fontWeight='400'>
-                        {entry.text}
-                      </Typography>
-                    )}
+                    <span>
+                        <TooltipIcon />
+                    </span>
+                </Tooltip>
+            </Stack>
 
-                    {entry.voices.length > 0 && (
-                      <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
-                        {entry.voices.map((voice) => (
-                          <VoiceItem key={voice.id}>
-                            <VoiceRecord
-                              recordingState='idle'
-                              // eslint-disable-next-line @typescript-eslint/no-empty-function
-                              setRecordingState={() => {}}
-                              initialAudioUrl={voice.url}
-                              initialAudioBlob={voice.blob}
-                              showRecordingControls={false}
-                              onClearRecording={() => {}}
-                              stackDirection='column'
-                              fullWidth={false}
-                            />
-                          </VoiceItem>
-                        ))}
-                      </Stack>
-                    )}
+            <Stack direction='row' alignItems='center' gap={1} mt={1}>
+                <AtsFriendlyChip color='warning.main' label='ATS Friendly' />
+            </Stack>
+            <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
+                <Typography
+                    fontWeight='400'
+                    variant='body1'
+                    color='text.secondry'
+                    justifyContent='center'
+                    alignItems='center'
+                    textAlign='center'
+                    mt={1}
+                >
+                    Your summary shows employers you’re right for their job. We’ll help you write a great one with
+                    expert content you can customize.
+                </Typography>
+            </Stack>
+            <ContainerSkill direction='row' active={!!backgroundText}>
+                <InputContent
+                    placeholder='Type your answer...'
+                    value={backgroundText}
+                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setBackgroundText(event.target.value)}
+                    ref={backgroundRef}
+                />
+            </ContainerSkill>
 
-                    {entry.files.length > 0 && (
-                      <FilesStack direction='row' spacing={1} sx={{ width: '100%', border: 'none' }}>
-                        {entry.files.map((file, idx) => (
-                          <FilePreviewContainer key={`${file.name}-${idx}`} size={50}>
-                            {file.type.startsWith('image/') ? (
-                              <img
-                                src={URL.createObjectURL(file)}
-                                alt={file.name}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                }}
-                              />
-                            ) : file.type.startsWith('video/') ? (
-                              <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                            ) : (
-                              <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                            )}
-                          </FilePreviewContainer>
-                        ))}
-                      </FilesStack>
-                    )}
-                  </Stack>
-                </Stack>
+            <ActionRow>
                 <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
-                  <ActionIconButton onClick={() => handleEditBackgroundEntry(entry.id)} disabled={isEditingEntry}>
-                    <EdiIcon />
-                  </ActionIconButton>
-                  <ActionIconButton onClick={() => handleDeleteBackgroundEntry(entry.id)}>
-                    <CleanIcon />
-                  </ActionIconButton>
+                    <ActionIconButton aria-label='Attach file' onClick={handleOpenFileDialog}>
+                        <AttachIcon />
+                    </ActionIconButton>
+                    <Stack direction='column' alignItems='center' gap={1}>
+                        {/* دکمه رکورد فقط وقتی نشون داده میشه که در حال رکورد نباشیم */}
+                        {!showRecordingControls && (
+                            <ActionIconButton aria-label='Record draft action' onClick={handleShowVoiceRecorder}>
+                                <RecordIcon />
+                            </ActionIconButton>
+                        )}
+
+                        {/* رکوردر برای گرفتن ویس جدید */}
+                        {showRecordingControls && (
+                            <VoiceRecord
+                                key={recorderKey}
+                                onRecordingComplete={handleVoiceRecordingComplete}
+                                showRecordingControls={showRecordingControls}
+                                recordingState={recordingState}
+                                setRecordingState={setRecordingState}
+                                onClearRecording={handleClearVoiceRecording}
+                                stackDirection='row'
+                            />
+                        )}
+                    </Stack>
                 </Stack>
-              </ContainerSkillAttachItem>
-            </React.Fragment>
-          ))}
+
+                {!isEditingEntry ? (
+                    <MuiButton
+                        color='secondary'
+                        size='medium'
+                        variant='outlined'
+                        startIcon={<AddIcon />}
+                        onClick={handleAddBackgroundEntry}
+                        disabled={backgroundEntries.length > 0}
+                        sx={{ flexShrink: 0 }}
+                    >
+                        Add
+                    </MuiButton>
+                ) : (
+                    <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
+                        <MuiButton color='error' size='medium' variant='text' onClick={handleCancelEditBackgroundEntry}>
+                            Cancel
+                        </MuiButton>
+                        <MuiButton
+                            color='primary'
+                            size='medium'
+                            variant='contained'
+                            onClick={handleSaveBackgroundEntry}
+                        >
+                            Save
+                        </MuiButton>
+                    </Stack>
+                )}
+            </ActionRow>
+            {voiceRecordings.length > 0 && (
+                <ContainerSkillAttachVoice direction='row' active>
+                    <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+                        {voiceRecordings.map((item) => (
+                            <VoiceItem key={item.id}>
+                                <VoiceRecord
+                                    recordingState='idle'
+                                    // eslint-disable-next-line @typescript-eslint/no-empty-function
+                                    setRecordingState={() => {}}
+                                    initialAudioUrl={item.url}
+                                    initialAudioBlob={item.blob}
+                                    showRecordingControls={false}
+                                    onClearRecording={() => handleRemoveSavedRecording(item.id)}
+                                    stackDirection='column'
+                                    fullWidth={false}
+                                />
+                            </VoiceItem>
+                        ))}
+                    </Stack>
+                </ContainerSkillAttachVoice>
+            )}
+
+            {uploadedFiles.length > 0 && (
+                <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
+                    <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
+                        {uploadedFiles.map((file, index) => (
+                            <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
+                                {file.type.startsWith('image/') ? (
+                                    <img
+                                        src={filePreviews[index]}
+                                        alt={file.name}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                        }}
+                                    />
+                                ) : file.type.startsWith('video/') ? (
+                                    <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                                ) : (
+                                    <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                                )}
+
+                                <RemoveFileButton
+                                    onClick={() => handleRemoveUploadedFile(index)}
+                                    sx={{
+                                        width: 24,
+                                        height: 24,
+                                        padding: 0,
+                                        backgroundColor: 'transparent',
+                                        '&:hover': {
+                                            backgroundColor: 'transparent',
+                                        },
+                                    }}
+                                >
+                                    <CleanIcon width={24} height={24} />
+                                </RemoveFileButton>
+                            </FilePreviewContainer>
+                        ))}
+                    </FilesStack>
+                </ContainerSkillAttach>
+            )}
+            <Divider
+                sx={{
+                    width: '550px',
+                    my: 2,
+                    borderColor: theme.palette.grey[100],
+                }}
+            />
+            {backgroundEntries.length > 0 && (
+                <Stack sx={{ maxWidth: '550px', width: '550px' }} spacing={1}>
+                    {backgroundEntries.map((entry, index) => (
+                        <React.Fragment key={entry.id}>
+                            <ContainerSkillAttachItem
+                                direction='row'
+                                active
+                                sx={{ alignItems: 'stretch', justifyContent: 'space-between' }}
+                            >
+                                <BackgroundEntryIndex>
+                                    <Typography
+                                        justifyContent='center'
+                                        fontWeight='584'
+                                        variant='subtitle1'
+                                        color='primary.main'
+                                    >
+                                        #{index + 1}
+                                    </Typography>
+                                </BackgroundEntryIndex>
+                                <Stack direction='row' spacing={1} sx={{ flex: 1, alignItems: 'flex-start' }}>
+                                    <Stack spacing={1} sx={{ flex: 1 }}>
+                                        {entry.text && (
+                                            <Typography variant='body2' color='text.primary' fontWeight='400'>
+                                                {entry.text}
+                                            </Typography>
+                                        )}
+
+                                        {entry.voices.length > 0 && (
+                                            <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+                                                {entry.voices.map((voice) => (
+                                                    <VoiceItem key={voice.id}>
+                                                        <VoiceRecord
+                                                            recordingState='idle'
+                                                            // eslint-disable-next-line @typescript-eslint/no-empty-function
+                                                            setRecordingState={() => {}}
+                                                            initialAudioUrl={voice.url}
+                                                            initialAudioBlob={voice.blob}
+                                                            showRecordingControls={false}
+                                                            onClearRecording={() => {}}
+                                                            stackDirection='column'
+                                                            fullWidth={false}
+                                                        />
+                                                    </VoiceItem>
+                                                ))}
+                                            </Stack>
+                                        )}
+
+                                        {entry.files.length > 0 && (
+                                            <FilesStack
+                                                direction='row'
+                                                spacing={1}
+                                                sx={{ width: '100%', border: 'none' }}
+                                            >
+                                                {entry.files.map((file, idx) => (
+                                                    <FilePreviewContainer key={`${file.name}-${idx}`} size={50}>
+                                                        {file.type.startsWith('image/') ? (
+                                                            <img
+                                                                src={URL.createObjectURL(file)}
+                                                                alt={file.name}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    objectFit: 'cover',
+                                                                }}
+                                                            />
+                                                        ) : file.type.startsWith('video/') ? (
+                                                            <VideoIcon
+                                                                style={{ width: '32px', height: '32px', color: '#666' }}
+                                                            />
+                                                        ) : (
+                                                            <FileIcon
+                                                                style={{ width: '32px', height: '32px', color: '#666' }}
+                                                            />
+                                                        )}
+                                                    </FilePreviewContainer>
+                                                ))}
+                                            </FilesStack>
+                                        )}
+                                    </Stack>
+                                </Stack>
+                                <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
+                                    <ActionIconButton
+                                        onClick={() => handleEditBackgroundEntry(entry.id)}
+                                        disabled={isEditingEntry}
+                                    >
+                                        <EdiIcon />
+                                    </ActionIconButton>
+                                    <ActionIconButton onClick={() => handleDeleteBackgroundEntry(entry.id)}>
+                                        <CleanIcon />
+                                    </ActionIconButton>
+                                </Stack>
+                            </ContainerSkillAttachItem>
+                        </React.Fragment>
+                    ))}
+                </Stack>
+            )}
+
+            <input
+                ref={fileInputRef}
+                type='file'
+                multiple
+                accept='*/*'
+                onChange={(event) => handleFileUpload(event.target.files)}
+                style={{ display: 'none' }}
+            />
+
+            <Typography variant='h5' color='text.primary' fontWeight='584' mt={5}>
+                5. Your skills?
+            </Typography>
+            <Stack direction='row' gap={2} mt={3}>
+                <Stack direction='row' alignItems='center' gap={1}>
+                    <Typography variant='subtitle2' color='text.primary' fontWeight='400'>
+                        Main skill
+                    </Typography>
+                    <Typography variant='h5' color='text.primary' fontWeight='584'>
+                        {mainSkillLabel}{' '}
+                    </Typography>
+                    <ActionIconButton aria-label='Edit main skill' onClick={handleOpenEditDialog}>
+                        <EdiIcon />
+                    </ActionIconButton>
+                </Stack>
+            </Stack>
+            <SkillContainer direction='row'>
+                {skills.map((skill: TSkill) => (
+                    <MuiChips key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
+                ))}
+            </SkillContainer>
+
+            <ContainerSkill direction='row' active={!!customSkillInput}>
+                <InputContent
+                    placeholder='Your another skills: Designer, Motion...'
+                    value={customSkillInput}
+                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setCustomSkillInput(event.target.value)
+                    }
+                    ref={customSkillRef}
+                />
+            </ContainerSkill>
+            <Stack mt={4} mb={6} direction='row' gap={3}>
+                <MuiButton
+                    color='secondary'
+                    variant='outlined'
+                    size='large'
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => setStage('SKILL_INPUT')}
+                >
+                    Back
+                </MuiButton>
+
+                <MuiButton
+                    color='secondary'
+                    endIcon={<ArrowRightIcon />}
+                    size='large'
+                    onClick={() => setStage('EXPERIENCE')}
+                    disabled={!canProceedBackground || (!hasSelectedSkills && !hasCustomSkillInput)}
+                >
+                    Next
+                </MuiButton>
+            </Stack>
+            <EditSkillDialog
+                open={isEditDialogOpen}
+                onClose={handleCloseEditDialog}
+                onConfirm={handleConfirmEditDialog}
+                initialSkillId={mainSkillId}
+            />
         </Stack>
-      )}
-
-      <input
-        ref={fileInputRef}
-        type='file'
-        multiple
-        accept='*/*'
-        onChange={(event) => handleFileUpload(event.target.files)}
-        style={{ display: 'none' }}
-      />
-
-      <Typography variant='h5' color='text.primary' fontWeight='584' mt={5}>
-        5. Your skills?
-      </Typography>
-      <Stack direction='row' gap={2} mt={3}>
-        <Stack direction='row' alignItems='center' gap={1}>
-          <Typography variant='subtitle2' color='text.primary' fontWeight='400'>
-            Main skill
-          </Typography>
-          <Typography variant='h5' color='text.primary' fontWeight='584'>
-            {mainSkillLabel}{' '}
-          </Typography>
-          <ActionIconButton aria-label='Edit main skill' onClick={handleOpenEditDialog}>
-            <EdiIcon />
-          </ActionIconButton>
-        </Stack>
-      </Stack>
-      <SkillContainer direction='row'>
-        {skills.map((skill: TSkill) => (
-          <MuiChips key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
-        ))}
-      </SkillContainer>
-
-      <ContainerSkill direction='row' active={!!customSkillInput}>
-        <InputContent
-          placeholder='Your another skills: Designer, Motion...'
-          value={customSkillInput}
-          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setCustomSkillInput(event.target.value)}
-          ref={customSkillRef}
-        />
-      </ContainerSkill>
-      <Stack mt={4} mb={6} direction='row' gap={3}>
-        <MuiButton
-          color='secondary'
-          variant='outlined'
-          size='large'
-          startIcon={<ArrowBackIcon />}
-          onClick={() => setStage('SKILL_INPUT')}
-        >
-          Back
-        </MuiButton>
-
-        <MuiButton
-          color='secondary'
-          endIcon={<ArrowRightIcon />}
-          size='large'
-          onClick={() => setStage('EXPERIENCE')}
-          disabled={!canProceedBackground || (!hasSelectedSkills && !hasCustomSkillInput)}
-        >
-          Next
-        </MuiButton>
-      </Stack>
-      <EditSkillDialog
-        open={isEditDialogOpen}
-        onClose={handleCloseEditDialog}
-        onConfirm={handleConfirmEditDialog}
-        initialSkillId={mainSkillId}
-      />
-    </Stack>
-  );
+    );
 };
 
 export default SelectSkill;
