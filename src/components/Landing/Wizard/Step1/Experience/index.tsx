@@ -24,7 +24,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-  const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
+  const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>([]);
   const [recorderKey, setRecorderKey] = useState<number>(0);
 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -59,7 +59,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     handleFocusBackground();
   };
 
-  const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob) => {
+  const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob, duration: number) => {
     const persistedUrl = URL.createObjectURL(audioBlob);
 
     setVoiceRecordings((prev) => [
@@ -68,6 +68,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         id: generateFakeUUIDv4(),
         url: persistedUrl,
         blob: audioBlob,
+        duration,
       },
     ]);
 

@@ -76,7 +76,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
     const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
     const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob }[]>([]);
+    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>([]);
     const [recorderKey, setRecorderKey] = useState<number>(0);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
@@ -93,7 +93,18 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         handleFocusBackground();
     };
 
-    const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob) => {
+    const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob, duration: number) => {
+        const isRecordingValid = duration > 0 && audioBlob.size > 0;
+        if (!isRecordingValid) {
+            if (_audioUrl) {
+                URL.revokeObjectURL(_audioUrl);
+            }
+            setShowRecordingControls(false);
+            setVoiceUrl(null);
+            setVoiceBlob(null);
+            return;
+        }
+
         const persistedUrl = URL.createObjectURL(audioBlob);
 
         setVoiceRecordings((prev) => [
@@ -102,6 +113,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 id: generateFakeUUIDv4(),
                 url: persistedUrl,
                 blob: audioBlob,
+                duration,
             },
         ]);
 
@@ -302,6 +314,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                     initialAudioUrl={item.url}
                                     initialAudioBlob={item.blob}
                                     showRecordingControls={false}
+                                    initialAudioDuration={item.duration}
                                     onClearRecording={() => handleRemoveSavedRecording(item.id)}
                                     stackDirection='column'
                                     fullWidth={false}

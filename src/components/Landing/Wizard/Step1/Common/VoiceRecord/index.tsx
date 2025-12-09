@@ -71,13 +71,14 @@ const RecordingPulseDot = styled('span')(({ theme }) => {
 export type PlaybackState = 'idle' | 'playing' | 'paused';
 
 export interface VoiceRecordingProps {
-    onRecordingComplete?: (audioUrl: string, blob: Blob) => void;
+    onRecordingComplete?: (audioUrl: string, blob: Blob, duration: number) => void;
     onRecordingStart?: () => void;
     onRecordingStop?: () => void;
     maxDuration?: number;
     showRecordingControls?: boolean;
     initialAudioUrl?: string | null;
     initialAudioBlob?: Blob | null;
+    initialAudioDuration?: number;
     onClearRecording?: () => void;
     recordingState: RecordingState;
     setRecordingState: (recordingState: RecordingState) => void;
@@ -94,6 +95,7 @@ const VoiceRecord = ({
     showRecordingControls = true,
     initialAudioUrl = null,
     initialAudioBlob = null,
+    initialAudioDuration = 0,
     onClearRecording,
     recordingState,
     setRecordingState,
@@ -107,12 +109,14 @@ const VoiceRecord = ({
     const [showFilesStackPreview, setShowFilesStackPreview] = useState(false);
     const audioUrlRef = useRef<string | null>(audioUrl);
     const isInternalUrlRef = useRef<boolean>(isInternalUrl);
+    const recordingTimeRef = useRef(0);
 
     useEffect(() => {
         setAudioUrl(initialAudioUrl);
         setAudioBlob(initialAudioBlob);
+        setAudioDuration(initialAudioDuration);
         setIsInternalUrl(false);
-    }, [initialAudioUrl, initialAudioBlob]);
+    }, [initialAudioUrl, initialAudioBlob, initialAudioDuration]);
 
     useEffect(() => {
         audioUrlRef.current = audioUrl;
@@ -124,7 +128,7 @@ const VoiceRecord = ({
 
     const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
     const [_playbackTime, setPlaybackTime] = useState(0);
-    const [audioDuration, setAudioDuration] = useState(0);
+    const [audioDuration, setAudioDuration] = useState(initialAudioDuration);
     const [_audioProgress, setAudioProgress] = useState(0);
 
     const [_waveBarsCount, setWaveBarsCount] = useState(100);
@@ -158,6 +162,7 @@ const VoiceRecord = ({
             clearInterval(timerRef.current);
             timerRef.current = null;
         }
+        recordingTimeRef.current = 0;
         if (streamRef.current) {
             streamRef.current.getTracks().forEach((track) => track.stop());
             streamRef.current = null;
@@ -195,11 +200,11 @@ const VoiceRecord = ({
 
     const startRecording = useCallback(async () => {
         try {
-            // هر بار شروع ضبط، تایمر را از ابتدا شروع می‌کنیم
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
             }
+            recordingTimeRef.current = 0;
             setRecordingTime(0);
 
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -216,7 +221,16 @@ const VoiceRecord = ({
             // Try to pick a mime type that browser can BOTH record and play,
             // to avoid NotSupportedError: "Failed to load because no supported source was found."
             const audioElement = document.createElement('audio');
-            const mimeCandidates = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/ogg'];
+            const mimeCandidates = [
+                'audio/webm;codecs=opus',
+                'audio/ogg;codecs=opus',
+                'audio/webm',
+                'audio/ogg',
+                'audio/mp4',
+                'audio/mpeg',
+                'audio/x-m4a',
+                'audio/wav',
+            ];
 
             let selectedMimeType: string | undefined;
             for (const type of mimeCandidates) {
@@ -233,7 +247,11 @@ const VoiceRecord = ({
                 }
             }
 
-            const finalMimeType = selectedMimeType ?? 'audio/webm';
+            if (!selectedMimeType) {
+                throw new Error('No supported audio codec available for recording');
+            }
+
+            const finalMimeType = selectedMimeType;
 
             const mediaRecorder = new MediaRecorder(stream, { mimeType: finalMimeType });
 
@@ -261,15 +279,18 @@ const VoiceRecord = ({
                 setAudioUrl(url);
                 setAudioBlob(blob);
                 setIsInternalUrl(true); // mark new URL as internal
+                setAudioDuration(recordingTimeRef.current);
+                const recordedDuration = recordingTimeRef.current;
                 setRecordingTime(0);
                 setRecordingState('idle');
 
-                onRecordingComplete?.(url, blob);
+                onRecordingComplete?.(url, blob, recordedDuration);
                 onRecordingStop?.();
             };
 
             mediaRecorder.start(100); // timeslice
             hasStartedRecordingRef.current = true;
+            recordingTimeRef.current = 0;
             setRecordingState('recording');
             onRecordingStart?.();
             setShowFilesStackPreview(false);
@@ -277,6 +298,7 @@ const VoiceRecord = ({
             timerRef.current = setInterval(() => {
                 setRecordingTime((prev) => {
                     const newTime = prev + 1;
+                    recordingTimeRef.current = newTime;
                     if (newTime >= maxDuration) {
                         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
                             mediaRecorderRef.current.stop();
@@ -288,6 +310,8 @@ const VoiceRecord = ({
             }, 1000);
         } catch (error) {
             hasStartedRecordingRef.current = false;
+            setShowFilesStackPreview(false);
+            setRecordingState('idle');
             console.error('Voice recording error:', error);
         }
     }, [maxDuration, onRecordingComplete, onRecordingStart, onRecordingStop, audioUrl, isInternalUrl]);
@@ -308,7 +332,6 @@ const VoiceRecord = ({
     }, []);
 
     const handleStopRecordingClick = useCallback(() => {
-        setShowFilesStackPreview(true);
         stopRecording();
     }, [stopRecording]);
 
@@ -477,20 +500,65 @@ const VoiceRecord = ({
     }, []);
 
     useEffect(() => {
-        if (audioUrl && audioRef.current) {
+        if (!audioUrl) {
+            if (audioRef.current) {
+                try {
+                    audioRef.current.pause();
+                    audioRef.current.src = '';
+                } catch {
+                    void 0;
+                }
+                audioRef.current = null;
+            }
+            setPlaybackState('idle');
+            setPlaybackTime(0);
+            setAudioProgress(0);
+            setAudioDuration(0);
+            setWaveBarsCount(100);
+            return;
+        }
+
+        let metadataAudio: HTMLAudioElement | null = new Audio(audioUrl);
+        metadataAudio.preload = 'metadata';
+
+        const updateDurationFromMetadata = () => {
+            if (!metadataAudio || !isFinite(metadataAudio.duration) || metadataAudio.duration <= 0) {
+                return;
+            }
+
+            setAudioDuration(metadataAudio.duration);
+            const bars = Math.max(20, Math.floor(metadataAudio.duration * 20));
+            setWaveBarsCount(bars);
+        };
+
+        const cleanupMetadataAudio = () => {
+            if (metadataAudio) {
+                metadataAudio.removeEventListener('loadedmetadata', updateDurationFromMetadata);
+                metadataAudio.removeEventListener('error', cleanupMetadataAudio);
+                metadataAudio.src = '';
+                metadataAudio = null;
+            }
+        };
+
+        metadataAudio.addEventListener('loadedmetadata', updateDurationFromMetadata);
+        metadataAudio.addEventListener('error', cleanupMetadataAudio);
+
+        if (audioRef.current) {
             try {
                 audioRef.current.pause();
                 audioRef.current.src = '';
             } catch {
-                // ignore cleanup errors
                 void 0;
             }
             audioRef.current = null;
             setPlaybackState('idle');
             setPlaybackTime(0);
             setAudioProgress(0);
-            setAudioDuration(0);
         }
+
+        return () => {
+            cleanupMetadataAudio();
+        };
     }, [audioUrl]);
 
     useEffect(() => {
@@ -508,12 +576,7 @@ const VoiceRecord = ({
     }, [cleanup]);
 
     useEffect(() => {
-        if (
-            !showRecordingControls ||
-            recordingState !== 'idle' ||
-            !!audioUrl ||
-            hasStartedRecordingRef.current
-        ) {
+        if (!showRecordingControls || recordingState !== 'idle' || !!audioUrl || hasStartedRecordingRef.current) {
             return;
         }
 

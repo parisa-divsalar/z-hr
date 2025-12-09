@@ -34,6 +34,7 @@ export interface BackgroundEntry {
     id: string;
     url: string;
     blob: Blob;
+    duration: number;
   }[];
 }
 
@@ -47,8 +48,8 @@ interface BrieflySectionProps {
   recordingState: RecordingState;
   setRecordingState: (value: RecordingState) => void;
   recorderKey: number;
-  voiceRecordings: { id: string; url: string; blob: Blob }[];
-  onRecordingComplete: (audioUrl: string, audioBlob: Blob) => void;
+  voiceRecordings: { id: string; url: string; blob: Blob; duration: number }[];
+  onRecordingComplete: (audioUrl: string, audioBlob: Blob, duration: number) => void;
   onClearRecording: () => void;
   onRemoveSavedRecording: (id: string) => void;
 
@@ -273,6 +274,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                               initialAudioUrl={voice.url}
                               initialAudioBlob={voice.blob}
                               showRecordingControls={false}
+                              initialAudioDuration={voice.duration}
                               onClearRecording={() => {}}
                               stackDirection='column'
                               fullWidth={false}
