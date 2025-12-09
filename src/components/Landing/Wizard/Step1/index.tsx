@@ -1,6 +1,7 @@
 import { FunctionComponent, useState } from 'react';
 
 import { AIStatus, StageWizard } from '@/components/Landing/type';
+import Certification from '@/components/Landing/Wizard/Step1/Certification';
 import Experience from '@/components/Landing/Wizard/Step1/Experience';
 import Questions from '@/components/Landing/Wizard/Step1/Questions';
 import SKillInput from '@/components/Landing/Wizard/Step1/SKillInput';

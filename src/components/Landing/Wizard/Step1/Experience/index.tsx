@@ -393,7 +393,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                     color='secondary'
                     endIcon={<ArrowRightIcon />}
                     size='large'
-                    onClick={() => setStage('QUESTIONS')}
+                    onClick={() => setStage('CERTIFICATION')}
                     disabled={!hasExperience}
                 >
                     Next
