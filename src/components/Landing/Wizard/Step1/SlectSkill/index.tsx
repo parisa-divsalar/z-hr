@@ -93,12 +93,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         handleFocusBackground();
     };
 
-    const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
+    const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob) => {
+        const persistedUrl = URL.createObjectURL(audioBlob);
+
         setVoiceRecordings((prev) => [
             ...prev,
             {
                 id: generateFakeUUIDv4(),
-                url: audioUrl,
+                url: persistedUrl,
                 blob: audioBlob,
             },
         ]);
@@ -115,7 +117,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const handleRemoveSavedRecording = (id: string) => {
-        setVoiceRecordings((prev) => prev.filter((item) => item.id !== id));
+        setVoiceRecordings((prev) => {
+            const removed = prev.find((item) => item.id === id);
+            if (removed) {
+                URL.revokeObjectURL(removed.url);
+            }
+            return prev.filter((item) => item.id !== id);
+        });
     };
 
     const hasBackgroundText = backgroundText.trim() !== '';

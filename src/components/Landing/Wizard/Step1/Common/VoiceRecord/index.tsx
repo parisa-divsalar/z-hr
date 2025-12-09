@@ -132,8 +132,26 @@ const VoiceRecord = ({
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const chunksRef = useRef<Blob[]>([]);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const hasStartedRecordingRef = useRef(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const clearPlaybackTimer = useCallback(() => {
+        if (playbackTimerRef.current) {
+            clearInterval(playbackTimerRef.current);
+            playbackTimerRef.current = null;
+        }
+    }, []);
+
+    const startPlaybackTimer = useCallback(() => {
+        clearPlaybackTimer();
+        playbackTimerRef.current = setInterval(() => {
+            if (audioRef.current) {
+                setPlaybackTime(audioRef.current.currentTime);
+            }
+        }, 200);
+    }, [clearPlaybackTimer]);
 
     const cleanup = useCallback(() => {
         if (timerRef.current) {
@@ -155,6 +173,8 @@ const VoiceRecord = ({
             audioRef.current = null;
         }
 
+        clearPlaybackTimer();
+
         if (audioUrlRef.current && isInternalUrlRef.current) {
             try {
                 URL.revokeObjectURL(audioUrlRef.current);
@@ -171,10 +191,17 @@ const VoiceRecord = ({
         setAudioDuration(0);
         setWaveBarsCount(100);
         setShowFilesStackPreview(false);
-    }, []);
+    }, [clearPlaybackTimer]);
 
     const startRecording = useCallback(async () => {
         try {
+            // هر بار شروع ضبط، تایمر را از ابتدا شروع می‌کنیم
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+            setRecordingTime(0);
+
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
@@ -186,11 +213,29 @@ const VoiceRecord = ({
             streamRef.current = stream;
             chunksRef.current = [];
 
-            const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-                ? 'audio/webm;codecs=opus'
-                : 'audio/webm';
+            // Try to pick a mime type that browser can BOTH record and play,
+            // to avoid NotSupportedError: "Failed to load because no supported source was found."
+            const audioElement = document.createElement('audio');
+            const mimeCandidates = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/ogg'];
 
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+            let selectedMimeType: string | undefined;
+            for (const type of mimeCandidates) {
+                try {
+                    const canRecord = MediaRecorder.isTypeSupported(type);
+                    const canPlay = audioElement.canPlayType(type) !== '';
+                    if (canRecord && canPlay) {
+                        selectedMimeType = type;
+                        break;
+                    }
+                } catch {
+                    // In very old implementations, isTypeSupported might throw – ignore and continue
+                    void 0;
+                }
+            }
+
+            const finalMimeType = selectedMimeType ?? 'audio/webm';
+
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: finalMimeType });
 
             mediaRecorderRef.current = mediaRecorder;
 
@@ -201,7 +246,7 @@ const VoiceRecord = ({
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunksRef.current, { type: mime });
+                const blob = new Blob(chunksRef.current, { type: finalMimeType });
                 const url = URL.createObjectURL(blob);
 
                 if (audioUrl && isInternalUrl) {
@@ -224,6 +269,7 @@ const VoiceRecord = ({
             };
 
             mediaRecorder.start(100); // timeslice
+            hasStartedRecordingRef.current = true;
             setRecordingState('recording');
             onRecordingStart?.();
             setShowFilesStackPreview(false);
@@ -241,6 +287,7 @@ const VoiceRecord = ({
                 });
             }, 1000);
         } catch (error) {
+            hasStartedRecordingRef.current = false;
             console.error('Voice recording error:', error);
         }
     }, [maxDuration, onRecordingComplete, onRecordingStart, onRecordingStop, audioUrl, isInternalUrl]);
@@ -323,42 +370,59 @@ const VoiceRecord = ({
                 };
 
                 audio.onended = () => {
+                    clearPlaybackTimer();
                     setPlaybackState('idle');
                     setPlaybackTime(0);
                     setAudioProgress(0);
                 };
 
-                audio.onerror = (e) => {
-                    console.error('Audio element error:', e);
+                audio.onerror = () => {
+                    // Use warn instead of error to avoid React dev overlay,
+                    // and gracefully reset playback state if the audio fails.
+                    console.warn('Audio element error:', audioRef.current?.error || 'Unknown audio error');
+                    clearPlaybackTimer();
                     setPlaybackState('idle');
+                    setPlaybackTime(0);
+                    setAudioProgress(0);
                 };
             }
 
             await audioRef.current.play();
+            startPlaybackTimer();
+
+            // Ensure duration and waveform info are set even if metadata events were late
+            if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
+                setAudioDuration(audioRef.current.duration);
+                const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
+                setWaveBarsCount(bars);
+            }
+
             setPlaybackState('playing');
         } catch (error) {
             console.error('Failed to play audio:', error);
             setPlaybackState('idle');
         }
-    }, [audioUrl, playbackState]);
+    }, [audioUrl, playbackState, clearPlaybackTimer, startPlaybackTimer]);
 
     /** PAUSE */
     const pauseRecording = useCallback(() => {
         if (audioRef.current && playbackState === 'playing') {
             audioRef.current.pause();
             setPlaybackState('paused');
+            clearPlaybackTimer();
         }
-    }, [playbackState]);
+    }, [clearPlaybackTimer, playbackState]);
 
     const _stopPlayback = useCallback(() => {
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
         }
+        clearPlaybackTimer();
         setPlaybackState('idle');
         setPlaybackTime(0);
         setAudioProgress(0);
-    }, []);
+    }, [clearPlaybackTimer]);
 
     const togglePlayback = useCallback(() => {
         if (playbackState === 'idle' || playbackState === 'paused') {
@@ -382,6 +446,8 @@ const VoiceRecord = ({
             audioRef.current = null;
         }
 
+        clearPlaybackTimer();
+
         if (audioUrl && isInternalUrl) {
             URL.revokeObjectURL(audioUrl);
         }
@@ -401,10 +467,13 @@ const VoiceRecord = ({
     }, [audioUrl, isInternalUrl, onClearRecording]);
 
     const formatTime = useCallback((seconds: number) => {
-        if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) return '00.00';
-        const integerPart = Math.floor(seconds).toString().padStart(2, '0');
-        const decimalPart = (seconds % 1).toFixed(2).slice(1); // .XX
-        return `${integerPart}${decimalPart}`;
+        if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) return '00:00';
+        const totalSeconds = Math.floor(seconds);
+        const minutes = Math.floor(totalSeconds / 60)
+            .toString()
+            .padStart(2, '0');
+        const secs = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${minutes}:${secs}`;
     }, []);
 
     useEffect(() => {
@@ -430,12 +499,26 @@ const VoiceRecord = ({
         }
     }, [audioUrl]);
 
-    useEffect(() => () => cleanup(), [cleanup]);
+    useEffect(() => {
+        hasStartedRecordingRef.current = false;
+        return () => {
+            hasStartedRecordingRef.current = false;
+            cleanup();
+        };
+    }, [cleanup]);
 
     useEffect(() => {
-        if (showRecordingControls && recordingState === 'idle' && !audioUrl) {
-            void startRecording();
+        if (
+            !showRecordingControls ||
+            recordingState !== 'idle' ||
+            !!audioUrl ||
+            hasStartedRecordingRef.current
+        ) {
+            return;
         }
+
+        hasStartedRecordingRef.current = true;
+        void startRecording();
     }, [showRecordingControls, recordingState, startRecording, audioUrl]);
 
     return (
@@ -489,7 +572,7 @@ const VoiceRecord = ({
                                 </IconButton>
 
                                 <Typography variant='body2' color='error' my={2}>
-                                    {formatTime(audioDuration)}
+                                    {formatTime(playbackState === 'idle' ? audioDuration : _playbackTime)}
                                 </Typography>
 
                                 <RemoveFileButton

@@ -59,12 +59,14 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     handleFocusBackground();
   };
 
-  const handleVoiceRecordingComplete = (audioUrl: string, audioBlob: Blob) => {
+  const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob) => {
+    const persistedUrl = URL.createObjectURL(audioBlob);
+
     setVoiceRecordings((prev) => [
       ...prev,
       {
         id: generateFakeUUIDv4(),
-        url: audioUrl,
+        url: persistedUrl,
         blob: audioBlob,
       },
     ]);
@@ -81,7 +83,13 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
   };
 
   const handleRemoveSavedRecording = (id: string) => {
-    setVoiceRecordings((prev) => prev.filter((item) => item.id !== id));
+    setVoiceRecordings((prev) => {
+      const removed = prev.find((item) => item.id === id);
+      if (removed) {
+        URL.revokeObjectURL(removed.url);
+      }
+      return prev.filter((item) => item.id !== id);
+    });
   };
 
   const handleOpenFileDialog = () => {
@@ -201,7 +209,13 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
   };
 
   const handleDeleteBackgroundEntry = (id: string) => {
-    setBackgroundEntries((prev) => prev.filter((item) => item.id !== id));
+    setBackgroundEntries((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target) {
+        target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
+      }
+      return prev.filter((item) => item.id !== id);
+    });
   };
 
   const hasExperience = backgroundText.trim() !== '' || backgroundEntries.length > 0;
