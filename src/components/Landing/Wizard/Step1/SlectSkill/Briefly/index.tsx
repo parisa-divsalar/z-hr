@@ -131,7 +131,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                 {/* ATS Friendly chip is rendered from parent via AtsFriendlyChip */}
                 {/* This wrapper keeps layout consistent if chip render logic changes */}
             </Stack>
-
             <ContainerSkill direction='row' active={hasBackgroundText}>
                 <InputContent
                     placeholder='Type your answer...'
@@ -142,7 +141,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     ref={backgroundRef}
                 />
             </ContainerSkill>
-
             <ActionRow>
                 <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
                     <ActionIconButton aria-label='Attach file' onClick={onOpenFileDialog}>
@@ -192,7 +190,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     </Stack>
                 )}
             </ActionRow>
-
             {voiceRecordings.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
                     <Stack direction='row' gap={1.5} sx={{ flexWrap: 'wrap' }}>
@@ -213,7 +210,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     </Stack>
                 </ContainerSkillAttachVoice>
             )}
-
             {uploadedFiles.length > 0 && (
                 <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
                     <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
@@ -289,7 +285,16 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                 <Stack direction='row' sx={{ flex: 1, alignItems: 'flex-start' }}>
                                     <Stack spacing={1} sx={{ flex: 1 }}>
                                         {entry.text && (
-                                            <Typography variant='body2' color='text.primary' fontWeight='400'>
+                                            <Typography
+                                                variant='body2'
+                                                fontWeight='400'
+                                                color='text.primary'
+                                                sx={{
+                                                    maxWidth: 392,
+                                                    wordBreak: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                }}
+                                            >
                                                 {entry.text}
                                             </Typography>
                                         )}
@@ -369,7 +374,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     ))}
                 </Stack>
             )}
-
             <input
                 ref={fileInputRef}
                 type='file'

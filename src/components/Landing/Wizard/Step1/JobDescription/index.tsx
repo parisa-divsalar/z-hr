@@ -20,6 +20,7 @@ import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
+import { AtsFriendlyChip } from './styled';
 import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
 
 type ToastSeverity = AlertWrapperProps['severity'];
@@ -377,8 +378,26 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
     return (
         <Stack alignItems='center' justifyContent='center' height='100%'>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                8. Could you share the job description?
+                8. Could you share the job description?{' '}
             </Typography>
+
+            <Stack direction='row' alignItems='center' gap={1} mt={1}>
+                <AtsFriendlyChip color='warning' label='ATS Friendly' />
+            </Stack>
+            <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
+                <Typography
+                    fontWeight='400'
+                    variant='subtitle2'
+                    color='text.secondary'
+                    justifyContent='center'
+                    alignItems='center'
+                    textAlign='center'
+                    mt={1}
+                >
+                    If you have a job position you want to apply for and you're creating a resume for it, please provide
+                    us with that job position.
+                </Typography>
+            </Stack>
 
             {toastInfo && (
                 <Stack sx={{ width: '100%', maxWidth: '350px', mt: 2 }}>
@@ -416,9 +435,26 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
             />
 
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={4}>
-                9. Anything else to add?
+                9. Anything else to add?{' '}
             </Typography>
 
+            <Stack direction='row' alignItems='center' gap={1} mt={1}>
+                <AtsFriendlyChip color='warning' label='ATS Friendly' />
+            </Stack>
+            <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
+                <Typography
+                    fontWeight='400'
+                    variant='subtitle2'
+                    color='text.secondary'
+                    justifyContent='center'
+                    alignItems='center'
+                    textAlign='center'
+                    mt={1}
+                >
+                    You can upload your resume in PDF format or any other format, including a photo, detailing your work
+                    experience or activities.
+                </Typography>
+            </Stack>
             <BrieflySection
                 backgroundText={sectionTwo.backgroundText}
                 onBackgroundTextChange={sectionTwo.setBackgroundText}
