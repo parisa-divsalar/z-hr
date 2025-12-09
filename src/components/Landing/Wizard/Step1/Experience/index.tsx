@@ -1,4 +1,4 @@
-import React, { FunctionComponent, RefObject, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
@@ -6,278 +6,394 @@ import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
+import {
+    FILE_CATEGORY_LIMITS,
+    FILE_CATEGORY_TOAST_LABELS,
+    getFileCategory,
+    getFileTypeDisplayName,
+    isVideoDurationValid,
+    MAX_VOICE_DURATION_SECONDS,
+    MAX_VOICE_RECORDINGS,
+} from '@/components/Landing/Wizard/Step1/attachmentRules';
+import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
 
 interface ExperienceProps {
-  setStage: (stage: StageWizard) => void;
+    setStage: (stage: StageWizard) => void;
+}
+
+type ToastSeverity = AlertWrapperProps['severity'];
+
+interface ToastInfo {
+    id: number;
+    message: string;
+    severity: ToastSeverity;
 }
 
 const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
-  const [backgroundText, setBackgroundText] = useState<string>('');
-  const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [backgroundText, setBackgroundText] = useState<string>('');
+    const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
-  const [recordingState, setRecordingState] = useState<RecordingState>('idle');
-  const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
-  const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-  const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>([]);
-  const [recorderKey, setRecorderKey] = useState<number>(0);
+    const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
+    const [recordingState, setRecordingState] = useState<RecordingState>('idle');
+    const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
+    const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>(
+        [],
+    );
+    const [recorderKey, setRecorderKey] = useState<number>(0);
 
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
 
-  const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
-  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
-  const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
+    const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filePreviews = useMemo(
-    () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
-    [uploadedFiles],
-  );
+    const [isEditingEntry, setIsEditingEntry] = useState<boolean>(false);
+    const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+    const [editingEntryBackup, setEditingEntryBackup] = useState<BackgroundEntry | null>(null);
 
-  useEffect(() => {
-    return () => {
-      filePreviews.forEach((preview) => {
-        if (preview) {
-          URL.revokeObjectURL(preview);
+    const isVoiceLimitReached = voiceRecordings.length >= MAX_VOICE_RECORDINGS;
+
+    const showToast = useCallback((message: string, severity: ToastSeverity = 'warning') => {
+        if (toastTimerRef.current) {
+            clearTimeout(toastTimerRef.current);
         }
-      });
-    };
-  }, [filePreviews]);
 
-  const handleFocusBackground = () => {
-    backgroundRef.current?.focus();
-  };
+        const id = Date.now();
+        setToastInfo({ id, message, severity });
 
-  const handleShowVoiceRecorder = () => {
-    setShowRecordingControls(true);
-    setRecorderKey((prev) => prev + 1);
-    handleFocusBackground();
-  };
+        toastTimerRef.current = setTimeout(() => {
+            setToastInfo((current) => (current?.id === id ? null : current));
+            toastTimerRef.current = null;
+        }, 4000);
+    }, []);
 
-  const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob, duration: number) => {
-    const persistedUrl = URL.createObjectURL(audioBlob);
+    useEffect(() => {
+        return () => {
+            if (toastTimerRef.current) {
+                clearTimeout(toastTimerRef.current);
+            }
+        };
+    }, []);
 
-    setVoiceRecordings((prev) => [
-      ...prev,
-      {
-        id: generateFakeUUIDv4(),
-        url: persistedUrl,
-        blob: audioBlob,
-        duration,
-      },
-    ]);
+    const filePreviews = useMemo(
+        () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
+        [uploadedFiles],
+    );
 
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
+    useEffect(() => {
+        return () => {
+            filePreviews.forEach((preview) => {
+                if (preview) {
+                    URL.revokeObjectURL(preview);
+                }
+            });
+        };
+    }, [filePreviews]);
 
-  const handleClearVoiceRecording = () => {
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
-
-  const handleRemoveSavedRecording = (id: string) => {
-    setVoiceRecordings((prev) => {
-      const removed = prev.find((item) => item.id === id);
-      if (removed) {
-        URL.revokeObjectURL(removed.url);
-      }
-      return prev.filter((item) => item.id !== id);
-    });
-  };
-
-  const handleOpenFileDialog = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) {
-      return;
-    }
-
-    const fileList = Array.from(files);
-    setUploadedFiles((prev) => [...prev, ...fileList]);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleRemoveUploadedFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
-  };
-
-  const handleAddBackgroundEntry = () => {
-    const hasText = backgroundText.trim() !== '';
-    const hasFiles = uploadedFiles.length > 0;
-    const hasVoices = voiceRecordings.length > 0;
-
-    if (!hasText && !hasFiles && !hasVoices) {
-      return;
-    }
-
-    const newEntry: BackgroundEntry = {
-      id: generateFakeUUIDv4(),
-      text: backgroundText.trim(),
-      files: uploadedFiles,
-      voices: voiceRecordings,
+    const handleFocusBackground = () => {
+        backgroundRef.current?.focus();
     };
 
-    setBackgroundEntries((prev) => [...prev, newEntry]);
-    setIsEditingEntry(false);
-    setEditingEntryId(null);
-    setEditingEntryBackup(null);
+    const handleShowVoiceRecorder = () => {
+        if (isVoiceLimitReached) {
+            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            return;
+        }
 
-    setBackgroundText('');
-    setUploadedFiles([]);
-    setVoiceRecordings([]);
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
-
-  const handleEditBackgroundEntry = (id: string) => {
-    setIsEditingEntry(true);
-    setBackgroundEntries((prev) => {
-      const entry = prev.find((item) => item.id === id);
-
-      if (!entry) {
-        return prev;
-      }
-
-      setEditingEntryId(entry.id);
-      setEditingEntryBackup(entry);
-      setBackgroundText(entry.text);
-      setUploadedFiles(entry.files);
-      setVoiceRecordings(entry.voices);
-
-      return prev.filter((item) => item.id !== id);
-    });
-  };
-
-  const handleSaveBackgroundEntry = () => {
-    const hasText = backgroundText.trim() !== '';
-    const hasFiles = uploadedFiles.length > 0;
-    const hasVoices = voiceRecordings.length > 0;
-
-    if (!hasText && !hasFiles && !hasVoices) {
-      return;
-    }
-
-    const updatedEntry: BackgroundEntry = {
-      id: editingEntryId ?? generateFakeUUIDv4(),
-      text: backgroundText.trim(),
-      files: uploadedFiles,
-      voices: voiceRecordings,
+        setShowRecordingControls(true);
+        setRecorderKey((prev) => prev + 1);
+        handleFocusBackground();
     };
 
-    setBackgroundEntries((prev) => [...prev, updatedEntry]);
+    const handleVoiceRecordingComplete = (_audioUrl: string, audioBlob: Blob, duration: number) => {
+        const isRecordingValid = duration > 0 && audioBlob.size > 0;
+        if (!isRecordingValid) {
+            if (_audioUrl) {
+                URL.revokeObjectURL(_audioUrl);
+            }
+            setShowRecordingControls(false);
+            setVoiceUrl(null);
+            setVoiceBlob(null);
+            return;
+        }
 
-    setIsEditingEntry(false);
-    setEditingEntryId(null);
-    setEditingEntryBackup(null);
+        if (duration > MAX_VOICE_DURATION_SECONDS) {
+            showToast('Voice recordings are limited to 90 seconds.', 'info');
+            setShowRecordingControls(false);
+            setVoiceUrl(null);
+            setVoiceBlob(null);
+            return;
+        }
 
-    setBackgroundText('');
-    setUploadedFiles([]);
-    setVoiceRecordings([]);
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
+        if (voiceRecordings.length >= MAX_VOICE_RECORDINGS) {
+            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            setShowRecordingControls(false);
+            setVoiceUrl(null);
+            setVoiceBlob(null);
+            return;
+        }
 
-  const handleCancelEditBackgroundEntry = () => {
-    if (editingEntryBackup) {
-      setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
-    }
+        const persistedUrl = URL.createObjectURL(audioBlob);
 
-    setIsEditingEntry(false);
-    setEditingEntryId(null);
-    setEditingEntryBackup(null);
+        setVoiceRecordings((prev) => [
+            ...prev,
+            {
+                id: generateFakeUUIDv4(),
+                url: persistedUrl,
+                blob: audioBlob,
+                duration,
+            },
+        ]);
 
-    setBackgroundText('');
-    setUploadedFiles([]);
-    setVoiceRecordings([]);
-    setShowRecordingControls(false);
-    setVoiceUrl(null);
-    setVoiceBlob(null);
-  };
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
 
-  const handleDeleteBackgroundEntry = (id: string) => {
-    setBackgroundEntries((prev) => {
-      const target = prev.find((item) => item.id === id);
-      if (target) {
-        target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
-      }
-      return prev.filter((item) => item.id !== id);
-    });
-  };
+    const handleClearVoiceRecording = () => {
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
 
-  const hasExperience = backgroundText.trim() !== '' || backgroundEntries.length > 0;
+    const handleRemoveSavedRecording = (id: string) => {
+        setVoiceRecordings((prev) => {
+            const removed = prev.find((item) => item.id === id);
+            if (removed) {
+                URL.revokeObjectURL(removed.url);
+            }
+            return prev.filter((item) => item.id !== id);
+        });
+    };
 
-  return (
-    <Stack alignItems='center' justifyContent='center' height='100%'>
-      <Typography variant='h5' color='text.primary' fontWeight='584'>
-        6. Your work experience history{' '}
-      </Typography>
+    const handleOpenFileDialog = () => {
+        fileInputRef.current?.click();
+    };
 
-      <BrieflySection
-        backgroundText={backgroundText}
-        onBackgroundTextChange={setBackgroundText}
-        backgroundRef={backgroundRef as RefObject<HTMLTextAreaElement>}
-        showRecordingControls={showRecordingControls}
-        onShowVoiceRecorder={handleShowVoiceRecorder}
-        recordingState={recordingState}
-        setRecordingState={setRecordingState}
-        recorderKey={recorderKey}
-        voiceRecordings={voiceRecordings}
-        onRecordingComplete={handleVoiceRecordingComplete}
-        onClearRecording={handleClearVoiceRecording}
-        onRemoveSavedRecording={handleRemoveSavedRecording}
-        uploadedFiles={uploadedFiles}
-        filePreviews={filePreviews}
-        onOpenFileDialog={handleOpenFileDialog}
-        onFileUpload={handleFileUpload}
-        onRemoveUploadedFile={handleRemoveUploadedFile}
-        isEditingEntry={isEditingEntry}
-        onAddBackgroundEntry={handleAddBackgroundEntry}
-        onCancelEditBackgroundEntry={handleCancelEditBackgroundEntry}
-        onSaveBackgroundEntry={handleSaveBackgroundEntry}
-        backgroundEntries={backgroundEntries}
-        onEditBackgroundEntry={handleEditBackgroundEntry}
-        onDeleteBackgroundEntry={handleDeleteBackgroundEntry}
-        fileInputRef={fileInputRef as RefObject<HTMLInputElement>}
-      />
+    const handleFileUpload = async (files: FileList | null) => {
+        if (!files) {
+            return;
+        }
 
-      <Stack mt={4} mb={6} direction='row' gap={3}>
-        <MuiButton
-          color='secondary'
-          variant='outlined'
-          size='large'
-          startIcon={<ArrowBackIcon />}
-          onClick={() => setStage('SELECT_SKILL')}
-        >
-          Back
-        </MuiButton>
+        const fileList = Array.from(files);
+        const acceptedFiles: File[] = [];
 
-        <MuiButton
-          color='secondary'
-          endIcon={<ArrowRightIcon />}
-          size='large'
-          onClick={() => setStage('QUESTIONS')}
-          disabled={!hasExperience}
-        >
-          Next
-        </MuiButton>
-      </Stack>
-    </Stack>
-  );
+        for (const file of fileList) {
+            const category = getFileCategory(file);
+
+            if (category !== 'other') {
+                const limit = FILE_CATEGORY_LIMITS[category];
+                const currentCount =
+                    uploadedFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
+                    acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
+
+                if (currentCount >= limit) {
+                    showToast(`You can upload up to ${limit} ${FILE_CATEGORY_TOAST_LABELS[category]}.`);
+                    continue;
+                }
+            }
+
+            if (category === 'video') {
+                const isDurationValid = await isVideoDurationValid(file);
+                if (!isDurationValid) {
+                    showToast('Each video must be 60 seconds or shorter.');
+                    continue;
+                }
+            }
+
+            acceptedFiles.push(file);
+        }
+
+        if (acceptedFiles.length > 0) {
+            setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
+        }
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleRemoveUploadedFile = (index: number) => {
+        setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+    };
+
+    const handleAddBackgroundEntry = () => {
+        const hasText = backgroundText.trim() !== '';
+        const hasFiles = uploadedFiles.length > 0;
+        const hasVoices = voiceRecordings.length > 0;
+
+        if (!hasText && !hasFiles && !hasVoices) {
+            return;
+        }
+
+        const newEntry: BackgroundEntry = {
+            id: generateFakeUUIDv4(),
+            text: backgroundText.trim(),
+            files: uploadedFiles,
+            voices: voiceRecordings,
+        };
+
+        setBackgroundEntries((prev) => [...prev, newEntry]);
+        setIsEditingEntry(false);
+        setEditingEntryId(null);
+        setEditingEntryBackup(null);
+
+        setBackgroundText('');
+        setUploadedFiles([]);
+        setVoiceRecordings([]);
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
+
+    const handleEditBackgroundEntry = (id: string) => {
+        setIsEditingEntry(true);
+        setBackgroundEntries((prev) => {
+            const entry = prev.find((item) => item.id === id);
+
+            if (!entry) {
+                return prev;
+            }
+
+            setEditingEntryId(entry.id);
+            setEditingEntryBackup(entry);
+            setBackgroundText(entry.text);
+            setUploadedFiles(entry.files);
+            setVoiceRecordings(entry.voices);
+
+            return prev.filter((item) => item.id !== id);
+        });
+    };
+
+    const handleSaveBackgroundEntry = () => {
+        const hasText = backgroundText.trim() !== '';
+        const hasFiles = uploadedFiles.length > 0;
+        const hasVoices = voiceRecordings.length > 0;
+
+        if (!hasText && !hasFiles && !hasVoices) {
+            return;
+        }
+
+        const updatedEntry: BackgroundEntry = {
+            id: editingEntryId ?? generateFakeUUIDv4(),
+            text: backgroundText.trim(),
+            files: uploadedFiles,
+            voices: voiceRecordings,
+        };
+
+        setBackgroundEntries((prev) => [...prev, updatedEntry]);
+
+        setIsEditingEntry(false);
+        setEditingEntryId(null);
+        setEditingEntryBackup(null);
+
+        setBackgroundText('');
+        setUploadedFiles([]);
+        setVoiceRecordings([]);
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
+
+    const handleCancelEditBackgroundEntry = () => {
+        if (editingEntryBackup) {
+            setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
+        }
+
+        setIsEditingEntry(false);
+        setEditingEntryId(null);
+        setEditingEntryBackup(null);
+
+        setBackgroundText('');
+        setUploadedFiles([]);
+        setVoiceRecordings([]);
+        setShowRecordingControls(false);
+        setVoiceUrl(null);
+        setVoiceBlob(null);
+    };
+
+    const handleDeleteBackgroundEntry = (id: string) => {
+        setBackgroundEntries((prev) => {
+            const target = prev.find((item) => item.id === id);
+            if (target) {
+                target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
+            }
+            return prev.filter((item) => item.id !== id);
+        });
+    };
+
+    const hasExperience = backgroundText.trim() !== '' || backgroundEntries.length > 0;
+
+    return (
+        <Stack alignItems='center' justifyContent='center' height='100%'>
+            <Typography variant='h5' color='text.primary' fontWeight='584'>
+                6. Your work experience history{' '}
+            </Typography>
+
+            {toastInfo && (
+                <Stack sx={{ width: '100%', maxWidth: '350px', mt: 2 }}>
+                    <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
+                </Stack>
+            )}
+
+            <BrieflySection
+                backgroundText={backgroundText}
+                onBackgroundTextChange={setBackgroundText}
+                backgroundRef={backgroundRef as RefObject<HTMLTextAreaElement>}
+                showRecordingControls={showRecordingControls}
+                onShowVoiceRecorder={handleShowVoiceRecorder}
+                recordingState={recordingState}
+                setRecordingState={setRecordingState}
+                recorderKey={recorderKey}
+                voiceRecordings={voiceRecordings}
+                onRecordingComplete={handleVoiceRecordingComplete}
+                onClearRecording={handleClearVoiceRecording}
+                onRemoveSavedRecording={handleRemoveSavedRecording}
+                uploadedFiles={uploadedFiles}
+                filePreviews={filePreviews}
+                onOpenFileDialog={handleOpenFileDialog}
+                onFileUpload={handleFileUpload}
+                onRemoveUploadedFile={handleRemoveUploadedFile}
+                getFileTypeDisplayName={getFileTypeDisplayName}
+                isEditingEntry={isEditingEntry}
+                onAddBackgroundEntry={handleAddBackgroundEntry}
+                onCancelEditBackgroundEntry={handleCancelEditBackgroundEntry}
+                onSaveBackgroundEntry={handleSaveBackgroundEntry}
+                backgroundEntries={backgroundEntries}
+                onEditBackgroundEntry={handleEditBackgroundEntry}
+                onDeleteBackgroundEntry={handleDeleteBackgroundEntry}
+                fileInputRef={fileInputRef as RefObject<HTMLInputElement>}
+            />
+
+            <Stack mt={4} mb={6} direction='row' gap={3}>
+                <MuiButton
+                    color='secondary'
+                    variant='outlined'
+                    size='large'
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => setStage('SELECT_SKILL')}
+                >
+                    Back
+                </MuiButton>
+
+                <MuiButton
+                    color='secondary'
+                    endIcon={<ArrowRightIcon />}
+                    size='large'
+                    onClick={() => setStage('QUESTIONS')}
+                    disabled={!hasExperience}
+                >
+                    Next
+                </MuiButton>
+            </Stack>
+        </Stack>
+    );
 };
 
 export default Experience;

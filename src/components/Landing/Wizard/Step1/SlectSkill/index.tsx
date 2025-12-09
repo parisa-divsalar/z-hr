@@ -24,6 +24,16 @@ import MuiChips from '@/components/UI/MuiChips';
 import { SelectOption } from '@/components/UI/MuiSelectOptions';
 import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
+import {
+    FILE_CATEGORY_DISPLAY_LABELS,
+    FILE_CATEGORY_LIMITS,
+    FILE_CATEGORY_TOAST_LABELS,
+    getFileCategory,
+    getFileTypeDisplayName,
+    isVideoDurationValid,
+    MAX_VOICE_DURATION_SECONDS,
+    MAX_VOICE_RECORDINGS,
+} from '@/components/Landing/Wizard/Step1/attachmentRules';
 
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
@@ -41,38 +51,6 @@ import { TSkill } from './type';
 interface SelectSkillProps {
     setStage: (stage: StageWizard) => void;
 }
-
-const MAX_VOICE_RECORDINGS = 3;
-const MAX_VOICE_DURATION_SECONDS = 90;
-const MAX_IMAGE_ATTACHMENTS = 2;
-const MAX_WORD_FILE_ATTACHMENTS = 2;
-const MAX_PDF_ATTACHMENTS = 2;
-const MAX_VIDEO_ATTACHMENTS = 2;
-const MAX_VIDEO_FILE_DURATION_SECONDS = 60;
-
-type LimitedFileCategory = 'image' | 'video' | 'pdf' | 'word';
-type FileCategory = LimitedFileCategory | 'other';
-
-const FILE_CATEGORY_LIMITS: Record<LimitedFileCategory, number> = {
-    image: MAX_IMAGE_ATTACHMENTS,
-    video: MAX_VIDEO_ATTACHMENTS,
-    pdf: MAX_PDF_ATTACHMENTS,
-    word: MAX_WORD_FILE_ATTACHMENTS,
-};
-
-const FILE_CATEGORY_DISPLAY_LABELS: Record<LimitedFileCategory, string> = {
-    image: 'Image',
-    video: 'Video',
-    pdf: 'PDF',
-    word: 'Word',
-};
-
-const FILE_CATEGORY_LABELS: Record<LimitedFileCategory, string> = {
-    image: 'images',
-    video: 'videos',
-    pdf: 'PDF files',
-    word: 'Word files',
-};
 
 type ToastSeverity = AlertWrapperProps['severity'];
 
@@ -168,6 +146,22 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             return;
         }
 
+        if (duration > MAX_VOICE_DURATION_SECONDS) {
+            showToast('Voice recordings are limited to 90 seconds.', 'info');
+            setShowRecordingControls(false);
+            setVoiceUrl(null);
+            setVoiceBlob(null);
+            return;
+        }
+
+        if (voiceRecordings.length >= MAX_VOICE_RECORDINGS) {
+            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            setShowRecordingControls(false);
+            setVoiceUrl(null);
+            setVoiceBlob(null);
+            return;
+        }
+
         const persistedUrl = URL.createObjectURL(audioBlob);
 
         setVoiceRecordings((prev) => [
@@ -179,10 +173,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 duration,
             },
         ]);
-
-        if (duration >= MAX_VOICE_DURATION_SECONDS) {
-            showToast('Voice recordings are limited to 90 seconds.', 'info');
-        }
 
         setShowRecordingControls(false);
         setVoiceUrl(null);
@@ -236,68 +226,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         fileInputRef.current?.click();
     };
 
-    const getFileCategory = (file: File): FileCategory => {
-        const lowerCasedName = file.name.toLowerCase();
-
-        if (file.type.startsWith('image/')) {
-            return 'image';
-        }
-
-        if (file.type.startsWith('video/')) {
-            return 'video';
-        }
-
-        if (file.type === 'application/pdf' || lowerCasedName.endsWith('.pdf')) {
-            return 'pdf';
-        }
-
-        const wordMimeTypes = [
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        ];
-        if (
-            wordMimeTypes.includes(file.type) ||
-            lowerCasedName.endsWith('.doc') ||
-            lowerCasedName.endsWith('.docx')
-        ) {
-            return 'word';
-        }
-
-        return 'other';
-    };
-
-    const getFileTypeDisplayName = (file: File): string => {
-        const category = getFileCategory(file);
-        if (category !== 'other') {
-            return FILE_CATEGORY_DISPLAY_LABELS[category];
-        }
-
-        const extension = file.name.split('.').pop()?.toUpperCase();
-        return extension ? `${extension} File` : 'File';
-    };
-
-    const isVideoDurationValid = (file: File): Promise<boolean> =>
-        new Promise((resolve) => {
-            const url = URL.createObjectURL(file);
-            const videoElement = document.createElement('video');
-            videoElement.preload = 'metadata';
-
-            const cleanup = () => {
-                URL.revokeObjectURL(url);
-            };
-
-            videoElement.onloadedmetadata = () => {
-                cleanup();
-                resolve(videoElement.duration <= MAX_VIDEO_FILE_DURATION_SECONDS);
-            };
-
-            videoElement.onerror = () => {
-                cleanup();
-                resolve(false);
-            };
-
-            videoElement.src = url;
-        });
 
     const handleFileUpload = async (files: FileList | null) => {
         if (!files) {
@@ -317,7 +245,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
 
                 if (currentCount >= limit) {
-                    showToast(`You can upload up to ${limit} ${FILE_CATEGORY_LABELS[category]}.`);
+                    showToast(`You can upload up to ${limit} ${FILE_CATEGORY_TOAST_LABELS[category]}.`);
                     continue;
                 }
             }
@@ -478,6 +406,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                 stackDirection='row'
                             />
                         )}
+
                     </Stack>
                 </Stack>
             </ActionRow>

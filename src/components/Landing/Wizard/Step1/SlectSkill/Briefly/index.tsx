@@ -9,7 +9,7 @@ import FileIcon from '@/assets/images/icons/icon-file.svg';
 import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import RecordIcon from '@/assets/images/icons/recordV.svg';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
-import { FilePreviewContainer, FilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { FilePreviewContainer, FilesStack, FileTypeLabel } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import MuiButton from '@/components/UI/MuiButton';
@@ -58,6 +58,7 @@ interface BrieflySectionProps {
   onOpenFileDialog: () => void;
   onFileUpload: (files: FileList | null) => void;
   onRemoveUploadedFile: (index: number) => void;
+  getFileTypeDisplayName: (file: File) => string;
 
   isEditingEntry: boolean;
   onAddBackgroundEntry: () => void;
@@ -90,6 +91,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
     onOpenFileDialog,
     onFileUpload,
     onRemoveUploadedFile,
+    getFileTypeDisplayName,
     isEditingEntry,
     onAddBackgroundEntry,
     onCancelEditBackgroundEntry,
@@ -145,6 +147,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                 stackDirection='row'
               />
             )}
+
           </Stack>
         </Stack>
 
@@ -214,6 +217,12 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                 ) : (
                   <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                 )}
+
+                <FileTypeLabel gap={0.25}>
+                  <Typography variant='caption' color='text.secondary'>
+                    {getFileTypeDisplayName(file)}
+                  </Typography>
+                </FileTypeLabel>
 
                 <RemoveFileButton
                   onClick={() => onRemoveUploadedFile(index)}
@@ -303,6 +312,11 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                             ) : (
                               <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                             )}
+                            <FileTypeLabel gap={0.25}>
+                              <Typography variant='caption' color='text.secondary'>
+                                {getFileTypeDisplayName(file)}
+                              </Typography>
+                            </FileTypeLabel>
                           </FilePreviewContainer>
                         ))}
                       </FilesStack>
