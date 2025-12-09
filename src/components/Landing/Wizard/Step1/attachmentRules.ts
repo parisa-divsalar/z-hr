@@ -94,3 +94,6 @@ export const isVideoDurationValid = (file: File): Promise<boolean> =>
         videoElement.src = url;
     });
 
+export const isDuplicateFile = (target: File, files: File[]): boolean =>
+    files.some((file) => file.name === target.name && file.size === target.size && file.lastModified === target.lastModified);
+

@@ -21,11 +21,17 @@ export const FilePreviewContainer = styled(Box, {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingBottom: theme.spacing(2.5),
 }));
 
 export const FileTypeLabel = styled(Stack)(({ theme }) => ({
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
     width: '100%',
-    padding: '5px',
+    padding: theme.spacing(0, 0.5),
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTop: `1px solid ${theme.palette.grey[100]}`,
     alignItems: 'center',
     justifyContent: 'center',
 }));
@@ -34,6 +40,7 @@ export const FilePreviewVoiceContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+
     gap: theme.spacing(1),
 }));
 

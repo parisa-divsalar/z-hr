@@ -30,6 +30,7 @@ import {
     FILE_CATEGORY_TOAST_LABELS,
     getFileCategory,
     getFileTypeDisplayName,
+    isDuplicateFile,
     isVideoDurationValid,
     MAX_VOICE_DURATION_SECONDS,
     MAX_VOICE_RECORDINGS,
@@ -237,6 +238,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
         for (const file of fileList) {
             const category = getFileCategory(file);
+            const currentFiles = [...uploadedFiles, ...acceptedFiles];
+
+            if (isDuplicateFile(file, currentFiles)) {
+                showToast('This file has already been uploaded.');
+                continue;
+            }
 
             if (category !== 'other') {
                 const limit = FILE_CATEGORY_LIMITS[category];
