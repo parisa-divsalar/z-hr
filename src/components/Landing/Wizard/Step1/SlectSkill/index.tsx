@@ -37,6 +37,7 @@ import {
   ContainerSkillAttachItem,
   ContainerSkillAttachVoice,
   SkillContainer,
+  VoiceItem,
 } from './styled';
 import { TSkill } from './type';
 
@@ -418,21 +419,22 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         )}
       </ActionRow>
       {voiceRecordings.length > 0 && (
-        <ContainerSkillAttachVoice direction='row' active sx={{ mt: 2, alignItems: 'flex-start' }}>
+        <ContainerSkillAttachVoice direction='row' active>
           <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
             {voiceRecordings.map((item) => (
-              <VoiceRecord
-                key={item.id}
-                recordingState='idle'
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                setRecordingState={() => {}}
-                initialAudioUrl={item.url}
-                initialAudioBlob={item.blob}
-                showRecordingControls={false}
-                onClearRecording={() => handleRemoveSavedRecording(item.id)}
-                stackDirection='column'
-                fullWidth={false}
-              />
+              <VoiceItem key={item.id}>
+                <VoiceRecord
+                  recordingState='idle'
+                  // eslint-disable-next-line @typescript-eslint/no-empty-function
+                  setRecordingState={() => {}}
+                  initialAudioUrl={item.url}
+                  initialAudioBlob={item.blob}
+                  showRecordingControls={false}
+                  onClearRecording={() => handleRemoveSavedRecording(item.id)}
+                  stackDirection='column'
+                  fullWidth={false}
+                />
+              </VoiceItem>
             ))}
           </Stack>
         </ContainerSkillAttachVoice>
@@ -510,18 +512,19 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     {entry.voices.length > 0 && (
                       <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
                         {entry.voices.map((voice) => (
-                          <VoiceRecord
-                            key={voice.id}
-                            recordingState='idle'
-                            // eslint-disable-next-line @typescript-eslint/no-empty-function
-                            setRecordingState={() => {}}
-                            initialAudioUrl={voice.url}
-                            initialAudioBlob={voice.blob}
-                            showRecordingControls={false}
-                            onClearRecording={() => {}}
-                            stackDirection='column'
-                            fullWidth={false}
-                          />
+                          <VoiceItem key={voice.id}>
+                            <VoiceRecord
+                              recordingState='idle'
+                              // eslint-disable-next-line @typescript-eslint/no-empty-function
+                              setRecordingState={() => {}}
+                              initialAudioUrl={voice.url}
+                              initialAudioBlob={voice.blob}
+                              showRecordingControls={false}
+                              onClearRecording={() => {}}
+                              stackDirection='column'
+                              fullWidth={false}
+                            />
+                          </VoiceItem>
                         ))}
                       </Stack>
                     )}
