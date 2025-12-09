@@ -15,17 +15,13 @@ import RecordIcon from '@/assets/images/icons/recordV.svg';
 import TooltipIcon from '@/assets/images/icons/tooltip.svg';
 import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
-import { FilePreviewContainer, FilesStack, FileTypeLabel } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
-import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
-import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
-import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
-import MuiButton from '@/components/UI/MuiButton';
-import MuiChips from '@/components/UI/MuiChips';
-import { SelectOption } from '@/components/UI/MuiSelectOptions';
-import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
-import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 import {
-    FILE_CATEGORY_DISPLAY_LABELS,
+    FilePreviewContainer,
+    FilesStack,
+    FileTypeLabel,
+} from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
+import {
     FILE_CATEGORY_LIMITS,
     FILE_CATEGORY_TOAST_LABELS,
     getFileCategory,
@@ -35,6 +31,13 @@ import {
     MAX_VOICE_DURATION_SECONDS,
     MAX_VOICE_RECORDINGS,
 } from '@/components/Landing/Wizard/Step1/attachmentRules';
+import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
+import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
+import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
+import MuiButton from '@/components/UI/MuiButton';
+import MuiChips from '@/components/UI/MuiChips';
+import { SelectOption } from '@/components/UI/MuiSelectOptions';
+import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
@@ -96,7 +99,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
     const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
     const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>([]);
+    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>(
+        [],
+    );
     const [recorderKey, setRecorderKey] = useState<number>(0);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
@@ -226,7 +231,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const handleOpenFileDialog = () => {
         fileInputRef.current?.click();
     };
-
 
     const handleFileUpload = async (files: FileList | null) => {
         if (!files) {
@@ -413,7 +417,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                 stackDirection='row'
                             />
                         )}
-
                     </Stack>
                 </Stack>
             </ActionRow>

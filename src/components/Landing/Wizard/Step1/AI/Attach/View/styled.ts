@@ -21,7 +21,6 @@ export const FilePreviewContainer = styled(Box, {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: theme.spacing(2.5),
 }));
 
 export const FileTypeLabel = styled(Stack)(({ theme }) => ({

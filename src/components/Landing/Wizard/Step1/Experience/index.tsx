@@ -187,12 +187,12 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
         for (const file of fileList) {
             const category = getFileCategory(file);
-        const currentFiles = [...uploadedFiles, ...acceptedFiles];
+            const currentFiles = [...uploadedFiles, ...acceptedFiles];
 
-        if (isDuplicateFile(file, currentFiles)) {
-            showToast('This file has already been uploaded.');
-            continue;
-        }
+            if (isDuplicateFile(file, currentFiles)) {
+                showToast('This file has already been uploaded.');
+                continue;
+            }
 
             if (category !== 'other') {
                 const limit = FILE_CATEGORY_LIMITS[category];
@@ -339,7 +339,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
     return (
         <Stack alignItems='center' justifyContent='center' height='100%'>
-            <Typography variant='h5' color='text.primary' fontWeight='584'>
+            <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
                 6. Your work experience history{' '}
             </Typography>
 
