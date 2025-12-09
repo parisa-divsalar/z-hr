@@ -15,7 +15,7 @@ import RecordIcon from '@/assets/images/icons/recordV.svg';
 import TooltipIcon from '@/assets/images/icons/tooltip.svg';
 import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
-import { FilePreviewContainer, FilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { FilePreviewContainer, FilesStack, FileTypeLabel } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
@@ -44,6 +44,35 @@ interface SelectSkillProps {
 
 const MAX_VOICE_RECORDINGS = 3;
 const MAX_VOICE_DURATION_SECONDS = 90;
+const MAX_IMAGE_ATTACHMENTS = 2;
+const MAX_WORD_FILE_ATTACHMENTS = 2;
+const MAX_PDF_ATTACHMENTS = 2;
+const MAX_VIDEO_ATTACHMENTS = 2;
+const MAX_VIDEO_FILE_DURATION_SECONDS = 60;
+
+type LimitedFileCategory = 'image' | 'video' | 'pdf' | 'word';
+type FileCategory = LimitedFileCategory | 'other';
+
+const FILE_CATEGORY_LIMITS: Record<LimitedFileCategory, number> = {
+    image: MAX_IMAGE_ATTACHMENTS,
+    video: MAX_VIDEO_ATTACHMENTS,
+    pdf: MAX_PDF_ATTACHMENTS,
+    word: MAX_WORD_FILE_ATTACHMENTS,
+};
+
+const FILE_CATEGORY_DISPLAY_LABELS: Record<LimitedFileCategory, string> = {
+    image: 'Image',
+    video: 'Video',
+    pdf: 'PDF',
+    word: 'Word',
+};
+
+const FILE_CATEGORY_LABELS: Record<LimitedFileCategory, string> = {
+    image: 'images',
+    video: 'videos',
+    pdf: 'PDF files',
+    word: 'Word files',
+};
 
 type ToastSeverity = AlertWrapperProps['severity'];
 
@@ -207,17 +236,114 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         fileInputRef.current?.click();
     };
 
-    const handleFileUpload = (files: FileList | null) => {
+    const getFileCategory = (file: File): FileCategory => {
+        const lowerCasedName = file.name.toLowerCase();
+
+        if (file.type.startsWith('image/')) {
+            return 'image';
+        }
+
+        if (file.type.startsWith('video/')) {
+            return 'video';
+        }
+
+        if (file.type === 'application/pdf' || lowerCasedName.endsWith('.pdf')) {
+            return 'pdf';
+        }
+
+        const wordMimeTypes = [
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        if (
+            wordMimeTypes.includes(file.type) ||
+            lowerCasedName.endsWith('.doc') ||
+            lowerCasedName.endsWith('.docx')
+        ) {
+            return 'word';
+        }
+
+        return 'other';
+    };
+
+    const getFileTypeDisplayName = (file: File): string => {
+        const category = getFileCategory(file);
+        if (category !== 'other') {
+            return FILE_CATEGORY_DISPLAY_LABELS[category];
+        }
+
+        const extension = file.name.split('.').pop()?.toUpperCase();
+        return extension ? `${extension} File` : 'File';
+    };
+
+    const isVideoDurationValid = (file: File): Promise<boolean> =>
+        new Promise((resolve) => {
+            const url = URL.createObjectURL(file);
+            const videoElement = document.createElement('video');
+            videoElement.preload = 'metadata';
+
+            const cleanup = () => {
+                URL.revokeObjectURL(url);
+            };
+
+            videoElement.onloadedmetadata = () => {
+                cleanup();
+                resolve(videoElement.duration <= MAX_VIDEO_FILE_DURATION_SECONDS);
+            };
+
+            videoElement.onerror = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            videoElement.src = url;
+        });
+
+    const handleFileUpload = async (files: FileList | null) => {
         if (!files) {
             return;
         }
 
         const fileList = Array.from(files);
-        setUploadedFiles((prev) => [...prev, ...fileList]);
+        const acceptedFiles: File[] = [];
+
+        for (const file of fileList) {
+            const category = getFileCategory(file);
+
+            if (category !== 'other') {
+                const limit = FILE_CATEGORY_LIMITS[category];
+                const currentCount =
+                    uploadedFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
+                    acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
+
+                if (currentCount >= limit) {
+                    showToast(`You can upload up to ${limit} ${FILE_CATEGORY_LABELS[category]}.`);
+                    continue;
+                }
+            }
+
+            if (category === 'video') {
+                const isDurationValid = await isVideoDurationValid(file);
+                if (!isDurationValid) {
+                    showToast('Each video must be 60 seconds or shorter.');
+                    continue;
+                }
+            }
+
+            acceptedFiles.push(file);
+        }
+
+        if (acceptedFiles.length > 0) {
+            setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
+        }
 
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+    };
+
+    const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        void handleFileUpload(event.target.files);
     };
 
     const handleRemoveUploadedFile = (index: number) => {
@@ -386,40 +512,52 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             {uploadedFiles.length > 0 && (
                 <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
                     <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
-                        {uploadedFiles.map((file, index) => (
-                            <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
-                                {file.type.startsWith('image/') ? (
-                                    <img
-                                        src={filePreviews[index]}
-                                        alt={file.name}
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                        }}
-                                    />
-                                ) : file.type.startsWith('video/') ? (
-                                    <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                                ) : (
-                                    <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                                )}
+                        {uploadedFiles.map((file, index) => {
+                            const fileCategory = getFileCategory(file);
+                            const fileTypeLabelText = getFileTypeDisplayName(file);
+                            const previewSrc = file.type.startsWith('image/') ? filePreviews[index] : undefined;
 
-                                <RemoveFileButton
-                                    onClick={() => handleRemoveUploadedFile(index)}
-                                    sx={{
-                                        width: 24,
-                                        height: 24,
-                                        padding: 0,
-                                        backgroundColor: 'transparent',
-                                        '&:hover': {
+                            return (
+                                <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
+                                    {previewSrc ? (
+                                        <img
+                                            src={previewSrc}
+                                            alt={file.name}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                            }}
+                                        />
+                                    ) : fileCategory === 'video' ? (
+                                        <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                                    ) : (
+                                        <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                                    )}
+
+                                    <FileTypeLabel gap={0.25}>
+                                        <Typography variant='caption' color='text.secondary'>
+                                            {fileTypeLabelText}
+                                        </Typography>
+                                    </FileTypeLabel>
+
+                                    <RemoveFileButton
+                                        onClick={() => handleRemoveUploadedFile(index)}
+                                        sx={{
+                                            width: 24,
+                                            height: 24,
+                                            padding: 0,
                                             backgroundColor: 'transparent',
-                                        },
-                                    }}
-                                >
-                                    <CleanIcon width={24} height={24} />
-                                </RemoveFileButton>
-                            </FilePreviewContainer>
-                        ))}
+                                            '&:hover': {
+                                                backgroundColor: 'transparent',
+                                            },
+                                        }}
+                                    >
+                                        <CleanIcon width={24} height={24} />
+                                    </RemoveFileButton>
+                                </FilePreviewContainer>
+                            );
+                        })}
                     </FilesStack>
                 </ContainerSkillAttach>
             )}
@@ -429,7 +567,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 type='file'
                 multiple
                 accept='*/*'
-                onChange={(event) => handleFileUpload(event.target.files)}
+                onChange={handleFileInputChange}
                 style={{ display: 'none' }}
             />
 

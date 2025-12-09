@@ -23,6 +23,13 @@ export const FilePreviewContainer = styled(Box, {
     justifyContent: 'center',
 }));
 
+export const FileTypeLabel = styled(Stack)(({ theme }) => ({
+    width: '100%',
+    padding: '5px',
+    alignItems: 'center',
+    justifyContent: 'center',
+}));
+
 export const FilePreviewVoiceContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
