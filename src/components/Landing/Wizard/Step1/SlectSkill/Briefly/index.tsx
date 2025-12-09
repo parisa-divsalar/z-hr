@@ -3,6 +3,7 @@ import React, { FunctionComponent, RefObject } from 'react';
 import { Divider, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
+import AddIcon from '@/assets/images/icons/add.svg';
 import AttachIcon from '@/assets/images/icons/attach.svg';
 import CleanIcon from '@/assets/images/icons/clearButton.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
@@ -151,7 +152,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
             color='secondary'
             size='medium'
             variant='outlined'
-            startIcon={<AttachIcon />}
+            startIcon={<AddIcon />}
             onClick={onAddBackgroundEntry}
             sx={{ flexShrink: 0 }}
           >
