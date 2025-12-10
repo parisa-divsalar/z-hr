@@ -1,7 +1,8 @@
-import CacheError from '@/services/cache-error';
 import { AxiosError } from 'axios';
 import { NextResponse } from 'next/server';
+
 import { apiClientServer } from '@/services/api-client';
+import CacheError from '@/services/cache-error';
 
 export async function POST(request: Request) {
     try {

@@ -32,7 +32,7 @@ const selectMenuProps: SelectProps['MenuProps'] = {
 };
 
 const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
-    const { data, updateField, validate, resetWizard } = useWizardStore();
+    const { data, updateField, validate } = useWizardStore();
 
     const [loadingSkills, setLoadingSkills] = useState<boolean>(true);
     const [skillOptions, setSkillOptions] = useState<SelectOption[]>([]);
