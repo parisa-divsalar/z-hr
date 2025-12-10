@@ -357,8 +357,33 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     const defaultSkill = AllSkill[0] ?? { id: '', label: 'Motion Designer', selected: false };
     const [mainSkillId, setMainSkillId] = useState<string>(defaultSkill.id);
-    const initialMainSkillLabel = wizardData.mainSkill || defaultSkill.label;
-    const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(initialMainSkillLabel);
+    const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(defaultSkill.label);
+
+    useEffect(() => {
+        const value = wizardData.mainSkill;
+        if (!value) return;
+
+        const numericIndex = Number(value);
+
+        if (Number.isNaN(numericIndex)) {
+            setMainSkillLabel(value);
+            return;
+        }
+
+        const fetchMainSkillLabel = async () => {
+            try {
+                const { data } = await apiClientClient.get('slills-categories');
+                const list: string[] = data?.data ?? [];
+                const labelFromList = list[numericIndex];
+
+                setMainSkillLabel(labelFromList ?? value);
+            } catch {
+                setMainSkillLabel(value);
+            }
+        };
+
+        void fetchMainSkillLabel();
+    }, [wizardData.mainSkill]);
 
     const handleConfirmEditDialog = (selectedOption: SelectOption) => {
         setIsEditDialogOpen(false);
@@ -578,7 +603,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                         Main skill
                     </Typography>
                     <Typography variant='h5' color='text.primary' fontWeight='584'>
-                 ییییییی{mainSkillLabel}{' '}
+                        {mainSkillLabel}
                     </Typography>
                     <ActionIconButton aria-label='Edit main skill' onClick={handleOpenEditDialog}>
                         <EdiIcon />

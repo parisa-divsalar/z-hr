@@ -1,11 +1,14 @@
 'use client';
-import MuiInput from '@/components/UI/MuiInput';
-import MuiButton from '@/components/UI/MuiButton';
-import { useWizardStore } from '@/store/wizard';
-import { apiClientClient } from '@/services/api-client';
-import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
-import { Divider, SelectProps, Typography } from '@mui/material';
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+
+import { Divider, SelectProps, Typography } from '@mui/material';
+
+import MuiButton from '@/components/UI/MuiButton';
+import MuiInput from '@/components/UI/MuiInput';
+import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
+import { apiClientClient } from '@/services/api-client';
+import { useWizardStore } from '@/store/wizard';
+
 import {
     StackContent,
     StackContainer,
@@ -40,7 +43,7 @@ const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = (
                 setLoadingSkills(true);
                 const { data } = await apiClientClient.get('slills-categories');
 
-                const options = data.data.map((skill: string, index: number) => ({ value: index, label: skill }));
+                const options = data.data.map((skill: string) => ({ value: skill, label: skill }));
                 setSkillOptions(options);
             } catch {
                 console.error('Failed to fetch skills');
