@@ -118,7 +118,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     useEffect(() => {
         const fetchCategorySkills = async () => {
             try {
-                const { data } = await apiClientClient.get('categories-name');
+                const category = wizardData.mainSkill?.trim();
+                const endpoint = category
+                    ? `categories-name?category=${encodeURIComponent(category)}`
+                    : 'categories-name';
+
+                const { data } = await apiClientClient.get(endpoint);
 
                 // Backend ممکن است یکی از این شکل‌ها را برگرداند:
                 // 1) { data: [...] }
@@ -167,7 +172,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         };
 
         void fetchCategorySkills();
-    }, []);
+    }, [wizardData.mainSkill]);
 
     const handleFocusBackground = () => {
         backgroundRef.current?.focus();
@@ -389,6 +394,11 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         setIsEditDialogOpen(false);
         setMainSkillLabel(selectedOption.label);
         setMainSkillId(String(selectedOption.value));
+        // مقدار جدید mainSkill را در استور هم ذخیره می‌کنیم تا همه‌جا (از جمله Intro) آپدیت شود
+        if (selectedOption.value) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (useWizardStore.getState().updateField as any)('mainSkill', String(selectedOption.value));
+        }
     };
 
     return (
@@ -651,7 +661,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 open={isEditDialogOpen}
                 onClose={handleCloseEditDialog}
                 onConfirm={handleConfirmEditDialog}
-                initialSkillId={mainSkillId}
+                // مقدار اولیه همان چیزی است که کاربر در Intro به‌عنوان mainSkill انتخاب کرده
+                initialSkillId={wizardData.mainSkill}
             />
         </Stack>
     );
