@@ -18,6 +18,7 @@ import {
 } from '@/components/Landing/Wizard/Step1/attachmentRules';
 import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
@@ -35,6 +36,8 @@ interface ToastInfo {
 }
 
 const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
+    const { data: wizardData, updateField } = useWizardStore();
+
     const [backgroundText, setBackgroundText] = useState<string>('');
     const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -49,7 +52,21 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
     const [recorderKey, setRecorderKey] = useState<number>(0);
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-    const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>([]);
+    const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>(() => {
+        const stored = (wizardData.certificates as unknown as Array<Partial<BackgroundEntry>>) ?? [];
+        return stored.map((entry) => ({
+            id: entry.id ?? generateFakeUUIDv4(),
+            text: entry.text ?? '',
+            files: (entry.files as File[]) ?? [],
+            voices:
+                (entry.voices as { id: string; url: string; blob: Blob; duration: number }[])?.map((voice) => ({
+                    id: voice.id ?? generateFakeUUIDv4(),
+                    url: voice.url,
+                    blob: voice.blob,
+                    duration: voice.duration,
+                })) ?? [],
+        }));
+    });
 
     const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -83,6 +100,18 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
     }, []);
 
     const [filePreviews, setFilePreviews] = useState<(string | undefined)[]>([]);
+
+    const persistEntriesToStore = useCallback(
+        (entries: BackgroundEntry[]) => {
+            const payload = entries.map((entry) => ({
+                text: entry.text,
+                voices: entry.voices,
+                files: entry.files,
+            }));
+            updateField('certificates', payload as unknown as typeof wizardData.certificates);
+        },
+        [updateField, wizardData.certificates],
+    );
 
     useEffect(() => {
         const urls = uploadedFiles.map((file) =>
@@ -249,7 +278,11 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => [...prev, newEntry]);
+        setBackgroundEntries((prev) => {
+            const next = [...prev, newEntry];
+            persistEntriesToStore(next);
+            return next;
+        });
         setIsEditingEntry(false);
         setEditingEntryId(null);
         setEditingEntryBackup(null);
@@ -277,7 +310,9 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             setUploadedFiles(entry.files);
             setVoiceRecordings(entry.voices);
 
-            return prev.filter((item) => item.id !== id);
+            const remaining = prev.filter((item) => item.id !== id);
+            persistEntriesToStore(remaining);
+            return remaining;
         });
     };
 
@@ -297,7 +332,11 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => [...prev, updatedEntry]);
+        setBackgroundEntries((prev) => {
+            const next = [...prev, updatedEntry];
+            persistEntriesToStore(next);
+            return next;
+        });
 
         setIsEditingEntry(false);
         setEditingEntryId(null);
@@ -313,7 +352,11 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
 
     const handleCancelEditBackgroundEntry = () => {
         if (editingEntryBackup) {
-            setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
+            setBackgroundEntries((prev) => {
+                const next = [...prev, editingEntryBackup];
+                persistEntriesToStore(next);
+                return next;
+            });
         }
 
         setIsEditingEntry(false);
@@ -334,8 +377,42 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             if (target) {
                 target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
             }
-            return prev.filter((item) => item.id !== id);
+            const next = prev.filter((item) => item.id !== id);
+            persistEntriesToStore(next);
+            return next;
         });
+    };
+
+    const hasDraft =
+        backgroundText.trim() !== '' || uploadedFiles.length > 0 || voiceRecordings.length > 0;
+    const hasCertifications = hasDraft || backgroundEntries.length > 0;
+
+    const handleBack = () => {
+        if (hasDraft) {
+            if (isEditingEntry) {
+                handleSaveBackgroundEntry();
+            } else {
+                handleAddBackgroundEntry();
+            }
+        } else {
+            persistEntriesToStore(backgroundEntries);
+        }
+
+        setStage('EXPERIENCE');
+    };
+
+    const handleNext = () => {
+        if (hasDraft) {
+            if (isEditingEntry) {
+                handleSaveBackgroundEntry();
+            } else {
+                handleAddBackgroundEntry();
+            }
+        } else {
+            persistEntriesToStore(backgroundEntries);
+        }
+
+        setStage('DESCRIPTION');
     };
 
     return (
@@ -385,7 +462,7 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
                     variant='outlined'
                     size='large'
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => setStage('EXPERIENCE')}
+                    onClick={handleBack}
                 >
                     Back
                 </MuiButton>
@@ -394,7 +471,8 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
                     color='secondary'
                     endIcon={<ArrowRightIcon />}
                     size='large'
-                    onClick={() => setStage('DESCRIPTION')}
+                    onClick={handleNext}
+                    disabled={!hasCertifications}
                 >
                     Next
                 </MuiButton>
