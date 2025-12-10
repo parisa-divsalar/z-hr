@@ -1,160 +1,143 @@
+'use client';
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import { Divider, IconButton, SelectProps, Typography } from '@mui/material';
+import { Divider, SelectProps, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
-import MuiSelectOptions, { SelectOption, SelectOptionValue } from '@/components/UI/MuiSelectOptions';
+import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
+import { apiClientClient } from '@/services/api-client';
+import { useWizardStore } from '@/store/wizard';
 
-import { AllSkill } from '../Wizard/Step1/SlectSkill/data';
 import {
-  ActionContainer,
-  DialogContainer,
-  HeaderContainer,
-  StackContainer,
-  StackContent,
+    StackContent,
+    StackContainer,
+    ActionContainer,
+    DialogContainer,
+    HeaderContainer,
 } from '../Wizard/Step1/SlectSkill/EditSkillDialog/styled';
 
-interface IntroDialogProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-const skillOptions: SelectOption[] = AllSkill.map((skill) => ({
-  value: skill.id,
-  label: skill.label,
-}));
-
 const selectMenuProps: SelectProps['MenuProps'] = {
-  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-  transformOrigin: { vertical: 'top', horizontal: 'left' },
-  PaperProps: {
-    sx: {
-      maxHeight: '180px',
-      overflowY: 'auto',
-      py: 1,
-      '& .MuiMenu-list': {
-        py: 0.5,
-      },
-      '& .MuiMenuItem-root:hover': {
-        bgcolor: 'primary.light',
-      },
+    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+    transformOrigin: { vertical: 'top', horizontal: 'left' },
+    PaperProps: {
+        sx: {
+            maxHeight: '180px',
+            overflowY: 'auto',
+            py: 1,
+            '& .MuiMenu-list': { py: 0.5 },
+            '& .MuiMenuItem-root:hover': { bgcolor: 'primary.light' },
+        },
     },
-  },
 };
 
-const IntroDialog: FunctionComponent<IntroDialogProps> = (props) => {
-  const { open, onClose } = props;
+const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+    const { data, updateField, validate } = useWizardStore();
 
-  const [fullName, setFullName] = useState<string>('');
-  const [mainSkillId, setMainSkillId] = useState<SelectOptionValue>('');
-  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+    const [loadingSkills, setLoadingSkills] = useState<boolean>(true);
+    const [skillOptions, setSkillOptions] = useState<SelectOption[]>([]);
 
-  const isSaveDisabled = useMemo(() => {
-    const hasFullName = fullName.trim().length > 0;
-    const hasMainSkill = Boolean(mainSkillId);
+    useEffect(() => {
+        const fetchSkills = async () => {
+            try {
+                setLoadingSkills(true);
+                const { data } = await apiClientClient.get('slills-categories');
 
-    const dob = dateOfBirth.trim();
-    const dobParts = dob.split('/');
+                const options = data.data.map((skill: string) => ({ value: skill, label: skill }));
+                setSkillOptions(options);
+            } catch {
+                console.error('Failed to fetch skills');
+            } finally {
+                setLoadingSkills(false);
+            }
+        };
 
-    const isDobComplete =
-      dobParts.length === 3 &&
-      dobParts[0].length >= 1 &&
-      dobParts[0].length <= 2 &&
-      dobParts[1].length >= 1 &&
-      dobParts[1].length <= 2 &&
-      dobParts[2].length === 4;
+        fetchSkills();
+    }, []);
 
-    return !(hasFullName && hasMainSkill && isDobComplete);
-  }, [fullName, mainSkillId, dateOfBirth]);
+    const isSaveDisabled = useMemo(() => {
+        const hasFullName = data.fullName.trim().length > 0;
+        const hasMainSkill = data.mainSkill.trim().length > 0;
 
-  useEffect(() => {
-    if (!open) {
-      setFullName('');
-      setMainSkillId('');
-      setDateOfBirth('');
-    }
-  }, [open]);
+        const dobParts = data.dateOfBirth.trim().split('/');
+        const isDobComplete =
+            dobParts.length === 3 &&
+            dobParts[0].length >= 1 &&
+            dobParts[0].length <= 2 &&
+            dobParts[1].length >= 1 &&
+            dobParts[1].length <= 2 &&
+            dobParts[2].length === 4;
 
-  const handleConfirm = () => {
-    onClose();
-  };
+        return !(hasFullName && hasMainSkill && isDobComplete);
+    }, [data.fullName, data.mainSkill, data.dateOfBirth]);
 
-  const handleDateChange = (value: string) => {
-    const cleaned = value.replace(/[^\d/]/g, '').slice(0, 10);
-    setDateOfBirth(cleaned);
-  };
+    const handleConfirm = () => {
+        const isValid = validate();
+        if (!isValid) {
+            onClose();
+            return;
+        }
+        onClose();
+    };
 
-  return (
-    <DialogContainer
-      onClose={onClose}
-      open={open}
-      maxWidth='xs'
-      PaperProps={{
-        sx: {
-          height: '413px',
-        },
-      }}
-    >
-      <StackContainer>
-        <HeaderContainer direction='row'>
-          <Typography color='text.primary' variant='body1' fontWeight={500}>
-            Primary information{' '}
-          </Typography>
-          <IconButton onClick={onClose}>
-            <CloseRoundedIcon />
-          </IconButton>
-        </HeaderContainer>
+    return (
+        <DialogContainer open={open} maxWidth='xs' PaperProps={{ sx: { height: '413px' } }}>
+            <StackContainer>
+                <HeaderContainer direction='row'>
+                    <Typography color='text.primary' variant='body1' fontWeight={500}>
+                        Primary information
+                    </Typography>
+                </HeaderContainer>
 
-        <StackContent gap={1.5}>
-          <MuiInput label='Full name' value={fullName} onChange={(value) => setFullName(String(value ?? ''))} />
+                <StackContent gap={1.5}>
+                    <MuiInput
+                        label='Full name'
+                        value={data.fullName}
+                        onChange={(value) => updateField('fullName', String(value ?? ''))}
+                    />
 
-          <MuiSelectOptions
-            label='Your main skill'
-            placeholder='Select one of your skills'
-            value={mainSkillId}
-            options={skillOptions}
-            onChange={(value) => setMainSkillId(value)}
-            fullWidth
-            menuProps={selectMenuProps}
-            selectProps={{
-              sx: {
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderRadius: '8px',
-                },
-              },
-            }}
-          />
+                    <MuiSelectOptions
+                        label='Your main skill'
+                        placeholder={loadingSkills ? 'Loading...' : 'Select one of your skills'}
+                        value={data.mainSkill}
+                        options={skillOptions}
+                        onChange={(value) => updateField('mainSkill', String(value))}
+                        fullWidth
+                        disabled={loadingSkills}
+                        menuProps={selectMenuProps}
+                        selectProps={{
+                            sx: {
+                                '& .MuiOutlinedInput-root': { borderRadius: '8px' },
+                                '& .MuiOutlinedInput-notchedOutline': { borderRadius: '8px' },
+                            },
+                        }}
+                    />
 
-          <MuiInput
-            label='Your date of birth'
-            placeholder='DD/MM/Year'
-            value={dateOfBirth}
-            onChange={(value) => handleDateChange(String(value ?? ''))}
-          />
-        </StackContent>
+                    <MuiInput
+                        label='Your date of birth'
+                        placeholder='DD/MM/YYYY'
+                        value={data.dateOfBirth}
+                        onChange={(value) => updateField('dateOfBirth', value.replace(/[^\d/]/g, '').slice(0, 10))}
+                    />
+                </StackContent>
 
-        <Divider />
+                <Divider />
 
-        <ActionContainer>
-          <MuiButton
-            fullWidth
-            variant='contained'
-            color='secondary'
-            sx={{ width: '258px' }}
-            onClick={handleConfirm}
-            disabled={isSaveDisabled}
-          >
-            Save
-          </MuiButton>
-        </ActionContainer>
-      </StackContainer>
-    </DialogContainer>
-  );
+                <ActionContainer>
+                    <MuiButton
+                        fullWidth
+                        variant='contained'
+                        color='secondary'
+                        sx={{ width: '258px' }}
+                        onClick={handleConfirm}
+                        disabled={isSaveDisabled}
+                    >
+                        Save
+                    </MuiButton>
+                </ActionContainer>
+            </StackContainer>
+        </DialogContainer>
+    );
 };
 
 export default IntroDialog;

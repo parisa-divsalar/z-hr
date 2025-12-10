@@ -4,11 +4,13 @@ import { NextResponse } from 'next/server';
 import { apiClientServer } from '@/services/api-client';
 import CacheError from '@/services/cache-error';
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
     try {
-        const input = await request.json();
-        const response = await apiClientServer.post(`RegisterByUserAndPassword`, input);
-        const data = await response.data;
+        const { searchParams } = new URL(request.url);
+        const category = searchParams.get('category') ?? 'Databases';
+
+        const response = await apiClientServer.get(`SkillsBy-category/${category}`);
+        const data = response.data;
 
         return NextResponse.json({ data });
     } catch (error) {

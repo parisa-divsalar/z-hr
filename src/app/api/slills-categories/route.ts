@@ -4,10 +4,9 @@ import { NextResponse } from 'next/server';
 import { apiClientServer } from '@/services/api-client';
 import CacheError from '@/services/cache-error';
 
-export async function POST(request: Request) {
+export async function GET() {
     try {
-        const input = await request.json();
-        const response = await apiClientServer.post(`RegisterByUserAndPassword`, input);
+        const response = await apiClientServer.get(`SlillsCategories`);
         const data = await response.data;
 
         return NextResponse.json({ data });

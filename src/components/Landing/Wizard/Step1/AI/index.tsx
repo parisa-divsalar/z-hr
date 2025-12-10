@@ -19,12 +19,14 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [voiceDuration, setVoiceDuration] = useState<number>(0);
   const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
   const [_uploadedFiles, _setUploadedFiles] = useState<File[]>([]);
 
-  const handleVoiceRecordingComplete = (url: string, blob: Blob) => {
+  const handleVoiceRecordingComplete = (url: string, blob: Blob, duration: number) => {
     setVoiceUrl(url);
     setVoiceBlob(blob);
+    setVoiceDuration(duration);
     setShowRecordingControls(false);
   };
 
@@ -32,6 +34,7 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
     setVoiceUrl(null);
     setVoiceBlob(null);
     setShowRecordingControls(true);
+    setVoiceDuration(0);
   };
 
   return (
@@ -57,6 +60,7 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
           initialAudioUrl={voiceUrl}
           initialAudioBlob={voiceBlob}
           showRecordingControls={showRecordingControls}
+        initialAudioDuration={voiceDuration}
           onClearRecording={handleClearVoiceRecording}
         />
       )}

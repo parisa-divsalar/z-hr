@@ -23,7 +23,7 @@ import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
 
-interface ExperienceProps {
+interface CertificationProps {
     setStage: (stage: StageWizard) => void;
 }
 
@@ -35,7 +35,7 @@ interface ToastInfo {
     severity: ToastSeverity;
 }
 
-const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
+const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
     const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
 
     const [backgroundText, setBackgroundText] = useState<string>('');
@@ -53,7 +53,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [backgroundEntries, setBackgroundEntries] = useState<BackgroundEntry[]>(() => {
-        const stored = (wizardData.experiences as unknown as Array<Partial<BackgroundEntry>>) ?? [];
+        const stored = (wizardData.certificates as unknown as Array<Partial<BackgroundEntry>>) ?? [];
         return stored.map((entry) => ({
             id: entry.id ?? generateFakeUUIDv4(),
             text: entry.text ?? '',
@@ -108,11 +108,10 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 voices: entry.voices,
                 files: entry.files,
             }));
-            updateField('experiences', payload as unknown as typeof wizardData.experiences);
-            // After syncing experiences into the store, rebuild the aggregated allFiles
+            updateField('certificates', payload as unknown as typeof wizardData.certificates);
             recomputeAllFiles();
         },
-        [updateField, wizardData.experiences, recomputeAllFiles],
+        [updateField, wizardData.certificates, recomputeAllFiles],
     );
 
     useEffect(() => {
@@ -386,7 +385,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     };
 
     const hasDraft = backgroundText.trim() !== '' || uploadedFiles.length > 0 || voiceRecordings.length > 0;
-    const hasExperience = hasDraft || backgroundEntries.length > 0;
+    const hasCertifications = hasDraft || backgroundEntries.length > 0;
 
     const handleBack = () => {
         if (hasDraft) {
@@ -399,7 +398,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             persistEntriesToStore(backgroundEntries);
         }
 
-        setStage('SELECT_SKILL');
+        setStage('EXPERIENCE');
     };
 
     const handleNext = () => {
@@ -413,13 +412,13 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             persistEntriesToStore(backgroundEntries);
         }
 
-        setStage('CERTIFICATION');
+        setStage('DESCRIPTION');
     };
 
     return (
         <Stack alignItems='center' justifyContent='center' height='100%'>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                6. Your work experience history{' '}
+                7. Capture your certifications
             </Typography>
 
             {toastInfo && (
@@ -473,7 +472,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                     endIcon={<ArrowRightIcon />}
                     size='large'
                     onClick={handleNext}
-                    disabled={!hasExperience}
+                    disabled={!hasCertifications}
                 >
                     Next
                 </MuiButton>
@@ -482,4 +481,4 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     );
 };
 
-export default Experience;
+export default Certification;

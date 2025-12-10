@@ -5,89 +5,130 @@ import { Divider, IconButton, SelectProps, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption, SelectOptionValue } from '@/components/UI/MuiSelectOptions';
+import { apiClientClient } from '@/services/api-client';
 
 import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
-import { AllSkill } from '../data';
-
-const skillOptions: SelectOption[] = AllSkill.map((skill) => ({
-  value: skill.id,
-  label: skill.label,
-}));
 
 const selectMenuProps: SelectProps['MenuProps'] = {
-  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-  transformOrigin: { vertical: 'top', horizontal: 'left' },
-  PaperProps: {
-    sx: {
-      maxHeight: '180px',
-      overflowY: 'auto',
+    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+    transformOrigin: { vertical: 'top', horizontal: 'left' },
+    PaperProps: {
+        sx: {
+            maxHeight: '180px',
+            overflowY: 'auto',
+        },
     },
-  },
 };
 
 interface EditSkillDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: (option: SelectOption) => void;
-  initialSkillId?: SelectOptionValue;
+    open: boolean;
+    onClose: () => void;
+    onConfirm: (option: SelectOption) => void;
+    initialSkillId?: SelectOptionValue;
 }
 
 const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
-  const { open, onClose, onConfirm, initialSkillId } = props;
-  const initialValue = initialSkillId ?? skillOptions[0]?.value ?? '';
-  const [selectedSkillId, setSelectedSkillId] = useState<SelectOptionValue>(initialValue);
+    const { open, onClose, onConfirm, initialSkillId } = props;
+    const [skillOptions, setSkillOptions] = useState<SelectOption[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [selectedSkillId, setSelectedSkillId] = useState<SelectOptionValue>('');
 
-  useEffect(() => {
-    setSelectedSkillId(initialSkillId ?? skillOptions[0]?.value ?? '');
-  }, [initialSkillId, open]);
+    useEffect(() => {
+        if (!open) return;
 
-  return (
-    <DialogContainer onClose={onClose} open={open} maxWidth='xs'>
-      <StackContainer>
-        <HeaderContainer direction='row'>
-          <Typography color='text.primary' variant='body1' fontWeight={500}>
-            Edit your main skill{' '}
-          </Typography>
-          <IconButton onClick={onClose}>
-            <CloseRoundedIcon />
-          </IconButton>
-        </HeaderContainer>
+        const fetchSkills = async () => {
+            try {
+                setLoading(true);
+                const { data } = await apiClientClient.get('slills-categories');
 
-        <StackContent>
-          <MuiSelectOptions
-            label='Your main skill'
-            placeholder='Select one of your skills'
-            value={selectedSkillId}
-            options={skillOptions}
-            onChange={(value) => setSelectedSkillId(value)}
-            menuProps={selectMenuProps}
-            fullWidth={false}
-            sx={{ width: '258px' }}
-          />
-        </StackContent>
+                const list: string[] = data?.data ?? [];
+                const options: SelectOption[] = list.map((skill) => ({
+                    value: skill,
+                    label: skill,
+                }));
 
-        <Divider />
+                setSkillOptions(options);
 
-        <ActionContainer>
-          <MuiButton
-            fullWidth
-            variant='contained'
-            color='secondary'
-            sx={{ width: '258px' }}
-            onClick={() => {
-              const selectedOption =
-                skillOptions.find((option) => option.value === selectedSkillId) ?? skillOptions[0];
-              if (selectedOption) {
-                onConfirm(selectedOption);
-              }
-            }}
-          >
-            Save
-          </MuiButton>
-        </ActionContainer>
-      </StackContainer>
-    </DialogContainer>
-  );
+                if (options.length === 0) {
+                    setSelectedSkillId('');
+                    return;
+                }
+
+                if (initialSkillId !== undefined && initialSkillId !== null) {
+                    const hasExactMatch = options.some((opt) => opt.value === initialSkillId);
+                    if (hasExactMatch) {
+                        setSelectedSkillId(initialSkillId);
+                        return;
+                    }
+
+                    // اگر initialSkillId ایندکس عددی قدیمی باشد
+                    const numericIndex = Number(initialSkillId);
+                    if (!Number.isNaN(numericIndex) && options[numericIndex]) {
+                        setSelectedSkillId(options[numericIndex].value);
+                        return;
+                    }
+                }
+
+                setSelectedSkillId(options[0].value);
+            } catch {
+                setSkillOptions([]);
+                setSelectedSkillId('');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        void fetchSkills();
+    }, [open, initialSkillId]);
+
+    return (
+        <DialogContainer onClose={onClose} open={open} maxWidth='xs'>
+            <StackContainer>
+                <HeaderContainer direction='row'>
+                    <Typography color='text.primary' variant='body1' fontWeight={500}>
+                        Edit your main skill{' '}
+                    </Typography>
+                    <IconButton onClick={onClose}>
+                        <CloseRoundedIcon />
+                    </IconButton>
+                </HeaderContainer>
+
+                <StackContent>
+                    <MuiSelectOptions
+                        label='Your main skill'
+                        placeholder={loading ? 'Loading...' : 'Select one of your skills'}
+                        value={selectedSkillId}
+                        options={skillOptions}
+                        onChange={(value) => setSelectedSkillId(value)}
+                        menuProps={selectMenuProps}
+                        fullWidth={false}
+                        sx={{ width: '258px' }}
+                        disabled={loading || skillOptions.length === 0}
+                    />
+                </StackContent>
+
+                <Divider />
+
+                <ActionContainer>
+                    <MuiButton
+                        fullWidth
+                        variant='contained'
+                        color='secondary'
+                        sx={{ width: '258px' }}
+                        onClick={() => {
+                            const selectedOption =
+                                skillOptions.find((option) => option.value === selectedSkillId) ?? skillOptions[0];
+                            if (selectedOption) {
+                                onConfirm(selectedOption);
+                            }
+                        }}
+                    >
+                        Save
+                    </MuiButton>
+                </ActionContainer>
+            </StackContainer>
+        </DialogContainer>
+    );
 };
 
 export default EditSkillDialog;
