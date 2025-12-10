@@ -1,9 +1,10 @@
 import { AxiosError } from 'axios';
-import { NextRequest, NextResponse } from 'next/server';
 import FormData from 'form-data';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+
 import { apiClientServer } from '@/services/api-client';
 import CacheError from '@/services/cache-error';
-import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
     try {
