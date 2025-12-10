@@ -37,6 +37,8 @@ import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 import { SelectOption } from '@/components/UI/MuiSelectOptions';
+import { apiClientClient } from '@/services/api-client';
+import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AllSkill } from './data';
@@ -88,7 +90,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const tooltipSnippet =
         'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
     const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
-    const [skills, setSkills] = useState<TSkill[]>(AllSkill);
+    const [skills, setSkills] = useState<TSkill[]>([]);
     const [backgroundText, setBackgroundText] = useState<string>('');
     const [customSkillInput, setCustomSkillInput] = useState<string>('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
@@ -108,8 +110,64 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isVoiceLimitReached = voiceRecordings.length >= MAX_VOICE_RECORDINGS;
 
+    const { data: wizardData } = useWizardStore();
+
     const onUpdateSkill = (id: string, selected: boolean) =>
         setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
+
+    useEffect(() => {
+        const fetchCategorySkills = async () => {
+            try {
+                const { data } = await apiClientClient.get('categories-name');
+
+                // Backend ممکن است یکی از این شکل‌ها را برگرداند:
+                // 1) { data: [...] }
+                // 2) [...]
+                // 3) { "34": "SQL Server", "35": "MySQL", ... }  <-- مورد تو
+                const payload = (data && data.data !== undefined ? data.data : data) as unknown;
+
+                let items: unknown[] = [];
+
+                if (Array.isArray(payload)) {
+                    items = payload;
+                } else if (payload && typeof payload === 'object') {
+                    // وقتی به صورت map با key عددی برگشته (نمونه‌ای که در Network دیدی)
+                    items = Object.values(payload as Record<string, unknown>);
+                } else {
+                    console.warn('categories-name: unexpected payload shape', data);
+                }
+
+                if (items.length === 0) {
+                    return;
+                }
+
+                const mappedSkills: TSkill[] = items.map((item) => {
+                    let label: string;
+                    if (typeof item === 'string') {
+                        label = item;
+                    } else if (typeof item === 'object' && item !== null) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const obj = item as any;
+                        label = obj.label ?? obj.name ?? obj.title ?? String(obj.id ?? '');
+                    } else {
+                        label = String(item);
+                    }
+
+                    return {
+                        id: generateFakeUUIDv4(),
+                        label,
+                        selected: false,
+                    };
+                });
+
+                setSkills(mappedSkills);
+            } catch (error) {
+                console.error('Failed to fetch skills by category-name', error);
+            }
+        };
+
+        void fetchCategorySkills();
+    }, []);
 
     const handleFocusBackground = () => {
         backgroundRef.current?.focus();
@@ -299,7 +357,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     const defaultSkill = AllSkill[0] ?? { id: '', label: 'Motion Designer', selected: false };
     const [mainSkillId, setMainSkillId] = useState<string>(defaultSkill.id);
-    const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(defaultSkill.label);
+    const initialMainSkillLabel = wizardData.mainSkill || defaultSkill.label;
+    const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(initialMainSkillLabel);
 
     const handleConfirmEditDialog = (selectedOption: SelectOption) => {
         setIsEditDialogOpen(false);
@@ -519,7 +578,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                         Main skill
                     </Typography>
                     <Typography variant='h5' color='text.primary' fontWeight='584'>
-                        {mainSkillLabel}{' '}
+                 ییییییی{mainSkillLabel}{' '}
                     </Typography>
                     <ActionIconButton aria-label='Edit main skill' onClick={handleOpenEditDialog}>
                         <EdiIcon />
