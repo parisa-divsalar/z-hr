@@ -205,7 +205,7 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
         try {
             wizardSchema.parse(get().data);
             return true;
-        } catch (error) {
+        } catch {
             return false;
         }
     },

@@ -412,7 +412,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const defaultSkill = AllSkill[0] ?? { id: '', label: 'Motion Designer', selected: false };
-    const [mainSkillId, setMainSkillId] = useState<string>(defaultSkill.id);
     const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(defaultSkill.label);
 
     useEffect(() => {
@@ -444,7 +443,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const handleConfirmEditDialog = (selectedOption: SelectOption) => {
         setIsEditDialogOpen(false);
         setMainSkillLabel(selectedOption.label);
-        setMainSkillId(String(selectedOption.value));
         if (selectedOption.value) {
             (useWizardStore.getState().updateField as any)('mainSkill', String(selectedOption.value));
         }

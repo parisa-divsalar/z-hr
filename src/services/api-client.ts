@@ -1,5 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
-import { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 
 const createAPIClient = (baseURL: string): AxiosInstance => {
     const instance = axios.create({ baseURL });

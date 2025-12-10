@@ -11,18 +11,17 @@ import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import * as yup from 'yup';
 
+import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
 import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
-import MuiInput from '@/components/UI/MuiInput';
-
-import MuiButton from '@/components/UI/MuiButton';
 import AuthHeader from '@/components/Auth/Header';
+import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
+import MuiButton from '@/components/UI/MuiButton';
+import MuiInput from '@/components/UI/MuiInput';
 import { PublicRoutes } from '@/config/routes';
 import { apiClientClient } from '@/services/api-client';
-import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
 import { checkPasswordLength, validateSpecialChar } from '@/utils/validation';
-import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
 
 const RegisterPage = () => {
     const router = useRouter();
