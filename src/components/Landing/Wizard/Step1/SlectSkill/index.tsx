@@ -114,22 +114,27 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const isVoiceLimitReached = backgroundVoices.length >= MAX_VOICE_RECORDINGS;
 
     const onUpdateSkill = (id: string, selected: boolean) => {
-        setSkills((prevSkills) => {
-            const updatedSkills = prevSkills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill));
+        // ابتدا لیست اسکیل‌های جدید را بر اساس state فعلی محاسبه می‌کنیم
+        const updatedSkills = skills.map((skill: TSkill) =>
+            skill.id === id ? { ...skill, selected } : skill,
+        );
 
-            const selectedLabels = updatedSkills.filter((skill) => skill.selected).map((skill) => skill.label);
+        // سپس مقدارهایی که باید در استور ذخیره شود را به‌روز می‌کنیم
+        const selectedLabels = updatedSkills.filter((skill) => skill.selected).map((skill) => skill.label);
 
-            const customSkills = customSkillInput
-                .split(',')
-                .map((item) => item.trim())
-                .filter((item) => item.length > 0);
+        const customSkills = customSkillInput
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
 
-            const allSkills = Array.from(new Set([...selectedLabels, ...customSkills]));
+        const allSkills = Array.from(new Set([...selectedLabels, ...customSkills]));
 
-            updateField('skills', allSkills as unknown as string[]);
+        // این آپدیتِ استور حالا در هندلر کلیک انجام می‌شود (نه وسط رندر)،
+        // بنابراین ارور React درباره setState در حین رندر برطرف می‌شود.
+        updateField('skills', allSkills as unknown as string[]);
 
-            return updatedSkills;
-        });
+        // در نهایت state محلی کامپوننت را ست می‌کنیم
+        setSkills(updatedSkills);
     };
 
     useEffect(() => {

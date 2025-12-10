@@ -104,8 +104,10 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     /**
      * هر بار که لیست تجربه‌ها (`backgroundEntries`) عوض می‌شود،
      * داده‌ی مربوط به `experiences` در استور ویزارد و همچنین `allFiles`
-     * را بعد از رندر (در افکت) به‌روزرسانی می‌کنیم تا در فاز رندر
-     * کامپوننت دیگری مثل `IntroDialog` ست‌استیت نشود.
+     * را بعد از رندر (در افکت) به‌روزرسانی می‌کنیم.
+     *
+     * نکته مهم: نباید `wizardData.experiences` را داخل وابستگی‌ها بگذاریم،
+     * چون خودمان همین‌جا آن را به‌روزرسانی می‌کنیم و باعث لوپ بی‌نهایت می‌شود.
      */
     useEffect(() => {
         const payload = backgroundEntries.map((entry) => ({
@@ -117,7 +119,8 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         updateField('experiences', payload as unknown as typeof wizardData.experiences);
         // After syncing experiences into the store, rebuild the aggregated allFiles
         recomputeAllFiles();
-    }, [backgroundEntries, updateField, recomputeAllFiles, wizardData.experiences]);
+        // وابستگی فقط به ورودی‌های واقعی این افکت
+    }, [backgroundEntries, updateField, recomputeAllFiles]);
 
     useEffect(() => {
         const urls = uploadedFiles.map((file) =>

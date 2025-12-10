@@ -3,13 +3,19 @@ import JSZip from 'jszip';
 
 import type { AllFileItem, WizardData } from './wizardSchema';
 
-export const buildWizardZip = async (
+interface BuildWizardZipOptions {
+    rootFolderName?: string;
+    zipFileName?: string;
+}
+
+/**
+ * Build the wizard zip **as a Blob** (without downloading).
+ * This is useful when you want to send the zip file to an API.
+ */
+export const buildWizardZipBlob = async (
     wizardData: WizardData,
-    options?: {
-        rootFolderName?: string;
-        zipFileName?: string;
-    },
-): Promise<void> => {
+    options?: BuildWizardZipOptions,
+): Promise<Blob> => {
     const zip = new JSZip();
 
     const rootName = options?.rootFolderName?.trim() || 'nv';
@@ -106,7 +112,19 @@ export const buildWizardZip = async (
     const jsonText = JSON.stringify(serializable, null, 2);
     root.file('wizard-data.txt', jsonText);
 
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    return zip.generateAsync({ type: 'blob' });
+};
+
+/**
+ * Previous behaviour: build the wizard zip and **download** it.
+ * This now reuses `buildWizardZipBlob` internally.
+ */
+export const buildWizardZip = async (
+    wizardData: WizardData,
+    options?: BuildWizardZipOptions,
+): Promise<void> => {
+    const rootName = options?.rootFolderName?.trim() || 'nv';
+    const zipBlob = await buildWizardZipBlob(wizardData, { ...options, rootFolderName: rootName });
     const zipName = options?.zipFileName?.trim() || `${rootName}.zip`;
     saveAs(zipBlob, zipName);
 };

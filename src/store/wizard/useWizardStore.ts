@@ -77,7 +77,13 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
     backgroundVoices: [],
 
     setData: (data) => set({ data }),
-    updateField: (field, value) => set((state) => ({ data: { ...state.data, [field]: value } })),
+    updateField: <K extends keyof WizardData>(field: K, value: WizardData[K]) =>
+        set((state) => ({
+            data: {
+                ...state.data,
+                [field]: value,
+            },
+        })),
 
     addToAllFiles: (items) =>
         set((state) => {

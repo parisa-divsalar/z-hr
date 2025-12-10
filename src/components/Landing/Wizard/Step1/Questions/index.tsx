@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 
 import { Divider, Stack, Typography } from '@mui/material';
 
@@ -9,6 +9,8 @@ import ImageIcon from '@/assets/images/icons/download2.svg';
 import VideoIcon from '@/assets/images/icons/download3.svg';
 import { AIStatus } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
+import { apiClientClient } from '@/services/api-client';
+import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
 
 import {
   TopSection,
@@ -30,6 +32,9 @@ interface QuestionsProps {
 }
 
 const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) => {
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { data: wizardData } = useWizardStore();
+
   const mediaItems = [
     { id: 'voice', label: 'Voice (1)', Icon: MicIcon },
     { id: 'photo', label: 'Photo (2)', Icon: ImageIcon },
@@ -37,6 +42,35 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
   ];
 
   const questionNumbers = [1, 2, 3, 4, 5];
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+
+    try {
+      // Build wizard data zip as a file
+      const zipBlob = await buildWizardZipBlob(wizardData, {
+        rootFolderName: wizardData.fullName || 'nv',
+        zipFileName: 'wizard-data.zip',
+      });
+
+      const zipFile = new File([zipBlob], 'wizard-data.zip', { type: 'application/zip' });
+      const formData = new FormData();
+      formData.append('inputFile', zipFile);
+
+      await apiClientClient.post('send-file', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } catch (error) {
+      // حتی اگر ارسال فایل به سرور خطا بده، اجازه می‌دهیم کاربر به استپ بعدی برود
+      // eslint-disable-next-line no-console
+      console.error('Failed to send wizard file', error);
+    } finally {
+      setIsSubmitting(false);
+      onNext();
+    }
+  };
 
   return (
     <Container>
@@ -117,7 +151,13 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
             Add more
           </MuiButton>
 
-          <MuiButton color='secondary' size='large' onClick={onNext} endIcon={<ArrowRightIcon />}>
+          <MuiButton
+            color='secondary'
+            size='large'
+            onClick={handleSubmit}
+            endIcon={<ArrowRightIcon />}
+            loading={isSubmitting}
+          >
             Submit
           </MuiButton>
         </Stack>
