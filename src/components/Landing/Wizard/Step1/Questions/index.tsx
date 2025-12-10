@@ -61,6 +61,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus }) =
         try {
             const res = await apiClientClient.post('send-file', formData);
             console.log('res wizrd uploadd', res);
+            onNext();
         } catch (error) {
             console.log('rerr wizrd uploadd', error);
 

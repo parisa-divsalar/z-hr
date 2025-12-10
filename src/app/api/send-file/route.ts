@@ -1,4 +1,3 @@
-import FormData from 'form-data';
 import CacheError from '@/services/cache-error';
 import { cookies } from 'next/headers';
 import { AxiosError } from 'axios';
@@ -9,14 +8,12 @@ export async function POST(req: NextRequest) {
     try {
         const formDataClient = await req.formData();
 
-        const token = (await cookies()).get('accessToken')?.value;
+        const token = (await cookies()).get('accessToken')?.value.split('"');
         if (!token) {
             return NextResponse.json({ error: 'No access token' }, { status: 401 });
         }
 
-        console.log('token ===******************************', token);
-
-        const response = await apiClientServer.post(`SendFile?userId=${token}&lang=en`, formDataClient, {
+        const response = await apiClientServer.post(`SendFile?userId=${token[1]}&lang=en`, formDataClient, {
             headers: {
                 accept: 'text/plain',
                 'Content-Type': 'multipart/form-data',
