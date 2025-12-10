@@ -36,7 +36,7 @@ interface ToastInfo {
 }
 
 const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
-    const { data: wizardData, updateField } = useWizardStore();
+    const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
 
     const [backgroundText, setBackgroundText] = useState<string>('');
     const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
@@ -109,8 +109,9 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
                 files: entry.files,
             }));
             updateField('certificates', payload as unknown as typeof wizardData.certificates);
+            recomputeAllFiles();
         },
-        [updateField, wizardData.certificates],
+        [updateField, wizardData.certificates, recomputeAllFiles],
     );
 
     useEffect(() => {
@@ -383,8 +384,7 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
         });
     };
 
-    const hasDraft =
-        backgroundText.trim() !== '' || uploadedFiles.length > 0 || voiceRecordings.length > 0;
+    const hasDraft = backgroundText.trim() !== '' || uploadedFiles.length > 0 || voiceRecordings.length > 0;
     const hasCertifications = hasDraft || backgroundEntries.length > 0;
 
     const handleBack = () => {

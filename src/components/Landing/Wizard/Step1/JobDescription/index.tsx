@@ -351,7 +351,7 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
 };
 
 const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) => {
-    const { data: wizardData, updateField } = useWizardStore();
+    const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
 
     const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -469,8 +469,10 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                 files: mergedFiles,
                 voices: mergedVoices,
             } as unknown as (typeof wizardData)[typeof target]);
+
+            recomputeAllFiles();
         },
-        [updateField, wizardData],
+        [updateField, wizardData, recomputeAllFiles],
     );
 
     const handleBack = () => {

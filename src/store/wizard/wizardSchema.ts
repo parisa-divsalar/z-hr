@@ -14,6 +14,9 @@ export const sectionSchema = z.object({
     files: z.array(z.any()),
 });
 
+/**
+ * - uploaded File objects
+ */
 export const wizardSchema = z.object({
     fullName: z.string().min(1, 'Full name is required'),
     mainSkill: z.string().min(1, 'Main skill is required'),
@@ -34,7 +37,7 @@ export const wizardSchema = z.object({
     jobDescription: sectionSchema,
     additionalInfo: sectionSchema,
     //
-    allFiles: z.array(z.file()),
+    allFiles: z.array(z.any()),
 });
 
 export type WizardData = z.infer<typeof wizardSchema>;

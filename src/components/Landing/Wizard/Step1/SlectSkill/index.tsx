@@ -91,7 +91,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
     const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
 
-    const { data: wizardData, updateField } = useWizardStore();
+    const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
     const backgroundSection = wizardData.background;
     const backgroundText = backgroundSection?.text ?? '';
     const backgroundFiles = (backgroundSection?.files as File[]) ?? [];
@@ -268,6 +268,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             ...backgroundSection,
             voices: nextVoices,
         });
+        // Keep global allFiles in sync with newly added voice recordings
+        recomputeAllFiles();
 
         setShowRecordingControls(false);
         setVoiceUrl(null);
@@ -292,6 +294,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             ...backgroundSection,
             voices: nextVoices,
         });
+        recomputeAllFiles();
     };
 
     const hasBackgroundText = backgroundText.trim() !== '';
@@ -377,6 +380,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 ...backgroundSection,
                 files: nextFiles,
             });
+            recomputeAllFiles();
         }
 
         if (fileInputRef.current) {
@@ -396,6 +400,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             ...backgroundSection,
             files: nextFiles,
         });
+        recomputeAllFiles();
     };
 
     const handleOpenEditDialog = () => {
@@ -463,6 +468,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         });
 
         updateField('skills', allSkills as unknown as string[]);
+
+        recomputeAllFiles();
     }, [
         backgroundText,
         customSkillInput,
@@ -471,6 +478,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         wizardData.background,
         backgroundVoices,
         backgroundFiles,
+        recomputeAllFiles,
     ]);
 
     const handleNext = () => {

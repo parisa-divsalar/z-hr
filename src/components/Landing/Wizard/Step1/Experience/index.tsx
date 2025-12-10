@@ -36,7 +36,7 @@ interface ToastInfo {
 }
 
 const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
-    const { data: wizardData, updateField } = useWizardStore();
+    const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
 
     const [backgroundText, setBackgroundText] = useState<string>('');
     const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
@@ -109,8 +109,10 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 files: entry.files,
             }));
             updateField('experiences', payload as unknown as typeof wizardData.experiences);
+            // After syncing experiences into the store, rebuild the aggregated allFiles
+            recomputeAllFiles();
         },
-        [updateField, wizardData.experiences],
+        [updateField, wizardData.experiences, recomputeAllFiles],
     );
 
     useEffect(() => {
