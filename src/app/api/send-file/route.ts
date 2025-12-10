@@ -1,29 +1,52 @@
-import CacheError from '@/services/cache-error';
 import { cookies } from 'next/headers';
-import { AxiosError } from 'axios';
-import { apiClientServer } from '@/services/api-client';
+import { API_SERVER_BASE_URL } from '@/services/api-client';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
     try {
         const formDataClient = await req.formData();
+        const tokenValue = (await cookies()).get('accessToken')?.value;
 
-        const token = (await cookies()).get('accessToken')?.value.split('"');
-        if (!token) {
+        if (!tokenValue) {
             return NextResponse.json({ error: 'No access token' }, { status: 401 });
         }
 
-        const response = await apiClientServer.post(`SendFile?userId=${token[1]}&lang=en`, formDataClient, {
+        let userId: string | null = null;
+        try {
+            const parsed = JSON.parse(tokenValue);
+            userId = parsed ? String(parsed) : null;
+        } catch {
+            userId = tokenValue;
+        }
+
+        if (!userId) {
+            return NextResponse.json({ error: 'No access token' }, { status: 401 });
+        }
+
+        const sendFileUrl = new URL('SendFile', API_SERVER_BASE_URL);
+        sendFileUrl.searchParams.set('userId', userId);
+        sendFileUrl.searchParams.set('lang', 'en');
+
+        const response = await fetch(sendFileUrl, {
+            method: 'POST',
             headers: {
                 accept: 'text/plain',
-                'Content-Type': 'multipart/form-data',
             },
+            body: formDataClient,
         });
-        console.log('response === = = =++++++++++++++++++++++++++++++++++++ = ', response);
-        return NextResponse.json({ result: response.data });
+
+        const resultText = await response.text();
+
+        if (!response.ok) {
+            console.log('SendFile response error', response.status, resultText);
+            return NextResponse.json({ error: resultText }, { status: response.status });
+        }
+
+        return NextResponse.json({ result: resultText });
     } catch (error) {
         console.log('err === = = == = = == == = = = ', error);
 
-        return CacheError(error as AxiosError);
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

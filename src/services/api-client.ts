@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 
+export const API_SERVER_BASE_URL = 'https://apisrv.zenonrobotics.ae/api/Apps/';
+
 const createAPIClient = (baseURL: string): AxiosInstance => {
     const instance = axios.create({ baseURL });
 
@@ -16,4 +18,4 @@ const createAPIClient = (baseURL: string): AxiosInstance => {
 
 export const apiClientClient = createAPIClient('/api/');
 
-export const apiClientServer = createAPIClient('https://apisrv.zenonrobotics.ae/api/Apps/');
+export const apiClientServer = createAPIClient(API_SERVER_BASE_URL);
