@@ -1,8 +1,7 @@
+import CacheError from '@/services/cache-error';
 import { AxiosError } from 'axios';
 import { NextResponse } from 'next/server';
-
 import { apiClientServer } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
 
 export async function POST(request: Request) {
     try {
@@ -11,7 +10,7 @@ export async function POST(request: Request) {
 
         const response = NextResponse.json({ data });
 
-        response.cookies.set('user', JSON.stringify(data), {
+        response.cookies.set('accessToken', JSON.stringify(data.userId), {
             path: '/',
             httpOnly: false,
             secure: true,
