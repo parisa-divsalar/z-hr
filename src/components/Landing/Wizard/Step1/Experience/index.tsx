@@ -101,19 +101,23 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
     const [filePreviews, setFilePreviews] = useState<(string | undefined)[]>([]);
 
-    const persistEntriesToStore = useCallback(
-        (entries: BackgroundEntry[]) => {
-            const payload = entries.map((entry) => ({
-                text: entry.text,
-                voices: entry.voices,
-                files: entry.files,
-            }));
-            updateField('experiences', payload as unknown as typeof wizardData.experiences);
-            // After syncing experiences into the store, rebuild the aggregated allFiles
-            recomputeAllFiles();
-        },
-        [updateField, wizardData.experiences, recomputeAllFiles],
-    );
+    /**
+     * هر بار که لیست تجربه‌ها (`backgroundEntries`) عوض می‌شود،
+     * داده‌ی مربوط به `experiences` در استور ویزارد و همچنین `allFiles`
+     * را بعد از رندر (در افکت) به‌روزرسانی می‌کنیم تا در فاز رندر
+     * کامپوننت دیگری مثل `IntroDialog` ست‌استیت نشود.
+     */
+    useEffect(() => {
+        const payload = backgroundEntries.map((entry) => ({
+            text: entry.text,
+            voices: entry.voices,
+            files: entry.files,
+        }));
+
+        updateField('experiences', payload as unknown as typeof wizardData.experiences);
+        // After syncing experiences into the store, rebuild the aggregated allFiles
+        recomputeAllFiles();
+    }, [backgroundEntries, updateField, recomputeAllFiles, wizardData.experiences]);
 
     useEffect(() => {
         const urls = uploadedFiles.map((file) =>
@@ -288,11 +292,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => {
-            const next = [...prev, newEntry];
-            persistEntriesToStore(next);
-            return next;
-        });
+        setBackgroundEntries((prev) => [...prev, newEntry]);
         setIsEditingEntry(false);
         setEditingEntryId(null);
         setEditingEntryBackup(null);
@@ -321,7 +321,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             setVoiceRecordings(entry.voices);
 
             const remaining = prev.filter((item) => item.id !== id);
-            persistEntriesToStore(remaining);
             return remaining;
         });
     };
@@ -342,11 +341,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => {
-            const next = [...prev, updatedEntry];
-            persistEntriesToStore(next);
-            return next;
-        });
+        setBackgroundEntries((prev) => [...prev, updatedEntry]);
 
         setIsEditingEntry(false);
         setEditingEntryId(null);
@@ -362,11 +357,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
     const handleCancelEditBackgroundEntry = () => {
         if (editingEntryBackup) {
-            setBackgroundEntries((prev) => {
-                const next = [...prev, editingEntryBackup];
-                persistEntriesToStore(next);
-                return next;
-            });
+            setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
         }
 
         setIsEditingEntry(false);
@@ -388,7 +379,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
             }
             const next = prev.filter((item) => item.id !== id);
-            persistEntriesToStore(next);
             return next;
         });
     };
@@ -403,8 +393,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             } else {
                 handleAddBackgroundEntry();
             }
-        } else {
-            persistEntriesToStore(backgroundEntries);
         }
 
         setStage('SELECT_SKILL');
@@ -417,8 +405,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             } else {
                 handleAddBackgroundEntry();
             }
-        } else {
-            persistEntriesToStore(backgroundEntries);
         }
 
         setStage('CERTIFICATION');
