@@ -95,9 +95,27 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
 
         const collected: AllFileItem[] = [];
 
+        /**
+         * Make sure every File that is part of the wizard data
+         * has a **stable unique id**.
+         *
+         * We attach the id directly onto the File instance so that:
+         *  - section data (`background.files`, `experiences[i].files`, ...)
+         *    can be logged and still expose the id.
+         *  - the same id is reused inside `data.allFiles`.
+         */
+        const ensureFileId = (file: File): string => {
+            const anyFile = file as File & { id?: string };
+            if (!anyFile.id) {
+                anyFile.id = generateFakeUUIDv4();
+            }
+            return anyFile.id;
+        };
+
         const pushFile = (step: AllFileItem['step'], file: File, entryIndex?: number) => {
+            const stableId = ensureFileId(file);
             collected.push({
-                id: generateFakeUUIDv4(),
+                id: stableId,
                 step,
                 entryIndex,
                 kind: 'file',

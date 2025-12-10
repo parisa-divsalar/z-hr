@@ -211,6 +211,14 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         fileInputRef.current?.click();
     };
 
+    const ensureFileWithId = (file: File) => {
+        const f = file as File & { id?: string };
+        if (!f.id) {
+            f.id = generateFakeUUIDv4();
+        }
+        return f;
+    };
+
     const handleFileUpload = async (files: FileList | null) => {
         if (!files) {
             return;
@@ -248,11 +256,11 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 }
             }
 
-            acceptedFiles.push(file);
+            acceptedFiles.push(ensureFileWithId(file));
         }
 
         if (acceptedFiles.length > 0) {
-            setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
+            setUploadedFiles((prev) => [...prev.map((file) => ensureFileWithId(file)), ...acceptedFiles]);
         }
 
         if (fileInputRef.current) {

@@ -332,6 +332,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         fileInputRef.current?.click();
     };
 
+    const ensureFileWithId = (file: File) => {
+        const f = file as File & { id?: string };
+        if (!f.id) {
+            f.id = generateFakeUUIDv4();
+        }
+        return f;
+    };
+
     const handleFileUpload = async (files: FileList | null) => {
         if (!files) {
             return;
@@ -369,11 +377,11 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 }
             }
 
-            acceptedFiles.push(file);
+            acceptedFiles.push(ensureFileWithId(file));
         }
 
         if (acceptedFiles.length > 0) {
-            const currentFiles = backgroundFiles ?? [];
+            const currentFiles = (backgroundFiles ?? []).map((file) => ensureFileWithId(file));
             const nextFiles = [...currentFiles, ...acceptedFiles];
 
             updateField('background', {
