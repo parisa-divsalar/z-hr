@@ -1,4 +1,4 @@
-import React, { FunctionComponent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
@@ -82,20 +82,23 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         };
     }, []);
 
-    const filePreviews = useMemo(
-        () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
-        [uploadedFiles],
-    );
+    const [filePreviews, setFilePreviews] = useState<(string | undefined)[]>([]);
 
     useEffect(() => {
+        const urls = uploadedFiles.map((file) =>
+            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+        );
+
+        setFilePreviews(urls);
+
         return () => {
-            filePreviews.forEach((preview) => {
-                if (preview) {
-                    URL.revokeObjectURL(preview);
+            urls.forEach((url) => {
+                if (url) {
+                    URL.revokeObjectURL(url);
                 }
             });
         };
-    }, [filePreviews]);
+    }, [uploadedFiles]);
 
     const handleFocusBackground = () => {
         backgroundRef.current?.focus();

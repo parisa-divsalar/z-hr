@@ -3,13 +3,21 @@ import { create } from 'zustand';
 
 import { WizardData, wizardSchema } from './wizardSchema';
 
+interface BackgroundVoice {
+    id: string;
+    url: string;
+    blob: Blob;
+    duration: number;
+}
+
 interface WizardStore {
     data: WizardData;
     uploadedFiles: string[];
+
     /**
      */
     backgroundFiles: File[];
-    backgroundVoices: { id: string; url: string; blob: Blob; duration: number }[];
+    backgroundVoices: BackgroundVoice[];
 
     setData: (data: WizardData) => void;
     updateField: <K extends keyof WizardData>(field: K, value: WizardData[K]) => void;
@@ -17,20 +25,13 @@ interface WizardStore {
     removeFile: (fileName: string) => void;
 
     setBackgroundFiles: (updater: (prev: File[]) => File[]) => void;
-    setBackgroundVoices: (
-        updater: (prev: { id: string; url: string; blob: Blob; duration: number }[]) => {
-            id: string;
-            url: string;
-            blob: Blob;
-            duration: number;
-        }[],
-    ) => void;
+    setBackgroundVoices: (updater: (prev: BackgroundVoice[]) => BackgroundVoice[]) => void;
 
     resetWizard: () => void;
     validate: () => boolean;
 }
 
-const initailData = {
+const initailData: WizardData = {
     fullName: '',
     mainSkill: '',
     dateOfBirth: '',

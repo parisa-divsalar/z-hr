@@ -1,9 +1,9 @@
-import React, { FunctionComponent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
-import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
+import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import {
@@ -43,7 +43,9 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
     const [recordingState, setRecordingState] = useState<RecordingState>('idle');
     const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
     const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>([]);
+    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>(
+        [],
+    );
     const [recorderKey, setRecorderKey] = useState<number>(0);
 
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -80,20 +82,23 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
         };
     }, []);
 
-    const filePreviews = useMemo(
-        () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
-        [uploadedFiles],
-    );
+    const [filePreviews, setFilePreviews] = useState<(string | undefined)[]>([]);
 
     useEffect(() => {
+        const urls = uploadedFiles.map((file) =>
+            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+        );
+
+        setFilePreviews(urls);
+
         return () => {
-            filePreviews.forEach((preview) => {
-                if (preview) {
-                    URL.revokeObjectURL(preview);
+            urls.forEach((url) => {
+                if (url) {
+                    URL.revokeObjectURL(url);
                 }
             });
         };
-    }, [filePreviews]);
+    }, [uploadedFiles]);
 
     const handleFocusBackground = () => {
         backgroundRef.current?.focus();
@@ -332,8 +337,6 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             return prev.filter((item) => item.id !== id);
         });
     };
-
-    const hasCertifications = backgroundText.trim() !== '' || backgroundEntries.length > 0;
 
     return (
         <Stack alignItems='center' justifyContent='center' height='100%'>

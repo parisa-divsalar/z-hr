@@ -6,10 +6,12 @@ export const languageSchema = z.object({
     level: z.string().min(1, 'Level is required'),
 });
 
+/**
+ */
 export const sectionSchema = z.object({
     text: z.string(),
-    voices: z.array(z.string()),
-    files: z.array(z.string()),
+    voices: z.array(z.any()),
+    files: z.array(z.any()),
 });
 
 export const wizardSchema = z.object({

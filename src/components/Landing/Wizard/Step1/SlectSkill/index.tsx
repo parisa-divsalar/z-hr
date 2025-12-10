@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
@@ -91,17 +91,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
     const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
 
-    const {
-        data: wizardData,
-        updateField,
-        backgroundFiles,
-        backgroundVoices,
-        setBackgroundFiles,
-        setBackgroundVoices,
-    } = useWizardStore();
+    const { data: wizardData, updateField } = useWizardStore();
+    const backgroundSection = wizardData.background;
+    const backgroundText = backgroundSection?.text ?? '';
+    const backgroundFiles = (backgroundSection?.files as File[]) ?? [];
+    const backgroundVoices =
+        (backgroundSection?.voices as { id: string; url: string; blob: Blob; duration: number }[]) ?? [];
 
     const [skills, setSkills] = useState<TSkill[]>([]);
-    const [backgroundText, setBackgroundText] = useState<string>(wizardData.background?.text ?? '');
     const [customSkillInput, setCustomSkillInput] = useState<string>('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
     const backgroundRef = useRef<HTMLTextAreaElement>(null);
@@ -257,15 +254,20 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
         const persistedUrl = URL.createObjectURL(audioBlob);
 
-        setBackgroundVoices((prev) => [
-            ...prev,
+        const nextVoices = [
+            ...backgroundVoices,
             {
                 id: generateFakeUUIDv4(),
                 url: persistedUrl,
                 blob: audioBlob,
                 duration,
             },
-        ]);
+        ];
+
+        updateField('background', {
+            ...backgroundSection,
+            voices: nextVoices,
+        });
 
         setShowRecordingControls(false);
         setVoiceUrl(null);
@@ -279,12 +281,16 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const handleRemoveSavedRecording = (id: string) => {
-        setBackgroundVoices((prev) => {
-            const removed = prev.find((item) => item.id === id);
-            if (removed) {
-                URL.revokeObjectURL(removed.url);
-            }
-            return prev.filter((item) => item.id !== id);
+        const currentVoices = backgroundVoices ?? [];
+        const removed = currentVoices.find((item) => item.id === id);
+        if (removed) {
+            URL.revokeObjectURL(removed.url);
+        }
+        const nextVoices = currentVoices.filter((item) => item.id !== id);
+
+        updateField('background', {
+            ...backgroundSection,
+            voices: nextVoices,
         });
     };
 
@@ -293,20 +299,23 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const hasSelectedSkills = skills.some((skill) => skill.selected);
     const hasCustomSkillInput = customSkillInput.trim() !== '';
     const canProceedBackground = hasBackgroundText || hasBackgroundAttachment;
-    const filePreviews = useMemo(
-        () => backgroundFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
-        [backgroundFiles],
-    );
+    const [filePreviews, setFilePreviews] = useState<(string | undefined)[]>([]);
 
     useEffect(() => {
+        const urls = backgroundFiles.map((file) =>
+            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+        );
+
+        setFilePreviews(urls);
+
         return () => {
-            filePreviews.forEach((preview) => {
-                if (preview) {
-                    URL.revokeObjectURL(preview);
+            urls.forEach((url) => {
+                if (url) {
+                    URL.revokeObjectURL(url);
                 }
             });
         };
-    }, [filePreviews]);
+    }, [backgroundFiles]);
 
     useEffect(() => {
         return () => {
@@ -361,7 +370,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         }
 
         if (acceptedFiles.length > 0) {
-            setBackgroundFiles((prev) => [...prev, ...acceptedFiles]);
+            const currentFiles = backgroundFiles ?? [];
+            const nextFiles = [...currentFiles, ...acceptedFiles];
+
+            updateField('background', {
+                ...backgroundSection,
+                files: nextFiles,
+            });
         }
 
         if (fileInputRef.current) {
@@ -374,7 +389,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const handleRemoveUploadedFile = (index: number) => {
-        setBackgroundFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+        const currentFiles = backgroundFiles ?? [];
+        const nextFiles = currentFiles.filter((_, fileIndex) => fileIndex !== index);
+
+        updateField('background', {
+            ...backgroundSection,
+            files: nextFiles,
+        });
     };
 
     const handleOpenEditDialog = () => {
@@ -439,8 +460,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         updateField('background', {
             ...wizardData.background,
             text: trimmedBackground,
-            voices: backgroundVoices.map((voice) => voice.id),
-            files: backgroundFiles.map((file) => file.name),
         });
 
         updateField('skills', allSkills as unknown as string[]);
@@ -532,7 +551,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 <InputContent
                     placeholder='Type your answer...'
                     value={backgroundText}
-                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setBackgroundText(event.target.value)}
+                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        updateField('background', {
+                            ...backgroundSection,
+                            text: event.target.value,
+                        })
+                    }
                     ref={backgroundRef}
                 />
             </ContainerSkill>
