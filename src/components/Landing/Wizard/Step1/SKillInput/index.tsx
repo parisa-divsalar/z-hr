@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
+
 import { IconButton, Stack, Typography } from '@mui/material';
+
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import DeleteOutlineIcon from '@/assets/images/icons/clearButton.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
@@ -7,6 +9,8 @@ import PropertyIcon from '@/assets/images/icons/property.svg';
 import { StageWizard } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
+import { useWizardStore } from '@/store/wizard';
+
 import {
     AddSkillIconButton,
     BottomActionsStack,
@@ -22,7 +26,6 @@ import {
     SkillRow,
     SkillText,
 } from './styled';
-import { useWizardStore } from '@/store/wizard';
 
 const visaStatusOptions: SelectOption[] = [
     { value: 'citizen', label: 'Citizen' },
@@ -51,7 +54,6 @@ interface SKillInputProps {
 const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
     const { data, updateField } = useWizardStore();
 
-    // --- Only UI states ---
     const [contactInput, setContactInput] = useState('');
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -63,10 +65,14 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
     const contactMethods = data.contactWay;
     const skillEntries = data.languages;
 
+    const visibleContactMethods = contactMethods
+        .filter((value) => value.trim() !== '')
+        .map((value, index) => ({ value, index }));
+
     const normalizedSelectedLanguage = selectedLanguage.trim();
     const normalizedSelectedLevel = selectedLevel.trim().toUpperCase();
 
-    const hasContactInfo = contactMethods.length > 0 || contactInput.trim() !== '';
+    const hasContactInfo = visibleContactMethods.length > 0 || contactInput.trim() !== '';
     const hasLanguageSelection = normalizedSelectedLanguage !== '' && normalizedSelectedLevel !== '';
     const hasLanguageData = skillEntries.length > 0 || hasLanguageSelection;
 
@@ -79,7 +85,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
             index !== editingSkillIndex,
     );
 
-    const isAddDisabled = contactInput.trim() === '' || (contactMethods.length >= 2 && editingIndex === null);
+    const isAddDisabled = contactInput.trim() === '' || (visibleContactMethods.length >= 2 && editingIndex === null);
 
     const isAddSkillDisabled = !hasLanguageSelection || isDuplicateSkillEntry;
 
@@ -89,10 +95,12 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
         const trimmed = contactInput.trim();
         if (!trimmed) return;
 
+        const nonEmptyContacts = contactMethods.filter((value) => value.trim() !== '');
+
         const updated =
             editingIndex !== null
-                ? contactMethods.map((x, i) => (i === editingIndex ? trimmed : x))
-                : [...contactMethods, trimmed];
+                ? nonEmptyContacts.map((x, i) => (i === editingIndex ? trimmed : x))
+                : [...nonEmptyContacts, trimmed];
 
         updateField('contactWay', updated);
 
@@ -101,18 +109,18 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
     };
 
     const handleEditContact = (index: number) => {
-        setContactInput(contactMethods[index]);
+        const nonEmptyContacts = contactMethods.filter((value) => value.trim() !== '');
+        setContactInput(nonEmptyContacts[index]);
         setEditingIndex(index);
     };
 
     const handleDeleteContact = (index: number) => {
-        const updated = contactMethods.filter((_, i) => i !== index);
+        const nonEmptyContacts = contactMethods.filter((value) => value.trim() !== '');
+        const updated = nonEmptyContacts.filter((_, i) => i !== index);
         updateField('contactWay', updated);
         setEditingIndex(null);
         setContactInput('');
     };
-
-    // ---------------- LANGUAGES ----------------
 
     const handleAddSkill = () => {
         if (!hasLanguageSelection || isDuplicateSkillEntry) return;
@@ -175,8 +183,6 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
                 />
             </Stack>
 
-            {/* --- Contact section --- */}
-
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
                 <span style={{ fontWeight: 'normal' }}>2.</span> Best way to contact you?
             </Typography>
@@ -195,20 +201,19 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
                 </IconButton>
             </Stack>
 
-            {contactMethods.length > 0 && (
+            {visibleContactMethods.length > 0 && (
                 <ContactListContainer pt={2} style={{ maxWidth: '426px' }}>
-                    {contactMethods.map((method, idx) => (
-                        <ContactRow key={idx}>
+                    {visibleContactMethods.map(({ value, index }) => (
+                        <ContactRow key={index}>
                             <ContactMethodText variant='body2' color='text.primary'>
-                                {method}
+                                {value}
                             </ContactMethodText>
 
                             <Stack direction='row' gap={1}>
-                                <ContactIconButton onClick={() => handleEditContact(idx)} size='small'>
+                                <ContactIconButton onClick={() => handleEditContact(index)} size='small'>
                                     <EditIcon fontSize='small' />
                                 </ContactIconButton>
-
-                                <ContactIconButton onClick={() => handleDeleteContact(idx)} size='small'>
+                                <ContactIconButton onClick={() => handleDeleteContact(index)} size='small'>
                                     <DeleteOutlineIcon fontSize='small' />
                                 </ContactIconButton>
                             </Stack>
@@ -245,7 +250,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
             </BottomActionsStack>
 
             {skillEntries.length > 0 && (
-                <SkillListContainer pt={2}>
+                <SkillListContainer pt={2} style={{ maxWidth: '426px' }}>
                     {skillEntries.map((entry, idx) => (
                         <SkillRow key={idx}>
                             <SkillText color='text.primary'>
@@ -265,8 +270,6 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
                     ))}
                 </SkillListContainer>
             )}
-
-            {/* --- Navigation --- */}
 
             <Stack mt={4} mb={6} direction='row' gap={3}>
                 {/* <MuiButton
