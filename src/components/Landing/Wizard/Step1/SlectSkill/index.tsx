@@ -265,9 +265,10 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const hasBackgroundText = backgroundText.trim() !== '';
+    const hasBackgroundAttachment = uploadedFiles.length > 0 || voiceRecordings.length > 0;
     const hasSelectedSkills = skills.some((skill) => skill.selected);
     const hasCustomSkillInput = customSkillInput.trim() !== '';
-    const canProceedBackground = hasBackgroundText;
+    const canProceedBackground = hasBackgroundText || hasBackgroundAttachment;
     const filePreviews = useMemo(
         () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
         [uploadedFiles],
@@ -394,9 +395,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         setIsEditDialogOpen(false);
         setMainSkillLabel(selectedOption.label);
         setMainSkillId(String(selectedOption.value));
-        // مقدار جدید mainSkill را در استور هم ذخیره می‌کنیم تا همه‌جا (از جمله Intro) آپدیت شود
         if (selectedOption.value) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (useWizardStore.getState().updateField as any)('mainSkill', String(selectedOption.value));
         }
     };
@@ -661,7 +660,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 open={isEditDialogOpen}
                 onClose={handleCloseEditDialog}
                 onConfirm={handleConfirmEditDialog}
-                // مقدار اولیه همان چیزی است که کاربر در Intro به‌عنوان mainSkill انتخاب کرده
                 initialSkillId={wizardData.mainSkill}
             />
         </Stack>
