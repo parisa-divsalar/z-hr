@@ -1,7 +1,9 @@
 'use client';
 import { create } from 'zustand';
 
-import { WizardData, wizardSchema } from './wizardSchema';
+import { generateFakeUUIDv4 } from '@/utils/generateUUID';
+
+import { AllFileItem, wizardSchema, WizardData } from './wizardSchema';
 
 interface BackgroundVoice {
     id: string;
@@ -15,17 +17,28 @@ interface WizardStore {
     uploadedFiles: string[];
 
     /**
+     * Runtime copies of background files / voices (used by SelectSkill step).
      */
     backgroundFiles: File[];
     backgroundVoices: BackgroundVoice[];
 
     setData: (data: WizardData) => void;
     updateField: <K extends keyof WizardData>(field: K, value: WizardData[K]) => void;
+
     /**
+     * Manually append one or more items into `data.allFiles`.
+     * Usually you won't need this, because `recomputeAllFiles` builds the list automatically.
      */
-    addToAllFiles: (items: unknown | unknown[]) => void;
-    /** Rebuild allFiles from current data sections (background, experiences, certificates, jobDescription, additionalInfo). */
+    addToAllFiles: (items: AllFileItem | AllFileItem[]) => void;
+
+    /**
+     * Rebuild `data.allFiles` from current data sections
+     * (background, experiences, certificates, jobDescription, additionalInfo).
+     *
+     * Every file / voice gets a **unique id** and meta info about where it lives.
+     */
     recomputeAllFiles: () => void;
+
     addFile: (fileName: string) => void;
     removeFile: (fileName: string) => void;
 
@@ -65,6 +78,7 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
 
     setData: (data) => set({ data }),
     updateField: (field, value) => set((state) => ({ data: { ...state.data, [field]: value } })),
+
     addToAllFiles: (items) =>
         set((state) => {
             const itemsArray = Array.isArray(items) ? items : [items];
@@ -75,59 +89,93 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
                 },
             };
         }),
+
     recomputeAllFiles: () => {
         const current = get().data;
 
-        const collected: unknown[] = [];
+        const collected: AllFileItem[] = [];
 
+        const pushFile = (step: AllFileItem['step'], file: File, entryIndex?: number) => {
+            collected.push({
+                id: generateFakeUUIDv4(),
+                step,
+                entryIndex,
+                kind: 'file',
+                name: file.name,
+                payload: file,
+            });
+        };
+
+        const pushVoice = (
+            step: AllFileItem['step'],
+            voice: { id?: string; url: string; blob: Blob; duration: number },
+            entryIndex?: number,
+        ) => {
+            const stableId = voice.id ?? generateFakeUUIDv4();
+            collected.push({
+                id: stableId,
+                step,
+                entryIndex,
+                kind: 'voice',
+                name: `voice-${stableId}`,
+                payload: {
+                    ...voice,
+                    id: stableId,
+                },
+            });
+        };
+
+        // 1) Background (single section)
         if (current.background) {
-            if (Array.isArray((current.background as any).files)) {
-                collected.push(...((current.background as any).files as unknown[]));
+            const bg = current.background as any;
+            if (Array.isArray(bg.files)) {
+                (bg.files as File[]).forEach((file) => pushFile('background', file, 0));
             }
-            if (Array.isArray((current.background as any).voices)) {
-                collected.push(...((current.background as any).voices as unknown[]));
+            if (Array.isArray(bg.voices)) {
+                (bg.voices as BackgroundVoice[]).forEach((voice) => pushVoice('background', voice, 0));
             }
         }
 
         if (Array.isArray(current.experiences)) {
-            for (const exp of current.experiences as any[]) {
+            (current.experiences as any[]).forEach((exp, expIndex) => {
                 if (Array.isArray(exp?.files)) {
-                    collected.push(...(exp.files as unknown[]));
+                    (exp.files as File[]).forEach((file: File) => pushFile('experiences', file, expIndex));
                 }
                 if (Array.isArray(exp?.voices)) {
-                    collected.push(...(exp.voices as unknown[]));
+                    (exp.voices as BackgroundVoice[]).forEach((voice) => pushVoice('experiences', voice, expIndex));
                 }
-            }
+            });
         }
 
         if (Array.isArray(current.certificates)) {
-            for (const cert of current.certificates as any[]) {
+            (current.certificates as any[]).forEach((cert, certIndex) => {
                 if (Array.isArray(cert?.files)) {
-                    collected.push(...(cert.files as unknown[]));
+                    (cert.files as File[]).forEach((file: File) => pushFile('certificates', file, certIndex));
                 }
                 if (Array.isArray(cert?.voices)) {
-                    collected.push(...(cert.voices as unknown[]));
+                    (cert.voices as BackgroundVoice[]).forEach((voice) => pushVoice('certificates', voice, certIndex));
                 }
-            }
+            });
         }
 
         if (current.jobDescription) {
             const jd = current.jobDescription as any;
             if (Array.isArray(jd.files)) {
-                collected.push(...(jd.files as unknown[]));
+                (jd.files as File[]).forEach((file) => pushFile('jobDescription', file, 0));
             }
             if (Array.isArray(jd.voices)) {
-                collected.push(...(jd.voices as unknown[]));
+                (jd.voices as BackgroundVoice[]).forEach((voice) => pushVoice('jobDescription', voice, 0));
             }
         }
 
+        // 5) Additional info (single section)
         if (current.additionalInfo) {
             const add = current.additionalInfo as any;
             if (Array.isArray(add.files)) {
-                collected.push(...(add.files as unknown[]));
+                (add.files as File[]).forEach((file) => pushFile('additionalInfo', file, 0));
             }
             if (Array.isArray(add.voices)) {
-                collected.push(...(add.voices as unknown[]));
+                (add.voices as BackgroundVoice[]).forEach((voice) => pushVoice('additionalInfo', voice, 0));
             }
         }
 
@@ -138,6 +186,7 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
             },
         });
     },
+
     addFile: (fileName) => set((state) => ({ uploadedFiles: [...state.uploadedFiles, fileName] })),
     removeFile: (fileName) => set((state) => ({ uploadedFiles: state.uploadedFiles.filter((f) => f !== fileName) })),
 

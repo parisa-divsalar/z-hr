@@ -15,7 +15,43 @@ export const sectionSchema = z.object({
 });
 
 /**
- * - uploaded File objects
+ * Central registry item for **every uploaded file / voice** in the wizard.
+ * - `payload` will contain the actual File object or voice object (with url/blob/duration).
+ * - `step` + `entryIndex` tell you this file belongs to which step and (for list-steps) which entry.
+ */
+export const allFileOwnerStepSchema = z.enum([
+    'background',
+    'experiences',
+    'certificates',
+    'jobDescription',
+    'additionalInfo',
+]);
+
+export const allFileKindSchema = z.enum(['file', 'voice']);
+
+export const allFileItemSchema = z.object({
+    id: z.string(),
+    /** Which high‑level wizard section this belongs to (background / experiences / ...) */
+    step: allFileOwnerStepSchema,
+    /**
+     * For list‑based sections like `experiences` / `certificates` this is the index
+     * of the entry inside that list. Optional for single‑section steps like `background`.
+     */
+    entryIndex: z.number().int().nonnegative().optional(),
+    /** Is this a normal file upload or a recorded voice item */
+    kind: allFileKindSchema,
+    /** Human‑readable label (e.g. original file name or generated voice label) */
+    name: z.string().optional(),
+    /**
+     * Actual runtime payload:
+     *  - for `kind: "file"`  → a `File`
+     *  - for `kind: "voice"` → an object with `{ id, url, blob, duration }`
+     */
+    payload: z.any(),
+});
+
+/**
+ * Main wizard schema
  */
 export const wizardSchema = z.object({
     fullName: z.string().min(1, 'Full name is required'),
@@ -37,7 +73,8 @@ export const wizardSchema = z.object({
     jobDescription: sectionSchema,
     additionalInfo: sectionSchema,
     //
-    allFiles: z.array(z.any()),
+    allFiles: z.array(allFileItemSchema),
 });
 
 export type WizardData = z.infer<typeof wizardSchema>;
+export type AllFileItem = z.infer<typeof allFileItemSchema>;
