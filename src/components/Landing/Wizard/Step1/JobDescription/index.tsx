@@ -18,6 +18,7 @@ import {
 } from '@/components/Landing/Wizard/Step1/attachmentRules';
 import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import { AtsFriendlyChip } from './styled';
@@ -327,25 +328,31 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
         setRecordingState,
         recorderKey,
         voiceRecordings,
+        setVoiceRecordings,
         onRecordingComplete: handleVoiceRecordingComplete,
         onClearRecording: handleClearVoiceRecording,
         onRemoveSavedRecording: handleRemoveSavedRecording,
         uploadedFiles,
+        setUploadedFiles,
         filePreviews,
         onOpenFileDialog: handleOpenFileDialog,
         onFileUpload: handleFileUpload,
         onRemoveUploadedFile: handleRemoveUploadedFile,
         isEditingEntry,
+        setIsEditingEntry,
         onAddBackgroundEntry: handleAddBackgroundEntry,
         onCancelEditBackgroundEntry: handleCancelEditBackgroundEntry,
         onSaveBackgroundEntry: handleSaveBackgroundEntry,
         backgroundEntries,
+        setBackgroundEntries,
         onEditBackgroundEntry: handleEditBackgroundEntry,
         onDeleteBackgroundEntry: handleDeleteBackgroundEntry,
     };
 };
 
 const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) => {
+    const { data: wizardData, updateField } = useWizardStore();
+
     const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -374,9 +381,131 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
     const sectionOne = useBrieflySectionState(showToast);
     const sectionTwo = useBrieflySectionState(showToast);
 
+    useEffect(() => {
+        const jd = wizardData.jobDescription as
+            | { text?: string; voices?: VoiceRecording[]; files?: File[] }
+            | undefined;
+        if (jd) {
+            if (jd.text) {
+                sectionOne.setBackgroundText(jd.text);
+            }
+            if (jd.files && jd.files.length > 0) {
+                sectionOne.setUploadedFiles(jd.files);
+            }
+            if (jd.voices && jd.voices.length > 0) {
+                sectionOne.setVoiceRecordings(
+                    jd.voices.map((v) => ({
+                        id: v.id ?? generateFakeUUIDv4(),
+                        url: v.url,
+                        blob: v.blob,
+                        duration: v.duration,
+                    })),
+                );
+            }
+        }
+
+        const addInfo = wizardData.additionalInfo as
+            | { text?: string; voices?: VoiceRecording[]; files?: File[] }
+            | undefined;
+        if (addInfo) {
+            if (addInfo.text) {
+                sectionTwo.setBackgroundText(addInfo.text);
+            }
+            if (addInfo.files && addInfo.files.length > 0) {
+                sectionTwo.setUploadedFiles(addInfo.files);
+            }
+            if (addInfo.voices && addInfo.voices.length > 0) {
+                sectionTwo.setVoiceRecordings(
+                    addInfo.voices.map((v) => ({
+                        id: v.id ?? generateFakeUUIDv4(),
+                        url: v.url,
+                        blob: v.blob,
+                        duration: v.duration,
+                    })),
+                );
+            }
+        }
+    }, []);
+
     const hasJobDescription = [sectionOne, sectionTwo].some(
-        (section) => section.backgroundText.trim() !== '' || section.backgroundEntries.length > 0,
+        (section) =>
+            section.backgroundText.trim() !== '' ||
+            section.uploadedFiles.length > 0 ||
+            section.voiceRecordings.length > 0 ||
+            section.backgroundEntries.length > 0,
     );
+
+    const persistSectionToStore = useCallback(
+        (
+            target: 'jobDescription' | 'additionalInfo',
+            section: {
+                backgroundText: string;
+                uploadedFiles: File[];
+                voiceRecordings: VoiceRecording[];
+                backgroundEntries: BackgroundEntry[];
+            },
+        ) => {
+            const draftHasContent =
+                section.backgroundText.trim() !== '' ||
+                section.uploadedFiles.length > 0 ||
+                section.voiceRecordings.length > 0;
+
+            const mergedText = [
+                ...section.backgroundEntries.map((e) => e.text).filter((t) => t && t.trim() !== ''),
+                ...(draftHasContent ? [section.backgroundText.trim()] : []),
+            ].join('\n\n');
+
+            const mergedFiles = [
+                ...section.backgroundEntries.flatMap((e) => e.files),
+                ...(draftHasContent ? section.uploadedFiles : []),
+            ];
+            const mergedVoices = [
+                ...section.backgroundEntries.flatMap((e) => e.voices),
+                ...(draftHasContent ? section.voiceRecordings : []),
+            ];
+
+            updateField(target, {
+                text: mergedText,
+                files: mergedFiles,
+                voices: mergedVoices,
+            } as unknown as (typeof wizardData)[typeof target]);
+        },
+        [updateField, wizardData],
+    );
+
+    const handleBack = () => {
+        persistSectionToStore('jobDescription', {
+            backgroundText: sectionOne.backgroundText,
+            uploadedFiles: sectionOne.uploadedFiles,
+            voiceRecordings: sectionOne.voiceRecordings as VoiceRecording[],
+            backgroundEntries: sectionOne.backgroundEntries,
+        });
+        persistSectionToStore('additionalInfo', {
+            backgroundText: sectionTwo.backgroundText,
+            uploadedFiles: sectionTwo.uploadedFiles,
+            voiceRecordings: sectionTwo.voiceRecordings as VoiceRecording[],
+            backgroundEntries: sectionTwo.backgroundEntries,
+        });
+
+        setStage('CERTIFICATION');
+    };
+
+    const handleNext = () => {
+        persistSectionToStore('jobDescription', {
+            backgroundText: sectionOne.backgroundText,
+            uploadedFiles: sectionOne.uploadedFiles,
+            voiceRecordings: sectionOne.voiceRecordings as VoiceRecording[],
+            backgroundEntries: sectionOne.backgroundEntries,
+        });
+        persistSectionToStore('additionalInfo', {
+            backgroundText: sectionTwo.backgroundText,
+            uploadedFiles: sectionTwo.uploadedFiles,
+            voiceRecordings: sectionTwo.voiceRecordings as VoiceRecording[],
+            backgroundEntries: sectionTwo.backgroundEntries,
+        });
+
+        setStage('QUESTIONS');
+    };
 
     return (
         <Stack alignItems='center' justifyContent='center' height='100%'>
@@ -493,7 +622,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     variant='outlined'
                     size='large'
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => setStage('CERTIFICATION')}
+                    onClick={handleBack}
                 >
                     Back
                 </MuiButton>
@@ -502,7 +631,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     color='secondary'
                     endIcon={<ArrowRightIcon />}
                     size='large'
-                    onClick={() => setStage('QUESTIONS')}
+                    onClick={handleNext}
                     disabled={!hasJobDescription}
                 >
                     Next
