@@ -90,8 +90,18 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const tooltipSnippet =
         'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
     const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
+
+    const {
+        data: wizardData,
+        updateField,
+        backgroundFiles,
+        backgroundVoices,
+        setBackgroundFiles,
+        setBackgroundVoices,
+    } = useWizardStore();
+
     const [skills, setSkills] = useState<TSkill[]>([]);
-    const [backgroundText, setBackgroundText] = useState<string>('');
+    const [backgroundText, setBackgroundText] = useState<string>(wizardData.background?.text ?? '');
     const [customSkillInput, setCustomSkillInput] = useState<string>('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
     const backgroundRef = useRef<HTMLTextAreaElement>(null);
@@ -101,19 +111,29 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
     const [_voiceUrl, setVoiceUrl] = useState<string | null>(null);
     const [_voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-    const [voiceRecordings, setVoiceRecordings] = useState<{ id: string; url: string; blob: Blob; duration: number }[]>(
-        [],
-    );
     const [recorderKey, setRecorderKey] = useState<number>(0);
-    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const isVoiceLimitReached = voiceRecordings.length >= MAX_VOICE_RECORDINGS;
+    const isVoiceLimitReached = backgroundVoices.length >= MAX_VOICE_RECORDINGS;
 
-    const { data: wizardData } = useWizardStore();
+    const onUpdateSkill = (id: string, selected: boolean) => {
+        setSkills((prevSkills) => {
+            const updatedSkills = prevSkills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill));
 
-    const onUpdateSkill = (id: string, selected: boolean) =>
-        setSkills(skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill)));
+            const selectedLabels = updatedSkills.filter((skill) => skill.selected).map((skill) => skill.label);
+
+            const customSkills = customSkillInput
+                .split(',')
+                .map((item) => item.trim())
+                .filter((item) => item.length > 0);
+
+            const allSkills = Array.from(new Set([...selectedLabels, ...customSkills]));
+
+            updateField('skills', allSkills as unknown as string[]);
+
+            return updatedSkills;
+        });
+    };
 
     useEffect(() => {
         const fetchCategorySkills = async () => {
@@ -125,10 +145,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
                 const { data } = await apiClientClient.get(endpoint);
 
-                // Backend ممکن است یکی از این شکل‌ها را برگرداند:
-                // 1) { data: [...] }
-                // 2) [...]
-                // 3) { "34": "SQL Server", "35": "MySQL", ... }  <-- مورد تو
                 const payload = (data && data.data !== undefined ? data.data : data) as unknown;
 
                 let items: unknown[] = [];
@@ -146,6 +162,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     return;
                 }
 
+                const selectedFromStore = wizardData.skills ?? [];
+
                 const mappedSkills: TSkill[] = items.map((item) => {
                     let label: string;
                     if (typeof item === 'string') {
@@ -161,18 +179,24 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     return {
                         id: generateFakeUUIDv4(),
                         label,
-                        selected: false,
+                        selected: selectedFromStore.includes(label),
                     };
                 });
 
                 setSkills(mappedSkills);
+
+                const knownLabels = new Set(mappedSkills.map((skill) => skill.label));
+                const customSkillsOnly = selectedFromStore.filter((skill) => !knownLabels.has(skill));
+                if (customSkillsOnly.length > 0) {
+                    setCustomSkillInput(customSkillsOnly.join(', '));
+                }
             } catch (error) {
                 console.error('Failed to fetch skills by category-name', error);
             }
         };
 
         void fetchCategorySkills();
-    }, [wizardData.mainSkill]);
+    }, [wizardData.mainSkill, wizardData.skills]);
 
     const handleFocusBackground = () => {
         backgroundRef.current?.focus();
@@ -223,7 +247,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             return;
         }
 
-        if (voiceRecordings.length >= MAX_VOICE_RECORDINGS) {
+        if (backgroundVoices.length >= MAX_VOICE_RECORDINGS) {
             showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
             setShowRecordingControls(false);
             setVoiceUrl(null);
@@ -233,7 +257,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
         const persistedUrl = URL.createObjectURL(audioBlob);
 
-        setVoiceRecordings((prev) => [
+        setBackgroundVoices((prev) => [
             ...prev,
             {
                 id: generateFakeUUIDv4(),
@@ -255,7 +279,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const handleRemoveSavedRecording = (id: string) => {
-        setVoiceRecordings((prev) => {
+        setBackgroundVoices((prev) => {
             const removed = prev.find((item) => item.id === id);
             if (removed) {
                 URL.revokeObjectURL(removed.url);
@@ -265,13 +289,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const hasBackgroundText = backgroundText.trim() !== '';
-    const hasBackgroundAttachment = uploadedFiles.length > 0 || voiceRecordings.length > 0;
+    const hasBackgroundAttachment = backgroundFiles.length > 0 || backgroundVoices.length > 0;
     const hasSelectedSkills = skills.some((skill) => skill.selected);
     const hasCustomSkillInput = customSkillInput.trim() !== '';
     const canProceedBackground = hasBackgroundText || hasBackgroundAttachment;
     const filePreviews = useMemo(
-        () => uploadedFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
-        [uploadedFiles],
+        () => backgroundFiles.map((file) => (file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined)),
+        [backgroundFiles],
     );
 
     useEffect(() => {
@@ -306,7 +330,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
         for (const file of fileList) {
             const category = getFileCategory(file);
-            const currentFiles = [...uploadedFiles, ...acceptedFiles];
+            const currentFiles = [...backgroundFiles, ...acceptedFiles];
 
             if (isDuplicateFile(file, currentFiles)) {
                 showToast('This file has already been uploaded.');
@@ -316,7 +340,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             if (category !== 'other') {
                 const limit = FILE_CATEGORY_LIMITS[category];
                 const currentCount =
-                    uploadedFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
+                    backgroundFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
                     acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
 
                 if (currentCount >= limit) {
@@ -337,7 +361,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         }
 
         if (acceptedFiles.length > 0) {
-            setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
+            setBackgroundFiles((prev) => [...prev, ...acceptedFiles]);
         }
 
         if (fileInputRef.current) {
@@ -350,7 +374,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     const handleRemoveUploadedFile = (index: number) => {
-        setUploadedFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+        setBackgroundFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
     };
 
     const handleOpenEditDialog = () => {
@@ -398,6 +422,41 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         if (selectedOption.value) {
             (useWizardStore.getState().updateField as any)('mainSkill', String(selectedOption.value));
         }
+    };
+
+    const persistSelectSkillState = useCallback(() => {
+        const trimmedBackground = backgroundText.trim();
+
+        const selectedLabels = skills.filter((skill) => skill.selected).map((skill) => skill.label);
+
+        const customSkills = customSkillInput
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
+
+        const allSkills = Array.from(new Set([...selectedLabels, ...customSkills]));
+
+        updateField('background', {
+            ...wizardData.background,
+            text: trimmedBackground,
+            voices: backgroundVoices.map((voice) => voice.id),
+            files: backgroundFiles.map((file) => file.name),
+        });
+
+        updateField('skills', allSkills as unknown as string[]);
+    }, [
+        backgroundText,
+        customSkillInput,
+        skills,
+        updateField,
+        wizardData.background,
+        backgroundVoices,
+        backgroundFiles,
+    ]);
+
+    const handleNext = () => {
+        persistSelectSkillState();
+        setStage('EXPERIENCE');
     };
 
     return (
@@ -518,10 +577,10 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
                 </Stack>
             )}
-            {voiceRecordings.length > 0 && (
+            {backgroundVoices.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
                     <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
-                        {voiceRecordings.map((item) => (
+                        {backgroundVoices.map((item) => (
                             <VoiceItem key={item.id}>
                                 <VoiceRecord
                                     recordingState='idle'
@@ -541,10 +600,10 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 </ContainerSkillAttachVoice>
             )}
 
-            {uploadedFiles.length > 0 && (
+            {backgroundFiles.length > 0 && (
                 <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
                     <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
-                        {uploadedFiles.map((file, index) => {
+                        {backgroundFiles.map((file, index) => {
                             const fileCategory = getFileCategory(file);
                             const fileTypeLabelText = getFileTypeDisplayName(file);
                             const previewSrc = file.type.startsWith('image/') ? filePreviews[index] : undefined;
@@ -641,7 +700,10 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     variant='outlined'
                     size='large'
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => setStage('SKILL_INPUT')}
+                    onClick={() => {
+                        persistSelectSkillState();
+                        setStage('SKILL_INPUT');
+                    }}
                 >
                     Back
                 </MuiButton>
@@ -650,7 +712,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     color='secondary'
                     endIcon={<ArrowRightIcon />}
                     size='large'
-                    onClick={() => setStage('EXPERIENCE')}
+                    onClick={handleNext}
                     disabled={!canProceedBackground || (!hasSelectedSkills && !hasCustomSkillInput)}
                 >
                     Next
