@@ -95,7 +95,12 @@ const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = (
                         value={data.fullName}
                         onChange={(value) => updateField('fullName', String(value ?? ''))}
                     />
-
+                    <MuiInput
+                        label='Your date of birth'
+                        placeholder='DD/MM/YYYY'
+                        value={data.dateOfBirth}
+                        onChange={(value) => updateField('dateOfBirth', value.replace(/[^\d/]/g, '').slice(0, 10))}
+                    />
                     <MuiSelectOptions
                         label='Your main skill'
                         placeholder={loadingSkills ? 'Loading...' : 'Select one of your skills'}
@@ -111,13 +116,6 @@ const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = (
                                 '& .MuiOutlinedInput-notchedOutline': { borderRadius: '8px' },
                             },
                         }}
-                    />
-
-                    <MuiInput
-                        label='Your date of birth'
-                        placeholder='DD/MM/YYYY'
-                        value={data.dateOfBirth}
-                        onChange={(value) => updateField('dateOfBirth', value.replace(/[^\d/]/g, '').slice(0, 10))}
                     />
                 </StackContent>
 
