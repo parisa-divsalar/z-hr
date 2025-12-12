@@ -127,10 +127,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 
     return (
         <>
-            <Stack direction='row' alignItems='center' gap={1} mt={2}>
-                {/* ATS Friendly chip is rendered from parent via AtsFriendlyChip */}
-                {/* This wrapper keeps layout consistent if chip render logic changes */}
-            </Stack>
+            <Stack direction='row' alignItems='center' gap={1} mt={2}></Stack>
             <ContainerSkill direction='row' active={hasBackgroundText}>
                 <InputContent
                     placeholder='Type your answer...'
@@ -147,7 +144,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                         <AttachIcon />
                     </ActionIconButton>
                     <Stack direction='column' alignItems='center' gap={1}>
-                        {/* دکمه رکورد فقط وقتی نشون داده میشه که در حال رکورد نباشیم */}
                         {!showRecordingControls && (
                             <ActionIconButton aria-label='Record draft action' onClick={onShowVoiceRecorder}>
                                 <RecordIcon />

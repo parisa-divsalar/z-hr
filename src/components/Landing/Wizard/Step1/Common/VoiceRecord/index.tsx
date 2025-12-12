@@ -83,7 +83,6 @@ export interface VoiceRecordingProps {
     recordingState: RecordingState;
     setRecordingState: (recordingState: RecordingState) => void;
     stackDirection?: 'row' | 'column';
-    /** اگر false باشد، کامپوننت تمام عرض را نمی‌گیرد و برای استفاده در لیست‌های افقی مناسب است */
     fullWidth?: boolean;
 }
 
@@ -211,25 +210,29 @@ const VoiceRecord = ({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
-                    sampleRate: 44100,
+                    autoGainControl: true,
+                    channelCount: 1,
+                    sampleRate: 48000,
                 },
             });
 
             streamRef.current = stream;
             chunksRef.current = [];
 
-            // Try to pick a mime type that browser can BOTH record and play,
-            // to avoid NotSupportedError: "Failed to load because no supported source was found."
             const audioElement = document.createElement('audio');
             const mimeCandidates = [
                 'audio/webm;codecs=opus',
+                'audio/webm; codecs=opus',
+                'audio/webm; codecs="opus"',
                 'audio/ogg;codecs=opus',
+                'audio/ogg; codecs=opus',
+                'audio/ogg; codecs="opus"',
+                // Safari family typically prefers mp4/aac
+                'audio/mp4',
+                'audio/x-m4a',
+                // Fallbacks (rarely recordable via MediaRecorder, but keep as last resort)
                 'audio/webm',
                 'audio/ogg',
-                'audio/mp4',
-                'audio/mpeg',
-                'audio/x-m4a',
-                'audio/wav',
             ];
 
             let selectedMimeType: string | undefined;
@@ -242,7 +245,6 @@ const VoiceRecord = ({
                         break;
                     }
                 } catch {
-                    // In very old implementations, isTypeSupported might throw – ignore and continue
                     void 0;
                 }
             }
@@ -253,7 +255,10 @@ const VoiceRecord = ({
 
             const finalMimeType = selectedMimeType;
 
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: finalMimeType });
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: finalMimeType,
+                audioBitsPerSecond: 128000,
+            });
 
             mediaRecorderRef.current = mediaRecorder;
 
@@ -288,7 +293,7 @@ const VoiceRecord = ({
                 onRecordingStop?.();
             };
 
-            mediaRecorder.start(100); // timeslice
+            mediaRecorder.start();
             hasStartedRecordingRef.current = true;
             recordingTimeRef.current = 0;
             setRecordingState('recording');
@@ -400,8 +405,6 @@ const VoiceRecord = ({
                 };
 
                 audio.onerror = () => {
-                    // Use warn instead of error to avoid React dev overlay,
-                    // and gracefully reset playback state if the audio fails.
                     console.warn('Audio element error:', audioRef.current?.error || 'Unknown audio error');
                     clearPlaybackTimer();
                     setPlaybackState('idle');
@@ -413,7 +416,6 @@ const VoiceRecord = ({
             await audioRef.current.play();
             startPlaybackTimer();
 
-            // Ensure duration and waveform info are set even if metadata events were late
             if (audioRef.current && isFinite(audioRef.current.duration) && audioRef.current.duration > 0) {
                 setAudioDuration(audioRef.current.duration);
                 const bars = Math.max(20, Math.floor(audioRef.current.duration * 20));
