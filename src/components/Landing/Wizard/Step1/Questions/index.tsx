@@ -245,7 +245,6 @@ const SafeImagePreview: FunctionComponent<{ file: File; url?: string | null }> =
         if (triedConversionRef.current) return;
         triedConversionRef.current = true;
 
-        // refresh (handles revoked URLs)
         const refreshed = tryCreateObjectUrl(file);
         if (refreshed) {
             createdLocallyRef.current = refreshed;
@@ -415,13 +414,47 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
     const { data: wizardData } = useWizardStore();
 
     const mediaCounts = useMemo(() => {
-        const allFiles = Array.isArray((wizardData as any)?.allFiles) ? ((wizardData as any).allFiles as any[]) : [];
-        const voiceCount = allFiles.filter((x) => x?.kind === 'voice').length;
-        const fileItems = allFiles.filter((x) => x?.kind === 'file' && x?.payload);
-        const photoCount = fileItems.filter((x) => isImageFile(x.payload as File)).length;
-        const videoCount = fileItems.filter((x) => isVideoFile(x.payload as File)).length;
+        const safeArray = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v.filter(Boolean) as T[]) : []);
+
+        const resolveFile = (value: unknown): File | null => {
+            if (value instanceof File) return value;
+            const maybePayload = (value as any)?.payload;
+            if (maybePayload instanceof File) return maybePayload;
+            return null;
+        };
+
+        let voiceCount = 0;
+        let photoCount = 0;
+        let videoCount = 0;
+
+        const countSection = (section: any) => {
+            const files = safeArray<unknown>(section?.files);
+            const voices = safeArray<unknown>(section?.voices);
+
+            voiceCount += voices.length;
+
+            files.forEach((f) => {
+                const file = resolveFile(f);
+                if (!file) return;
+                if (isImageFile(file)) photoCount += 1;
+                else if (isVideoFile(file)) videoCount += 1;
+            });
+        };
+
+        countSection((wizardData as any)?.background);
+        safeArray<any>((wizardData as any)?.experiences).forEach((entry) => countSection(entry));
+        safeArray<any>((wizardData as any)?.certificates).forEach((entry) => countSection(entry));
+        countSection((wizardData as any)?.jobDescription);
+        countSection((wizardData as any)?.additionalInfo);
+
         return { voiceCount, photoCount, videoCount };
-    }, [wizardData]);
+    }, [
+        wizardData.additionalInfo,
+        wizardData.background,
+        wizardData.certificates,
+        wizardData.experiences,
+        wizardData.jobDescription,
+    ]);
 
     const mediaItems = useMemo(
         () => [
@@ -565,10 +598,10 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
                                 </MediaIconBox>
 
                                 <Stack direction='row' spacing={1.25} alignItems='center'>
-                                    <Typography variant='body2' fontWeight={600} color='text.primary'>
+                                    <Typography variant='subtitle1' fontWeight={492} color='text.primary'>
                                         {label}
                                     </Typography>
-                                    <Typography variant='caption' fontWeight={600} color='success.light'>
+                                    <Typography variant='subtitle1' fontWeight={492} color='success.light'>
                                         Done
                                     </Typography>
                                 </Stack>

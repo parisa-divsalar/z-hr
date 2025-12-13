@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useMemo } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
@@ -8,6 +8,7 @@ import MicIcon from '@/assets/images/icons/download1.svg';
 import ImageIcon from '@/assets/images/icons/download2.svg';
 import VideoIcon from '@/assets/images/icons/download3.svg';
 import { AIStatus } from '@/components/Landing/type';
+import { getFileCategory } from '@/components/Landing/Wizard/Step1/attachmentRules';
 import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
 
@@ -20,7 +21,44 @@ interface VoiceResultProps {
 
 const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
   const { setAiStatus, onSubmit } = props;
-  const { resetWizard } = useWizardStore();
+  const { data: wizardData, resetWizard } = useWizardStore();
+
+  const mediaCounts = useMemo(() => {
+    const safeArray = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v.filter(Boolean) as T[]) : []);
+
+    let voiceCount = 0;
+    let photoCount = 0;
+    let videoCount = 0;
+
+    const countSection = (section: any) => {
+      const voices = safeArray<unknown>(section?.voices);
+      const files = safeArray<unknown>(section?.files);
+
+      voiceCount += voices.length;
+
+      files.forEach((f) => {
+        const file = f instanceof File ? f : null;
+        if (!file) return;
+        const category = getFileCategory(file);
+        if (category === 'image') photoCount += 1;
+        if (category === 'video') videoCount += 1;
+      });
+    };
+
+    countSection((wizardData as any)?.background);
+    safeArray<any>((wizardData as any)?.experiences).forEach((entry) => countSection(entry));
+    safeArray<any>((wizardData as any)?.certificates).forEach((entry) => countSection(entry));
+    countSection((wizardData as any)?.jobDescription);
+    countSection((wizardData as any)?.additionalInfo);
+
+    return { voiceCount, photoCount, videoCount };
+  }, [
+    wizardData.additionalInfo,
+    wizardData.background,
+    wizardData.certificates,
+    wizardData.experiences,
+    wizardData.jobDescription,
+  ]);
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
@@ -39,7 +77,7 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
                 <MicIcon />
               </IconWrapper>
             </Tile>
-            <Label>Voice (1)</Label>
+            <Label>{`Voice (${mediaCounts.voiceCount})`}</Label>
           </Stack>
           <Status>Done</Status>
         </Row>
@@ -51,7 +89,7 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
                 <ImageIcon />
               </IconWrapper>
             </Tile>
-            <Label>Photo (2)</Label>
+            <Label>{`Photo (${mediaCounts.photoCount})`}</Label>
           </Stack>
           <Status>Done</Status>
         </Row>
@@ -63,7 +101,7 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
                 <VideoIcon />
               </IconWrapper>
             </Tile>
-            <Label>Video (1)</Label>
+            <Label>{`Video (${mediaCounts.videoCount})`}</Label>
           </Stack>
           <Status>Done</Status>
         </Row>
