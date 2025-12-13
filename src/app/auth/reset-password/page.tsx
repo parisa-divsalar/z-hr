@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-import { FirstChild, MainContainer, MainContent } from '@/app/(public)/login/styled';
+import { FirstChild, MainContainer, MainContent } from '@/app/auth/login/styled';
 import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
 import MuiButton from '@/components/UI/MuiButton';
