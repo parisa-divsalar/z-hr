@@ -58,16 +58,11 @@ interface ChatInputContainerProps {
 export const ChatInputContainer = styled(BaseInputContainer, {
   shouldForwardProp: (prop) => prop !== 'hasValue',
 })<ChatInputContainerProps>(({ theme, hasValue }) => ({
-  height: '52px',
-  alignItems: 'center',
+  height: 'auto',
+  minHeight: '52px',
+  alignItems: 'stretch',
   marginTop: theme.spacing(8),
   borderColor: hasValue ? theme.palette.primary.main : theme.palette.grey[100],
 }));
 
-export const ChatInputContent = styled(BaseInputContent)(() => ({
-  height: '52px',
-  lineHeight: '52px',
-  paddingTop: 0,
-  paddingBottom: 0,
-  backgroundColor: 'transparent',
-}));
+export const ChatInputContent = styled(BaseInputContent)(() => ({}));

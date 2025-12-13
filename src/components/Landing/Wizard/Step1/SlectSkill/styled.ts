@@ -1,5 +1,8 @@
-import { IconButton, Stack } from '@mui/material';
+import { Divider, IconButton, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { FilesStack as BaseFilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { RemoveFileButton as BaseRemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
+import MuiButton from '@/components/UI/MuiButton';
 
 export const SkillContainer = styled(Stack)(() => ({
     display: 'flex',
@@ -17,13 +20,14 @@ export const ContainerSkill = styled(Stack, {
     width: '350px',
     borderRadius: '1rem',
     border: `1px solid ${active ? theme.palette.primary.main : theme.palette.grey[100]}`,
-    padding: '1rem',
+    padding: '0 16px',
     maxWidth: '588px',
     height: 'auto',
+    minHeight: '52px',
     marginTop: '1rem',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
     gap: '0.25rem',
 }));
 export const ContainerSkillAttach = styled(Stack, {
@@ -95,6 +99,103 @@ export const ActionIconButton = styled(IconButton)(() => ({
         backgroundColor: 'transparent',
     },
 }));
+
+export const SummaryTextContainer = styled(Stack)(() => ({
+    width: '498px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+}));
+
+export const ActionButtonsGroup = styled(Stack)(() => ({
+    flexShrink: 0,
+}));
+
+interface RecordActionIconButtonProps {
+    dimmed?: boolean;
+}
+
+export const RecordActionIconButton = styled(ActionIconButton, {
+    shouldForwardProp: (prop) => prop !== 'dimmed',
+})<RecordActionIconButtonProps>(({ dimmed }) => ({
+    opacity: dimmed ? 0.4 : 1,
+    cursor: dimmed ? 'not-allowed' : 'pointer',
+}));
+
+export const ToastContainer = styled(Stack)(({ theme }) => ({
+    width: '100%',
+    maxWidth: '350px',
+    marginTop: theme.spacing(2),
+}));
+
+export const WrapRow = styled(Stack)(() => ({
+    flexWrap: 'wrap',
+}));
+
+export const ContainerSkillAttachTop = styled(ContainerSkillAttach)(({ theme }) => ({
+    marginTop: theme.spacing(2),
+    alignItems: 'flex-start',
+}));
+
+export const FullWidthFilesStack = styled(BaseFilesStack)(() => ({
+    width: '100%',
+}));
+
+export const TransparentRemoveFileButton = styled(BaseRemoveFileButton)(() => ({
+    width: 24,
+    height: 24,
+    padding: 0,
+    backgroundColor: 'transparent',
+    '&:hover': {
+        backgroundColor: 'transparent',
+    },
+}));
+
+export const EntriesDivider = styled(Divider)(({ theme }) => ({
+    width: '550px',
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    borderColor: theme.palette.grey[100],
+}));
+
+export const EntriesListContainer = styled(Stack)(() => ({
+    maxWidth: '550px',
+    width: '550px',
+}));
+
+export const EntryItemContainer = styled(ContainerSkillAttachItem)(() => ({
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+}));
+
+export const EntryBodyRow = styled(Stack)(() => ({
+    flex: 1,
+    alignItems: 'flex-start',
+}));
+
+export const EntryBodyStack = styled(Stack)(() => ({
+    flex: 1,
+}));
+
+export const EntryText = styled(Typography)(() => ({
+    maxWidth: 392,
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+}));
+
+export const EntryFilesStack = styled(BaseFilesStack)(() => ({
+    width: '100%',
+    border: 'none',
+}));
+
+export const EntryActionsGroup = styled(Stack)(() => ({
+    flexShrink: 0,
+}));
+
+export const AddEntryButton = styled(MuiButton)(() => ({
+    flexShrink: 0,
+}));
+
 export const BackgroundEntryIndex = styled(Stack)(({ theme }) => ({
     backgroundColor: theme.palette.primary.light,
     width: '38px',

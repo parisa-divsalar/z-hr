@@ -22,6 +22,7 @@ import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
+import { ToastContainer } from './styled';
 
 interface CertificationProps {
     setStage: (stage: StageWizard) => void;
@@ -430,9 +431,9 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             </Typography>
 
             {toastInfo && (
-                <Stack sx={{ width: '100%', maxWidth: '350px', mt: 2 }}>
+                <ToastContainer>
                     <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
-                </Stack>
+                </ToastContainer>
             )}
 
             <BrieflySection

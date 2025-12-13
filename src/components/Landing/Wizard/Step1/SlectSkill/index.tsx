@@ -17,10 +17,8 @@ import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import {
     FilePreviewContainer,
-    FilesStack,
     FileTypeLabel,
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
-import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import {
     FILE_CATEGORY_LIMITS,
     FILE_CATEGORY_TOAST_LABELS,
@@ -46,11 +44,18 @@ import EditSkillDialog from './EditSkillDialog';
 import {
     ActionIconButton,
     ActionRow,
+    ActionButtonsGroup,
     ContainerSkill,
-    ContainerSkillAttach,
+    ContainerSkillAttachTop,
     ContainerSkillAttachVoice,
+    FullWidthFilesStack,
+    RecordActionIconButton,
     SkillContainer,
+    SummaryTextContainer,
+    ToastContainer,
+    TransparentRemoveFileButton,
     VoiceItem,
+    WrapRow,
 } from './styled';
 import { TSkill } from './type';
 
@@ -643,7 +648,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
                 <AtsFriendlyChip color='warning' label='ATS Friendly' />
             </Stack>
-            <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
+            <SummaryTextContainer>
                 <Typography
                     fontWeight='400'
                     variant='body1'
@@ -656,39 +661,36 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     Your summary shows employers you’re right for their job. We’ll help you write a great one with
                     expert content you can customize.
                 </Typography>
-            </Stack>
+            </SummaryTextContainer>
             <ContainerSkill direction='row' active={!!backgroundText}>
                 <InputContent
                     placeholder='Type your answer...'
                     value={backgroundText}
-                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
                         updateField('background', {
                             ...backgroundSection,
                             text: event.target.value,
-                        })
-                    }
+                        });
+                    }}
                     ref={backgroundRef}
                 />
             </ContainerSkill>
 
             <ActionRow>
-                <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
+                <ActionButtonsGroup direction='row' gap={0.5}>
                     <ActionIconButton aria-label='Attach file' onClick={handleOpenFileDialog}>
                         <AttachIcon />
                     </ActionIconButton>
                     <Stack direction='column' alignItems='center' gap={1}>
                         {!showRecordingControls && (
-                            <ActionIconButton
+                            <RecordActionIconButton
                                 aria-label='Record draft action'
                                 onClick={handleShowVoiceRecorder}
                                 disabled={isVoiceLimitReached}
-                                sx={{
-                                    opacity: isVoiceLimitReached ? 0.4 : 1,
-                                    cursor: isVoiceLimitReached ? 'not-allowed' : 'pointer',
-                                }}
+                                dimmed={isVoiceLimitReached}
                             >
                                 <RecordIcon />
-                            </ActionIconButton>
+                            </RecordActionIconButton>
                         )}
 
                         {showRecordingControls && (
@@ -704,16 +706,16 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                             />
                         )}
                     </Stack>
-                </Stack>
+                </ActionButtonsGroup>
             </ActionRow>
             {toastInfo && (
-                <Stack sx={{ width: '100%', maxWidth: '350px', mt: 2 }}>
+                <ToastContainer>
                     <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
-                </Stack>
+                </ToastContainer>
             )}
             {backgroundVoices.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
-                    <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }}>
+                    <WrapRow direction='row' gap={1}>
                         {backgroundVoices.map((item) => (
                             <VoiceItem key={item.id}>
                                 <VoiceRecord
@@ -730,13 +732,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                 />
                             </VoiceItem>
                         ))}
-                    </Stack>
+                    </WrapRow>
                 </ContainerSkillAttachVoice>
             )}
 
             {backgroundFiles.length > 0 && (
-                <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
-                    <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
+                <ContainerSkillAttachTop direction='column' active>
+                    <FullWidthFilesStack direction='row' spacing={1}>
                         {backgroundFiles.map((file, index) => {
                             const fileCategory = getFileCategory(file);
                             const fileTypeLabelText = getFileTypeDisplayName(file);
@@ -758,25 +760,16 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                         </Typography>
                                     </FileTypeLabel>
 
-                                    <RemoveFileButton
+                                    <TransparentRemoveFileButton
                                         onClick={() => handleRemoveUploadedFile(index)}
-                                        sx={{
-                                            width: 24,
-                                            height: 24,
-                                            padding: 0,
-                                            backgroundColor: 'transparent',
-                                            '&:hover': {
-                                                backgroundColor: 'transparent',
-                                            },
-                                        }}
                                     >
                                         <CleanIcon width={24} height={24} />
-                                    </RemoveFileButton>
+                                    </TransparentRemoveFileButton>
                                 </FilePreviewContainer>
                             );
                         })}
-                    </FilesStack>
-                </ContainerSkillAttach>
+                    </FullWidthFilesStack>
+                </ContainerSkillAttachTop>
             )}
 
             <input
@@ -814,9 +807,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 <InputContent
                     placeholder='Your another skills: Designer, Motion...'
                     value={customSkillInput}
-                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
-                        setCustomSkillInput(event.target.value)
-                    }
+                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+                        setCustomSkillInput(event.target.value);
+                    }}
                     ref={customSkillRef}
                 />
             </ContainerSkill>

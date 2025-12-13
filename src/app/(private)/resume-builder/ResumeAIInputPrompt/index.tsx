@@ -25,11 +25,6 @@ const ResumeAIInputPrompt: FunctionComponent<ResumeAIInputPromptProps> = ({
   uploadedFiles,
   setUploadedFiles,
 }) => {
-  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    e.target.style.height = 'auto';
-    e.target.style.height = e.target.scrollHeight + 'px';
-  };
-
   return (
     <InputContainer direction='row' active={!!search}>
       <AddAttachFile uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles} />
@@ -37,7 +32,6 @@ const ResumeAIInputPrompt: FunctionComponent<ResumeAIInputPromptProps> = ({
       <InputContent
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        onInput={handleInput}
         placeholder='Type your prompt...'
       />
 

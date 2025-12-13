@@ -21,7 +21,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
-import { AtsFriendlyChip } from './styled';
+import { AtsFriendlyChip, SummaryTextContainer, ToastContainer } from './styled';
 import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
 
 type ToastSeverity = AlertWrapperProps['severity'];
@@ -526,7 +526,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
                 <AtsFriendlyChip color='warning' label='ATS Friendly' />
             </Stack>
-            <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
+            <SummaryTextContainer>
                 <Typography
                     fontWeight='400'
                     variant='subtitle2'
@@ -539,12 +539,12 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     If you have a job position you want to apply for and you're creating a resume for it, please provide
                     us with that job position.
                 </Typography>
-            </Stack>
+            </SummaryTextContainer>
 
             {toastInfo && (
-                <Stack sx={{ width: '100%', maxWidth: '350px', mt: 2 }}>
+                <ToastContainer>
                     <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
-                </Stack>
+                </ToastContainer>
             )}
 
             <BrieflySection
@@ -583,7 +583,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
                 <AtsFriendlyChip color='warning' label='ATS Friendly' />
             </Stack>
-            <Stack sx={{ width: '498px' }} justifyContent='center' alignItems='center'>
+            <SummaryTextContainer>
                 <Typography
                     fontWeight='400'
                     variant='subtitle2'
@@ -596,7 +596,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     You can upload your resume in PDF format or any other format, including a photo, detailing your work
                     experience or activities.
                 </Typography>
-            </Stack>
+            </SummaryTextContainer>
             <BrieflySection
                 backgroundText={sectionTwo.backgroundText}
                 onBackgroundTextChange={sectionTwo.setBackgroundText}

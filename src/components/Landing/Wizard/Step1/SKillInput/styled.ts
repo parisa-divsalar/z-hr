@@ -1,3 +1,4 @@
+import React, { forwardRef, useEffect, useMemo, useRef } from 'react';
 import { IconButton, Stack, Typography } from '@mui/material';
 import { styled, type Theme } from '@mui/material/styles';
 
@@ -39,21 +40,34 @@ export const InputContainer = styled(Stack, {
   flex: grow ? 1 : undefined,
 }));
 
-export const InputContent = styled('input')(({ theme }) => ({
+export const AutoGrowInputContainer = styled(InputContainer)(() => ({
+  minHeight: '52px',
+  padding: '0 16px',
+  justifyContent: 'flex-start',
+  alignItems: 'stretch',
+}));
+
+const InputContentRoot = styled('textarea')(({ theme }) => ({
   width: '100%',
-  height: '100%',
+  minHeight: '52px',
+  height: '52px',
   textAlign: 'left',
   fontFamily: theme.typography.fontFamily,
   border: 'none',
   fontSize: '1rem',
+  lineHeight: '1.25',
   outline: 'none',
   fontWeight: '492',
   backgroundColor: 'transparent',
-  padding: 0,
+  // Vertically center single-line text inside the initial 52px height
+  padding: 'calc((52px - 1.25em) / 2) 0',
   margin: 0,
   boxSizing: 'border-box',
   minWidth: 0,
   color: theme.palette.text.primary,
+  resize: 'none',
+  overflow: 'hidden',
+  display: 'block',
 
   '&::placeholder': {
     color: theme.palette.grey[400],
@@ -63,6 +77,52 @@ export const InputContent = styled('input')(({ theme }) => ({
     outline: 'none',
   },
 }));
+
+type InputContentProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+
+const resizeTextarea = (el: HTMLTextAreaElement | null) => {
+  if (!el) return;
+  const minHeight = 52;
+  el.style.height = '0px';
+  el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
+};
+
+export const InputContent = forwardRef<HTMLTextAreaElement, InputContentProps>(function InputContent(
+  { onChange, onInput, rows, value, ...rest },
+  forwardedRef,
+) {
+  const innerRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const setRef = useMemo(() => {
+    return (el: HTMLTextAreaElement | null) => {
+      innerRef.current = el;
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(el);
+      } else if (forwardedRef) {
+        forwardedRef.current = el;
+      }
+    };
+  }, [forwardedRef]);
+
+  useEffect(() => {
+    resizeTextarea(innerRef.current);
+  }, [value]);
+
+  return React.createElement(InputContentRoot, {
+    ...rest,
+    value,
+    rows: rows ?? 1,
+    ref: setRef,
+    onInput: (e: React.FormEvent<HTMLTextAreaElement>) => {
+      onInput?.(e);
+      resizeTextarea(e.currentTarget);
+    },
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange?.(e);
+      resizeTextarea(e.currentTarget);
+    },
+  });
+});
 
 const getListContainerStyles = (theme: Theme) => ({
   width: '100%',

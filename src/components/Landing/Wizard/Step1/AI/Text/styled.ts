@@ -1,5 +1,6 @@
 import { Box, IconButton, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { InputContent as BaseInputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 
 export const InputContainer = styled(Stack, {
   shouldForwardProp: (prop) => prop !== 'active',
@@ -29,27 +30,7 @@ export const CircleContainer = styled(Stack)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
 }));
 
-export const InputContent = styled('textarea')(({ theme }) => ({
-  width: '100%',
-  textAlign: 'left',
-  fontFamily: theme.typography.fontFamily,
-  border: 'none',
-  color: theme.palette.text.primary,
-  fontSize: '1rem',
-  outline: 'none',
-  paddingTop: '0.5rem',
-  resize: 'none',
-  overflow: 'hidden', // مهم
-  height: 'auto',
-  letterSpacing: '0',
-  lineHeight: '1.25rem',
-
-  minHeight: '0.5rem',
-
-  '&::placeholder': {
-    color: theme.palette.grey[400],
-  },
-}));
+export const InputContent = styled(BaseInputContent)(() => ({}));
 
 export const UploadedFilesContainer = styled(Box)(({ theme }) => ({
   display: 'flex',

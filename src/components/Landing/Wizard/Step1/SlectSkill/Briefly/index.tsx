@@ -1,7 +1,6 @@
 import React, { FunctionComponent, RefObject, useEffect, useRef, useState } from 'react';
 
-import { Divider, Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Stack, Typography } from '@mui/material';
 
 import AddIcon from '@/assets/images/icons/add.svg';
 import AttachIcon from '@/assets/images/icons/attach.svg';
@@ -12,10 +11,8 @@ import RecordIcon from '@/assets/images/icons/recordV.svg';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import {
     FilePreviewContainer,
-    FilesStack,
     FileTypeLabel,
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
-import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import MuiButton from '@/components/UI/MuiButton';
@@ -23,14 +20,27 @@ import MuiButton from '@/components/UI/MuiButton';
 import { getFileCategory } from '../../attachmentRules';
 import { InputContent } from '../../SKillInput/styled';
 import {
+    ActionButtonsGroup,
     ActionIconButton,
     ActionRow,
+    AddEntryButton,
     BackgroundEntryIndex,
     ContainerSkill,
-    ContainerSkillAttach,
     ContainerSkillAttachItem,
+    ContainerSkillAttachTop,
     ContainerSkillAttachVoice,
+    EntriesDivider,
+    EntriesListContainer,
+    EntryActionsGroup,
+    EntryBodyRow,
+    EntryBodyStack,
+    EntryFilesStack,
+    EntryItemContainer,
+    EntryText,
+    FullWidthFilesStack,
+    TransparentRemoveFileButton,
     VoiceItem,
+    WrapRow,
 } from '../styled';
 
 export interface BackgroundEntry {
@@ -257,8 +267,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
         fileInputRef,
     } = props;
 
-    const theme = useTheme();
-
     const hasBackgroundText = backgroundText.trim() !== '';
     const entriesListRef = useRef<HTMLDivElement | null>(null);
     const previousEntriesLengthRef = useRef<number>(backgroundEntries.length);
@@ -288,7 +296,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                 />
             </ContainerSkill>
             <ActionRow>
-                <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
+                <ActionButtonsGroup direction='row' gap={0.5}>
                     <ActionIconButton aria-label='Attach file' onClick={onOpenFileDialog}>
                         <AttachIcon />
                     </ActionIconButton>
@@ -311,33 +319,32 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                             />
                         )}
                     </Stack>
-                </Stack>
+                </ActionButtonsGroup>
 
                 {!isEditingEntry ? (
-                    <MuiButton
+                    <AddEntryButton
                         color='secondary'
                         size='medium'
                         variant='outlined'
                         startIcon={<AddIcon />}
                         onClick={onAddBackgroundEntry}
-                        sx={{ flexShrink: 0 }}
                     >
                         Add
-                    </MuiButton>
+                    </AddEntryButton>
                 ) : (
-                    <Stack direction='row' gap={1} sx={{ flexShrink: 0 }}>
+                    <ActionButtonsGroup direction='row' gap={1}>
                         <MuiButton color='error' size='medium' variant='text' onClick={onCancelEditBackgroundEntry}>
                             Cancel
                         </MuiButton>
                         <MuiButton color='primary' size='medium' variant='contained' onClick={onSaveBackgroundEntry}>
                             Save
                         </MuiButton>
-                    </Stack>
+                    </ActionButtonsGroup>
                 )}
             </ActionRow>
             {voiceRecordings.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
-                    <Stack direction='row' gap={1.5} sx={{ flexWrap: 'wrap' }}>
+                    <WrapRow direction='row' gap={1.5}>
                         {voiceRecordings.map((item) => (
                             <VoiceItem key={item.id}>
                                 <VoiceRecord
@@ -352,12 +359,12 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                 />
                             </VoiceItem>
                         ))}
-                    </Stack>
+                    </WrapRow>
                 </ContainerSkillAttachVoice>
             )}
             {uploadedFiles.length > 0 && (
-                <ContainerSkillAttach direction='column' active sx={{ mt: 2, alignItems: 'flex-start' }}>
-                    <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
+                <ContainerSkillAttachTop direction='column' active>
+                    <FullWidthFilesStack direction='row' spacing={1}>
                         {uploadedFiles.map((file, index) => (
                             <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
                                 {getFileCategory(file) === 'image' ? (
@@ -374,41 +381,22 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                     </Typography>
                                 </FileTypeLabel>
 
-                                <RemoveFileButton
+                                <TransparentRemoveFileButton
                                     onClick={() => onRemoveUploadedFile(index)}
-                                    sx={{
-                                        width: 24,
-                                        height: 24,
-                                        padding: 0,
-                                        backgroundColor: 'transparent',
-                                        '&:hover': {
-                                            backgroundColor: 'transparent',
-                                        },
-                                    }}
                                 >
                                     <CleanIcon width={24} height={24} />
-                                </RemoveFileButton>
+                                </TransparentRemoveFileButton>
                             </FilePreviewContainer>
                         ))}
-                    </FilesStack>
-                </ContainerSkillAttach>
+                    </FullWidthFilesStack>
+                </ContainerSkillAttachTop>
             )}
-            <Divider
-                sx={{
-                    width: '550px',
-                    my: 2,
-                    borderColor: theme.palette.grey[100],
-                }}
-            />
+            <EntriesDivider />
             {backgroundEntries.length > 0 && (
-                <Stack ref={entriesListRef} sx={{ maxWidth: '550px', width: '550px' }} spacing={1}>
+                <EntriesListContainer ref={entriesListRef} spacing={1}>
                     {backgroundEntries.map((entry, index) => (
                         <React.Fragment key={entry.id}>
-                            <ContainerSkillAttachItem
-                                direction='row'
-                                active
-                                sx={{ alignItems: 'stretch', justifyContent: 'space-between' }}
-                            >
+                            <EntryItemContainer direction='row' active>
                                 <BackgroundEntryIndex>
                                     <Typography
                                         justifyContent='center'
@@ -419,25 +407,16 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                         #{index + 1}
                                     </Typography>
                                 </BackgroundEntryIndex>
-                                <Stack direction='row' sx={{ flex: 1, alignItems: 'flex-start' }}>
-                                    <Stack spacing={1} sx={{ flex: 1 }}>
+                                <EntryBodyRow direction='row'>
+                                    <EntryBodyStack spacing={1}>
                                         {entry.text && (
-                                            <Typography
-                                                variant='body2'
-                                                fontWeight='400'
-                                                color='text.primary'
-                                                sx={{
-                                                    maxWidth: 392,
-                                                    wordBreak: 'break-word',
-                                                    overflowWrap: 'break-word',
-                                                }}
-                                            >
+                                            <EntryText variant='body2' fontWeight='400' color='text.primary'>
                                                 {entry.text}
-                                            </Typography>
+                                            </EntryText>
                                         )}
 
                                         {entry.voices.length > 0 && (
-                                            <Stack direction='row' gap={1.5} sx={{ flexWrap: 'wrap' }}>
+                                            <WrapRow direction='row' gap={1.5}>
                                                 {entry.voices.map((voice) => (
                                                     <VoiceItem key={voice.id}>
                                                         <VoiceRecord
@@ -454,15 +433,11 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                                         />
                                                     </VoiceItem>
                                                 ))}
-                                            </Stack>
+                                            </WrapRow>
                                         )}
 
                                         {entry.files.length > 0 && (
-                                            <FilesStack
-                                                direction='row'
-                                                spacing={1}
-                                                sx={{ width: '100%', border: 'none' }}
-                                            >
+                                            <EntryFilesStack direction='row' spacing={1}>
                                                 {entry.files.map((file, idx) => (
                                                     <EntryFileThumb
                                                         key={`${file.name}-${idx}`}
@@ -471,11 +446,11 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                                         typeLabel={getFileTypeDisplayName(file)}
                                                     />
                                                 ))}
-                                            </FilesStack>
+                                            </EntryFilesStack>
                                         )}
-                                    </Stack>
-                                </Stack>
-                                <Stack direction='row' gap={0.5} sx={{ flexShrink: 0 }}>
+                                    </EntryBodyStack>
+                                </EntryBodyRow>
+                                <EntryActionsGroup direction='row' gap={0.5}>
                                     <ActionIconButton
                                         onClick={() => onEditBackgroundEntry(entry.id)}
                                         disabled={isEditingEntry}
@@ -485,11 +460,11 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                     <ActionIconButton onClick={() => onDeleteBackgroundEntry(entry.id)}>
                                         <CleanIcon />
                                     </ActionIconButton>
-                                </Stack>
-                            </ContainerSkillAttachItem>
+                                </EntryActionsGroup>
+                            </EntryItemContainer>
                         </React.Fragment>
                     ))}
-                </Stack>
+                </EntriesListContainer>
             )}
             <input
                 ref={fileInputRef}

@@ -31,6 +31,14 @@ export const StepCircle = styled(Box, {
   background: active ? theme.palette.primary.main : current ? theme.palette.primary.light : theme.palette.primary.light,
   color: active ? theme.palette.primary.contrastText : current ? theme.palette.primary.main : theme.palette.grey[500],
   fontWeight: 500,
+  // Firefox-only: prevent flexbox shrinking/odd font-metrics shifting the digit inside the circle.
+  '@supports (-moz-appearance: none)': {
+    minWidth: 40,
+    flexShrink: 0,
+    display: 'grid',
+    placeItems: 'center',
+    lineHeight: 1,
+  },
 }));
 
 export const Divider = styled('div', {
