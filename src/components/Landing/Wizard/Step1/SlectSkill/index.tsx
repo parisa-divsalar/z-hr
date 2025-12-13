@@ -66,6 +66,102 @@ interface ToastInfo {
     severity: ToastSeverity;
 }
 
+const isHeicLike = (file: File): boolean => {
+    const name = file.name.toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    return type === 'image/heic' || type === 'image/heif' || name.endsWith('.heic') || name.endsWith('.heif');
+};
+
+const isRenderableMediaUrl = (value?: string | null): value is string => {
+    if (!value) return false;
+    return (
+        value.startsWith('blob:') ||
+        value.startsWith('data:') ||
+        value.startsWith('http://') ||
+        value.startsWith('https://')
+    );
+};
+
+const SafeImageThumb: FunctionComponent<{ file: File; url?: string }> = ({ file, url }) => {
+    const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableMediaUrl(url) ? url : null);
+    const createdLocallyRef = useRef<string | null>(null);
+    const triedConversionRef = useRef(false);
+
+    useEffect(() => {
+        const safeUrl = isRenderableMediaUrl(url) ? url : null;
+        triedConversionRef.current = false;
+
+        if (!safeUrl) {
+            try {
+                const local = URL.createObjectURL(file);
+                createdLocallyRef.current = local;
+                setDisplayUrl(local);
+                return () => URL.revokeObjectURL(local);
+            } catch {
+                createdLocallyRef.current = null;
+                setDisplayUrl(null);
+                return;
+            }
+        }
+
+        setDisplayUrl(safeUrl);
+        return;
+    }, [file, url]);
+
+    useEffect(() => {
+        return () => {
+            if (displayUrl && displayUrl !== url && displayUrl !== createdLocallyRef.current) {
+                URL.revokeObjectURL(displayUrl);
+            }
+        };
+    }, [displayUrl, url]);
+
+    const tryHeicConversionOrRefresh = async () => {
+        if (triedConversionRef.current) return;
+        triedConversionRef.current = true;
+
+        try {
+            const refreshed = URL.createObjectURL(file);
+            createdLocallyRef.current = refreshed;
+            setDisplayUrl(refreshed);
+        } catch {
+            // ignore
+        }
+
+        if (!isHeicLike(file)) return;
+        try {
+            const heic2any = (await import('heic2any')).default;
+            const output = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            const blob: Blob = Array.isArray(output) ? output[0] : output;
+            const convertedUrl = URL.createObjectURL(blob);
+            setDisplayUrl(convertedUrl);
+        } catch {
+            // ignore conversion errors
+        }
+    };
+
+    if (!displayUrl) {
+        return <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />;
+    }
+
+    return (
+        <img
+            src={displayUrl}
+            alt={file.name}
+            onError={() => {
+                void tryHeicConversionOrRefresh();
+            }}
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                backgroundColor: '#F9F9FA',
+                display: 'block',
+            }}
+        />
+    );
+};
+
 const TooltipContent = styled(Stack)(() => ({
     width: '100%',
 }));
@@ -114,22 +210,20 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const isVoiceLimitReached = backgroundVoices.length >= MAX_VOICE_RECORDINGS;
 
     const onUpdateSkill = (id: string, selected: boolean) => {
-        setSkills((prevSkills) => {
-            const updatedSkills = prevSkills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill));
+        const updatedSkills = skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill));
 
-            const selectedLabels = updatedSkills.filter((skill) => skill.selected).map((skill) => skill.label);
+        const selectedLabels = updatedSkills.filter((skill) => skill.selected).map((skill) => skill.label);
 
-            const customSkills = customSkillInput
-                .split(',')
-                .map((item) => item.trim())
-                .filter((item) => item.length > 0);
+        const customSkills = customSkillInput
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
 
-            const allSkills = Array.from(new Set([...selectedLabels, ...customSkills]));
+        const allSkills = Array.from(new Set([...selectedLabels, ...customSkills]));
 
-            updateField('skills', allSkills as unknown as string[]);
+        updateField('skills', allSkills as unknown as string[]);
 
-            return updatedSkills;
-        });
+        setSkills(updatedSkills);
     };
 
     useEffect(() => {
@@ -306,7 +400,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     useEffect(() => {
         const urls = backgroundFiles.map((file) =>
-            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+            getFileCategory(file) === 'image' || getFileCategory(file) === 'video'
+                ? URL.createObjectURL(file)
+                : undefined,
         );
 
         setFilePreviews(urls);
@@ -330,6 +426,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     const handleOpenFileDialog = () => {
         fileInputRef.current?.click();
+    };
+
+    const ensureFileWithId = (file: File) => {
+        const f = file as File & { id?: string };
+        if (!f.id) {
+            f.id = generateFakeUUIDv4();
+        }
+        return f;
     };
 
     const handleFileUpload = async (files: FileList | null) => {
@@ -369,11 +473,11 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 }
             }
 
-            acceptedFiles.push(file);
+            acceptedFiles.push(ensureFileWithId(file));
         }
 
         if (acceptedFiles.length > 0) {
-            const currentFiles = backgroundFiles ?? [];
+            const currentFiles = (backgroundFiles ?? []).map((file) => ensureFileWithId(file));
             const nextFiles = [...currentFiles, ...acceptedFiles];
 
             updateField('background', {
@@ -636,20 +740,12 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                         {backgroundFiles.map((file, index) => {
                             const fileCategory = getFileCategory(file);
                             const fileTypeLabelText = getFileTypeDisplayName(file);
-                            const previewSrc = file.type.startsWith('image/') ? filePreviews[index] : undefined;
+                            const previewSrc = fileCategory === 'image' ? filePreviews[index] : undefined;
 
                             return (
                                 <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
-                                    {previewSrc ? (
-                                        <img
-                                            src={previewSrc}
-                                            alt={file.name}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover',
-                                            }}
-                                        />
+                                    {fileCategory === 'image' ? (
+                                        <SafeImageThumb file={file} url={previewSrc} />
                                     ) : fileCategory === 'video' ? (
                                         <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                                     ) : (

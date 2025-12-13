@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
         const response = NextResponse.json({ data });
 
-        response.cookies.set('user', JSON.stringify(data), {
+        response.cookies.set('accessToken', JSON.stringify(data.userId), {
             path: '/',
             httpOnly: false,
             secure: true,

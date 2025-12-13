@@ -19,6 +19,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import { PublicRoutes } from '@/config/routes';
 import { apiClientClient } from '@/services/api-client';
+import { useAuthStore } from '@/store/auth';
 
 const LoginPage = () => {
     const router = useRouter();
@@ -43,8 +44,9 @@ const LoginPage = () => {
 
             try {
                 const { data } = await apiClientClient.post('auth/login', values);
+                const accessToken = data?.data.userId;
+                useAuthStore.getState().loginSuccess(accessToken, '');
                 router.push('/');
-                localStorage.setItem('user', JSON.stringify(data?.data));
             } catch (error: any) {
                 setIsLoading(false);
                 console.error('login Error', error);

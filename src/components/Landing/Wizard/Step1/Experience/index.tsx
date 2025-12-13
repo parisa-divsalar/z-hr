@@ -101,23 +101,30 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
     const [filePreviews, setFilePreviews] = useState<(string | undefined)[]>([]);
 
-    const persistEntriesToStore = useCallback(
-        (entries: BackgroundEntry[]) => {
-            const payload = entries.map((entry) => ({
-                text: entry.text,
-                voices: entry.voices,
-                files: entry.files,
-            }));
-            updateField('experiences', payload as unknown as typeof wizardData.experiences);
-            // After syncing experiences into the store, rebuild the aggregated allFiles
-            recomputeAllFiles();
-        },
-        [updateField, wizardData.experiences, recomputeAllFiles],
-    );
+    /**
+     * هر بار که لیست تجربه‌ها (`backgroundEntries`) عوض می‌شود،
+     * داده‌ی مربوط به `experiences` در استور ویزارد و همچنین `allFiles`
+     * را بعد از رندر (در افکت) به‌روزرسانی می‌کنیم.
+     *
+     * نکته مهم: نباید `wizardData.experiences` را داخل وابستگی‌ها بگذاریم،
+     * چون خودمان همین‌جا آن را به‌روزرسانی می‌کنیم و باعث لوپ بی‌نهایت می‌شود.
+     */
+    useEffect(() => {
+        const payload = backgroundEntries.map((entry) => ({
+            text: entry.text,
+            voices: entry.voices,
+            files: entry.files,
+        }));
+
+        updateField('experiences', payload as unknown as typeof wizardData.experiences);
+        recomputeAllFiles();
+    }, [backgroundEntries, updateField, recomputeAllFiles]);
 
     useEffect(() => {
         const urls = uploadedFiles.map((file) =>
-            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+            getFileCategory(file) === 'image' || getFileCategory(file) === 'video'
+                ? URL.createObjectURL(file)
+                : undefined,
         );
 
         setFilePreviews(urls);
@@ -211,6 +218,14 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         fileInputRef.current?.click();
     };
 
+    const ensureFileWithId = (file: File) => {
+        const f = file as File & { id?: string };
+        if (!f.id) {
+            f.id = generateFakeUUIDv4();
+        }
+        return f;
+    };
+
     const handleFileUpload = async (files: FileList | null) => {
         if (!files) {
             return;
@@ -248,11 +263,11 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 }
             }
 
-            acceptedFiles.push(file);
+            acceptedFiles.push(ensureFileWithId(file));
         }
 
         if (acceptedFiles.length > 0) {
-            setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
+            setUploadedFiles((prev) => [...prev.map((file) => ensureFileWithId(file)), ...acceptedFiles]);
         }
 
         if (fileInputRef.current) {
@@ -280,11 +295,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => {
-            const next = [...prev, newEntry];
-            persistEntriesToStore(next);
-            return next;
-        });
+        setBackgroundEntries((prev) => [...prev, newEntry]);
         setIsEditingEntry(false);
         setEditingEntryId(null);
         setEditingEntryBackup(null);
@@ -313,7 +324,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             setVoiceRecordings(entry.voices);
 
             const remaining = prev.filter((item) => item.id !== id);
-            persistEntriesToStore(remaining);
             return remaining;
         });
     };
@@ -334,11 +344,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => {
-            const next = [...prev, updatedEntry];
-            persistEntriesToStore(next);
-            return next;
-        });
+        setBackgroundEntries((prev) => [...prev, updatedEntry]);
 
         setIsEditingEntry(false);
         setEditingEntryId(null);
@@ -354,11 +360,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
     const handleCancelEditBackgroundEntry = () => {
         if (editingEntryBackup) {
-            setBackgroundEntries((prev) => {
-                const next = [...prev, editingEntryBackup];
-                persistEntriesToStore(next);
-                return next;
-            });
+            setBackgroundEntries((prev) => [...prev, editingEntryBackup]);
         }
 
         setIsEditingEntry(false);
@@ -380,7 +382,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
             }
             const next = prev.filter((item) => item.id !== id);
-            persistEntriesToStore(next);
             return next;
         });
     };
@@ -395,8 +396,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             } else {
                 handleAddBackgroundEntry();
             }
-        } else {
-            persistEntriesToStore(backgroundEntries);
         }
 
         setStage('SELECT_SKILL');
@@ -409,8 +408,6 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             } else {
                 handleAddBackgroundEntry();
             }
-        } else {
-            persistEntriesToStore(backgroundEntries);
         }
 
         setStage('CERTIFICATION');

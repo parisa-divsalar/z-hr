@@ -1,0 +1,53 @@
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { API_SERVER_BASE_URL } from '@/services/api-client';
+
+export async function POST(req: NextRequest) {
+    try {
+        const formDataClient = await req.formData();
+        const tokenValue = (await cookies()).get('accessToken')?.value;
+
+        if (!tokenValue) {
+            return NextResponse.json({ error: 'No access token' }, { status: 401 });
+        }
+
+        let userId: string | null = null;
+        try {
+            const parsed = JSON.parse(tokenValue);
+            userId = parsed ? String(parsed) : null;
+        } catch {
+            userId = tokenValue;
+        }
+
+        if (!userId) {
+            return NextResponse.json({ error: 'No access token' }, { status: 401 });
+        }
+
+        const sendFileUrl = new URL('SendFile', API_SERVER_BASE_URL);
+        sendFileUrl.searchParams.set('userId', userId);
+        sendFileUrl.searchParams.set('lang', 'en');
+
+        const response = await fetch(sendFileUrl, {
+            method: 'POST',
+            headers: {
+                accept: 'text/plain',
+            },
+            body: formDataClient,
+        });
+
+        const resultText = await response.text();
+
+        if (!response.ok) {
+            console.log('SendFile response error', response.status, resultText);
+            return NextResponse.json({ error: resultText }, { status: response.status });
+        }
+
+        return NextResponse.json({ result: resultText });
+    } catch (error) {
+        console.log('err === = = == = = == == = = = ', error);
+
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: message }, { status: 500 });
+    }
+}

@@ -65,7 +65,13 @@ const AddAttachFile: FunctionComponent<AddAttachFileProps> = (props) => {
 
   const handlePhotoUpload = (files: FileList | null) => {
     if (files) {
-      const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+      const imageFiles = Array.from(files).filter(
+        (file) =>
+          file.type.startsWith('image/') ||
+          file.name
+            .toLowerCase()
+            .match(/\.(png|jpe?g|jfif|pjpeg|pjp|webp|avif|gif|bmp|svg|ico|apng|tiff?|heic|heif)$/),
+      );
       if (imageFiles.length > 0) {
         setUploadedFiles((prev) => [...prev, ...imageFiles]);
         console.log('Photos uploaded:', imageFiles);
