@@ -67,8 +67,8 @@ const VideoThumbDialog: FunctionComponent<VideoThumbDialogProps> = ({ url, title
                 >
                     <Box
                         sx={{
-                            width: 36,
-                            height: 36,
+                            width: 28,
+                            height: 28,
                             borderRadius: '999px',
                             backgroundColor: 'rgba(0, 0, 0, 0.55)',
                             display: 'flex',
@@ -76,7 +76,7 @@ const VideoThumbDialog: FunctionComponent<VideoThumbDialogProps> = ({ url, title
                             justifyContent: 'center',
                         }}
                     >
-                        <PlayArrowRoundedIcon sx={{ color: '#fff', fontSize: 24, ml: '2px' }} />
+                        <PlayArrowRoundedIcon sx={{ color: '#fff', fontSize: 18, ml: '1px' }} />
                     </Box>
                 </Box>
             </Box>
