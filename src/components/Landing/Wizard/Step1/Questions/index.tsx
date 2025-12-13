@@ -145,10 +145,56 @@ const getLowerExtension = (name: string) => {
     return ext ? ext.toLowerCase() : '';
 };
 
+const isHeicLike = (file: File): boolean => {
+    const name = file.name.toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    return type === 'image/heic' || type === 'image/heif' || name.endsWith('.heic') || name.endsWith('.heif');
+};
+
+const isRenderableMediaUrl = (value?: string | null): value is string => {
+    if (!value) return false;
+    return (
+        value.startsWith('blob:') ||
+        value.startsWith('data:') ||
+        value.startsWith('http://') ||
+        value.startsWith('https://')
+    );
+};
+
+const tryCreateObjectUrl = (value: unknown): string | null => {
+    try {
+        if (typeof window === 'undefined') return null;
+        if (value instanceof Blob) {
+            return URL.createObjectURL(value);
+        }
+        return null;
+    } catch {
+        return null;
+    }
+};
+
 const isImageFile = (file: File) => {
     if (file.type?.startsWith('image/')) return true;
     const ext = getLowerExtension(file.name);
-    return ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg', 'avif'].includes(ext);
+    return [
+        'png',
+        'jpg',
+        'jpeg',
+        'jfif',
+        'pjpeg',
+        'pjp',
+        'webp',
+        'avif',
+        'gif',
+        'bmp',
+        'svg',
+        'ico',
+        'apng',
+        'tif',
+        'tiff',
+        'heic',
+        'heif',
+    ].includes(ext);
 };
 
 const isVideoFile = (file: File) => {
@@ -164,20 +210,145 @@ const getFileKindLabel = (file: File) => {
     return 'File';
 };
 
+const SafeImagePreview: FunctionComponent<{ file: File; url?: string | null }> = ({ file, url }) => {
+    const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableMediaUrl(url) ? url : null);
+    const createdLocallyRef = React.useRef<string | null>(null);
+    const triedConversionRef = React.useRef(false);
+
+    useEffect(() => {
+        const safeUrl = isRenderableMediaUrl(url) ? url : null;
+        triedConversionRef.current = false;
+
+        if (!safeUrl) {
+            const local = tryCreateObjectUrl(file);
+            createdLocallyRef.current = local;
+            setDisplayUrl(local);
+            return () => {
+                if (local) URL.revokeObjectURL(local);
+                createdLocallyRef.current = null;
+            };
+        }
+
+        setDisplayUrl(safeUrl);
+        return;
+    }, [file, url]);
+
+    useEffect(() => {
+        return () => {
+            if (displayUrl && displayUrl !== url && displayUrl !== createdLocallyRef.current) {
+                URL.revokeObjectURL(displayUrl);
+            }
+        };
+    }, [displayUrl, url]);
+
+    const tryRefreshOrConvert = async () => {
+        if (triedConversionRef.current) return;
+        triedConversionRef.current = true;
+
+        // refresh (handles revoked URLs)
+        const refreshed = tryCreateObjectUrl(file);
+        if (refreshed) {
+            createdLocallyRef.current = refreshed;
+            setDisplayUrl(refreshed);
+        }
+
+        if (!isHeicLike(file)) return;
+
+        try {
+            const heic2any = (await import('heic2any')).default;
+            const output = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            const blob: Blob = Array.isArray(output) ? output[0] : output;
+            const convertedUrl = URL.createObjectURL(blob);
+            setDisplayUrl(convertedUrl);
+        } catch {
+            // ignore conversion errors
+        }
+    };
+
+    if (!displayUrl) {
+        return (
+            <Stack alignItems='center' justifyContent='center' height='100%'>
+                <FileIcon style={{ width: 28, height: 28, color: '#666' }} />
+            </Stack>
+        );
+    }
+
+    return (
+        <img
+            src={displayUrl}
+            alt={file.name}
+            onError={() => {
+                void tryRefreshOrConvert();
+            }}
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                backgroundColor: '#F9F9FA',
+            }}
+        />
+    );
+};
+
+const SafeVideoPreview: FunctionComponent<{ file: File; url?: string | null }> = ({ file, url }) => {
+    const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableMediaUrl(url) ? url : null);
+
+    useEffect(() => {
+        const safeUrl = isRenderableMediaUrl(url) ? url : null;
+        if (safeUrl) {
+            setDisplayUrl(safeUrl);
+            return;
+        }
+
+        const local = tryCreateObjectUrl(file);
+        setDisplayUrl(local);
+        return () => {
+            if (local) URL.revokeObjectURL(local);
+        };
+    }, [file, url]);
+
+    if (!displayUrl) {
+        return (
+            <Stack alignItems='center' justifyContent='center' height='100%'>
+                <FileIcon style={{ width: 28, height: 28, color: '#666' }} />
+            </Stack>
+        );
+    }
+
+    return (
+        <video
+            src={displayUrl}
+            controls
+            playsInline
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                backgroundColor: '#F9F9FA',
+            }}
+        />
+    );
+};
+
 const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknown[] }> = ({ files, voices }) => {
-    const safeFiles = useMemo(() => (Array.isArray(files) ? files : []).filter(Boolean) as File[], [files]);
+    const safeFiles = useMemo(() => (Array.isArray(files) ? files : []).filter(Boolean) as unknown[], [files]);
     const safeVoices = useMemo(() => (Array.isArray(voices) ? voices : []).filter(Boolean) as VoicePayload[], [voices]);
 
     const fileUrls = useMemo(() => {
-        return safeFiles.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-        }));
+        return safeFiles.map((item) => {
+            const file = item instanceof File ? item : null;
+            const url = file ? tryCreateObjectUrl(file) : null;
+            return { item, file, url };
+        });
     }, [safeFiles]);
 
     useEffect(() => {
         return () => {
-            fileUrls.forEach(({ url }) => URL.revokeObjectURL(url));
+            fileUrls.forEach(({ url }) => {
+                if (url) URL.revokeObjectURL(url);
+            });
         };
     }, [fileUrls]);
 
@@ -187,40 +358,25 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
         <Stack gap={1} mt={1.25}>
             {safeFiles.length > 0 && (
                 <FilesStack direction='row' spacing={1} sx={{ width: '100%', m: 0 }}>
-                    {fileUrls.map(({ file, url }) => (
-                        <FilePreviewContainer key={`${(file as any)?.id ?? file.name}-${file.lastModified}`} size={68}>
+                    {fileUrls.map(({ file, url }, idx) => (
+                        <FilePreviewContainer
+                            key={`${(file as any)?.id ?? file?.name ?? `item-${idx}`}-${(file as any)?.lastModified ?? idx}`}
+                            size={68}
+                        >
                             <a
-                                href={url}
-                                download={file.name}
+                                href={url ?? '#'}
+                                download={file?.name ?? undefined}
                                 target='_blank'
                                 rel='noreferrer'
                                 style={{ display: 'block', width: '100%', height: '100%' }}
+                                onClick={(e) => {
+                                    if (!url) e.preventDefault();
+                                }}
                             >
-                                {isImageFile(file) ? (
-                                    <img
-                                        src={url}
-                                        alt={file.name}
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'contain',
-                                            display: 'block',
-                                            backgroundColor: '#F9F9FA',
-                                        }}
-                                    />
-                                ) : isVideoFile(file) ? (
-                                    <video
-                                        src={url}
-                                        controls
-                                        playsInline
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'contain',
-                                            display: 'block',
-                                            backgroundColor: '#F9F9FA',
-                                        }}
-                                    />
+                                {file && isImageFile(file) ? (
+                                    <SafeImagePreview file={file} url={url} />
+                                ) : file && isVideoFile(file) ? (
+                                    <SafeVideoPreview file={file} url={url} />
                                 ) : (
                                     <Stack alignItems='center' justifyContent='center' height='100%'>
                                         <FileIcon style={{ width: 28, height: 28, color: '#666' }} />
@@ -230,7 +386,7 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
 
                             <FileTypeLabel gap={0.25}>
                                 <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                                    {getFileKindLabel(file)}
+                                    {file ? getFileKindLabel(file) : 'File'}
                                 </Typography>
                             </FileTypeLabel>
                         </FilePreviewContainer>
@@ -254,7 +410,7 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
     );
 };
 
-const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus, setStage }) => {
+const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _setAiStatus, setStage }) => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const { data: wizardData } = useWizardStore();
 

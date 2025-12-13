@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
-import { API_SERVER_BASE_URL } from '@/services/api-client';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { API_SERVER_BASE_URL } from '@/services/api-client';
 
 export async function POST(req: NextRequest) {
     try {

@@ -66,6 +66,102 @@ interface ToastInfo {
     severity: ToastSeverity;
 }
 
+const isHeicLike = (file: File): boolean => {
+    const name = file.name.toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    return type === 'image/heic' || type === 'image/heif' || name.endsWith('.heic') || name.endsWith('.heif');
+};
+
+const isRenderableMediaUrl = (value?: string | null): value is string => {
+    if (!value) return false;
+    return (
+        value.startsWith('blob:') ||
+        value.startsWith('data:') ||
+        value.startsWith('http://') ||
+        value.startsWith('https://')
+    );
+};
+
+const SafeImageThumb: FunctionComponent<{ file: File; url?: string }> = ({ file, url }) => {
+    const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableMediaUrl(url) ? url : null);
+    const createdLocallyRef = useRef<string | null>(null);
+    const triedConversionRef = useRef(false);
+
+    useEffect(() => {
+        const safeUrl = isRenderableMediaUrl(url) ? url : null;
+        triedConversionRef.current = false;
+
+        if (!safeUrl) {
+            try {
+                const local = URL.createObjectURL(file);
+                createdLocallyRef.current = local;
+                setDisplayUrl(local);
+                return () => URL.revokeObjectURL(local);
+            } catch {
+                createdLocallyRef.current = null;
+                setDisplayUrl(null);
+                return;
+            }
+        }
+
+        setDisplayUrl(safeUrl);
+        return;
+    }, [file, url]);
+
+    useEffect(() => {
+        return () => {
+            if (displayUrl && displayUrl !== url && displayUrl !== createdLocallyRef.current) {
+                URL.revokeObjectURL(displayUrl);
+            }
+        };
+    }, [displayUrl, url]);
+
+    const tryHeicConversionOrRefresh = async () => {
+        if (triedConversionRef.current) return;
+        triedConversionRef.current = true;
+
+        try {
+            const refreshed = URL.createObjectURL(file);
+            createdLocallyRef.current = refreshed;
+            setDisplayUrl(refreshed);
+        } catch {
+            // ignore
+        }
+
+        if (!isHeicLike(file)) return;
+        try {
+            const heic2any = (await import('heic2any')).default;
+            const output = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            const blob: Blob = Array.isArray(output) ? output[0] : output;
+            const convertedUrl = URL.createObjectURL(blob);
+            setDisplayUrl(convertedUrl);
+        } catch {
+            // ignore conversion errors
+        }
+    };
+
+    if (!displayUrl) {
+        return <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />;
+    }
+
+    return (
+        <img
+            src={displayUrl}
+            alt={file.name}
+            onError={() => {
+                void tryHeicConversionOrRefresh();
+            }}
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                backgroundColor: '#F9F9FA',
+                display: 'block',
+            }}
+        />
+    );
+};
+
 const TooltipContent = styled(Stack)(() => ({
     width: '100%',
 }));
@@ -114,12 +210,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const isVoiceLimitReached = backgroundVoices.length >= MAX_VOICE_RECORDINGS;
 
     const onUpdateSkill = (id: string, selected: boolean) => {
-        // ابتدا لیست اسکیل‌های جدید را بر اساس state فعلی محاسبه می‌کنیم
-        const updatedSkills = skills.map((skill: TSkill) =>
-            skill.id === id ? { ...skill, selected } : skill,
-        );
+        const updatedSkills = skills.map((skill: TSkill) => (skill.id === id ? { ...skill, selected } : skill));
 
-        // سپس مقدارهایی که باید در استور ذخیره شود را به‌روز می‌کنیم
         const selectedLabels = updatedSkills.filter((skill) => skill.selected).map((skill) => skill.label);
 
         const customSkills = customSkillInput
@@ -129,11 +221,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
         const allSkills = Array.from(new Set([...selectedLabels, ...customSkills]));
 
-        // این آپدیتِ استور حالا در هندلر کلیک انجام می‌شود (نه وسط رندر)،
-        // بنابراین ارور React درباره setState در حین رندر برطرف می‌شود.
         updateField('skills', allSkills as unknown as string[]);
 
-        // در نهایت state محلی کامپوننت را ست می‌کنیم
         setSkills(updatedSkills);
     };
 
@@ -311,7 +400,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     useEffect(() => {
         const urls = backgroundFiles.map((file) =>
-            getFileCategory(file) === 'image' || getFileCategory(file) === 'video' ? URL.createObjectURL(file) : undefined,
+            getFileCategory(file) === 'image' || getFileCategory(file) === 'video'
+                ? URL.createObjectURL(file)
+                : undefined,
         );
 
         setFilePreviews(urls);
@@ -653,17 +744,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
                             return (
                                 <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
-                                    {previewSrc ? (
-                                        <img
-                                            src={previewSrc}
-                                            alt={file.name}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'contain',
-                                                backgroundColor: '#F9F9FA',
-                                            }}
-                                        />
+                                    {fileCategory === 'image' ? (
+                                        <SafeImageThumb file={file} url={previewSrc} />
                                     ) : fileCategory === 'video' ? (
                                         <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                                     ) : (

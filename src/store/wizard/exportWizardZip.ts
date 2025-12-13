@@ -8,7 +8,7 @@ interface BuildWizardZipOptions {
     zipFileName?: string;
 }
 
-export const buildWizardZipBlob = async (wizardData: WizardData, options?: BuildWizardZipOptions): Promise<Blob> => {
+export const buildWizardZipBlob = async (wizardData: WizardData, _options?: BuildWizardZipOptions): Promise<Blob> => {
     const zip = new JSZip();
 
     const root = zip;

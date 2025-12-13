@@ -1,4 +1,4 @@
-import React, { FunctionComponent, RefObject, useEffect, useMemo, useRef } from 'react';
+import React, { FunctionComponent, RefObject, useEffect, useRef, useState } from 'react';
 
 import { Divider, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -8,7 +8,6 @@ import AttachIcon from '@/assets/images/icons/attach.svg';
 import CleanIcon from '@/assets/images/icons/clean.svg';
 import EdiIcon from '@/assets/images/icons/edit.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
-import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import RecordIcon from '@/assets/images/icons/recordV.svg';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import {
@@ -20,6 +19,7 @@ import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styl
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import MuiButton from '@/components/UI/MuiButton';
 
+import { getFileCategory } from '../../attachmentRules';
 import { InputContent } from '../../SKillInput/styled';
 import {
     ActionIconButton,
@@ -31,7 +31,6 @@ import {
     ContainerSkillAttachVoice,
     VoiceItem,
 } from '../styled';
-import { getFileCategory } from '../../attachmentRules';
 
 export interface BackgroundEntry {
     id: string;
@@ -45,47 +44,152 @@ export interface BackgroundEntry {
     }[];
 }
 
-const EntryFileThumb: FunctionComponent<{ file: File; size: number; typeLabel: string }> = ({ file, size, typeLabel }) => {
-    const previewUrl = useMemo(() => {
-        const category = getFileCategory(file);
-        if (category === 'image' || category === 'video') {
-            return URL.createObjectURL(file);
+const isHeicLike = (file: File): boolean => {
+    const name = file.name.toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    return type === 'image/heic' || type === 'image/heif' || name.endsWith('.heic') || name.endsWith('.heif');
+};
+
+const isRenderableImageUrl = (value?: string | null): value is string => {
+    if (!value) return false;
+    return (
+        value.startsWith('blob:') ||
+        value.startsWith('data:') ||
+        value.startsWith('http://') ||
+        value.startsWith('https://')
+    );
+};
+
+const isRenderableVideoUrl = isRenderableImageUrl;
+
+const SafeImageThumb: FunctionComponent<{ file: File; url?: string }> = ({ file, url }) => {
+    const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableImageUrl(url) ? url : null);
+    const createdLocallyRef = useRef<string | null>(null);
+    const triedConversionRef = useRef(false);
+
+    useEffect(() => {
+        const safeParentUrl = isRenderableImageUrl(url) ? url : null;
+
+        if (!safeParentUrl) {
+            try {
+                const local = URL.createObjectURL(file);
+                createdLocallyRef.current = local;
+                setDisplayUrl(local);
+            } catch {
+                createdLocallyRef.current = null;
+                setDisplayUrl(null);
+            }
+            triedConversionRef.current = false;
+            return () => {
+                if (createdLocallyRef.current) {
+                    URL.revokeObjectURL(createdLocallyRef.current);
+                }
+                createdLocallyRef.current = null;
+            };
         }
-        return null;
-    }, [file]);
+
+        setDisplayUrl(safeParentUrl);
+        triedConversionRef.current = false;
+        return;
+    }, [file, url]);
 
     useEffect(() => {
         return () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            if (displayUrl && displayUrl !== url && displayUrl !== createdLocallyRef.current) {
+                URL.revokeObjectURL(displayUrl);
+            }
         };
-    }, [previewUrl]);
+    }, [displayUrl, url]);
+
+    const tryHeicConversion = async () => {
+        if (triedConversionRef.current) return;
+        triedConversionRef.current = true;
+        if (!isHeicLike(file)) return;
+
+        try {
+            const heic2any = (await import('heic2any')).default;
+            const output = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            const blob: Blob = Array.isArray(output) ? output[0] : output;
+            const convertedUrl = URL.createObjectURL(blob);
+            setDisplayUrl(convertedUrl);
+        } catch {}
+    };
+
+    if (!displayUrl) {
+        return <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />;
+    }
+
+    return (
+        <img
+            src={displayUrl}
+            alt={file.name}
+            onError={() => {
+                void tryHeicConversion();
+            }}
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                backgroundColor: '#F9F9FA',
+                display: 'block',
+            }}
+        />
+    );
+};
+
+const SafeVideoThumb: FunctionComponent<{ file: File; url?: string }> = ({ file, url }) => {
+    const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableVideoUrl(url) ? url : null);
+
+    useEffect(() => {
+        const safeParentUrl = isRenderableVideoUrl(url) ? url : null;
+
+        if (!safeParentUrl) {
+            try {
+                const local = URL.createObjectURL(file);
+                setDisplayUrl(local);
+                return () => URL.revokeObjectURL(local);
+            } catch {
+                setDisplayUrl(null);
+                return;
+            }
+        }
+        setDisplayUrl(safeParentUrl);
+        return;
+    }, [file, url]);
+
+    if (!displayUrl) {
+        return <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />;
+    }
+
+    return (
+        <video
+            src={displayUrl}
+            controls
+            playsInline
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                backgroundColor: '#F9F9FA',
+            }}
+        />
+    );
+};
+
+const EntryFileThumb: FunctionComponent<{ file: File; size: number; typeLabel: string }> = ({
+    file,
+    size,
+    typeLabel,
+}) => {
+    const category = getFileCategory(file);
 
     return (
         <FilePreviewContainer size={size}>
-            {getFileCategory(file) === 'image' ? (
-                <img
-                    src={previewUrl ?? ''}
-                    alt={file.name}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        backgroundColor: '#F9F9FA',
-                    }}
-                />
-            ) : getFileCategory(file) === 'video' ? (
-                <video
-                    src={previewUrl ?? ''}
-                    controls
-                    playsInline
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        display: 'block',
-                        backgroundColor: '#F9F9FA',
-                    }}
-                />
+            {category === 'image' ? (
+                <SafeImageThumb file={file} />
+            ) : category === 'video' ? (
+                <SafeVideoThumb file={file} />
             ) : (
                 <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
             )}
@@ -267,29 +371,9 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                         {uploadedFiles.map((file, index) => (
                             <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
                                 {getFileCategory(file) === 'image' ? (
-                                    <img
-                                        src={filePreviews[index]}
-                                        alt={file.name}
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'contain',
-                                            backgroundColor: '#F9F9FA',
-                                        }}
-                                    />
+                                    <SafeImageThumb file={file} url={filePreviews[index]} />
                                 ) : getFileCategory(file) === 'video' ? (
-                                    <video
-                                        src={filePreviews[index]}
-                                        controls
-                                        playsInline
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'contain',
-                                            display: 'block',
-                                            backgroundColor: '#F9F9FA',
-                                        }}
-                                    />
+                                    <SafeVideoThumb file={file} url={filePreviews[index]} />
                                 ) : (
                                     <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                                 )}

@@ -30,7 +30,25 @@ export const FILE_CATEGORY_DISPLAY_LABELS: Record<LimitedFileCategory, string> =
     word: 'Word',
 };
 
-const imageExtensions = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg', 'avif'];
+const imageExtensions = [
+    'png',
+    'jpg',
+    'jpeg',
+    'jfif',
+    'pjpeg',
+    'pjp',
+    'webp',
+    'avif',
+    'gif',
+    'bmp',
+    'svg',
+    'ico',
+    'apng',
+    'tif',
+    'tiff',
+    'heic',
+    'heif',
+];
 const videoExtensions = ['mp4', 'webm', 'mov', 'm4v', 'ogv', 'avi', 'mkv'];
 
 export const getFileCategory = (file: File): FileCategory => {
@@ -53,11 +71,7 @@ export const getFileCategory = (file: File): FileCategory => {
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
-    if (
-        wordMimeTypes.includes(file.type) ||
-        lowerCasedName.endsWith('.doc') ||
-        lowerCasedName.endsWith('.docx')
-    ) {
+    if (wordMimeTypes.includes(file.type) || lowerCasedName.endsWith('.doc') || lowerCasedName.endsWith('.docx')) {
         return 'word';
     }
 
@@ -99,5 +113,6 @@ export const isVideoDurationValid = (file: File): Promise<boolean> =>
     });
 
 export const isDuplicateFile = (target: File, files: File[]): boolean =>
-    files.some((file) => file.name === target.name && file.size === target.size && file.lastModified === target.lastModified);
-
+    files.some(
+        (file) => file.name === target.name && file.size === target.size && file.lastModified === target.lastModified,
+    );
