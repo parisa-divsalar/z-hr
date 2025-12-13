@@ -6,8 +6,8 @@ import CleanIcon from '@/assets/images/icons/clean.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
 import { FilePreviewContainer, FilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
-import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import { getFileCategory } from '@/components/Landing/Wizard/Step1/attachmentRules';
+import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 
 interface AttachViewProps {
     voiceUrl: string | null;
@@ -82,7 +82,9 @@ const FileImagePreview: FunctionComponent<{ file: File; url?: string | null }> =
             const blob: Blob = Array.isArray(output) ? output[0] : output;
             const convertedUrl = URL.createObjectURL(blob);
             setDisplayUrl(convertedUrl);
-        } catch {}
+        } catch {
+            // ignore conversion failures; we'll fall back to the generic file icon
+        }
     };
 
     return displayUrl ? (
@@ -146,7 +148,11 @@ const AttachView: FunctionComponent<AttachViewProps> = (props) => {
                         {getFileCategory(file) === 'image' ? (
                             <FileImagePreview file={file} url={url} />
                         ) : getFileCategory(file) === 'video' ? (
-                            url ? <VideoThumbDialog url={url} title={file.name} /> : <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                            url ? (
+                                <VideoThumbDialog url={url} title={file.name} />
+                            ) : (
+                                <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                            )
                         ) : (
                             <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                         )}

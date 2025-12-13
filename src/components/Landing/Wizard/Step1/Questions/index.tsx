@@ -1,6 +1,6 @@
 'use client';
 
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Divider, IconButton, Stack, Typography, Tooltip } from '@mui/material';
 
@@ -58,7 +58,7 @@ const InlineVoicePlayer: FunctionComponent<{ url: string; duration?: number }> =
     const [currentTime, setCurrentTime] = useState(0);
     const [metaDuration, setMetaDuration] = useState<number>(duration ?? 0);
 
-    const audioRef = React.useRef<HTMLAudioElement | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         const el = audioRef.current;
@@ -228,8 +228,8 @@ const getFileKindLabel = (file: File) => {
 
 const SafeImagePreview: FunctionComponent<{ file: File; url?: string | null }> = ({ file, url }) => {
     const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableMediaUrl(url) ? url : null);
-    const createdLocallyRef = React.useRef<string | null>(null);
-    const triedConversionRef = React.useRef(false);
+    const createdLocallyRef = useRef<string | null>(null);
+    const triedConversionRef = useRef(false);
 
     useEffect(() => {
         const safeUrl = isRenderableMediaUrl(url) ? url : null;

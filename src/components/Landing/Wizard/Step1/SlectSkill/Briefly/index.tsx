@@ -113,7 +113,9 @@ const SafeImageThumb: FunctionComponent<{ file: File; url?: string }> = ({ file,
             const blob: Blob = Array.isArray(output) ? output[0] : output;
             const convertedUrl = URL.createObjectURL(blob);
             setDisplayUrl(convertedUrl);
-        } catch {}
+        } catch {
+            // ignore conversion failures; we'll fall back to the generic file icon
+        }
     };
 
     if (!displayUrl) {
