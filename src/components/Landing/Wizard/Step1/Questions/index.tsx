@@ -2,7 +2,7 @@
 
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 
-import { Divider, IconButton, Stack, Typography } from '@mui/material';
+import { Divider, IconButton, Stack, Typography, Tooltip } from '@mui/material';
 
 import AddIcon from '@/assets/images/icons/add.svg';
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
@@ -11,6 +11,7 @@ import PauseIcon from '@/assets/images/icons/button-puse.svg';
 import MicIcon from '@/assets/images/icons/download1.svg';
 import ImageIcon from '@/assets/images/icons/download2.svg';
 import VideoIcon from '@/assets/images/icons/download3.svg';
+import EditIcon from '@/assets/images/icons/edit.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
 import { AIStatus, StageWizard } from '@/components/Landing/type';
 import {
@@ -413,6 +414,18 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const { data: wizardData } = useWizardStore();
 
+    const editStageByStepId = useMemo<Record<string, StageWizard>>(
+        () => ({
+            background: 'SELECT_SKILL',
+            skills: 'SELECT_SKILL',
+            experiences: 'EXPERIENCE',
+            certificates: 'CERTIFICATION',
+            jobDescription: 'DESCRIPTION',
+            additionalInfo: 'DESCRIPTION',
+        }),
+        [],
+    );
+
     const mediaCounts = useMemo(() => {
         const safeArray = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v.filter(Boolean) as T[]) : []);
 
@@ -617,12 +630,40 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
                         <React.Fragment key={step.id}>
                             <QuestionCard>
                                 <QuestionTexts>
-                                    <Stack direction='row' alignItems='center'>
-                                        <QuestionBadge>{index + 1}</QuestionBadge>
+                                    <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                                        <Stack direction='row' alignItems='center'>
+                                            <QuestionBadge>{index + 1}</QuestionBadge>
 
-                                        <Typography variant='subtitle2' fontWeight={400} color='text.primary' ml={2}>
-                                            {step.id}
-                                        </Typography>
+                                            <Typography
+                                                variant='subtitle2'
+                                                fontWeight={400}
+                                                color='text.primary'
+                                                ml={2}
+                                            >
+                                                {step.id}
+                                            </Typography>
+                                        </Stack>
+
+                                        <Tooltip title='Edit' placement='top'>
+                                            <span>
+                                                <IconButton
+                                                    size='small'
+                                                    aria-label={`edit-${step.id}`}
+                                                    onClick={() => {
+                                                        const targetStage = editStageByStepId[step.id];
+                                                        if (targetStage) {
+                                                            setStage(targetStage);
+                                                        }
+                                                    }}
+                                                    disabled={!editStageByStepId[step.id]}
+                                                    sx={{
+                                                        '&:hover': { backgroundColor: 'rgba(129, 140, 248, 0.18)' },
+                                                    }}
+                                                >
+                                                    <EditIcon />
+                                                </IconButton>
+                                            </span>
+                                        </Tooltip>
                                     </Stack>
                                     <Stack direction='row' gap={1} mt={1}>
                                         <Typography variant='subtitle2' fontWeight={600} color='text.primary'>
