@@ -117,14 +117,14 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         }));
 
         updateField('experiences', payload as unknown as typeof wizardData.experiences);
-        // After syncing experiences into the store, rebuild the aggregated allFiles
         recomputeAllFiles();
-        // وابستگی فقط به ورودی‌های واقعی این افکت
     }, [backgroundEntries, updateField, recomputeAllFiles]);
 
     useEffect(() => {
         const urls = uploadedFiles.map((file) =>
-            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+            getFileCategory(file) === 'image' || getFileCategory(file) === 'video'
+                ? URL.createObjectURL(file)
+                : undefined,
         );
 
         setFilePreviews(urls);

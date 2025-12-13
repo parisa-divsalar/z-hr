@@ -311,7 +311,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     useEffect(() => {
         const urls = backgroundFiles.map((file) =>
-            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+            getFileCategory(file) === 'image' || getFileCategory(file) === 'video' ? URL.createObjectURL(file) : undefined,
         );
 
         setFilePreviews(urls);
@@ -649,7 +649,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                         {backgroundFiles.map((file, index) => {
                             const fileCategory = getFileCategory(file);
                             const fileTypeLabelText = getFileTypeDisplayName(file);
-                            const previewSrc = file.type.startsWith('image/') ? filePreviews[index] : undefined;
+                            const previewSrc = fileCategory === 'image' ? filePreviews[index] : undefined;
 
                             return (
                                 <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
@@ -660,7 +660,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                             style={{
                                                 width: '100%',
                                                 height: '100%',
-                                                objectFit: 'cover',
+                                                objectFit: 'contain',
+                                                backgroundColor: '#F9F9FA',
                                             }}
                                         />
                                     ) : fileCategory === 'video' ? (

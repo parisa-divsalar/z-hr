@@ -36,7 +36,7 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
         return <JobDescription setStage={setStage} />;
     }
 
-    return <Questions onNext={() => setActiveStep(2)} setAiStatus={setAiStatus} />;
+    return <Questions onNext={() => setActiveStep(2)} setAiStatus={setAiStatus} setStage={setStage} />;
 };
 
 export default Step1;

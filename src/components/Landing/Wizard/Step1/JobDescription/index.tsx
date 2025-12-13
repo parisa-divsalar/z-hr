@@ -60,7 +60,7 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
 
     useEffect(() => {
         const urls = uploadedFiles.map((file) =>
-            file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+            getFileCategory(file) === 'image' || getFileCategory(file) === 'video' ? URL.createObjectURL(file) : undefined,
         );
 
         setFilePreviews(urls);

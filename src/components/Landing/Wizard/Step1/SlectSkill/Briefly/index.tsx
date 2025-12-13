@@ -1,4 +1,4 @@
-import React, { FunctionComponent, RefObject, useEffect, useRef } from 'react';
+import React, { FunctionComponent, RefObject, useEffect, useMemo, useRef } from 'react';
 
 import { Divider, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -31,6 +31,7 @@ import {
     ContainerSkillAttachVoice,
     VoiceItem,
 } from '../styled';
+import { getFileCategory } from '../../attachmentRules';
 
 export interface BackgroundEntry {
     id: string;
@@ -43,6 +44,60 @@ export interface BackgroundEntry {
         duration: number;
     }[];
 }
+
+const EntryFileThumb: FunctionComponent<{ file: File; size: number; typeLabel: string }> = ({ file, size, typeLabel }) => {
+    const previewUrl = useMemo(() => {
+        const category = getFileCategory(file);
+        if (category === 'image' || category === 'video') {
+            return URL.createObjectURL(file);
+        }
+        return null;
+    }, [file]);
+
+    useEffect(() => {
+        return () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+        };
+    }, [previewUrl]);
+
+    return (
+        <FilePreviewContainer size={size}>
+            {getFileCategory(file) === 'image' ? (
+                <img
+                    src={previewUrl ?? ''}
+                    alt={file.name}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        backgroundColor: '#F9F9FA',
+                    }}
+                />
+            ) : getFileCategory(file) === 'video' ? (
+                <video
+                    src={previewUrl ?? ''}
+                    controls
+                    playsInline
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        display: 'block',
+                        backgroundColor: '#F9F9FA',
+                    }}
+                />
+            ) : (
+                <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+            )}
+
+            <FileTypeLabel gap={0.25}>
+                <Typography variant='caption' color='text.secondary'>
+                    {typeLabel}
+                </Typography>
+            </FileTypeLabel>
+        </FilePreviewContainer>
+    );
+};
 
 interface BrieflySectionProps {
     backgroundText: string;
@@ -211,18 +266,30 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     <FilesStack direction='row' spacing={1} sx={{ width: '100%' }}>
                         {uploadedFiles.map((file, index) => (
                             <FilePreviewContainer key={`${file.name}-${index}`} size={68}>
-                                {file.type.startsWith('image/') ? (
+                                {getFileCategory(file) === 'image' ? (
                                     <img
                                         src={filePreviews[index]}
                                         alt={file.name}
                                         style={{
                                             width: '100%',
                                             height: '100%',
-                                            objectFit: 'cover',
+                                            objectFit: 'contain',
+                                            backgroundColor: '#F9F9FA',
                                         }}
                                     />
-                                ) : file.type.startsWith('video/') ? (
-                                    <VideoIcon style={{ width: '32px', height: '32px', color: '#666' }} />
+                                ) : getFileCategory(file) === 'video' ? (
+                                    <video
+                                        src={filePreviews[index]}
+                                        controls
+                                        playsInline
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'contain',
+                                            display: 'block',
+                                            backgroundColor: '#F9F9FA',
+                                        }}
+                                    />
                                 ) : (
                                     <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                                 )}
@@ -323,32 +390,12 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                                 sx={{ width: '100%', border: 'none' }}
                                             >
                                                 {entry.files.map((file, idx) => (
-                                                    <FilePreviewContainer key={`${file.name}-${idx}`} size={50}>
-                                                        {file.type.startsWith('image/') ? (
-                                                            <img
-                                                                src={URL.createObjectURL(file)}
-                                                                alt={file.name}
-                                                                style={{
-                                                                    width: '100%',
-                                                                    height: '100%',
-                                                                    objectFit: 'cover',
-                                                                }}
-                                                            />
-                                                        ) : file.type.startsWith('video/') ? (
-                                                            <VideoIcon
-                                                                style={{ width: '32px', height: '32px', color: '#666' }}
-                                                            />
-                                                        ) : (
-                                                            <FileIcon
-                                                                style={{ width: '32px', height: '32px', color: '#666' }}
-                                                            />
-                                                        )}
-                                                        <FileTypeLabel gap={0.25}>
-                                                            <Typography variant='caption' color='text.secondary'>
-                                                                {getFileTypeDisplayName(file)}
-                                                            </Typography>
-                                                        </FileTypeLabel>
-                                                    </FilePreviewContainer>
+                                                    <EntryFileThumb
+                                                        key={`${file.name}-${idx}`}
+                                                        file={file}
+                                                        size={50}
+                                                        typeLabel={getFileTypeDisplayName(file)}
+                                                    />
                                                 ))}
                                             </FilesStack>
                                         )}

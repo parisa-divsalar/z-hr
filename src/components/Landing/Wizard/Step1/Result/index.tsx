@@ -9,6 +9,7 @@ import ImageIcon from '@/assets/images/icons/download2.svg';
 import VideoIcon from '@/assets/images/icons/download3.svg';
 import { AIStatus } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
+import { useWizardStore } from '@/store/wizard';
 
 import { Container, Tile, Label, IconWrapper, Row, Status } from './styled';
 
@@ -19,6 +20,7 @@ interface VoiceResultProps {
 
 const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
   const { setAiStatus, onSubmit } = props;
+  const { resetWizard } = useWizardStore();
 
   return (
     <Stack alignItems='center' justifyContent='center' height='100%'>
@@ -72,7 +74,10 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
             variant='outlined'
             size='large'
             fullWidth
-            onClick={() => setAiStatus('START')}
+            onClick={() => {
+              resetWizard();
+              setAiStatus('START');
+            }}
             startIcon={<AddIcon />}
           >
             Add more

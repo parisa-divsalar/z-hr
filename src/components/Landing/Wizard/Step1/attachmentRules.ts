@@ -30,14 +30,18 @@ export const FILE_CATEGORY_DISPLAY_LABELS: Record<LimitedFileCategory, string> =
     word: 'Word',
 };
 
+const imageExtensions = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg', 'avif'];
+const videoExtensions = ['mp4', 'webm', 'mov', 'm4v', 'ogv', 'avi', 'mkv'];
+
 export const getFileCategory = (file: File): FileCategory => {
     const lowerCasedName = file.name.toLowerCase();
+    const ext = lowerCasedName.split('.').pop() ?? '';
 
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith('image/') || imageExtensions.includes(ext)) {
         return 'image';
     }
 
-    if (file.type.startsWith('video/')) {
+    if (file.type.startsWith('video/') || videoExtensions.includes(ext)) {
         return 'video';
     }
 
