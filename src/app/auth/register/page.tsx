@@ -11,7 +11,7 @@ import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import * as yup from 'yup';
 
-import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
+import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/auth/login/styled';
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
 import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
@@ -57,7 +57,7 @@ const RegisterPage = () => {
 
             try {
                 await apiClientClient.post('auth/register', body);
-                router.push('/login');
+                router.push('/auth/login');
             } catch (error: any) {
                 setIsLoading(false);
                 console.error('Register Error', error);

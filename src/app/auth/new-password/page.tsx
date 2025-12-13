@@ -6,7 +6,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { IconButton, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-import { MainContainer, MainContent, FirstChild } from '@/app/(public)/login/styled';
+import { MainContainer, MainContent, FirstChild } from '@/app/auth/login/styled';
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
 import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
