@@ -7,6 +7,7 @@ export const PublicRoutes = {
     congrats: '/congrats',
     moreFeatures: '/more-features',
     resumeGenerator: '/resume-generator',
+    main: '/main',
 };
 
 export const PrivateRoutes = {
@@ -36,6 +37,7 @@ export const VisibilityLayout: string[] = [
     PrivateRoutes.interView,
     PublicRoutes.moreFeatures,
     PublicRoutes.resumeGenerator,
+    PublicRoutes.main,
 ];
 
 export const VisibilitySideBar: string[] = [

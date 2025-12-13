@@ -12,28 +12,28 @@ import AddToHomeScreen from '@/components/Other/AddToHomeScreen';
 // import SplashScreen from '@/components/Other/SplashScreen';
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const pathname = usePathname();
+    const pathname = usePathname();
 
-  const isHome = pathname === '/';
+    const isHome = pathname === '/';
 
-  return (
-    <Stack className={classes.mainLayout}>
-      <Stack className={classes.layoutContainer} bgcolor='background.default'>
-        <Navbar />
-        <Stack className={`${classes.childrenContainer} ${isHome ? classes.homeChildren : ''}`}>
-          <Stack direction='row' className={classes.childrenInner}>
-            <SideBar />
-            <Stack className={classes.children}>{children}</Stack>
-          </Stack>
+    return (
+        <Stack className={classes.mainLayout}>
+            <Stack className={classes.layoutContainer} bgcolor='background.default'>
+                <Navbar />
+                <Stack className={`${classes.childrenContainer} ${isHome ? classes.homeChildren : ''}`}>
+                    <Stack direction='row' className={classes.childrenInner}>
+                        <SideBar />
+                        <Stack className={classes.children}>{children}</Stack>
+                    </Stack>
+                </Stack>
+                <Footer />
+            </Stack>
+
+            {/*<SplashScreen />*/}
+
+            <AddToHomeScreen />
         </Stack>
-        <Footer />
-      </Stack>
-
-      {/*<SplashScreen />*/}
-
-      <AddToHomeScreen />
-    </Stack>
-  );
+    );
 };
 
 export default Layout;
