@@ -21,8 +21,8 @@ import {
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import MuiButton from '@/components/UI/MuiButton';
-import { apiClientClient } from '@/services/api-client';
-import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
+
+import { useWizardStore } from '@/store/wizard';
 
 import {
     TopSection,
@@ -388,7 +388,6 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
 };
 
 const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _setAiStatus, setStage }) => {
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const { data: wizardData } = useWizardStore();
 
     const editStageByStepId = useMemo<Record<string, StageWizard>>(
@@ -546,32 +545,6 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
         wizardData.skills,
     ]);
 
-    const handleSubmit = async () => {
-        setIsSubmitting(true);
-
-        console.log('wizardData', wizardData);
-
-        const zipBlob = await buildWizardZipBlob(wizardData, {
-            rootFolderName: wizardData.fullName || 'nv',
-            zipFileName: 'info.zip',
-        });
-
-        const zipFile = new File([zipBlob], 'info.zip');
-
-        const formData = new FormData();
-        formData.append('inputFile', zipFile);
-
-        try {
-            const res = await apiClientClient.post('send-file', formData);
-            console.log('res wizrd uploadd', res);
-            onNext();
-        } catch (error) {
-            console.log('rerr wizrd uploadd', error);
-
-            setIsSubmitting(false);
-        }
-    };
-
     return (
         <Container>
             <MiddleSection>
@@ -714,13 +687,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
                         Add more
                     </MuiButton>
 
-                    <MuiButton
-                        color='secondary'
-                        size='large'
-                        onClick={handleSubmit}
-                        endIcon={<ArrowRightIcon />}
-                        loading={isSubmitting}
-                    >
+                    <MuiButton color='secondary' size='large' onClick={onNext} endIcon={<ArrowRightIcon />}>
                         Submit
                     </MuiButton>
                 </Stack>
