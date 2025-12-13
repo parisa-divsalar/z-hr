@@ -39,18 +39,22 @@ export const InputContainer = styled(Stack, {
   flex: grow ? 1 : undefined,
 }));
 
-export const InputContent = styled('textarea')(({ theme }) => ({
+export const InputContent = styled('input')(({ theme }) => ({
   width: '100%',
+  height: '100%',
   textAlign: 'left',
   fontFamily: theme.typography.fontFamily,
   border: 'none',
   fontSize: '1rem',
   outline: 'none',
   fontWeight: '492',
-  overflowY: 'auto',
+  backgroundColor: 'transparent',
+  padding: 0,
+  margin: 0,
+  boxSizing: 'border-box',
+  minWidth: 0,
   color: theme.palette.text.primary,
 
-  fieldSizing: 'content',
   '&::placeholder': {
     color: theme.palette.grey[400],
     letterSpacing: '0',

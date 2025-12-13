@@ -188,7 +188,13 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
             </Typography>
 
             <Stack mt={2} direction='row' alignItems='center' gap={1} width='100%' maxWidth='426px'>
-                <InputContainer direction='row' highlight={contactInput.trim() !== ''} grow noMarginTop>
+                <InputContainer
+                    direction='row'
+                    highlight={contactInput.trim() !== ''}
+                    grow
+                    noMarginTop
+                    sx={{ height: '52px', padding: '0 16px', justifyContent: 'center' }}
+                >
                     <InputContent
                         placeholder='Type your answer...'
                         value={contactInput}
