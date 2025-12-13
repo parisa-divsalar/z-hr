@@ -11,7 +11,7 @@ import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import * as yup from 'yup';
 
-import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/(public)/login/styled';
+import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/auth/login/styled';
 import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
 import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';

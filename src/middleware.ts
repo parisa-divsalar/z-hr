@@ -5,17 +5,20 @@ export function middleware(request: NextRequest) {
     const accessToken = request.cookies.get('accessToken')?.value;
     const { pathname } = request.nextUrl;
 
-    if (pathname.startsWith('/login')) {
+    if (pathname.startsWith('/auth')) {
+        if (accessToken) {
+            return NextResponse.redirect(new URL('/', request.url));
+        }
         return NextResponse.next();
     }
 
     if (!accessToken) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/((?!login|_next/static|_next/image|favicon.ico|api).*)'],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
 };

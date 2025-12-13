@@ -1,6 +1,6 @@
 import { IconButton, Stack, Typography } from '@mui/material';
 
-import { ThemeContainer } from '@/app/(public)/login/styled';
+import { ThemeContainer } from '@/app/auth/login/styled';
 import MoonIcon from '@/assets/images/icons/moon.svg';
 import logo from '@/assets/images/logo/logo.png';
 import { AppImage } from '@/components/AppImage';
