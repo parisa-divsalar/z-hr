@@ -19,6 +19,7 @@ import {
     FilesStack,
     FileTypeLabel,
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import MuiButton from '@/components/UI/MuiButton';
 import { apiClientClient } from '@/services/api-client';
 import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
@@ -162,6 +163,20 @@ const isRenderableMediaUrl = (value?: string | null): value is string => {
     );
 };
 
+const resolveFileFromUnknown = (value: unknown): File | null => {
+    if (value instanceof File) return value;
+    const maybePayload = (value as any)?.payload;
+    if (maybePayload instanceof File) return maybePayload;
+    const maybeFile = (value as any)?.file;
+    if (maybeFile instanceof File) return maybeFile;
+    return null;
+};
+
+const resolveUrlFromUnknown = (value: unknown): string | null => {
+    const maybeUrl = (value as any)?.url;
+    return isRenderableMediaUrl(maybeUrl) ? maybeUrl : null;
+};
+
 const tryCreateObjectUrl = (value: unknown): string | null => {
     try {
         if (typeof window === 'undefined') return null;
@@ -291,63 +306,23 @@ const SafeImagePreview: FunctionComponent<{ file: File; url?: string | null }> =
     );
 };
 
-const SafeVideoPreview: FunctionComponent<{ file: File; url?: string | null }> = ({ file, url }) => {
-    const [displayUrl, setDisplayUrl] = useState<string | null>(isRenderableMediaUrl(url) ? url : null);
-
-    useEffect(() => {
-        const safeUrl = isRenderableMediaUrl(url) ? url : null;
-        if (safeUrl) {
-            setDisplayUrl(safeUrl);
-            return;
-        }
-
-        const local = tryCreateObjectUrl(file);
-        setDisplayUrl(local);
-        return () => {
-            if (local) URL.revokeObjectURL(local);
-        };
-    }, [file, url]);
-
-    if (!displayUrl) {
-        return (
-            <Stack alignItems='center' justifyContent='center' height='100%'>
-                <FileIcon style={{ width: 28, height: 28, color: '#666' }} />
-            </Stack>
-        );
-    }
-
-    return (
-        <video
-            src={displayUrl}
-            controls
-            playsInline
-            style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                display: 'block',
-                backgroundColor: '#F9F9FA',
-            }}
-        />
-    );
-};
-
 const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknown[] }> = ({ files, voices }) => {
     const safeFiles = useMemo(() => (Array.isArray(files) ? files : []).filter(Boolean) as unknown[], [files]);
     const safeVoices = useMemo(() => (Array.isArray(voices) ? voices : []).filter(Boolean) as VoicePayload[], [voices]);
 
     const fileUrls = useMemo(() => {
         return safeFiles.map((item) => {
-            const file = item instanceof File ? item : null;
-            const url = file ? tryCreateObjectUrl(file) : null;
-            return { item, file, url };
+            const file = resolveFileFromUnknown(item);
+            const explicitUrl = resolveUrlFromUnknown(item);
+            const url = explicitUrl ?? (file ? tryCreateObjectUrl(file) : null);
+            return { item, file, url, shouldRevoke: !!url && !explicitUrl };
         });
     }, [safeFiles]);
 
     useEffect(() => {
         return () => {
-            fileUrls.forEach(({ url }) => {
-                if (url) URL.revokeObjectURL(url);
+            fileUrls.forEach(({ url, shouldRevoke }) => {
+                if (url && shouldRevoke) URL.revokeObjectURL(url);
             });
         };
     }, [fileUrls]);
@@ -363,26 +338,28 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
                             key={`${(file as any)?.id ?? file?.name ?? `item-${idx}`}-${(file as any)?.lastModified ?? idx}`}
                             size={68}
                         >
-                            <a
-                                href={url ?? '#'}
-                                download={file?.name ?? undefined}
-                                target='_blank'
-                                rel='noreferrer'
-                                style={{ display: 'block', width: '100%', height: '100%' }}
-                                onClick={(e) => {
-                                    if (!url) e.preventDefault();
-                                }}
-                            >
-                                {file && isImageFile(file) ? (
-                                    <SafeImagePreview file={file} url={url} />
-                                ) : file && isVideoFile(file) ? (
-                                    <SafeVideoPreview file={file} url={url} />
-                                ) : (
-                                    <Stack alignItems='center' justifyContent='center' height='100%'>
-                                        <FileIcon style={{ width: 28, height: 28, color: '#666' }} />
-                                    </Stack>
-                                )}
-                            </a>
+                            {file && isVideoFile(file) && url ? (
+                                <VideoThumbDialog url={url} title={file.name} />
+                            ) : (
+                                <a
+                                    href={url ?? '#'}
+                                    download={file?.name ?? undefined}
+                                    target='_blank'
+                                    rel='noreferrer'
+                                    style={{ display: 'block', width: '100%', height: '100%' }}
+                                    onClick={(e) => {
+                                        if (!url) e.preventDefault();
+                                    }}
+                                >
+                                    {file && isImageFile(file) ? (
+                                        <SafeImagePreview file={file} url={url} />
+                                    ) : (
+                                        <Stack alignItems='center' justifyContent='center' height='100%'>
+                                            <FileIcon style={{ width: 28, height: 28, color: '#666' }} />
+                                        </Stack>
+                                    )}
+                                </a>
+                            )}
 
                             <FileTypeLabel gap={0.25}>
                                 <Typography variant='caption' fontWeight={600} color='text.secondary'>

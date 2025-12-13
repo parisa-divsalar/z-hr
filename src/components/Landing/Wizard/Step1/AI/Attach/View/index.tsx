@@ -6,6 +6,7 @@ import CleanIcon from '@/assets/images/icons/clean.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
 import { FilePreviewContainer, FilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
+import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import { getFileCategory } from '@/components/Landing/Wizard/Step1/attachmentRules';
 
 interface AttachViewProps {
@@ -145,22 +146,7 @@ const AttachView: FunctionComponent<AttachViewProps> = (props) => {
                         {getFileCategory(file) === 'image' ? (
                             <FileImagePreview file={file} url={url} />
                         ) : getFileCategory(file) === 'video' ? (
-                            url ? (
-                                <video
-                                    src={url}
-                                    controls
-                                    playsInline
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'contain',
-                                        display: 'block',
-                                        backgroundColor: '#F9F9FA',
-                                    }}
-                                />
-                            ) : (
-                                <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
-                            )
+                            url ? <VideoThumbDialog url={url} title={file.name} /> : <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                         ) : (
                             <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />
                         )}

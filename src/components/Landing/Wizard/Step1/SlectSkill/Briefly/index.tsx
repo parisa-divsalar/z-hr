@@ -16,6 +16,7 @@ import {
     FileTypeLabel,
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import { RemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
+import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import MuiButton from '@/components/UI/MuiButton';
 
@@ -112,7 +113,9 @@ const SafeImageThumb: FunctionComponent<{ file: File; url?: string }> = ({ file,
             const blob: Blob = Array.isArray(output) ? output[0] : output;
             const convertedUrl = URL.createObjectURL(blob);
             setDisplayUrl(convertedUrl);
-        } catch {}
+        } catch {
+            //Test
+        }
     };
 
     if (!displayUrl) {
@@ -161,20 +164,7 @@ const SafeVideoThumb: FunctionComponent<{ file: File; url?: string }> = ({ file,
         return <FileIcon style={{ width: '32px', height: '32px', color: '#666' }} />;
     }
 
-    return (
-        <video
-            src={displayUrl}
-            controls
-            playsInline
-            style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                display: 'block',
-                backgroundColor: '#F9F9FA',
-            }}
-        />
-    );
+    return <VideoThumbDialog url={displayUrl} title={file.name} />;
 };
 
 const EntryFileThumb: FunctionComponent<{ file: File; size: number; typeLabel: string }> = ({
