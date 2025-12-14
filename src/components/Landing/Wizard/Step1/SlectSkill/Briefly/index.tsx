@@ -9,10 +9,7 @@ import EdiIcon from '@/assets/images/icons/edit.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
 import RecordIcon from '@/assets/images/icons/recordV.svg';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
-import {
-    FilePreviewContainer,
-    FileTypeLabel,
-} from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { FilePreviewContainer, FileTypeLabel } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import MuiButton from '@/components/UI/MuiButton';
@@ -26,7 +23,6 @@ import {
     AddEntryButton,
     BackgroundEntryIndex,
     ContainerSkill,
-    ContainerSkillAttachItem,
     ContainerSkillAttachTop,
     ContainerSkillAttachVoice,
     EntriesDivider,
@@ -381,9 +377,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                     </Typography>
                                 </FileTypeLabel>
 
-                                <TransparentRemoveFileButton
-                                    onClick={() => onRemoveUploadedFile(index)}
-                                >
+                                <TransparentRemoveFileButton onClick={() => onRemoveUploadedFile(index)}>
                                     <CleanIcon width={24} height={24} />
                                 </TransparentRemoveFileButton>
                             </FilePreviewContainer>
