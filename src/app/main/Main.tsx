@@ -1,36 +1,22 @@
 'use client';
 
-import Navbar from '@/components/Layout/Navbar';
-import Footer from '@/components/Layout/Footer';
-import ATSImage from '@/assets/images/main/ats.png';
-import AITextImage from '@/assets/images/main/ai-text.png';
-import KeywordImage from '@/assets/images/main/keyword.png';
-import AICoverImage from '@/assets/images/main/ai-cover.png';
-import ATSScoreImage from '@/assets/images/main/ats-score.png';
-import AIBulletImage from '@/assets/images/main/ai-bullet.png';
-import OneClickImage from '@/assets/images/main/one-click.png';
-import ModernATSImage from '@/assets/images/main/modern-ats.png';
-import MiddleEastImage from '@/assets/images/main/middle-east.png';
-import QuickResumeImage from '@/assets/images/main/quick-resume.png';
-import JobOpportunityImage from '@/assets/images/main/job-opportunity.png';
 import { FC } from 'react';
+
+import { Typography, Container, Box, Button, styled } from '@mui/material';
 import Image, { StaticImageData } from 'next/image';
-import { ListAlt, CheckCircleOutline, Search, Layers, MailOutline, CloudUpload } from '@mui/icons-material';
-import {
-    Grid,
-    Typography,
-    Container,
-    Box,
-    Divider,
-    Button,
-    styled,
-    CardContent,
-    Card,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-} from '@mui/material';
+
+import AIBulletImage from '@/assets/images/main/ai-bullet.png';
+import AITextImage from '@/assets/images/main/ai-text.png';
+import ATSScoreImage from '@/assets/images/main/ats-score.png';
+import ATSImage from '@/assets/images/main/ats.png';
+import JobOpportunityImage from '@/assets/images/main/job-opportunity.png';
+import KeywordImage from '@/assets/images/main/keyword.png';
+import MiddleEastImage from '@/assets/images/main/middle-east.png';
+import ModernATSImage from '@/assets/images/main/modern-ats.png';
+import OneClickImage from '@/assets/images/main/one-click.png';
+import QuickResumeImage from '@/assets/images/main/quick-resume.png';
+import Footer from '@/components/Layout/Footer';
+import Navbar from '@/components/Layout/Navbar';
 
 export default function MinaComponent() {
     return (
@@ -52,7 +38,7 @@ export default function MinaComponent() {
 
                 <ProductFeatures />
 
-                {/* 
+                {/*
 
 
             <Divider sx={{ my: 6 }} />
@@ -66,7 +52,6 @@ export default function MinaComponent() {
     );
 }
 
-// /////////////////////////////////////////////////////////
 const HeroSection: FC = () => {
     const HeroWrapper = styled(Box)(({ theme }) => ({
         textAlign: 'center',
@@ -106,7 +91,6 @@ const HeroSection: FC = () => {
     );
 };
 
-// /////////////////////////////////////////////////////////
 interface Benefit {
     title: string;
     description: string;
@@ -140,7 +124,7 @@ const KeyBenefits: FC = () => {
         <Container>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '5rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'start' }}>
-                    <Typography variant='h5' color='secondary.main' fontWeight={'700'} fontSize={'2.25rem'}>
+                    <Typography variant='h5' color='secondary.main' fontWeight={'700'}>
                         Key Benefits
                     </Typography>
 
