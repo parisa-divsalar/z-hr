@@ -21,7 +21,6 @@ import {
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import MuiButton from '@/components/UI/MuiButton';
-
 import { useWizardStore } from '@/store/wizard';
 
 import {

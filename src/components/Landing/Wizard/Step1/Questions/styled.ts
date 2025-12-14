@@ -2,11 +2,14 @@ import { Box, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const Container = styled(Box)(({ theme }) => ({
+  display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2.5),
   marginTop: '3rem',
   alignItems: 'center',
   justifyContent: 'center',
+  width: '100%',
+  boxSizing: 'border-box',
   maxWidth: 820,
 }));
 export const ContentCard = styled(Stack)(({ theme }) => ({
@@ -53,6 +56,8 @@ export const MediaIconBox = styled(Box)(() => ({
 export const MiddleSection = styled(Stack)(() => ({
   width: '100%',
   alignItems: 'center',
+ 
+
 }));
 
 export const QuestionList = styled(Stack)(({ theme }) => ({

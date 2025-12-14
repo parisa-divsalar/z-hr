@@ -112,7 +112,7 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             updateField('certificates', payload as unknown as typeof wizardData.certificates);
             recomputeAllFiles();
         },
-        [updateField, wizardData.certificates, recomputeAllFiles],
+        [updateField, recomputeAllFiles],
     );
 
     useEffect(() => {
@@ -288,11 +288,9 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => {
-            const next = [...prev, newEntry];
-            persistEntriesToStore(next);
-            return next;
-        });
+        const next = [...backgroundEntries, newEntry];
+        setBackgroundEntries(next);
+        persistEntriesToStore(next);
         setIsEditingEntry(false);
         setEditingEntryId(null);
         setEditingEntryBackup(null);
@@ -306,24 +304,21 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
     };
 
     const handleEditBackgroundEntry = (id: string) => {
+        const entry = backgroundEntries.find((item) => item.id === id);
+        if (!entry) {
+            return;
+        }
+
         setIsEditingEntry(true);
-        setBackgroundEntries((prev) => {
-            const entry = prev.find((item) => item.id === id);
+        setEditingEntryId(entry.id);
+        setEditingEntryBackup(entry);
+        setBackgroundText(entry.text);
+        setUploadedFiles(entry.files);
+        setVoiceRecordings(entry.voices);
 
-            if (!entry) {
-                return prev;
-            }
-
-            setEditingEntryId(entry.id);
-            setEditingEntryBackup(entry);
-            setBackgroundText(entry.text);
-            setUploadedFiles(entry.files);
-            setVoiceRecordings(entry.voices);
-
-            const remaining = prev.filter((item) => item.id !== id);
-            persistEntriesToStore(remaining);
-            return remaining;
-        });
+        const remaining = backgroundEntries.filter((item) => item.id !== id);
+        setBackgroundEntries(remaining);
+        persistEntriesToStore(remaining);
     };
 
     const handleSaveBackgroundEntry = () => {
@@ -342,11 +337,9 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
             voices: voiceRecordings,
         };
 
-        setBackgroundEntries((prev) => {
-            const next = [...prev, updatedEntry];
-            persistEntriesToStore(next);
-            return next;
-        });
+        const next = [...backgroundEntries, updatedEntry];
+        setBackgroundEntries(next);
+        persistEntriesToStore(next);
 
         setIsEditingEntry(false);
         setEditingEntryId(null);
@@ -362,11 +355,9 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
 
     const handleCancelEditBackgroundEntry = () => {
         if (editingEntryBackup) {
-            setBackgroundEntries((prev) => {
-                const next = [...prev, editingEntryBackup];
-                persistEntriesToStore(next);
-                return next;
-            });
+            const next = [...backgroundEntries, editingEntryBackup];
+            setBackgroundEntries(next);
+            persistEntriesToStore(next);
         }
 
         setIsEditingEntry(false);
@@ -382,15 +373,14 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
     };
 
     const handleDeleteBackgroundEntry = (id: string) => {
-        setBackgroundEntries((prev) => {
-            const target = prev.find((item) => item.id === id);
-            if (target) {
-                target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
-            }
-            const next = prev.filter((item) => item.id !== id);
-            persistEntriesToStore(next);
-            return next;
-        });
+        const target = backgroundEntries.find((item) => item.id === id);
+        if (target) {
+            target.voices.forEach((voice) => URL.revokeObjectURL(voice.url));
+        }
+
+        const next = backgroundEntries.filter((item) => item.id !== id);
+        setBackgroundEntries(next);
+        persistEntriesToStore(next);
     };
 
     const hasDraft = backgroundText.trim() !== '' || uploadedFiles.length > 0 || voiceRecordings.length > 0;
