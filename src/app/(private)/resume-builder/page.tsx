@@ -32,7 +32,7 @@ export default function ResumeBuilderPage() {
         <ResumeBuilderRoot>
             <Stack width='100%' height='100%'>
                 <IntroDialog open={isIntroOpen} onClose={() => setIsIntroOpen(false)} />
-                <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
+                <Wizard setAiStatus={setAiStatus} initialStep={initialStep} variant='resume-builder' />
             </Stack>
         </ResumeBuilderRoot>
     );

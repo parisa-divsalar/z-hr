@@ -11,10 +11,11 @@ import StepWrapper from '@/components/Landing/Wizard/Stepper';
 interface WizardProps {
   setAiStatus: (status: AIStatus) => void;
   initialStep?: number;
+  variant?: 'landing' | 'resume-builder';
 }
 
 const Wizard: FunctionComponent<WizardProps> = (props) => {
-  const { setAiStatus, initialStep = 1 } = props;
+  const { setAiStatus, initialStep = 1, variant = 'landing' } = props;
   const [activeStep, setActiveStep] = useState<number>(initialStep);
 
   const getSubChildWizard = () => {
@@ -24,7 +25,7 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
       case 2:
         return <Step2 setActiveStep={setActiveStep} />;
       case 3:
-        return <Step3 setActiveStep={setActiveStep} />;
+        return <Step3 setActiveStep={setActiveStep} variant={variant} />;
       default:
         return <Stack />;
     }
