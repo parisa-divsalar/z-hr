@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { CircularProgress, Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -15,10 +15,7 @@ import RecordIcon from '@/assets/images/icons/recordV.svg';
 import TooltipIcon from '@/assets/images/icons/tooltip.svg';
 import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
-import {
-    FilePreviewContainer,
-    FileTypeLabel,
-} from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
+import { FilePreviewContainer, FileTypeLabel } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import {
     FILE_CATEGORY_LIMITS,
     FILE_CATEGORY_TOAST_LABELS,
@@ -200,6 +197,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
         (backgroundSection?.voices as { id: string; url: string; blob: Blob; duration: number }[]) ?? [];
 
     const [skills, setSkills] = useState<TSkill[]>([]);
+    const [isSkillsLoading, setIsSkillsLoading] = useState<boolean>(true);
     const [customSkillInput, setCustomSkillInput] = useState<string>('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
     const backgroundRef = useRef<HTMLTextAreaElement>(null);
@@ -233,6 +231,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
 
     useEffect(() => {
         const fetchCategorySkills = async () => {
+            setIsSkillsLoading(true);
             try {
                 const category = wizardData.mainSkill?.trim();
                 const endpoint = category
@@ -288,11 +287,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 }
             } catch (error) {
                 console.error('Failed to fetch skills by category-name', error);
+            } finally {
+                setIsSkillsLoading(false);
             }
         };
 
         void fetchCategorySkills();
-    }, [wizardData.mainSkill, wizardData.skills]);
+    }, [wizardData.mainSkill]);
 
     const handleFocusBackground = () => {
         backgroundRef.current?.focus();
@@ -760,9 +761,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                                         </Typography>
                                     </FileTypeLabel>
 
-                                    <TransparentRemoveFileButton
-                                        onClick={() => handleRemoveUploadedFile(index)}
-                                    >
+                                    <TransparentRemoveFileButton onClick={() => handleRemoveUploadedFile(index)}>
                                         <CleanIcon width={24} height={24} />
                                     </TransparentRemoveFileButton>
                                 </FilePreviewContainer>
@@ -797,22 +796,34 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     </ActionIconButton>
                 </Stack>
             </Stack>
-            <SkillContainer direction='row'>
-                {skills.map((skill: TSkill) => (
-                    <MuiChips key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
-                ))}
-            </SkillContainer>
+            <Stack justifyContent='center' alignItems='center'>
+                {isSkillsLoading ? (
+                    <Stack justifyContent='center' alignItems='center' sx={{ minHeight: 96, width: '100%' }}>
+                        <CircularProgress size={28} />
+                    </Stack>
+                ) : skills.length > 0 ? (
+                    <SkillContainer direction='row'>
+                        {skills.map((skill: TSkill) => (
+                            <MuiChips key={skill.id} skill={skill} onUpdateSkill={onUpdateSkill} />
+                        ))}
+                    </SkillContainer>
+                ) : (
+                    <Typography variant='body2' color='text.secondary' mt={1.5}>
+                        No skills found.
+                    </Typography>
+                )}
 
-            <ContainerSkill direction='row' active={!!customSkillInput}>
-                <InputContent
-                    placeholder='Your another skills: Designer, Motion...'
-                    value={customSkillInput}
-                    onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
-                        setCustomSkillInput(event.target.value);
-                    }}
-                    ref={customSkillRef}
-                />
-            </ContainerSkill>
+                <ContainerSkill direction='row' active={!!customSkillInput}>
+                    <InputContent
+                        placeholder='Your another skills: Designer, Motion...'
+                        value={customSkillInput}
+                        onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+                            setCustomSkillInput(event.target.value);
+                        }}
+                        ref={customSkillRef}
+                    />
+                </ContainerSkill>
+            </Stack>
             <Stack mt={4} mb={6} direction='row' gap={3}>
                 <MuiButton
                     color='secondary'
