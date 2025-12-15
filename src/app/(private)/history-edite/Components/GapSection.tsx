@@ -26,7 +26,7 @@ const GapSection = () => {
                     {activeTab === 'skill-gap' && <SkillGapTabContent />}
                     {activeTab === 'interview-questions' && <InterviewQuestionsTabContent />}
                     {activeTab === 'positions' && <PositionsTabContent />}
-                    {activeTab === 'Cover-letter' && <CoverLetter />}
+                    {activeTab === 'cover-letter' && <CoverLetter />}
                 </SkillGapContainer>
             </SectionCard>
         </>
