@@ -1,6 +1,4 @@
-import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
-
 import type { AllFileItem, WizardData } from './wizardSchema';
 
 interface BuildWizardZipOptions {
@@ -8,11 +6,11 @@ interface BuildWizardZipOptions {
     zipFileName?: string;
 }
 
-export const buildWizardZipBlob = async (wizardData: WizardData, _options?: BuildWizardZipOptions): Promise<Blob> => {
+export const buildWizardZipBlob = async (
+    wizardData: WizardData,
+    _options?: BuildWizardZipOptions,
+): Promise<{ zipBlob: Blob; serializable: any }> => {
     const zip = new JSZip();
-
-    const root = zip;
-
     const { allFiles } = wizardData;
 
     (allFiles as AllFileItem[]).forEach((item) => {
@@ -20,34 +18,30 @@ export const buildWizardZipBlob = async (wizardData: WizardData, _options?: Buil
             const file = item.payload as File | undefined;
             if (!file) return;
 
-            const originalName = file.name;
-            const extension = originalName.includes('.') ? originalName.split('.').pop() : 'bin';
-
-            const fileNameOnZip = `${item.id}.${extension}`;
-
-            root.file(fileNameOnZip, file);
+            const ext = file.name.split('.').pop() || 'bin';
+            zip.file(`${item.id}.${ext}`, file);
             return;
         }
 
         if (item.kind === 'voice') {
-            const payload = item.payload as { id?: string; url: string; blob: Blob; duration: number } | undefined;
+            const payload = item.payload as {
+                blob?: Blob;
+            };
 
-            if (!payload || !payload.blob) return;
+            if (!payload?.blob) return;
 
             const mime = payload.blob.type || 'audio/webm';
             let ext = 'webm';
             if (mime.includes('wav')) ext = 'wav';
-            else if (mime.includes('mpeg') || mime.includes('mp3')) ext = 'mp3';
+            else if (mime.includes('mp3')) ext = 'mp3';
             else if (mime.includes('ogg')) ext = 'ogg';
-            else if (mime.includes('m4a') || mime.includes('mp4')) ext = 'm4a';
+            else if (mime.includes('m4a')) ext = 'm4a';
 
-            const fileNameOnZip = `${item.id}.${ext}`;
-
-            root.file(fileNameOnZip, payload.blob);
+            zip.file(`${item.id}.${ext}`, payload.blob);
         }
     });
 
-    const { allFiles: _discardAllFiles, ...rest } = wizardData;
+    const { allFiles: _discard, ...rest } = wizardData;
 
     const serializable = {
         ...rest,
@@ -60,14 +54,9 @@ export const buildWizardZipBlob = async (wizardData: WizardData, _options?: Buil
         })),
     };
 
-    root.file('wizard-data.txt', JSON.stringify(serializable, null, 2));
+    zip.file('wizard-data.txt', JSON.stringify(serializable, null, 2));
 
-    return zip.generateAsync({ type: 'blob' });
-};
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
 
-export const buildWizardZip = async (wizardData: WizardData, options?: BuildWizardZipOptions): Promise<void> => {
-    const rootName = options?.rootFolderName?.trim() || 'nv';
-    const zipBlob = await buildWizardZipBlob(wizardData, { ...options, rootFolderName: rootName });
-    const zipName = options?.zipFileName?.trim() || `${rootName}.zip`;
-    saveAs(zipBlob, zipName);
+    return { zipBlob, serializable };
 };

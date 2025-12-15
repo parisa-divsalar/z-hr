@@ -6,7 +6,7 @@ import CacheError from '@/services/cache-error';
 
 export async function GET() {
     try {
-        const response = await apiClientServer.get(`SlillsCategories`);
+        const response = await apiClientServer.get('Apps/SlillsCategories');
         const data = await response.data;
 
         return NextResponse.json({ data });

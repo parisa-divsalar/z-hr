@@ -1,7 +1,8 @@
+import CacheError from '@/services/cache-error';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
-
+import { AxiosError } from 'axios';
 import { API_SERVER_BASE_URL } from '@/services/api-client';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
     try {
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No access token' }, { status: 401 });
         }
 
-        const sendFileUrl = new URL('SendFile', API_SERVER_BASE_URL);
+        const sendFileUrl = new URL('Apps/SendFile', API_SERVER_BASE_URL);
         sendFileUrl.searchParams.set('userId', userId);
         sendFileUrl.searchParams.set('lang', 'en');
 
@@ -45,9 +46,6 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ result: resultText });
     } catch (error) {
-        console.log('err === = = == = = == == = = = ', error);
-
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        return NextResponse.json({ error: message }, { status: 500 });
+        return CacheError(error as AxiosError);
     }
 }

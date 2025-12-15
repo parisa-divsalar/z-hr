@@ -7,7 +7,7 @@ import CacheError from '@/services/cache-error';
 export async function POST(request: Request) {
     try {
         const input = await request.json();
-        const { data } = await apiClientServer.post('Login', input);
+        const { data } = await apiClientServer.post('Apps/Login', input);
 
         const response = NextResponse.json({ data });
 

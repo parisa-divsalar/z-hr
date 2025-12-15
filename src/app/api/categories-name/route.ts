@@ -9,7 +9,7 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const category = searchParams.get('category') ?? 'Databases';
 
-        const response = await apiClientServer.get(`SkillsBy-category/${category}`);
+        const response = await apiClientServer.get(`Apps/SkillsBy-category/${category}`);
         const data = response.data;
 
         return NextResponse.json({ data });
