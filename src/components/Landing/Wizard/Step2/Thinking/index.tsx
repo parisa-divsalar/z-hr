@@ -28,27 +28,25 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
         }
     };
 
-    // const addCV = async (requestId: string, bodyOfResume: any) => {
-    //     try {
-    //         const res = await apiClientClient.post(`cv/add-cv?requestId=${requestId}`, bodyOfResume);
-    //         console.log('res 349587398573', res);
-    //         setActiveStep(3);
-    //     } catch (err) {
-    //         setIsSubmitting(false);
-    //         console.log('err 3-507349', err);
-    //     }
-    // };
+    const addCV = async (requestId: string, bodyOfResume: any) => {
+        try {
+            const res = await apiClientClient.post(`cv/add-cv?requestId=${requestId}`, bodyOfResume);
+            console.log('res 349587398573', res);
+            setActiveStep(3);
+        } catch (err) {
+            setIsSubmitting(false);
+            console.log('err 3-507349', err);
+        }
+    };
 
     const pollStatus = async (requestId: string, bodyOfResume: any) => {
         try {
             const res = await apiClientClient.get(`cv/cv-analysis-detailed?requestId=${requestId}`);
             const status = res.data.main_request_status;
-            console.log('status', status, new Date());
+            console.log('status', status);
 
             if (status === 2) {
-                // await addCV(requestId, bodyOfResume);
-                console.log('sadasdasdasdasdasdas', res.data.sub_requests[0].api_output);
-                setIsSubmitting(false);
+                await addCV(requestId, bodyOfResume);
                 return;
             }
 
@@ -75,7 +73,6 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             const requestId: string = res.data.result as string;
 
             await pollStatus(requestId, bodyOfResume);
-            // await pollStatus('f81d955c-7a1a-43b6-9da9-a543fed78619', bodyOfResume);
         } catch (err) {
             setIsSubmitting(false);
         }
