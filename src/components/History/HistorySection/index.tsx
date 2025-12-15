@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { CircularProgress, Stack, Typography } from '@mui/material';
@@ -32,6 +32,15 @@ import {
 import { THistoryChannel } from '@/components/History/type';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+
+type THistorySortOption = 'NEW_TO_OLD' | 'OLD_TO_NEW' | 'SIZE' | 'FIT_SCORE';
+
+const SORT_OPTIONS: { value: THistorySortOption; label: string }[] = [
+  { value: 'NEW_TO_OLD', label: 'New to Old' },
+  { value: 'OLD_TO_NEW', label: 'Old to New' },
+  { value: 'SIZE', label: 'Size' },
+  { value: 'FIT_SCORE', label: 'Fit Score' },
+];
 
 const HistoryCard = ({
   name,
@@ -198,20 +207,60 @@ const HistorySection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(communityChannels[0]?.id ?? null);
   const observerTarget = useRef<HTMLDivElement>(null);
   const sortButtonRef = useRef<HTMLDivElement>(null);
   const sortMenuRef = useRef<HTMLDivElement>(null);
 
   const ITEMS_PER_PAGE = 3;
-  const selectedResume = communityChannels.find((channel) => channel.id === selectedResumeId) ?? null;
+
+  const [sortOption, setSortOption] = useState<THistorySortOption>('NEW_TO_OLD');
+
+  const selectedSortLabel = useMemo(
+    () => SORT_OPTIONS.find((o) => o.value === sortOption)?.label ?? 'Sort',
+    [sortOption],
+  );
+
+  const parseDateToTimestamp = (value: string) => {
+    const [mm, dd, yyyy] = value.split('/').map((x) => Number(x));
+    if (!mm || !dd || !yyyy) return 0;
+    const t = new Date(yyyy, mm - 1, dd).getTime();
+    return Number.isFinite(t) ? t : 0;
+  };
+
+  const parseSizeMB = (value: string) => {
+    // Expected format: "2.85 MB"
+    const n = Number.parseFloat(value.replace(/mb/i, '').trim());
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const parseFitScore = (value: string) => {
+    // Expected format: "89%"
+    const n = Number.parseFloat(value.replace('%', '').trim());
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const sortedDisplayedItems = useMemo(() => {
+    const items = [...displayedItems];
+    switch (sortOption) {
+      case 'NEW_TO_OLD':
+        return items.sort((a, b) => parseDateToTimestamp(b.date) - parseDateToTimestamp(a.date));
+      case 'OLD_TO_NEW':
+        return items.sort((a, b) => parseDateToTimestamp(a.date) - parseDateToTimestamp(b.date));
+      case 'SIZE':
+        return items.sort((a, b) => parseSizeMB(b.size) - parseSizeMB(a.size));
+      case 'FIT_SCORE':
+        return items.sort((a, b) => parseFitScore(b.Percentage) - parseFitScore(a.Percentage));
+      default:
+        return items;
+    }
+  }, [displayedItems, sortOption]);
 
   const handleSortClick = () => {
     setIsSortMenuOpen((prev) => !prev);
   };
 
-  const handleResumeSelect = (resumeId: string) => {
-    setSelectedResumeId(resumeId);
+  const handleSortSelect = (option: THistorySortOption) => {
+    setSortOption(option);
     setIsSortMenuOpen(false);
   };
 
@@ -293,7 +342,7 @@ const HistorySection = () => {
 
           <RelativeStack ref={sortButtonRef}>
             <MuiButton
-              text={selectedResume?.name ?? 'Select resume'}
+              text={selectedSortLabel}
               color='secondary'
               variant='text'
               sx={{
@@ -307,15 +356,15 @@ const HistorySection = () => {
 
             <PopupMenu ref={sortMenuRef} isOpen={isSortMenuOpen}>
               <SortMenuContentStack>
-                {communityChannels.map((channel) => {
-                  const isSelected = selectedResumeId === channel.id;
+                {SORT_OPTIONS.map((opt) => {
+                  const isSelected = sortOption === opt.value;
                   return (
                     <MenuItemStack
-                      key={channel.id}
-                      direction='column'
-                      alignItems='flex-start'
-                      gap={0.5}
-                      onClick={() => handleResumeSelect(channel.id)}
+                      key={opt.value}
+                      direction='row'
+                      alignItems='center'
+                      gap={1}
+                      onClick={() => handleSortSelect(opt.value)}
                       sx={{
                         px: 1,
                         py: 0.75,
@@ -325,10 +374,7 @@ const HistorySection = () => {
                       }}
                     >
                       <Typography variant='subtitle2' fontWeight={isSelected ? 600 : 400} color='text.primary'>
-                        {channel.name}
-                      </Typography>
-                      <Typography variant='caption' color='text.secondary'>
-                        {channel.date}
+                        {opt.label}
                       </Typography>
                     </MenuItemStack>
                   );
@@ -339,7 +385,7 @@ const HistorySection = () => {
         </Stack>
       </SectionHeader>
       
-      {displayedItems.map((channel, index) => (
+      {sortedDisplayedItems.map((channel, index) => (
         <HistoryCard key={`${channel.id}-${index}`} {...channel} />
       ))}
 
