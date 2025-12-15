@@ -19,145 +19,145 @@ import MuiButton from '@/components/UI/MuiButton';
 import { PreviewEditeRoot } from '../styled';
 
 interface PreviewEditeProps {
-  setActiveStep?: (step: number) => void;
+    setActiveStep?: (step: number) => void;
 }
 
 const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
-  const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const moreButtonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const moreButtonRef = useRef<HTMLButtonElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleBackClick = () => {
-    router.push('/history');
-  };
-
-  const handleEditResume = () => {
-    if (setActiveStep) {
-      setActiveStep(3);
-    } else {
-      router.push('/?step=3');
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isMenuOpen &&
-        menuRef.current &&
-        moreButtonRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        !moreButtonRef.current.contains(event.target as Node)
-      ) {
-        setIsMenuOpen(false);
-      }
+    const handleBackClick = () => {
+        router.push('/history');
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    const handleEditResume = () => {
+        if (setActiveStep) {
+            setActiveStep(3);
+        } else {
+            router.push('/?step=3');
+        }
     };
-  }, [isMenuOpen]);
 
-  return (
-    <PreviewEditeRoot>
-      <Grid container spacing={2} alignItems='stretch'>
-        <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-          <Stack direction='row' alignItems='center' gap={2}>
-            <BackIcon onClick={handleBackClick} style={{ cursor: 'pointer' }} />
-            <Typography variant='h5' color='text.primary' fontWeight='500'>
-              Zayd Al-Mansoori's Resume
-            </Typography>
-          </Stack>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 12, md: 2 }} pt={2}>
-          <HistoryImage p={2}>
-            <Image src={ResumeIcon} alt='Resume preview' fill />
-          </HistoryImage>
-        </Grid>
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                isMenuOpen &&
+                menuRef.current &&
+                moreButtonRef.current &&
+                !menuRef.current.contains(event.target as Node) &&
+                !moreButtonRef.current.contains(event.target as Node)
+            ) {
+                setIsMenuOpen(false);
+            }
+        };
 
-        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={4}>
-          <Stack direction='row' gap={1}>
-            <Typography variant='h6' fontWeight='500' color='text.primary'>
-              Resume Name
-            </Typography>
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
 
-            <TagPill sx={{ marginTop: '5px' }}> 85%</TagPill>
-          </Stack>
+    return (
+        <PreviewEditeRoot>
+            <Grid container spacing={2} alignItems='stretch'>
+                <Grid size={{ xs: 12, sm: 12, md: 12 }}>
+                    <Stack direction='row' alignItems='center' gap={2}>
+                        <BackIcon onClick={handleBackClick} style={{ cursor: 'pointer' }} />
+                        <Typography variant='h5' color='text.primary' fontWeight='500'>
+                            Zayd Al-Mansoori's Resume
+                        </Typography>
+                    </Stack>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 12, md: 2 }} pt={2}>
+                    <HistoryImage p={2}>
+                        <Image src={ResumeIcon} alt='Resume preview' fill />
+                    </HistoryImage>
+                </Grid>
 
-          <Stack direction='row' gap={2} alignItems='center'>
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              Nov 26, 2024
-            </Typography>
-            <StyledDivider orientation='vertical' flexItem />
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              2.5MB
-            </Typography>
-            <StyledDivider orientation='vertical' flexItem />
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              Software Engineer
-            </Typography>
-            <StyledDivider orientation='vertical' flexItem />
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              Senior
-            </Typography>
-          </Stack>
+                <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={4}>
+                    <Stack direction='row' gap={1}>
+                        <Typography variant='h6' fontWeight='500' color='text.primary'>
+                            Resume Name
+                        </Typography>
 
-          <Stack direction='row' gap={4} alignItems='center' mt={2}>
-            <Stack direction='row' gap={0.5} alignItems='center'>
-              <VoiceIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                Voice
-              </Typography>
-            </Stack>
-            <Stack direction='row' gap={0.5} alignItems='center'>
-              <ImageIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                Photo
-              </Typography>
-            </Stack>
-            <Stack direction='row' gap={0.5} alignItems='center'>
-              <VideoIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                Video
-              </Typography>
-            </Stack>
-          </Stack>
+                        <TagPill sx={{ marginTop: '5px' }}> 85%</TagPill>
+                    </Stack>
 
-          <Stack direction='row' gap={1} mt={3}>
-            <Position />
+                    <Stack direction='row' gap={2} alignItems='center'>
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            Nov 26, 2024
+                        </Typography>
+                        <StyledDivider orientation='vertical' flexItem />
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            2.5MB
+                        </Typography>
+                        <StyledDivider orientation='vertical' flexItem />
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            Software Engineer
+                        </Typography>
+                        <StyledDivider orientation='vertical' flexItem />
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            Senior
+                        </Typography>
+                    </Stack>
 
-            <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
-              3 Suggested Position{' '}
-            </Typography>
-          </Stack>
+                    <Stack direction='row' gap={4} alignItems='center' mt={2}>
+                        <Stack direction='row' gap={0.5} alignItems='center'>
+                            <VoiceIcon />
+                            <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                Voice
+                            </Typography>
+                        </Stack>
+                        <Stack direction='row' gap={0.5} alignItems='center'>
+                            <ImageIcon />
+                            <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                Photo
+                            </Typography>
+                        </Stack>
+                        <Stack direction='row' gap={0.5} alignItems='center'>
+                            <VideoIcon />
+                            <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                Video
+                            </Typography>
+                        </Stack>
+                    </Stack>
 
-          <Stack direction='row' gap={1} mt={3} alignItems='center'>
-            <FrameFaw />
-            <Divider orientation='vertical' flexItem sx={{ bgcolor: 'grey.100' }} />
-            <TrashIcon />
-          </Stack>
-        </Grid>
+                    <Stack direction='row' gap={1} mt={3}>
+                        <Position />
 
-        <Grid size={{ xs: 12, sm: 3, md: 3 }} display='flex' alignItems='flex-end' justifyContent='flex-end'>
-          <Stack direction='row' gap={1}>
-            <MuiButton
-              variant='outlined'
-              size='medium'
-              color='secondary'
-              onClick={handleEditResume}
-              sx={{ width: 140 }}
-            >
-              Edit In Preview
-            </MuiButton>
-            <MuiButton variant='contained' size='medium' color='secondary' onClick={handleEditResume}>
-              Download
-            </MuiButton>
-          </Stack>
-        </Grid>
-      </Grid>
-    </PreviewEditeRoot>
-  );
+                        <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
+                            3 Suggested Position{' '}
+                        </Typography>
+                    </Stack>
+
+                    <Stack direction='row' gap={1} mt={3} alignItems='center'>
+                        <FrameFaw />
+                        <Divider orientation='vertical' flexItem sx={{ bgcolor: 'grey.100' }} />
+                        <TrashIcon />
+                    </Stack>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 3, md: 3 }} display='flex' alignItems='flex-end' justifyContent='flex-end'>
+                    <Stack direction='row' gap={1}>
+                        <MuiButton
+                            variant='outlined'
+                            size='medium'
+                            color='secondary'
+                            onClick={handleEditResume}
+                            sx={{ width: 150 }}
+                        >
+                            Edit In Preview
+                        </MuiButton>
+                        <MuiButton variant='contained' size='medium' color='secondary' onClick={handleEditResume}>
+                            Download
+                        </MuiButton>
+                    </Stack>
+                </Grid>
+            </Grid>
+        </PreviewEditeRoot>
+    );
 };
 
 export default PreviewEdite;
