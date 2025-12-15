@@ -2,30 +2,35 @@
 
 import { useState } from 'react';
 
+import CoverLetter from '@/app/(private)/history-edite/tabs/CoverLetter';
+import InterviewQuestionsTabContent from '@/app/(private)/history-edite/tabs/InterviewQuestionsTabContent';
+import PositionsTabContent from '@/app/(private)/history-edite/tabs/PositionsTabContent';
+import SkillGapTabContent from '@/app/(private)/history-edite/tabs/SkillGapTabContent';
+
 import SkillGapTabs from './SkillGapTabs';
 import { SkillGapContainer, SectionCard } from '../styled';
-import { SkillGapTabContent, InterviewQuestionsTabContent, PositionsTabContent } from '../tabs';
 
 const GapSection = () => {
-  const [activeTab, setActiveTab] = useState('skill-gap');
+    const [activeTab, setActiveTab] = useState('skill-gap');
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-  };
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+    };
 
-  return (
-    <>
-      <SkillGapTabs onChange={handleTabChange} />
+    return (
+        <>
+            <SkillGapTabs onChange={handleTabChange} />
 
-      <SectionCard>
-        <SkillGapContainer>
-          {activeTab === 'skill-gap' && <SkillGapTabContent />}
-          {activeTab === 'interview-questions' && <InterviewQuestionsTabContent />}
-          {activeTab === 'positions' && <PositionsTabContent />}
-        </SkillGapContainer>
-      </SectionCard>
-    </>
-  );
+            <SectionCard>
+                <SkillGapContainer>
+                    {activeTab === 'skill-gap' && <SkillGapTabContent />}
+                    {activeTab === 'interview-questions' && <InterviewQuestionsTabContent />}
+                    {activeTab === 'positions' && <PositionsTabContent />}
+                    {activeTab === 'cover-letter' && <CoverLetter />}
+                </SkillGapContainer>
+            </SectionCard>
+        </>
+    );
 };
 
 export default GapSection;

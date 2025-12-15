@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+
 import type { AllFileItem, WizardData } from './wizardSchema';
 
 interface BuildWizardZipOptions {

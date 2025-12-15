@@ -30,6 +30,7 @@ const SkillGapTabs = ({ onChange }: SkillGapTabsProps) => {
         <Tab label='Suggested interview questions' value='interview-questions' />
         <Tab label='Suggested Positions' value='positions' />
         <Tab label='Skill Gap' value='skill-gap' />
+        <Tab label='Cover letter' value='cover-letter' />
       </StyledTabs>
     </TabsContainer>
   );
