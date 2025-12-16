@@ -24,7 +24,7 @@ const AdAuth = () => {
       </Stack>
 
       <Stack width='60%'>
-        <Typography color='secondary.mian' variant='h2'>
+        <Typography color='secondary.main' variant='h2'>
           You can create your best CV using
           <Typography component='span' variant='h2' color='primary.main' mx={1} fontWeight='700'>
             Z-CV
