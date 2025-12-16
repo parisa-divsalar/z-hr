@@ -1,40 +1,120 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { IconButton, Stack, Typography } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { styled } from '@mui/material/styles';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { MainContainer, MainContent, FirstChild } from '@/app/auth/login/styled';
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
 import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
+import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
-import { PrivateRoutes } from '@/config/routes';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
+import { updatePassword } from '@/services/auth/update-password';
 import { checkPasswordLength, validateSpecialChar } from '@/utils/validation';
+
+type ToastSeverity = AlertWrapperProps['severity'];
+
+type ToastInfo = {
+  id: number;
+  message: string;
+  severity: ToastSeverity;
+};
+
+const ToastContainer = styled(Stack)(({ theme }) => ({
+  width: '100%',
+  maxWidth: '350px',
+  marginTop: theme.spacing(2),
+}));
+
+const getErrorMessage = (error: any): string => {
+  const maybe =
+    error?.response?.data?.error?.message ??
+    error?.response?.data?.message ??
+    error?.message ??
+    error?.toString?.();
+
+  if (typeof maybe === 'string' && maybe.trim()) return maybe;
+  return 'Something went wrong';
+};
 
 const NewPasswordPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [typeInput, setTypeInput] = useState<'password' | 'text'>('password');
   const [disabled, setDisabled] = useState<boolean>(true);
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const onSubmit = () => {
+  const showToast = (message: string, severity: ToastSeverity = 'error') => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+
+    const id = Date.now();
+    setToastInfo({ id, message, severity });
+
+    toastTimerRef.current = setTimeout(() => {
+      setToastInfo((current) => (current?.id === id ? null : current));
+      toastTimerRef.current = null;
+    }, 4000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  const onSubmit = async () => {
     setLoading(true);
-    setTimeout(() => {
+
+    try {
+      const userIdFromQuery = searchParams.get('userId');
+      const userIdFromSession =
+        typeof window !== 'undefined' ? sessionStorage.getItem('resetPasswordUserId') : null;
+      const userId = userIdFromQuery || userIdFromSession;
+
+      if (!userId) {
+        showToast('Missing userId. Please restart the reset password flow.', 'warning');
+        setLoading(false);
+        return;
+      }
+
+      if (!code || !code.trim()) {
+        showToast('Please enter the code sent to your email.', 'warning');
+        setLoading(false);
+        return;
+      }
+
+      await updatePassword({
+        userId,
+        code: code.trim(),
+        password,
+        confirmPassword: repeatPassword,
+      });
+
+      sessionStorage.removeItem('resetPasswordUserId');
+      router.replace(PublicRoutes.login);
+    } catch (error: any) {
+      console.error('Update password Error', error);
+      showToast(getErrorMessage(error), 'error');
       setLoading(false);
-      router.replace(PrivateRoutes.dashboard);
-    }, 3000);
+    }
   };
 
   useEffect(() => {
     if (
+      !!code.trim() &&
       password.length > 4 &&
       !validateSpecialChar(password) &&
       checkPasswordLength(password) &&
@@ -42,7 +122,7 @@ const NewPasswordPage = () => {
     )
       setDisabled(false);
     else setDisabled(true);
-  }, [password, repeatPassword]);
+  }, [code, password, repeatPassword]);
 
   return (
     <MainContainer>
@@ -60,7 +140,20 @@ const NewPasswordPage = () => {
               Enter your new password
             </Typography>
 
+            {toastInfo && (
+              <ToastContainer>
+                <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
+              </ToastContainer>
+            )}
+
             <Stack spacing={1} mt={4}>
+              <MuiInput
+                value={code}
+                onChange={setCode}
+                label='Code'
+                placeholder='Enter the code from your email'
+              />
+
               <MuiInput
                 value={password}
                 onChange={setPassword}
@@ -116,7 +209,13 @@ const NewPasswordPage = () => {
             </Stack>
 
             <Stack mt={4} spacing={1}>
-              <MuiButton color='secondary' fullWidth onClick={onSubmit} disabled={disabled} loading={loading}>
+              <MuiButton
+                color='secondary'
+                fullWidth
+                onClick={onSubmit}
+                disabled={disabled || loading}
+                loading={loading}
+              >
                 Submit
               </MuiButton>
             </Stack>
@@ -127,7 +226,7 @@ const NewPasswordPage = () => {
               Already have an account?
             </Typography>
 
-            <MuiButton color='secondary' variant='text'>
+            <MuiButton color='secondary' variant='text' onClick={() => router.push(PrivateRoutes.support)}>
               Support
             </MuiButton>
           </Stack>
