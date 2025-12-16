@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import AppleIcon from '@mui/icons-material/Apple';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { IconButton, Stack, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import * as yup from 'yup';
@@ -17,17 +18,64 @@ import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
 import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
+import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import { PublicRoutes } from '@/config/routes';
 import { apiClientClient } from '@/services/api-client';
 import { checkPasswordLength, validateSpecialChar } from '@/utils/validation';
 
+type ToastSeverity = AlertWrapperProps['severity'];
+
+type ToastInfo = {
+    id: number;
+    message: string;
+    severity: ToastSeverity;
+};
+
+const ToastContainer = styled(Stack)(({ theme }) => ({
+    width: '100%',
+    maxWidth: '350px',
+    marginTop: theme.spacing(2),
+}));
+
+const getErrorMessage = (error: any): string => {
+    const maybe =
+        error?.response?.data?.error?.message ??
+        error?.response?.data?.error ??
+        error?.response?.data?.message ??
+        error?.message ??
+        error?.toString?.();
+
+    if (typeof maybe === 'string' && maybe.trim()) return maybe;
+    return 'Something went wrong';
+};
+
 const RegisterPage = () => {
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [typeInput, setTypeInput] = useState<'password' | 'text'>('password');
+    const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const showToast = (message: string, severity: ToastSeverity = 'error') => {
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+
+        const id = Date.now();
+        setToastInfo({ id, message, severity });
+
+        toastTimerRef.current = setTimeout(() => {
+            setToastInfo((current) => (current?.id === id ? null : current));
+            toastTimerRef.current = null;
+        }, 4000);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        };
+    }, []);
 
     const validationSchema = yup.object({
         email: yup.string().required('Email is required!'),
@@ -59,8 +107,10 @@ const RegisterPage = () => {
                 await apiClientClient.post('auth/register', body);
                 router.push('/auth/login');
             } catch (error: any) {
-                setIsLoading(false);
                 console.error('Register Error', error);
+                showToast(getErrorMessage(error), 'error');
+            } finally {
+                setIsLoading(false);
             }
         },
     });
@@ -83,6 +133,12 @@ const RegisterPage = () => {
                         <Typography color='secondary.main' variant='subtitle1'>
                             Enter your email to register Z-CV
                         </Typography>
+
+                        {toastInfo && (
+                            <ToastContainer>
+                                <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />
+                            </ToastContainer>
+                        )}
 
                         <Stack spacing={1} mt={3}>
                             <MuiInput
