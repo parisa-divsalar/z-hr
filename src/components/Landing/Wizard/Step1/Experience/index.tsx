@@ -387,30 +387,13 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         });
     };
 
-    const hasDraft = backgroundText.trim() !== '' || uploadedFiles.length > 0 || voiceRecordings.length > 0;
-    const hasExperience = hasDraft || backgroundEntries.length > 0;
+    const hasExperience = backgroundEntries.length > 0;
 
     const handleBack = () => {
-        if (hasDraft) {
-            if (isEditingEntry) {
-                handleSaveBackgroundEntry();
-            } else {
-                handleAddBackgroundEntry();
-            }
-        }
-
         setStage('SELECT_SKILL');
     };
 
     const handleNext = () => {
-        if (hasDraft) {
-            if (isEditingEntry) {
-                handleSaveBackgroundEntry();
-            } else {
-                handleAddBackgroundEntry();
-            }
-        }
-
         setStage('CERTIFICATION');
     };
 

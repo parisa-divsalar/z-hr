@@ -435,13 +435,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
         }
     }, []);
 
-    const hasJobDescription = [sectionOne, sectionTwo].some(
-        (section) =>
-            section.backgroundText.trim() !== '' ||
-            section.uploadedFiles.length > 0 ||
-            section.voiceRecordings.length > 0 ||
-            section.backgroundEntries.length > 0,
-    );
+    const hasJobDescription = [sectionOne, sectionTwo].some((section) => section.backgroundEntries.length > 0);
 
     const persistSectionToStore = useCallback(
         (
@@ -453,23 +447,15 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                 backgroundEntries: BackgroundEntry[];
             },
         ) => {
-            const draftHasContent =
-                section.backgroundText.trim() !== '' ||
-                section.uploadedFiles.length > 0 ||
-                section.voiceRecordings.length > 0;
-
             const mergedText = [
                 ...section.backgroundEntries.map((e) => e.text).filter((t) => t && t.trim() !== ''),
-                ...(draftHasContent ? [section.backgroundText.trim()] : []),
             ].join('\n\n');
 
             const mergedFiles = [
                 ...section.backgroundEntries.flatMap((e) => e.files),
-                ...(draftHasContent ? section.uploadedFiles : []),
             ];
             const mergedVoices = [
                 ...section.backgroundEntries.flatMap((e) => e.voices),
-                ...(draftHasContent ? section.voiceRecordings : []),
             ];
 
             updateField(target, {

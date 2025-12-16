@@ -383,33 +383,16 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
         persistEntriesToStore(next);
     };
 
-    const hasDraft = backgroundText.trim() !== '' || uploadedFiles.length > 0 || voiceRecordings.length > 0;
-    const hasCertifications = hasDraft || backgroundEntries.length > 0;
+    const hasCertifications = backgroundEntries.length > 0;
 
     const handleBack = () => {
-        if (hasDraft) {
-            if (isEditingEntry) {
-                handleSaveBackgroundEntry();
-            } else {
-                handleAddBackgroundEntry();
-            }
-        } else {
-            persistEntriesToStore(backgroundEntries);
-        }
+        persistEntriesToStore(backgroundEntries);
 
         setStage('EXPERIENCE');
     };
 
     const handleNext = () => {
-        if (hasDraft) {
-            if (isEditingEntry) {
-                handleSaveBackgroundEntry();
-            } else {
-                handleAddBackgroundEntry();
-            }
-        } else {
-            persistEntriesToStore(backgroundEntries);
-        }
+        persistEntriesToStore(backgroundEntries);
 
         setStage('DESCRIPTION');
     };

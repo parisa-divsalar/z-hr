@@ -264,6 +264,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
     } = props;
 
     const hasBackgroundText = backgroundText.trim() !== '';
+    const hasDraft = hasBackgroundText || uploadedFiles.length > 0 || voiceRecordings.length > 0;
     const entriesListRef = useRef<HTMLDivElement | null>(null);
     const previousEntriesLengthRef = useRef<number>(backgroundEntries.length);
 
@@ -324,6 +325,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                         variant='outlined'
                         startIcon={<AddIcon />}
                         onClick={onAddBackgroundEntry}
+                        disabled={!hasDraft}
                     >
                         Add
                     </AddEntryButton>
@@ -332,7 +334,13 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                         <MuiButton color='error' size='medium' variant='text' onClick={onCancelEditBackgroundEntry}>
                             Cancel
                         </MuiButton>
-                        <MuiButton color='primary' size='medium' variant='contained' onClick={onSaveBackgroundEntry}>
+                        <MuiButton
+                            color='primary'
+                            size='medium'
+                            variant='contained'
+                            onClick={onSaveBackgroundEntry}
+                            disabled={!hasDraft}
+                        >
                             Save
                         </MuiButton>
                     </ActionButtonsGroup>
