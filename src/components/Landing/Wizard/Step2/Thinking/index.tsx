@@ -1,9 +1,11 @@
-import MuiButton from '@/components/UI/MuiButton';
-import ThinkingIcon from '@/assets/images/icons/thinking.svg';
-import { apiClientClient } from '@/services/api-client';
-import { Stack, Typography } from '@mui/material';
-import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
+
+import { Stack, Typography } from '@mui/material';
+
+import ThinkingIcon from '@/assets/images/icons/thinking.svg';
+import MuiButton from '@/components/UI/MuiButton';
+import { apiClientClient } from '@/services/api-client';
+import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
 
 interface ThinkingProps {
     onCancel: () => void;
@@ -30,7 +32,11 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
     const addCV = async (requestId: string, bodyOfResume: any) => {
         try {
-            const res = await apiClientClient.post(`cv/add-cv?requestId=${requestId}`, bodyOfResume);
+            const res = await apiClientClient.post(
+                `cv/add-cv?requestId=${encodeURIComponent(requestId)}`,
+
+                bodyOfResume,
+            );
             console.log('res 349587398573', res);
             setActiveStep(3);
         } catch (err) {
@@ -69,7 +75,7 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             const formData = new FormData();
             formData.append('inputFile', new File([zipBlob], 'info.zip'));
 
-            const res = await apiClientClient.post('cv/send-file', formData);
+            const res = await apiClientClient.post('Apps/SendFile', formData);
             const requestId: string = res.data.result as string;
 
             await pollStatus(requestId, bodyOfResume);
