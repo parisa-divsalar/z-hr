@@ -39,6 +39,41 @@ const getErrorMessage = (error: any): string => {
   return 'Something went wrong';
 };
 
+const findFirstScalarByKey = (value: unknown, key: string): string | number | null => {
+  const visited = new Set<unknown>();
+
+  const walk = (node: unknown): string | number | null => {
+    if (node === null || node === undefined) return null;
+    if (typeof node !== 'object') return null;
+    if (visited.has(node)) return null;
+    visited.add(node);
+
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        const found = walk(item);
+        if (found !== null) return found;
+      }
+      return null;
+    }
+
+    const record = node as Record<string, unknown>;
+    if (key in record) {
+      const v = record[key];
+      if (typeof v === 'string' && v.trim()) return v;
+      if (typeof v === 'number') return v;
+    }
+
+    for (const k of Object.keys(record)) {
+      const found = walk(record[k]);
+      if (found !== null) return found;
+    }
+
+    return null;
+  };
+
+  return walk(value);
+};
+
 const ResetPasswordPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -73,8 +108,8 @@ const ResetPasswordPage = () => {
     };
 
     try {
-      const res = await apiClientClient.post('auth/forgot-password', body);
-      const userId = res?.data?.userId ?? res?.data?.data?.userId;
+      const { data } = await apiClientClient.post('auth/forgot-password', body);
+      const userId = findFirstScalarByKey(data, 'userId');
 
       if (userId !== undefined && userId !== null && String(userId).trim() !== '') {
         sessionStorage.setItem('resetPasswordUserId', String(userId));
