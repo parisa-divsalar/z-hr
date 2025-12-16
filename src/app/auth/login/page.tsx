@@ -10,7 +10,7 @@ import { IconButton, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import * as yup from 'yup';
+import { z } from 'zod';
 
 import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/auth/login/styled';
 import AdAuth from '@/components/Auth/AdAuth';
@@ -75,16 +75,27 @@ const LoginPage = () => {
         };
     }, []);
 
-    const validationSchema = yup.object({
-        username: yup.string().required('Email is required!'),
-        password: yup.string().required('Password is required!'),
+    const loginSchema = z.object({
+        username: z.string().min(1, 'Email is required!').email('Please enter a valid email address'),
+        password: z.string().min(1, 'Password is required!').min(7, 'Password must be at least 7 characters'),
     });
 
     const formik = useFormik({
-        validationSchema: validationSchema,
         initialValues: {
             username: '',
             password: '',
+        },
+        validateOnMount: true,
+        validate: (values) => {
+            const parsed = loginSchema.safeParse(values);
+            if (parsed.success) return {};
+
+            const errors: Record<string, string> = {};
+            for (const issue of parsed.error.issues) {
+                const field = issue.path?.[0];
+                if (typeof field === 'string' && !errors[field]) errors[field] = issue.message;
+            }
+            return errors;
         },
 
         onSubmit: async (values) => {
@@ -104,7 +115,7 @@ const LoginPage = () => {
         },
     });
 
-    const isDisabled = !formik.isValid || isLoading || formik.values === formik.initialValues;
+    const isDisabled = !formik.isValid || !formik.dirty || isLoading;
     return (
         <MainContainer>
             <MainContent direction='row'>
@@ -133,13 +144,28 @@ const LoginPage = () => {
                                 placeholder='Your email...'
                                 value={formik.values.username}
                                 onChange={(event) => formik.setFieldValue('username', event)}
+                                onBlur={() => formik.setFieldTouched('username', true)}
+                                type='email'
+                                error={Boolean(formik.touched.username && formik.errors.username)}
+                                helperText={
+                                    formik.touched.username && formik.errors.username
+                                        ? String(formik.errors.username)
+                                        : ''
+                                }
                             />
 
                             <MuiInput
                                 value={formik.values.password}
                                 onChange={(event) => formik.setFieldValue('password', event)}
+                                onBlur={() => formik.setFieldTouched('password', true)}
                                 type={typeInput}
                                 label='Password'
+                                error={Boolean(formik.touched.password && formik.errors.password)}
+                                helperText={
+                                    formik.touched.password && formik.errors.password
+                                        ? String(formik.errors.password)
+                                        : ''
+                                }
                                 endIcon={
                                     typeInput === 'password' ? (
                                         <IconButton onClick={() => setTypeInput('text')}>

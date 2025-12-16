@@ -4,8 +4,8 @@ import { styled } from '@mui/material/styles';
 export const MainContainer = styled(Stack)(() => ({
     width: '100%',
     flex: 1,
-    height: 'calc(var(--app-height) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
-    minHeight: 'calc(var(--app-height) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
+    height: 'calc(var(--app-height) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding) + 2rem)',
+    minHeight: 'calc(var(--app-height) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding) + 2rem)',
     padding: '0 0.5rem',
     display: 'flex',
     alignItems: 'center',

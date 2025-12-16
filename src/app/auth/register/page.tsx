@@ -10,7 +10,7 @@ import { IconButton, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import * as yup from 'yup';
+import { z } from 'zod';
 
 import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/auth/login/styled';
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
@@ -77,19 +77,37 @@ const RegisterPage = () => {
         };
     }, []);
 
-    const validationSchema = yup.object({
-        email: yup.string().required('Email is required!'),
-        password: yup.string().required('Password is required!'),
+    const registerSchema = z.object({
+        email: z.string().min(1, 'Email is required!').email('Please enter a valid email address'),
+        password: z
+            .string()
+            .min(1, 'Password is required!')
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/[!@#$%^&*_]/, 'Password must contain at least one special character'),
     });
 
     const formik = useFormik({
-        validationSchema: validationSchema,
         initialValues: {
             firstName: '',
             lastName: '',
             username: '',
             password: '',
             email: '',
+        },
+        validateOnMount: true,
+        validate: (values) => {
+            const parsed = registerSchema.safeParse({
+                email: values.email,
+                password: values.password,
+            });
+            if (parsed.success) return {};
+
+            const errors: Record<string, string> = {};
+            for (const issue of parsed.error.issues) {
+                const field = issue.path?.[0];
+                if (typeof field === 'string' && !errors[field]) errors[field] = issue.message;
+            }
+            return errors;
         },
 
         onSubmit: async (values) => {
@@ -115,16 +133,16 @@ const RegisterPage = () => {
         },
     });
 
-    const isDisabled = !formik.isValid || isLoading || formik.values === formik.initialValues;
+    const isDisabled = !formik.isValid || !formik.dirty || isLoading;
 
     return (
         <MainContainer>
             <MainContent direction='row'>
-                <FirstChild>
+                <FirstChild sx={{ justifyContent: 'flex-start' }}>
                     <Stack width='100%'>
                         <AuthHeader />
 
-                        <Typography color='secondary.main' variant='h5' mt={3}>
+                        <Typography color='secondary.main' variant='h5' mt={2}>
                             Sign up
                         </Typography>
                         <Typography color='grey.300' variant='subtitle2'>
@@ -140,12 +158,18 @@ const RegisterPage = () => {
                             </ToastContainer>
                         )}
 
-                        <Stack spacing={1} mt={3}>
+                        <Stack spacing={1} mt={2}>
                             <MuiInput
                                 label='Email'
                                 placeholder='Your email...'
                                 value={formik.values.email}
                                 onChange={(event) => formik.setFieldValue('email', event)}
+                                onBlur={() => formik.setFieldTouched('email', true)}
+                                type='email'
+                                error={Boolean(formik.touched.email && formik.errors.email)}
+                                helperText={
+                                    formik.touched.email && formik.errors.email ? String(formik.errors.email) : ''
+                                }
                             />
 
                             <MuiInput
@@ -154,6 +178,13 @@ const RegisterPage = () => {
                                 placeholder='Your password...'
                                 value={formik.values.password}
                                 onChange={(event) => formik.setFieldValue('password', event)}
+                                onBlur={() => formik.setFieldTouched('password', true)}
+                                error={Boolean(formik.touched.password && formik.errors.password)}
+                                helperText={
+                                    formik.touched.password && formik.errors.password
+                                        ? String(formik.errors.password)
+                                        : ''
+                                }
                                 endIcon={
                                     typeInput === 'password' ? (
                                         <IconButton onClick={() => setTypeInput('text')}>
@@ -239,7 +270,7 @@ const RegisterPage = () => {
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' justifyContent='space-between' alignItems='center' mt={2}>
+                    <Stack direction='row' justifyContent='space-between' alignItems='center'>
                         <Typography color='grey.300' variant='subtitle1'>
                             Already have an account?
                         </Typography>
