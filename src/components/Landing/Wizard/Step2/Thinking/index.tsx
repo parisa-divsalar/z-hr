@@ -34,15 +34,26 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
     const addCV = async (requestId: string, bodyOfResume: any) => {
         try {
-            const res = await apiClientClient.post(
-                'cv/add-cv',
-                {
-                    userId: accessToken,
-                    requestId,
-                    bodyOfResume,
-                },
-            );
+            const res = await apiClientClient.post('cv/add-cv', {
+                userId: accessToken,
+                requestId,
+                bodyOfResume,
+            });
             console.log('res 349587398573', res);
+
+            if (res.status === 200) {
+                try {
+                    await apiClientClient.get('cv/get-cv', {
+                        params: {
+                            requestId,
+                            userId: accessToken,
+                        },
+                    });
+                } catch (getErr) {
+                    console.log('get cv error', getErr);
+                }
+            }
+
             setActiveStep(3);
         } catch (err) {
             setIsSubmitting(false);
