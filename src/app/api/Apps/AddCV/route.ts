@@ -1,8 +1,9 @@
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+
 import CacheError from '@/services/cache-error';
 import { AxiosError } from 'axios';
-import { cookies } from 'next/headers';
 import { apiClientServer } from '@/services/api-client';
-import { NextRequest, NextResponse } from 'next/server';
 
 const normalizeRequestId = (value?: string | null) => {
     if (!value) return null;
@@ -14,27 +15,26 @@ const normalizeRequestId = (value?: string | null) => {
 
 export async function POST(request: NextRequest) {
     try {
-        const requestId = normalizeRequestId(new URL(request.url).searchParams.get('requestId'));
+        const requestId = normalizeRequestId(request.nextUrl.searchParams.get('requestId'));
         if (!requestId) {
             return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
         }
 
         const userId = (await cookies()).get('accessToken')?.value;
-        if (!userId) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-        }
-
         const bodyOfResume = await request.json();
 
-        const response = await apiClientServer.post('Apps/AddCV', {
+        const body = {
             userId,
             requestId,
             bodyOfResume,
-        });
+        };
+
+        const response = await apiClientServer.post('Apps/AddCV', body);
 
         return NextResponse.json(response.data);
     } catch (error) {
         return CacheError(error as AxiosError);
     }
 }
+
 

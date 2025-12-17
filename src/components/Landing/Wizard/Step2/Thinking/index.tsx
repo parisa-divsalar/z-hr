@@ -34,7 +34,6 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
         try {
             const res = await apiClientClient.post(
                 `cv/add-cv?requestId=${encodeURIComponent(requestId)}`,
-
                 bodyOfResume,
             );
             console.log('res 349587398573', res);
