@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -8,7 +8,9 @@ import Grid from '@mui/material/Grid';
 import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
 import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
 import ArrowRightIcon from '@/assets/images/icons/links.svg';
+import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
 import {
   Container,
@@ -27,6 +29,10 @@ import {
 
 const ResumeGeneratorPage = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const pdfRef = useRef<HTMLDivElement | null>(null);
 
   const resumeInfo = [
     { label: 'Created:', value: '09/09/2025' },
@@ -40,6 +46,30 @@ const ResumeGeneratorPage = () => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
+
+  const handleDownload = useCallback(async () => {
+    if (!pdfRef.current || isDownloading) return;
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    setDownloadError(null);
+    try {
+      const date = new Date().toISOString().slice(0, 10);
+      const baseName = sanitizeFileName("Zayd-Al-Mansoori's-Resume") || 'Resume';
+      await exportElementToPdf(pdfRef.current, {
+        fileName: `${baseName}-${date}`,
+        marginPt: 24,
+        scale: 2,
+        backgroundColor: '#ffffff',
+        onProgress: (p) => setDownloadProgress(p),
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to export PDF', error);
+      setDownloadError('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [isDownloading]);
 
   const featureCards = [
     {
@@ -69,7 +99,7 @@ const ResumeGeneratorPage = () => {
   ];
 
   return (
-    <Container>
+    <Container ref={pdfRef}>
       <Grid container spacing={{ xs: 3, sm: 4 }}>
         <Grid size={{ xs: 12, lg: 3 }}>
           <ResumePreview>
@@ -108,6 +138,7 @@ const ResumeGeneratorPage = () => {
 
             <Grid container spacing={2} sx={{ mt: 3 }}>
               <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+                {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mb: 1 }} />}
                 {resumeInfo.map((info, index) => (
                   <InfoRow key={index}>
                     <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
@@ -127,8 +158,15 @@ const ResumeGeneratorPage = () => {
                     <MuiButton variant='outlined' size='large' color='secondary'>
                       Edit
                     </MuiButton>
-                    <MuiButton variant='contained' size='large' color='secondary' sx={{ width: '200px' }}>
-                      Download
+                    <MuiButton
+                      variant='contained'
+                      size='large'
+                      color='secondary'
+                      sx={{ width: '200px' }}
+                      loading={isDownloading}
+                      onClick={handleDownload}
+                    >
+                      {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
                     </MuiButton>
                   </ActionButtons>
                 </Grid>

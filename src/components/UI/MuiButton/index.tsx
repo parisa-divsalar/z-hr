@@ -43,6 +43,8 @@ const MuiButton = (props: PrimaryButtonProps) => {
     ...rest
   } = props;
 
+  const label = text || children;
+
   const mergedSx = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -77,7 +79,14 @@ const MuiButton = (props: PrimaryButtonProps) => {
       sx={mergedSx}
       {...rest}
     >
-      {loading ? <CircularProgress size={16} color={color ? color : 'primary'} /> : text || children}
+      {loading ? (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <CircularProgress size={16} color={color ? color : 'primary'} />
+          {label ? <span>{label}</span> : null}
+        </span>
+      ) : (
+        label
+      )}
     </Button>
   );
 };

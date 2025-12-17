@@ -30,8 +30,10 @@ import {
   StyledDivider,
 } from '@/components/History/styled';
 import { THistoryChannel } from '@/components/History/type';
+import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
 type THistorySortOption = 'NEW_TO_OLD' | 'OLD_TO_NEW' | 'SIZE' | 'FIT_SCORE';
 
@@ -56,8 +58,12 @@ const HistoryCard = ({
 }: THistoryChannel) => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const handleMoreClick = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -73,6 +79,30 @@ const HistoryCard = ({
 
   const handleDelete = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleDownload = async () => {
+    if (!cardRef.current || isDownloading) return;
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    setDownloadError(null);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const baseName = sanitizeFileName(name || `History-${date}`) || 'History';
+      await exportElementToPdf(cardRef.current, {
+        fileName: `${baseName}-${today}`,
+        marginPt: 24,
+        scale: 2,
+        backgroundColor: '#ffffff',
+        onProgress: (p) => setDownloadProgress(p),
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to export history card PDF', error);
+      setDownloadError('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   useEffect(() => {
@@ -95,7 +125,8 @@ const HistoryCard = ({
   }, [isMenuOpen]);
 
   return (
-    <HistoryCommunityCardRoot>
+    <HistoryCommunityCardRoot ref={cardRef}>
+      {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mx: 2, mt: 2, mb: 0 }} />}
       <Grid container spacing={2} alignItems='center'>
         <Grid size={{ xs: 12, sm: 4, md: 2 }}>
           <HistoryImage m={1}>
@@ -191,8 +222,8 @@ const HistoryCard = ({
               <MuiButton variant='outlined' color='secondary' onClick={handleEditClick}>
                 Edit
               </MuiButton>
-              <MuiButton variant='contained' color='secondary'>
-                Download
+              <MuiButton variant='contained' color='secondary' loading={isDownloading} onClick={handleDownload}>
+                {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
               </MuiButton>
             </Stack>
           </Stack>

@@ -1,5 +1,5 @@
 'use client';
-import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 
 import { Check, Close } from '@mui/icons-material';
 import { Box, CardContent, IconButton, Typography } from '@mui/material';
@@ -8,10 +8,12 @@ import EditIcon from '@/assets/images/icons/edit.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
+import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { apiClientClient } from '@/services/api-client';
 import { useAuthStore } from '@/store/auth';
 import { useWizardStore } from '@/store/wizard';
+import { exportElementToPdf } from '@/utils/exportToPdf';
 
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import SectionHeader from './ResumeEditor/SectionHeader';
@@ -179,12 +181,16 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [editingSection, setEditingSection] = useState<string | null>(null);
     const requestId = useWizardStore((state) => state.requestId);
     const accessToken = useAuthStore((state) => state.accessToken);
+    const pdfRef = useRef<HTMLDivElement | null>(null);
 
     const [summary, setSummary] = useState(DEFAULT_SUMMARY);
     const [skills, setSkills] = useState(DEFAULT_SKILLS);
     const [experiences, setExperiences] = useState(DEFAULT_EXPERIENCES);
     const [isCvLoading, setIsCvLoading] = useState(false);
     const [cvError, setCvError] = useState<string | null>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
+    const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
     const loadCvData = useCallback(async () => {
         if (!requestId || !accessToken) return;
@@ -249,9 +255,33 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setExperiences(experiences.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)));
     };
 
+    const handleDownloadPdf = useCallback(async () => {
+        if (!pdfRef.current || isDownloading) return;
+
+        setIsDownloading(true);
+        setDownloadError(null);
+        setDownloadProgress(0);
+
+        try {
+            const baseName = `Resume-${requestId ?? new Date().toISOString().slice(0, 10)}`;
+            await exportElementToPdf(pdfRef.current, {
+                fileName: baseName,
+                marginPt: 24,
+                scale: 2,
+                backgroundColor: '#ffffff',
+                onProgress: (p) => setDownloadProgress(p),
+            });
+        } catch (error) {
+            console.error('Failed to export resume PDF', error);
+            setDownloadError('Failed to generate PDF. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    }, [isDownloading, requestId]);
+
     return (
         <ResumeContainer>
-            <MainCardContainer>
+            <MainCardContainer ref={pdfRef}>
                 <CardContent>
                     <ProfileHeader />
                     {isCvLoading && (
@@ -264,6 +294,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             {cvError}
                         </Typography>
                     )}
+                    {downloadError && <MuiAlert severity='error' message={downloadError} />}
 
                     <SectionContainer>
                         <SectionHeader
@@ -444,6 +475,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     size='large'
                     startIcon={<ArrowBackIcon />}
                     onClick={() => setActiveStep(2)}
+                />
+
+                <MuiButton
+                    color='secondary'
+                    size='large'
+                    variant='outlined'
+                    text={isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
+                    loading={isDownloading}
+                    disabled={Boolean(cvError)}
+                    onClick={handleDownloadPdf}
+                    sx={{ width: '188px' }}
                 />
 
                 <MuiButton
