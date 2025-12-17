@@ -47,6 +47,8 @@ interface WizardStore {
 
     resetWizard: () => void;
     validate: () => boolean;
+    requestId: string | null;
+    setRequestId: (requestId: string | null) => void;
 }
 
 const initailData: WizardData = {
@@ -211,6 +213,9 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
         });
     },
 
+    requestId: null,
+    setRequestId: (requestId) => set({ requestId }),
+
     addFile: (fileName) => set((state) => ({ uploadedFiles: [...state.uploadedFiles, fileName] })),
     removeFile: (fileName) => set((state) => ({ uploadedFiles: state.uploadedFiles.filter((f) => f !== fileName) })),
 
@@ -223,7 +228,7 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
             backgroundVoices: updater(state.backgroundVoices),
         })),
 
-    resetWizard: () => set({ data: initailData, uploadedFiles: [], backgroundFiles: [], backgroundVoices: [] }),
+    resetWizard: () => set({ data: initailData, uploadedFiles: [], backgroundFiles: [], backgroundVoices: [], requestId: null }),
 
     validate: () => {
         try {

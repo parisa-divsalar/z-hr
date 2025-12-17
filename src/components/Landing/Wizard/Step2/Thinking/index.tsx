@@ -17,6 +17,7 @@ const POLL_INTERVAL = 3000;
 
 const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep }) => {
     const { data: wizardData } = useWizardStore();
+    const setRequestId = useWizardStore((state) => state.setRequestId);
     const accessToken = useAuthStore((state) => state.accessToken);
 
     const hasSubmitted = useRef(false);
@@ -67,13 +68,8 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             const status = res.data.main_request_status;
             console.log('status', status);
 
-            if (status === 2) {
+            if (status === 2 || status === 3) {
                 await addCV(requestId, bodyOfResume);
-                return;
-            }
-
-            if (status === 3) {
-                setIsSubmitting(false);
                 return;
             }
 
@@ -93,6 +89,7 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
             const res = await apiClientClient.post('Apps/SendFile', formData);
             const requestId: string = res.data.result as string;
+            setRequestId(requestId);
 
             await pollStatus(requestId, bodyOfResume);
         } catch (err) {
