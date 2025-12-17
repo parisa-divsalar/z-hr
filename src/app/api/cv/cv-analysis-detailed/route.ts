@@ -1,7 +1,8 @@
-import CacheError from '@/services/cache-error';
 import { AxiosError } from 'axios';
-import { apiClientServer } from '@/services/api-client';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { apiClientServer } from '@/services/api-client';
+import CacheError from '@/services/cache-error';
 
 export async function GET(request: NextRequest) {
     try {

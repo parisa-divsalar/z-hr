@@ -1,5 +1,6 @@
 import { Box, IconButton, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
+
 import { InputContent as BaseInputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 
 export const InputContainer = styled(Stack, {

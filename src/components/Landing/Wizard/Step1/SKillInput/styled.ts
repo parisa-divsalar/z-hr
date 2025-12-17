@@ -1,4 +1,5 @@
-import React, { forwardRef, useEffect, useMemo, useRef } from 'react';
+import React, { createElement, forwardRef, useEffect, useMemo, useRef } from 'react';
+
 import { IconButton, Stack, Typography } from '@mui/material';
 import { styled, type Theme } from '@mui/material/styles';
 
@@ -108,7 +109,7 @@ export const InputContent = forwardRef<HTMLTextAreaElement, InputContentProps>(f
     resizeTextarea(innerRef.current);
   }, [value]);
 
-  return React.createElement(InputContentRoot, {
+  return createElement(InputContentRoot, {
     ...rest,
     value,
     rows: rows ?? 1,

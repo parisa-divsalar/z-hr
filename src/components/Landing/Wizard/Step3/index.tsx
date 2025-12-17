@@ -2,9 +2,9 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
-import MoreFeatures from '@/components/Landing/Wizard/Step3/MoreFeatures';
 import ResumeBuilderMoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
 import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeGeneratorFrame';
+import MoreFeatures from '@/components/Landing/Wizard/Step3/MoreFeatures';
 
 import ResumeEditor from './ResumeEditor';
 

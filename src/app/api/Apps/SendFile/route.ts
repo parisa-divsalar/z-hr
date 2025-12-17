@@ -21,13 +21,15 @@ class ExternalResponseError extends Error {
     }
 }
 
-const createForwardHeaders = (req: NextRequest) => {
-    const forwardHeaders = new Headers(req.headers);
-    forwardHeaders.set('accept', 'text/plain');
-    forwardHeaders.delete('host');
-    forwardHeaders.delete('content-length');
-    forwardHeaders.delete('cookie');
-    return forwardHeaders;
+const createForwardHeaders = (contentType?: 'json' | 'form') => {
+    // Keep this minimal to avoid leaking hop-specific / browser headers to the API server.
+    // Also, DO NOT manually set multipart boundaries: let fetch do it when body is FormData.
+    const headers = new Headers();
+    headers.set('accept', 'text/plain');
+    if (contentType === 'json') {
+        headers.set('content-type', 'application/json');
+    }
+    return headers;
 };
 
 const createSendFileUrl = (userId: string, lang: string) => {
@@ -40,16 +42,21 @@ const createSendFileUrl = (userId: string, lang: string) => {
 const forwardFileToApi = async (req: NextRequest, userId: string, lang: string) => {
     const sendFileUrl = createSendFileUrl(userId, lang);
 
-    const body = await req.arrayBuffer();
+    const incomingContentType = req.headers.get('content-type') || '';
+    const isMultipart = incomingContentType.includes('multipart/form-data');
+    const isJson = !isMultipart;
+
+    const body = isJson ? JSON.stringify(await req.json()) : await req.formData();
     const response = await fetch(sendFileUrl, {
         method: 'POST',
-        headers: createForwardHeaders(req),
+        headers: createForwardHeaders(isJson ? 'json' : 'form'),
         body,
     });
 
     const resultText = await response.text();
 
     if (!response.ok) {
+        console.log('SendFile response error', response.status, resultText);
         throw new ExternalResponseError(response.status, resultText || 'SendFile request failed');
     }
 

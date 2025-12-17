@@ -21,8 +21,8 @@ import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
-import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
 import { ToastContainer } from './styled';
+import BrieflySection, { BackgroundEntry } from '../SlectSkill/Briefly';
 
 interface CertificationProps {
     setStage: (stage: StageWizard) => void;

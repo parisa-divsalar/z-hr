@@ -1,9 +1,9 @@
+import { AxiosError } from 'axios';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-import CacheError from '@/services/cache-error';
-import { AxiosError } from 'axios';
 import { apiClientServer } from '@/services/api-client';
+import CacheError from '@/services/cache-error';
 
 const normalizeRequestId = (value?: string | null) => {
     if (!value) return null;

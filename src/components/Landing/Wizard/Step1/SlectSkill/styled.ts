@@ -1,5 +1,6 @@
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
+
 import { FilesStack as BaseFilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import { RemoveFileButton as BaseRemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import MuiButton from '@/components/UI/MuiButton';

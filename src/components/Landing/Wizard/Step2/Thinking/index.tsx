@@ -23,6 +23,7 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
     const hasSubmitted = useRef(false);
 
     const [isSubmitting, setIsSubmitting] = useState(true);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     let pollTimer: NodeJS.Timeout | null = null;
 
@@ -82,10 +83,24 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
     const handleSubmit = async () => {
         try {
+            /**
+             * Send both:
+             * - `inputFile` zip (actual file/voice bytes, named by id inside the zip)
+             * - `cvData` JSON (metadata / references by id)
+             *
+             * Backend contract varies between environments; sending both covers both cases.
+             */
             const { zipBlob, serializable: bodyOfResume } = await buildWizardZipBlob(wizardData);
 
             const formData = new FormData();
-            formData.append('inputFile', new File([zipBlob], 'info.zip'));
+            const zipFile = new File([zipBlob], 'info.zip', { type: 'application/zip' });
+            // common backend field names
+            formData.append('inputFile', zipFile);
+            formData.append('file', zipFile);
+
+            const cvDataJson = JSON.stringify(bodyOfResume);
+            formData.append('cvData', cvDataJson);
+            formData.append('bodyOfResume', cvDataJson);
 
             const res = await apiClientClient.post('Apps/SendFile', formData);
             const requestId: string = res.data.result as string;
@@ -94,6 +109,28 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             await pollStatus(requestId, bodyOfResume);
         } catch (err) {
             setIsSubmitting(false);
+            const errorObj = err as any;
+            const messageRaw =
+                errorObj?.response?.data?.error ||
+                errorObj?.response?.data?.message ||
+                errorObj?.message ||
+                'ERROR to send file';
+
+            const message =
+                typeof messageRaw === 'string'
+                    ? messageRaw
+                    : (() => {
+                          try {
+                              return JSON.stringify(messageRaw);
+                          } catch {
+                              return String(messageRaw);
+                          }
+                      })();
+
+            setSubmitError(message);
+            // Helps diagnose 400s from the API server
+            // eslint-disable-next-line no-console
+            console.error('Apps/SendFile failed:', errorObj?.response?.status, errorObj?.response?.data, errorObj);
         }
     };
 
@@ -130,7 +167,7 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             </Stack>
         </Stack>
     ) : (
-        <div>ERROR to send file</div>
+        <div>{submitError || 'ERROR to send file'}</div>
     );
 };
 
