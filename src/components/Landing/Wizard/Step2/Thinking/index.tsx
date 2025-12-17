@@ -5,6 +5,7 @@ import { Stack, Typography } from '@mui/material';
 import ThinkingIcon from '@/assets/images/icons/thinking.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import { apiClientClient } from '@/services/api-client';
+import { useAuthStore } from '@/store/auth';
 import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
 
 interface ThinkingProps {
@@ -16,6 +17,7 @@ const POLL_INTERVAL = 3000;
 
 const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep }) => {
     const { data: wizardData } = useWizardStore();
+    const accessToken = useAuthStore((state) => state.accessToken);
 
     const hasSubmitted = useRef(false);
 
@@ -33,8 +35,12 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
     const addCV = async (requestId: string, bodyOfResume: any) => {
         try {
             const res = await apiClientClient.post(
-                `cv/add-cv?requestId=${encodeURIComponent(requestId)}`,
-                bodyOfResume,
+                'cv/add-cv',
+                {
+                    userId: accessToken,
+                    requestId,
+                    bodyOfResume,
+                },
             );
             console.log('res 349587398573', res);
             setActiveStep(3);
