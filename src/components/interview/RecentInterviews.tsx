@@ -1,7 +1,12 @@
+'use client';
+
+import { useState } from 'react';
+
 import { Typography, Box, Stack } from '@mui/material';
 
 import DoneIcon from '@/assets/images/dashboard/done.svg';
 import FrameUser from '@/assets/images/icons/frameUser.svg';
+import RecentInterviewQuestionsDialog from '@/components/interview/RecentInterviewQuestionsDialog';
 import MuiButton from '@/components/UI/MuiButton';
 
 import {
@@ -24,6 +29,18 @@ const interviews = [
 ];
 
 const RecentInterviews = () => {
+    const [openDialog, setOpenDialog] = useState(false);
+    const [selectedTitle, setSelectedTitle] = useState<string | undefined>(undefined);
+
+    const handleOpen = (title?: string) => {
+        setSelectedTitle(title);
+        setOpenDialog(true);
+    };
+
+    const handleClose = () => {
+        setOpenDialog(false);
+    };
+
     return (
         <Box sx={{ marginTop: 3 }}>
             <RecentInterviewsContainer>
@@ -57,12 +74,24 @@ const RecentInterviews = () => {
                                         </Typography>
                                     </Stack>
                                 </Box>
-                                <MuiButton text='View ' variant='outlined' size='medium' color='secondary' />
+                                <MuiButton
+                                    text='View '
+                                    variant='outlined'
+                                    size='medium'
+                                    color='secondary'
+                                    onClick={() => handleOpen(interview.title)}
+                                />
                             </InterviewCardContent>
                         </RecentInterviewCard>
                     ))}
                 </InterviewsList>
             </RecentInterviewsContainer>
+
+            <RecentInterviewQuestionsDialog
+                open={openDialog}
+                onClose={handleClose}
+                title={selectedTitle ? `${selectedTitle} questions` : undefined}
+            />
         </Box>
     );
 };
