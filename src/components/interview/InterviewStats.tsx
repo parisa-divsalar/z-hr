@@ -201,6 +201,8 @@ const InterviewStats = () => {
                                 closeStartDialog();
                                 if (selectedInterviewType === 'chat') {
                                     router.push(PrivateRoutes.chatInterView);
+                                } else if (selectedInterviewType === 'voice') {
+                                    router.push(PrivateRoutes.voiceInterView);
                                 }
                             }}
                         >

@@ -49,8 +49,6 @@ export const ChatInterViewContent = styled(Stack)(() => ({
     justifyContent: 'center',
 }));
 
-// Match the Experience input (BrieflySection): ContainerSkill + InputContent
-// but with the requested fixed width (528px).
 export const ChatInputContainer = styled(BaseContainerSkill)(() => ({
     width: '528px',
     maxWidth: '528px',

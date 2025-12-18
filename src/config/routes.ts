@@ -21,6 +21,7 @@ export const PrivateRoutes = {
     resumeBuilder: '/resume-builder',
     learningHub: '/learning-hub',
     chatInterView: '/inter-view/chat-inter-view',
+    voiceInterView: '/inter-view/voice-inter-view',
 };
 
 export const VisibilityLayout: string[] = [
@@ -30,6 +31,7 @@ export const VisibilityLayout: string[] = [
     PrivateRoutes.support,
     PrivateRoutes.historyEdite,
     PrivateRoutes.chatInterView,
+    PrivateRoutes.voiceInterView,
     PrivateRoutes.payment,
     PrivateRoutes.learningHub,
     PrivateRoutes.resumeBuilder,
@@ -51,5 +53,6 @@ export const VisibilitySideBar: string[] = [
 
     PrivateRoutes.interView,
     PrivateRoutes.chatInterView,
+    PrivateRoutes.voiceInterView,
     PrivateRoutes.learningHub,
 ];
