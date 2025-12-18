@@ -34,7 +34,7 @@ export const CenterGrayBox = styled(Stack, {
     shouldForwardProp: (prop) => prop !== 'isIntro',
 })<CenterGrayBoxProps>(({ theme, isIntro }) => ({
     width: '100%',
-    maxWidth: isIntro ? '460px' : '528px',
+    maxWidth: '528px',
     margin: theme.spacing(0, 'auto'),
     alignItems: 'center',
     justifyContent: 'center',
@@ -55,3 +55,21 @@ export const ChatInputContainer = styled(BaseContainerSkill)(() => ({
 }));
 
 export const ChatInputContent = styled(BaseInputContent)(() => ({}));
+
+export const ScoreSards = styled(Stack, {
+    name: 'scoreSards',
+    slot: 'Root',
+})(({ theme }) => ({
+    width: '100%',
+    height: '86px',
+    borderRadius: '8px',
+    backgroundColor: theme.palette.grey[50],
+    padding: theme.spacing(2),
+
+    display: 'flex',
+    flexDirection: 'row',
+    gap: theme.spacing(1),
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+}));

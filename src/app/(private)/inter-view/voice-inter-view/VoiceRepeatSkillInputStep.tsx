@@ -13,7 +13,7 @@ import { CenterGrayBox, VoiceInputContainer, VoiceInputContent } from './styled'
 interface VoiceRepeatSkillInputStepProps {
     initialAnswer?: string;
     onBack?: () => void;
-    onNext?: (answer: string) => void;
+    onNext?: (answer: string, voice?: { blob: Blob; duration: number }) => void;
 }
 
 const VoiceRepeatSkillInputStep = ({ initialAnswer = '', onBack, onNext }: VoiceRepeatSkillInputStepProps) => {

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,9 @@ export default function VoiceInterView() {
     const router = useRouter();
     const [step, setStep] = useState<'intro' | 'skill-input' | 'ready' | 'repeat-skill-input'>('intro');
     const [skillAnswer, setSkillAnswer] = useState('');
+    const [skillAnswerVoiceUrl, setSkillAnswerVoiceUrl] = useState<string | null>(null);
+    const [skillAnswerVoiceBlob, setSkillAnswerVoiceBlob] = useState<Blob | null>(null);
+    const [skillAnswerVoiceDuration, setSkillAnswerVoiceDuration] = useState<number>(0);
 
     const handleStartClick = () => {
         setStep('skill-input');
@@ -25,10 +28,43 @@ export default function VoiceInterView() {
         setStep('intro');
     };
 
-    const handleSkillSubmit = (answer: string) => {
+    const handleSkillSubmit = (answer: string, voice?: { blob: Blob; duration: number }) => {
         setSkillAnswer(answer);
+
+        // Persist voice recording across steps (create our own objectURL and revoke old one)
+        if (skillAnswerVoiceUrl) {
+            try {
+                URL.revokeObjectURL(skillAnswerVoiceUrl);
+            } catch {
+                // ignore
+            }
+        }
+
+        if (voice?.blob) {
+            const url = URL.createObjectURL(voice.blob);
+            setSkillAnswerVoiceUrl(url);
+            setSkillAnswerVoiceBlob(voice.blob);
+            setSkillAnswerVoiceDuration(voice.duration ?? 0);
+        } else {
+            setSkillAnswerVoiceUrl(null);
+            setSkillAnswerVoiceBlob(null);
+            setSkillAnswerVoiceDuration(0);
+        }
+
         setStep('ready');
     };
+
+    useEffect(() => {
+        return () => {
+            if (skillAnswerVoiceUrl) {
+                try {
+                    URL.revokeObjectURL(skillAnswerVoiceUrl);
+                } catch {
+                    // ignore
+                }
+            }
+        };
+    }, [skillAnswerVoiceUrl]);
 
     const handleBackToSkill = () => {
         setStep('skill-input');
@@ -49,7 +85,20 @@ export default function VoiceInterView() {
     return (
         <VoiceInterViewRoot>
             <VoiceInterViewGrid size={{ xs: 12, sm: 12, md: 12 }}>
-                <Stack direction='row' alignItems='center' gap={2} onClick={() => router.push('/inter-view')}>
+                <Stack
+                    direction='row'
+                    alignItems='center'
+                    gap={2}
+                    role='button'
+                    tabIndex={0}
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => router.push('/inter-view')}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            router.push('/inter-view');
+                        }
+                    }}
+                >
                     <Typography variant='h5' color='text.primary' fontWeight='500'>
                         Interview{' '}
                     </Typography>
@@ -110,6 +159,21 @@ export default function VoiceInterView() {
                     {step === 'ready' && (
                         <VoiceInterviewReadyStep
                             answer={skillAnswer}
+                            voiceUrl={skillAnswerVoiceUrl}
+                            voiceBlob={skillAnswerVoiceBlob}
+                            voiceDuration={skillAnswerVoiceDuration}
+                            onClearVoice={() => {
+                                if (skillAnswerVoiceUrl) {
+                                    try {
+                                        URL.revokeObjectURL(skillAnswerVoiceUrl);
+                                    } catch {
+                                        // ignore
+                                    }
+                                }
+                                setSkillAnswerVoiceUrl(null);
+                                setSkillAnswerVoiceBlob(null);
+                                setSkillAnswerVoiceDuration(0);
+                            }}
                             onBack={handleBackToSkill}
                             onStart={handleStartInterview}
                             onRepeat={handleRepeatClick}

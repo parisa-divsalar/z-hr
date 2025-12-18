@@ -15,7 +15,7 @@ import { CenterGrayBox } from './styled';
 
 interface VoiceSkillInputStepProps {
     onBack?: () => void;
-    onNext?: (answer: string) => void;
+    onNext?: (answer: string, voice?: { blob: Blob; duration: number }) => void;
 }
 
 const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
@@ -31,6 +31,7 @@ const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
 
     const isRecording = recordingState === 'recording';
     const shouldShowRecordButton = !isRecording && !showAnswerRecorder && !answerVoiceUrl;
+    const canProceed = !isRecording && (answer.trim() !== '' || !!answerVoiceUrl);
 
     const questionText = 'Tell me about yourself and your experience?';
     const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -200,8 +201,9 @@ const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
 
     const handleSubmit = () => {
         const trimmed = answer.trim();
-        if (!trimmed) return;
-        onNext?.(trimmed);
+        if (!trimmed && !answerVoiceUrlRef.current) return;
+        const voicePayload = answerVoiceBlob ? { blob: answerVoiceBlob, duration: answerVoiceDuration } : undefined;
+        onNext?.(trimmed || '', voicePayload);
     };
 
     const handleShowAnswerRecorder = () => {
@@ -266,7 +268,7 @@ const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
                 1
             </Typography>
 
-            <Typography variant='h5' color='text.primary' fontWeight='584' mb={4}>
+            <Typography variant='h5' color='text.primary' mt={2} fontWeight='584' mb={4}>
                 {questionText}
             </Typography>
             <IconButton
@@ -279,40 +281,49 @@ const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
             >
                 {isPlaying ? <PauseIcon style={{ width: 56, height: 56 }} /> : <PlayIcon />}
             </IconButton>
-            {shouldShowRecordButton && (
-                <IconButton
-                    onClick={handleShowAnswerRecorder}
-                    size='small'
-                    aria-label='Record your answer'
-                    disableRipple
-                    disableFocusRipple
-                    sx={{
-                        mt: 2,
-                        p: 0,
-                        width: 76,
-                        height: 76,
-                        minWidth: 0,
-                        minHeight: 0,
-                        borderRadius: '16px',
-                        overflow: 'hidden',
-                        backgroundColor: 'transparent',
-                        transition: 'background-color 160ms ease, transform 160ms ease',
-                        '&:hover': {
-                            borderRadius: '16px',
-                            backgroundColor: 'rgba(129, 140, 248, 0.12)',
-                            transform: 'translateY(-1px)',
-                        },
-                        '&:focus-visible': {
-                            backgroundColor: 'rgba(129, 140, 248, 0.16)',
-                        },
-                    }}
-                >
-                    <RecordIcon />
-                </IconButton>
-            )}
 
-            {(showAnswerRecorder || answerVoiceUrl) && (
-                <Stack width='100%' mb={4} alignItems='center'>
+            <Stack
+                width='100%'
+                alignItems='center'
+                justifyContent='center'
+                mt={2}
+                mb={4}
+                sx={{
+                    minHeight: 96,
+                }}
+            >
+                {shouldShowRecordButton && (
+                    <IconButton
+                        onClick={handleShowAnswerRecorder}
+                        size='small'
+                        aria-label='Record your answer'
+                        disableRipple
+                        disableFocusRipple
+                        sx={{
+                            p: 0,
+                            width: 76,
+                            height: 76,
+                            minWidth: 0,
+                            minHeight: 0,
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            backgroundColor: 'transparent',
+                            transition: 'background-color 160ms ease, transform 160ms ease',
+                            '&:hover': {
+                                borderRadius: '16px',
+                                backgroundColor: 'rgba(129, 140, 248, 0.12)',
+                                transform: 'translateY(-1px)',
+                            },
+                            '&:focus-visible': {
+                                backgroundColor: 'rgba(129, 140, 248, 0.16)',
+                            },
+                        }}
+                    >
+                        <RecordIcon />
+                    </IconButton>
+                )}
+
+                {(showAnswerRecorder || answerVoiceUrl) && (
                     <VoiceRecord
                         key={recorderKey}
                         onRecordingComplete={handleAnswerRecordingComplete}
@@ -327,8 +338,8 @@ const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
                         fullWidth={false}
                         maxDuration={90}
                     />
-                </Stack>
-            )}
+                )}
+            </Stack>
 
             <Stack mt={10} mb={5} direction='row' spacing={4}>
                 <MuiButton
@@ -340,12 +351,7 @@ const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
                     Back
                 </MuiButton>
 
-                <MuiButton
-                    color='secondary'
-                    endIcon={<ArrowRightIcon />}
-                    onClick={handleSubmit}
-                    disabled={answer.trim() === ''}
-                >
+                <MuiButton color='secondary' endIcon={<ArrowRightIcon />} onClick={handleSubmit} disabled={!canProceed}>
                     Next
                 </MuiButton>
             </Stack>

@@ -8,6 +8,7 @@ import Grid from '@mui/material/Grid';
 import { useRouter } from 'next/navigation';
 
 import InterviewIcon from '@/assets/images/dashboard/imag/interview.svg';
+import InterVoice from '@/assets/images/icons/interVoice.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
 import { PrivateRoutes } from '@/config/routes';
@@ -86,12 +87,12 @@ const InterviewStats = () => {
                                     <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
                                         2/3 free credits used
                                     </Typography>
-                                    <Typography mt={1} variant='subtitle2' fontWeight='400' color='text.primary'>
+                                    <Typography mt={2} variant='subtitle2' fontWeight='400' color='text.primary'>
                                         2 Credit
                                     </Typography>
                                 </Stack>
                             </Stack>
-                            <Stack mt={5}>
+                            <Stack mt={7}>
                                 {' '}
                                 <MuiButton variant='outlined' color='secondary' onClick={() => openStartDialog('chat')}>
                                     Start{' '}
@@ -106,7 +107,7 @@ const InterviewStats = () => {
                         <StatValueRow sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                             <Stack direction='row' spacing={2} alignItems='center'>
                                 <Stack sx={{ width: 100, height: 100 }}>
-                                    <InterviewIcon />
+                                    <InterVoice />
                                 </Stack>
                                 <Stack direction='column'>
                                     <Typography variant='subtitle1' fontWeight='492' color='text.primary'>
@@ -115,12 +116,12 @@ const InterviewStats = () => {
                                     <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
                                         2/3 free credits used
                                     </Typography>
-                                    <Typography mt={1} variant='subtitle2' fontWeight='400' color='text.primary'>
+                                    <Typography mt={2} variant='subtitle2' fontWeight='400' color='text.primary'>
                                         2 Credit
                                     </Typography>
                                 </Stack>
                             </Stack>
-                            <Stack mt={5}>
+                            <Stack mt={7}>
                                 {' '}
                                 <MuiButton
                                     variant='outlined'
@@ -146,7 +147,7 @@ const InterviewStats = () => {
                     },
                 }}
             >
-                <Stack mx={3}>
+                <Stack>
                     <Stack
                         direction='row'
                         alignItems='center'

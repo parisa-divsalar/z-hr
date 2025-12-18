@@ -172,7 +172,8 @@ export const DateTimeStack = styled(Stack)(({ theme }) => ({
 }));
 
 export const START_INTERVIEW_DIALOG_PAPER_SX = {
-    borderRadius: '1rem',
+    borderRadius: '8px',
+    width: '306px',
     overflow: 'hidden',
     margin: 0,
 } as const;

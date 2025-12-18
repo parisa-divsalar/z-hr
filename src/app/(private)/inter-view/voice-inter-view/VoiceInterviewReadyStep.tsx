@@ -8,6 +8,10 @@ import { CenterGrayBox } from './styled';
 
 interface VoiceInterviewReadyStepProps {
     answer: string;
+    voiceUrl?: string | null;
+    voiceBlob?: Blob | null;
+    voiceDuration?: number;
+    onClearVoice?: () => void;
     onBack?: () => void;
     onStart?: () => void;
     onRepeat?: () => void;
@@ -54,7 +58,12 @@ const VoiceInterviewReadyStep = ({ onStart, onRepeat }: VoiceInterviewReadyStepP
                 <MuiButton variant='outlined' color='secondary' endIcon={<ArrowRightIcon />} onClick={onStart}>
                     Interview page
                 </MuiButton>
-                <MuiButton color='secondary' startIcon={<RepeatIcon />} onClick={onRepeat} sx={{ width: 172, gap: 1.5 }}>
+                <MuiButton
+                    color='secondary'
+                    startIcon={<RepeatIcon />}
+                    onClick={onRepeat}
+                    sx={{ width: 172, gap: 1.5 }}
+                >
                     Repeat{' '}
                 </MuiButton>
             </Stack>
@@ -63,5 +72,3 @@ const VoiceInterviewReadyStep = ({ onStart, onRepeat }: VoiceInterviewReadyStepP
 };
 
 export default VoiceInterviewReadyStep;
-
-

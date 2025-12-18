@@ -55,3 +55,4 @@ export const VoiceInputContainer = styled(BaseContainerSkill)(() => ({
 }));
 
 export const VoiceInputContent = styled(BaseInputContent)(() => ({}));
+

@@ -17,7 +17,7 @@ const Interview = () => {
                 Interview
             </Typography>
 
-            <Stack direction='row' alignItems='center' justifyContent='space-between' mt={3}>
+            <Stack direction='row' alignItems='center' justifyContent='space-between'>
                 <InterviewStats />
             </Stack>
 
