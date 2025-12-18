@@ -37,7 +37,14 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
       height='100%'
       alignItems='center'
       py={5}
-      style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflow: 'hidden' }}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        minHeight: 0,
+        // On resume-builder, content can be taller than viewport and should scroll via the page container
+        overflow: variant === 'resume-builder' ? 'visible' : 'hidden',
+      }}
     >
       <StepWrapper activeStep={activeStep} />
 

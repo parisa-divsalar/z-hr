@@ -3,7 +3,8 @@ import { styled } from '@mui/material/styles';
 
 export const InterviewRoot = styled(Stack)(({ theme }) => ({
     width: '100%',
-    maxHeight: '100vh-145px', // limit height to viewport
+    height: '85vh',
+    maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
     overflowY: 'auto', // scroll only inside this content
     boxSizing: 'border-box',
     padding: 24,

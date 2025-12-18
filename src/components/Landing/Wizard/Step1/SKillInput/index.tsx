@@ -165,11 +165,13 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
 
     return (
         <MainContainer>
-            <Typography variant='h5' color='text.primary' fontWeight='584'>
+            <Typography variant='h5' color='text.primary' fontWeight='584' mt={4}>
                 Very good Ayla 😊
             </Typography>
-
-            <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
+            <Typography variant='h5' color='text.primary' fontWeight='584'>
+                You should answer a few questions about your resume.
+            </Typography>
+            <Typography variant='h5' color='text.primary' fontWeight='584' mt={3}>
                 <span style={{ fontWeight: 'normal' }}>1.</span> Your visa status?
             </Typography>
 
@@ -188,12 +190,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
             </Typography>
 
             <Stack mt={2} direction='row' alignItems='center' gap={1} width='100%' maxWidth='426px'>
-                <AutoGrowInputContainer
-                    direction='row'
-                    highlight={contactInput.trim() !== ''}
-                    grow
-                    noMarginTop
-                >
+                <AutoGrowInputContainer direction='row' highlight={contactInput.trim() !== ''} grow noMarginTop>
                     <InputContent
                         placeholder='Type your answer...'
                         value={contactInput}
