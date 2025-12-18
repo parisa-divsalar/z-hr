@@ -5,10 +5,10 @@ import Grid from '@mui/material/Grid';
 
 import HeadInterviewIcon from '@/assets/images/dashboard/headIterview.svg';
 import InterIcon from '@/assets/images/icons/interv.svg';
+import RecentInterviews from '@/components/interview/CartItems/RecentInterviews';
+import UpcomingInterview from '@/components/interview/CartItems/UpcomingInterview';
 import InterviewStats from '@/components/interview/InterviewStats';
-import RecentInterviews from '@/components/interview/RecentInterviews';
 import { InterviewRoot } from '@/components/interview/styled';
-import UpcomingInterview from '@/components/interview/UpcomingInterview';
 
 const Interview = () => {
     return (

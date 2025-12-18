@@ -15,7 +15,7 @@ import {
     RecentInterviewCard,
     InterviewCardContent,
     InterviewMetaInfo,
-} from './styled';
+} from '../styled';
 
 const interviews = [
     {

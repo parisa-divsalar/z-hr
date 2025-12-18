@@ -34,7 +34,7 @@ const RepeatSkillInputStep = ({ initialAnswer = '', onBack, onNext }: RepeatSkil
         You can rewrite your answer if you want
       </Typography>
 
-      <ChatInputContainer direction='row' hasValue={answer !== ''}>
+      <ChatInputContainer direction='row' active={answer !== ''}>
         <ChatInputContent placeholder='Type your answer...' value={answer} onChange={handleChange} />
 
         {answer !== '' ? (

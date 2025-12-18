@@ -7,7 +7,7 @@ import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import FrameUser from '@/assets/images/icons/frameUser.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
-import { CardBaseiNTER, SectionHeader, StepsLeftChip } from './styled';
+import { CardBaseiNTER, SectionHeader, StepsLeftChip } from '../styled';
 
 const UpcomingInterview2 = () => {
     const router = useRouter();
