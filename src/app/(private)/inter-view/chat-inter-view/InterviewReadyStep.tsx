@@ -1,6 +1,7 @@
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
+import QuestionsList from './QuestionsList';
 import { ScoreSards } from './styled';
 
 interface InterviewReadyStepProps {
@@ -49,6 +50,10 @@ const InterviewReadyStep = ({ onStart, onRepeat }: InterviewReadyStepProps) => {
                             09:57{' '}
                         </Typography>
                     </ScoreSards>
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                    <QuestionsList />
                 </Grid>
             </Grid>
         </Stack>

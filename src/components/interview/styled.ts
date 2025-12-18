@@ -1,19 +1,9 @@
 import { Avatar, Box, Button, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const INTERVIEW_COLORS = {
-    background: '#F7F7F7',
-    cardBackground: '#FFFFFF',
-    orangeTag: '#FFAB6F',
-    blueAccent: '#4DA3FF',
-    greenSuccess: '#2ECC71',
-    lightText: '#A1A1A1',
-    darkText: '#1C1C1C',
-};
-
 export const InterviewRoot = styled(Stack)(({ theme }) => ({
     width: '100%',
-    maxHeight: '100vh-120px', // limit height to viewport
+    maxHeight: '100vh-145px', // limit height to viewport
     overflowY: 'auto', // scroll only inside this content
     boxSizing: 'border-box',
     padding: 24,
@@ -21,7 +11,7 @@ export const InterviewRoot = styled(Stack)(({ theme }) => ({
     borderRadius: '8px',
     gap: 24,
     margin: '1px',
-    marginTop: '10px',
+    marginTop: '8px',
 }));
 
 export const SectionHeader = styled(Stack)(() => ({
@@ -37,36 +27,16 @@ export const CardBase = styled(Box)(() => ({
     boxSizing: 'border-box',
 }));
 
-export const InterviewCardRoot = styled(CardBase)(() => ({
-    display: 'flex',
-    padding: 0,
-    height: 108,
-    alignItems: 'center',
-}));
-
 export const SmallCardBase = styled(CardBase)(({ theme }) => ({
     borderRadius: 8,
     padding: 16,
     border: `1px solid ${theme.palette.grey[100]}`,
 }));
 
-export const StatTitle = styled(Typography)(() => ({
-    fontSize: 12,
-    fontWeight: 500,
-    color: INTERVIEW_COLORS.lightText,
-    marginBottom: 8,
-}));
-
 export const StatValueRow = styled(Stack)(() => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-}));
-
-export const StatValue = styled(Typography)(() => ({
-    fontSize: 24,
-    fontWeight: 600,
-    color: INTERVIEW_COLORS.darkText,
 }));
 
 export const TagPill = styled(Typography)(({ theme }) => ({
@@ -80,11 +50,6 @@ export const TagPill = styled(Typography)(({ theme }) => ({
     backgroundColor: theme.palette.warning.light,
     border: `1px solid ${theme.palette.warning.main}`,
     color: theme.palette.warning.main,
-}));
-
-export const SubText = styled(Typography)(() => ({
-    fontSize: 12,
-    color: INTERVIEW_COLORS.lightText,
 }));
 
 export const CardBaseiNTER = styled(Box)(({ theme }) => ({

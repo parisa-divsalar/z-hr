@@ -1,8 +1,50 @@
-import { Box, Grid, Stack } from '@mui/material';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import { InputContent as BaseInputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
 import { ContainerSkill as BaseContainerSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/styled';
+
+export const QuestionCard = styled(Stack)(() => ({
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    borderRadius: 16,
+    width: '100%',
+    overflow: 'hidden',
+    marginTop: '10px',
+}));
+
+export const QuestionBadge = styled(Box)(({ theme }) => ({
+    width: 38,
+    height: 54,
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 584,
+    fontSize: 14,
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.primary.main,
+}));
+
+export const QuestionTexts = styled(Stack)(({ theme }) => ({
+    flex: 1,
+    gap: theme.spacing(0.5),
+    minWidth: 0,
+    overflow: 'hidden',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+}));
+
+export const QuestionTitle = styled(Typography)({
+    wordBreak: 'break-word',
+});
+
+export const AnswerText = styled(Typography)({
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    flex: 1,
+    minWidth: 0,
+});
 
 export const ChatInterViewRoot = styled(Box)(({ theme }) => ({
     padding: theme.spacing(3),
