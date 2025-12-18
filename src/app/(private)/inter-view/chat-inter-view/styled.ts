@@ -49,8 +49,9 @@ export const AnswerText = styled(Typography)({
 export const ChatInterViewRoot = styled(Box)(({ theme }) => ({
     padding: theme.spacing(3),
     width: '100%',
-    height: 'calc(100vh - 200px)',
-    margin: '1 auto',
+    height: '85vh',
+    maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
+    margin: 0,
     borderRadius: '8px',
     border: `1px solid ${theme.palette.grey[100]}`,
     overflowY: 'auto',
@@ -58,7 +59,8 @@ export const ChatInterViewRoot = styled(Box)(({ theme }) => ({
 
     [theme.breakpoints.down('sm')]: {
         padding: theme.spacing(2),
-        height: 'calc(100vh - 80px)',
+        height: '85vh',
+        maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
     },
 }));
 
