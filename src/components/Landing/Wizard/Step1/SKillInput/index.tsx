@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 
 import { IconButton, Stack, Typography } from '@mui/material';
 
@@ -89,6 +89,41 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
 
     const isAddSkillDisabled = !hasLanguageSelection || isDuplicateSkillEntry;
 
+    const prevCountsRef = useRef({ contacts: 0, skills: 0 });
+    const didInitAutoScrollRef = useRef(false);
+
+    // In resume-builder, the page uses an internal scroll container (`#resume-builder-root`).
+    // When the user adds new items, auto-scroll down so the content doesn't visually collide with the stepper.
+    useEffect(() => {
+        const nextContacts = visibleContactMethods.length;
+        const nextSkills = skillEntries.length;
+
+        // Don't auto-scroll on initial mount (e.g. when store is hydrated with existing data),
+        // only when the user actually adds items during this session.
+        if (!didInitAutoScrollRef.current) {
+            didInitAutoScrollRef.current = true;
+            prevCountsRef.current = { contacts: nextContacts, skills: nextSkills };
+            return;
+        }
+
+        const prev = prevCountsRef.current;
+
+        const didAdd = nextContacts > prev.contacts || nextSkills > prev.skills;
+        prevCountsRef.current = { contacts: nextContacts, skills: nextSkills };
+
+        if (!didAdd) return;
+
+        // Prefer the Wizard's dedicated scroll area (starts under the stepper).
+        const container =
+            document.getElementById('resume-builder-scroll') ?? document.getElementById('resume-builder-root');
+        if (!container) return;
+
+        // Wait a frame to ensure the newly added rows have been laid out.
+        requestAnimationFrame(() => {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        });
+    }, [skillEntries.length, visibleContactMethods.length]);
+
     // ---------------- CONTACT METHODS ----------------
 
     const handleAddContact = () => {
@@ -165,7 +200,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
 
     return (
         <MainContainer>
-            <Typography variant='h5' color='text.primary' fontWeight='584' mt={4}>
+            <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
                 Very good Ayla 😊
             </Typography>
             <Typography variant='h5' color='text.primary' fontWeight='584'>
@@ -226,7 +261,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
 
             {/* --- Languages section --- */}
 
-            <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
+            <Typography variant='h5' color='text.primary' fontWeight='584' mt={3}>
                 <span style={{ fontWeight: 'normal' }}>3.</span> Your language skills?
             </Typography>
 

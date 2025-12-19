@@ -28,7 +28,7 @@ export const ResumeBuilderRoot = styled(Box)(({ theme }) => ({
     width: '100%',
     height: '85vh',
     maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
-    overflowY: 'auto', // scroll only inside this content
+    overflow: 'hidden', // resume-builder uses an internal scroll area inside the Wizard
     padding: 20,
     border: `1px solid ${theme.palette.grey[100]}`,
     borderRadius: '8px',

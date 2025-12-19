@@ -5,10 +5,10 @@ import { styled, type Theme } from '@mui/material/styles';
 
 export const MainContainer = styled(Stack)(() => ({
   width: '100%',
-  height: '100%',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'flex-start',
+  minHeight: '100%',
   padding: '1rem',
 }));
 

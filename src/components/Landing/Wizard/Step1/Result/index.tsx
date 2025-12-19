@@ -61,7 +61,7 @@ const VoiceResult: FunctionComponent<VoiceResultProps> = (props) => {
   ]);
 
   return (
-    <Stack alignItems='center' justifyContent='center' height='100%'>
+    <Stack alignItems='center' justifyContent='center' minHeight='100%'>
       <Typography color='text.primary' variant='h6' mt={2}>
         Uploaded
       </Typography>

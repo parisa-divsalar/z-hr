@@ -46,6 +46,7 @@ import {
     ContainerSkillAttachTop,
     ContainerSkillAttachVoice,
     FullWidthFilesStack,
+    MainContainer,
     RecordActionIconButton,
     SkillContainer,
     SummaryTextContainer,
@@ -195,6 +196,36 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const backgroundFiles = (backgroundSection?.files as File[]) ?? [];
     const backgroundVoices =
         (backgroundSection?.voices as { id: string; url: string; blob: Blob; duration: number }[]) ?? [];
+
+    // In resume-builder, the page uses an internal scroll container.
+    // When new attachments are added, auto-scroll down so they are immediately visible.
+    const prevCountsRef = useRef({ files: 0, voices: 0 });
+    const didInitAutoScrollRef = useRef(false);
+    useEffect(() => {
+        const nextFiles = backgroundFiles.length;
+        const nextVoices = backgroundVoices.length;
+
+        // Don't auto-scroll on initial mount (e.g. when store is hydrated with existing data),
+        // only when the user actually adds items during this session.
+        if (!didInitAutoScrollRef.current) {
+            didInitAutoScrollRef.current = true;
+            prevCountsRef.current = { files: nextFiles, voices: nextVoices };
+            return;
+        }
+
+        const prev = prevCountsRef.current;
+        const didAdd = nextFiles > prev.files || nextVoices > prev.voices;
+        prevCountsRef.current = { files: nextFiles, voices: nextVoices };
+        if (!didAdd) return;
+
+        const container =
+            document.getElementById('resume-builder-scroll') ?? document.getElementById('resume-builder-root');
+        if (!container) return;
+
+        requestAnimationFrame(() => {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        });
+    }, [backgroundFiles.length, backgroundVoices.length]);
 
     const [skills, setSkills] = useState<TSkill[]>([]);
     const [isSkillsLoading, setIsSkillsLoading] = useState<boolean>(true);
@@ -368,7 +399,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
             ...backgroundSection,
             voices: nextVoices,
         });
-        // Keep global allFiles in sync with newly added voice recordings
         recomputeAllFiles();
 
         setShowRecordingControls(false);
@@ -595,7 +625,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     };
 
     return (
-        <Stack alignItems='center' justifyContent='center' height='100%'>
+        <MainContainer>
             <Stack direction='row' alignItems='center' gap={1}>
                 <Typography variant='h5' color='text.primary' fontWeight='584'>
                     4. Briefly tell us about your background{' '}
@@ -854,7 +884,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 onConfirm={handleConfirmEditDialog}
                 initialSkillId={wizardData.mainSkill}
             />
-        </Stack>
+        </MainContainer>
     );
 };
 

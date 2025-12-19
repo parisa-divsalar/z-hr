@@ -5,6 +5,16 @@ import { FilesStack as BaseFilesStack } from '@/components/Landing/Wizard/Step1/
 import { RemoveFileButton as BaseRemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
+export const MainContainer = styled(Stack)(() => ({
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    minHeight: '100%',
+    padding: '1rem',
+    boxSizing: 'border-box',
+}));
+
 export const SkillContainer = styled(Stack)(() => ({
     display: 'flex',
     alignItems: 'center',

@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 
 import { AIStatus, StageWizard } from '@/components/Landing/type';
 import Certification from '@/components/Landing/Wizard/Step1/Certification';
@@ -15,6 +15,13 @@ interface Step1Props {
 
 const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) => {
     const [stage, setStage] = useState<StageWizard>('SKILL_INPUT');
+
+    // When we switch sub-stages, reset scroll so the next question header is immediately visible.
+    useEffect(() => {
+        const container = document.getElementById('resume-builder-scroll');
+        if (!container) return;
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [stage]);
 
     if (stage === 'SKILL_INPUT') {
         return <SKillInput setStage={setStage} />;
