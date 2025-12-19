@@ -2,9 +2,9 @@ import React from 'react';
 
 import { Divider, Stack, Typography } from '@mui/material';
 
-import { AnswerText, QuestionBadge, QuestionCard as StyledQuestionCard, QuestionTexts, QuestionTitle } from './styled';
-
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
+
+import { AnswerText, QuestionBadge, QuestionCard as StyledQuestionCard, QuestionTexts, QuestionTitle } from './styled';
 
 interface InterviewQuestionItem {
     number: number;

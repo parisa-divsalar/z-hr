@@ -90,7 +90,11 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
                 flexDirection: 'column',
                 gap: '1rem',
                 minHeight: 0,
-                overflow: 'hidden',
+                // Allow the wizard content to grow (e.g. auto-growing textareas) without being clipped.
+                // In landing variant we don't use the dedicated internal scroll container,
+                // so the root must be scrollable.
+                overflowY: 'auto',
+                overflowX: 'hidden',
             }}
         >
             <StepWrapper activeStep={activeStep} />

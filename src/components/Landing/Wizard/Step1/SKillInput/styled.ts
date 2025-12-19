@@ -51,7 +51,8 @@ export const AutoGrowInputContainer = styled(InputContainer)(() => ({
 const InputContentRoot = styled('textarea')(({ theme }) => ({
   width: '100%',
   minHeight: '52px',
-  height: '52px',
+  // Let JS auto-resize control the actual height; keep a sane default via minHeight.
+  height: 'auto',
   textAlign: 'left',
   fontFamily: theme.typography.fontFamily,
   border: 'none',
@@ -60,6 +61,11 @@ const InputContentRoot = styled('textarea')(({ theme }) => ({
   outline: 'none',
   fontWeight: '492',
   backgroundColor: 'transparent',
+  // Ensure extremely long strings without spaces (e.g. pasted tokens) don't overflow the box.
+  // This also makes `scrollHeight` grow correctly so our auto-resize expands the container instead of overlapping below.
+  whiteSpace: 'pre-wrap',
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word',
   // Vertically center single-line text inside the initial 52px height
   padding: 'calc((52px - 1.25em) / 2) 0',
   margin: 0,
@@ -84,8 +90,23 @@ type InputContentProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 const resizeTextarea = (el: HTMLTextAreaElement | null) => {
   if (!el) return;
   const minHeight = 52;
-  el.style.height = '0px';
-  el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
+  // Use the most compatible approach for measuring scrollHeight across browsers.
+  // Setting height to 'auto' avoids issues where padding/box-sizing makes '0px' unreliable.
+  el.style.height = 'auto';
+  const computed = window.getComputedStyle(el);
+  const maxHeightRaw = computed.maxHeight;
+  const maxHeight =
+    maxHeightRaw && maxHeightRaw !== 'none' ? Number.parseFloat(maxHeightRaw) : Number.POSITIVE_INFINITY;
+
+  const nextHeight = Math.max(el.scrollHeight, minHeight);
+
+  if (Number.isFinite(maxHeight) && nextHeight > maxHeight) {
+    el.style.overflowY = 'auto';
+    el.style.height = `${maxHeight}px`;
+  } else {
+    el.style.overflowY = 'hidden';
+    el.style.height = `${nextHeight}px`;
+  }
 };
 
 export const InputContent = forwardRef<HTMLTextAreaElement, InputContentProps>(function InputContent(

@@ -11,8 +11,14 @@ export const MainContainer = styled(Stack)(() => ({
     alignItems: 'center',
     justifyContent: 'flex-start',
     minHeight: '100%',
+    height: '100%',
     padding: '1rem',
     boxSizing: 'border-box',
+    // If the wizard step is rendered inside a fixed-height container (dialog/sheet),
+    // scroll within the step instead of scrolling the whole page.
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    WebkitOverflowScrolling: 'touch',
 }));
 
 export const SkillContainer = styled(Stack)(() => ({
@@ -22,6 +28,14 @@ export const SkillContainer = styled(Stack)(() => ({
     gap: '0.5rem',
     marginTop: '1rem',
     flexWrap: 'wrap',
+    // Prevent the whole page from growing when many skills exist; scroll inside this box instead.
+    width: '350px',
+    maxWidth: '100%',
+    maxHeight: '35vh',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    // Keep layout stable when the scrollbar appears (supported in modern browsers).
+    scrollbarGutter: 'stable',
 }));
 
 export const ContainerSkill = styled(Stack, {
@@ -40,6 +54,8 @@ export const ContainerSkill = styled(Stack, {
     alignItems: 'stretch',
     justifyContent: 'flex-start',
     gap: '0.25rem',
+    // Keep the auto-growing textarea visually contained within rounded corners.
+    overflow: 'hidden',
 }));
 export const ContainerSkillAttach = styled(Stack, {
     shouldForwardProp: (prop) => prop !== 'active',

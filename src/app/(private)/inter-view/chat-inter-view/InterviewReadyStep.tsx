@@ -11,7 +11,7 @@ interface InterviewReadyStepProps {
     onRepeat?: () => void;
 }
 
-const InterviewReadyStep = ({ onStart, onRepeat }: InterviewReadyStepProps) => {
+const InterviewReadyStep = (_props: InterviewReadyStepProps) => {
     return (
         <Stack width='100%' sx={{ alignSelf: 'stretch' }}>
             <Typography variant='h5' color='text.primary' fontWeight='492' mt={2}>

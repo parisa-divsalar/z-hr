@@ -9,7 +9,7 @@ import Grid from '@mui/material/Grid';
 
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
-import { exportElementToPdf } from '@/utils/exportToPdf';
+import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
 import {
     ActionContainer,
@@ -84,13 +84,7 @@ const RecentInterviewQuestionsDialog: React.FC<RecentInterviewQuestionsDialogPro
     const pdfContentRef = useRef<HTMLDivElement | null>(null);
 
     const fileName = useMemo(() => {
-        const base = (title ?? 'Interview Questions')
-            .trim()
-            .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/(^-|-$)/g, '')
-            .slice(0, 80);
+        const base = sanitizeFileName(title ?? 'Interview Questions').slice(0, 80);
         const date = new Date().toISOString().slice(0, 10);
         return `${base || 'Interview-Questions'}-${date}.pdf`;
     }, [title]);

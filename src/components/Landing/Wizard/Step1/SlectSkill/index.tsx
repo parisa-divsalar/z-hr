@@ -697,6 +697,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                 <InputContent
                     placeholder='Type your answer...'
                     value={backgroundText}
+                    wrap='soft'
                     onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
                         updateField('background', {
                             ...backgroundSection,
@@ -847,6 +848,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
                     <InputContent
                         placeholder='Your another skills: Designer, Motion...'
                         value={customSkillInput}
+                        wrap='soft'
                         onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
                             setCustomSkillInput(event.target.value);
                         }}

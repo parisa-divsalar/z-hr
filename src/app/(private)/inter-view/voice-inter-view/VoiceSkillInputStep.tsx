@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { IconButton, Stack, Typography } from '@mui/material';
 
@@ -19,7 +19,7 @@ interface VoiceSkillInputStepProps {
 }
 
 const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
-    const [answer, setAnswer] = useState('');
+    const [answer, _setAnswer] = useState('');
     const [isPlaying, setIsPlaying] = useState(false);
     const [showAnswerRecorder, setShowAnswerRecorder] = useState(false);
     const [recordingState, setRecordingState] = useState<RecordingState>('idle');
@@ -194,10 +194,6 @@ const VoiceSkillInputStep = ({ onBack, onNext }: VoiceSkillInputStepProps) => {
             }
         };
     }, [stopFakeVoice]);
-
-    const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-        setAnswer(event.target.value);
-    };
 
     const handleSubmit = () => {
         const trimmed = answer.trim();

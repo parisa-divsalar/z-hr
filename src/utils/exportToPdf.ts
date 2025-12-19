@@ -49,14 +49,25 @@ export type ExportElementToPdfOptions = {
     onProgress?: (progress: number) => void;
 };
 
-export const sanitizeFileName = (input: string) =>
-    input
-        .trim()
-        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
+const INVALID_FILENAME_CHARS = new Set(['<', '>', ':', '"', '/', '\\', '|', '?', '*']);
+
+export const sanitizeFileName = (input: string) => {
+    const trimmed = input.trim();
+    let cleaned = '';
+    for (const ch of trimmed) {
+        const code = ch.charCodeAt(0);
+        // Disallow ASCII control chars (0..31)
+        if (code >= 0 && code < 32) continue;
+        if (INVALID_FILENAME_CHARS.has(ch)) continue;
+        cleaned += ch;
+    }
+
+    return cleaned
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .replace(/(^-|-$)/g, '')
         .slice(0, 120);
+};
 
 const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T | undefined> => {
     let timeoutId: number | undefined;
