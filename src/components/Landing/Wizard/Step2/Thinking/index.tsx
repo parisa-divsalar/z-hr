@@ -143,7 +143,7 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
     }, []);
 
     return isSubmitting ? (
-        <Stack alignItems='center' justifyContent='center' height='100%'>
+        <Stack alignItems='center' justifyContent='center'>
             <ThinkingIcon />
 
             <Typography variant='h6' mt={4}>
