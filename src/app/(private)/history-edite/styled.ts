@@ -3,7 +3,7 @@ import { styled } from '@mui/material/styles';
 
 export const HistoryEditeRoot = styled(Box)(() => ({
     width: '100%',
-    height: 'calc(100vh - 165px)',
+    height: 'calc(100vh - 140px)',
     margin: '1 auto',
     borderRadius: '8px',
     overflowY: 'auto',

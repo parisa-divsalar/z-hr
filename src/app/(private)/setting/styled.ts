@@ -2,18 +2,13 @@ import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const SettingRoot = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
-  width: '100%',
-  height: 'calc(100vh - 200px)',
-  margin: '1 auto',
-  borderRadius: '8px',
-  border: `1px solid ${theme.palette.grey[100]}`,
-  overflowY: 'auto',
-  overflowX: 'hidden',
-  marginTop: '10px',
-
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-    height: 'calc(100vh - 80px)',
-  },
+    width: '100%',
+    height: '85vh',
+    maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
+    overflowY: 'auto', // scroll only inside this content
+    boxSizing: 'border-box',
+    padding: 20,
+    border: `1px solid ${theme.palette.grey[100]}`,
+    borderRadius: '8px',
+    gap: 24,
 }));

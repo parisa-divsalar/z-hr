@@ -7,12 +7,10 @@ export const InterviewRoot = styled(Stack)(({ theme }) => ({
     maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
     overflowY: 'auto', // scroll only inside this content
     boxSizing: 'border-box',
-    padding: 24,
+    padding: 20,
     border: `1px solid ${theme.palette.grey[100]}`,
     borderRadius: '8px',
     gap: 24,
-    margin: '1px',
-    marginTop: '8px',
 }));
 
 export const SectionHeader = styled(Stack)(() => ({
