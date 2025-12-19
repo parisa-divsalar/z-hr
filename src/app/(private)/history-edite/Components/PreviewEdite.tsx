@@ -177,7 +177,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                             size='medium'
                             color='secondary'
                             onClick={handleEditResume}
-                            sx={{ width: 150 }}
+                            sx={{ width: 160 }}
                         >
                             Edit In Preview
                         </MuiButton>
@@ -188,7 +188,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                             loading={isDownloading}
                             onClick={handleDownload}
                         >
-                            {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
+                            {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download'}
                         </MuiButton>
                     </Stack>
                 </Grid>

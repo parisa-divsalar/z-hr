@@ -16,18 +16,18 @@ import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
 import { communityChannels } from '@/components/History/mockData';
 import {
-  HeaderDivider,
-  HistoryCommunityCardRoot,
-  HistoryImage,
-  MenuContentStack,
-  MenuItemStack,
-  MoreButton,
-  PopupMenu,
-  TagPill,
-  RelativeStack,
-  SectionHeader,
-  SortMenuContentStack,
-  StyledDivider,
+    HeaderDivider,
+    HistoryCommunityCardRoot,
+    HistoryImage,
+    MenuContentStack,
+    MenuItemStack,
+    MoreButton,
+    PopupMenu,
+    TagPill,
+    RelativeStack,
+    SectionHeader,
+    SortMenuContentStack,
+    StyledDivider,
 } from '@/components/History/styled';
 import { THistoryChannel } from '@/components/History/type';
 import MuiAlert from '@/components/UI/MuiAlert';
@@ -38,398 +38,409 @@ import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 type THistorySortOption = 'NEW_TO_OLD' | 'OLD_TO_NEW' | 'SIZE' | 'FIT_SCORE';
 
 const SORT_OPTIONS: { value: THistorySortOption; label: string }[] = [
-  { value: 'NEW_TO_OLD', label: 'New to Old' },
-  { value: 'OLD_TO_NEW', label: 'Old to New' },
-  { value: 'SIZE', label: 'Size' },
-  { value: 'FIT_SCORE', label: 'Fit Score' },
+    { value: 'NEW_TO_OLD', label: 'New to Old' },
+    { value: 'OLD_TO_NEW', label: 'Old to New' },
+    { value: 'SIZE', label: 'Size' },
+    { value: 'FIT_SCORE', label: 'Fit Score' },
 ];
 
 const HistoryCard = ({
-  name,
-  date,
-  Percentage,
-  position,
-  level,
-  size,
-  Voice,
-  Photo,
-  Video,
-  description,
+    name,
+    date,
+    Percentage,
+    position,
+    level,
+    size,
+    Voice,
+    Photo,
+    Video,
+    description,
 }: THistoryChannel) => {
-  const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
-  const moreButtonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(0);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
+    const moreButtonRef = useRef<HTMLButtonElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
 
-  const handleMoreClick = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+    const handleMoreClick = () => {
+        setIsMenuOpen(!isMenuOpen);
+    };
 
-  const handleEditClick = () => {
-    router.push('/history-edite');
-  };
+    const handleEditClick = () => {
+        router.push('/history-edite');
+    };
 
-  const handleFavorite = () => {
-    setIsMenuOpen(false);
-  };
-
-  const handleDelete = () => {
-    setIsMenuOpen(false);
-  };
-
-  const handleDownload = async () => {
-    if (!cardRef.current || isDownloading) return;
-    setIsDownloading(true);
-    setDownloadProgress(0);
-    setDownloadError(null);
-    try {
-      const today = new Date().toISOString().slice(0, 10);
-      const baseName = sanitizeFileName(name || `History-${date}`) || 'History';
-      await exportElementToPdf(cardRef.current, {
-        fileName: `${baseName}-${today}`,
-        marginPt: 24,
-        scale: 2,
-        backgroundColor: '#ffffff',
-        onProgress: (p) => setDownloadProgress(p),
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to export history card PDF', error);
-      setDownloadError('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isMenuOpen &&
-        menuRef.current &&
-        moreButtonRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        !moreButtonRef.current.contains(event.target as Node)
-      ) {
+    const handleFavorite = () => {
         setIsMenuOpen(false);
-      }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    const handleDelete = () => {
+        setIsMenuOpen(false);
     };
-  }, [isMenuOpen]);
 
-  return (
-    <HistoryCommunityCardRoot ref={cardRef}>
-      {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mx: 2, mt: 2, mb: 0 }} />}
-      <Grid container spacing={2} alignItems='center'>
-        <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-          <HistoryImage m={1}>
-            <Image src={ResumeIcon} alt='Resume preview' fill />
-          </HistoryImage>
-        </Grid>
+    const handleDownload = async () => {
+        if (!cardRef.current || isDownloading) return;
+        setIsDownloading(true);
+        setDownloadProgress(0);
+        setDownloadError(null);
+        try {
+            const today = new Date().toISOString().slice(0, 10);
+            const baseName = sanitizeFileName(name || `History-${date}`) || 'History';
+            await exportElementToPdf(cardRef.current, {
+                fileName: `${baseName}-${today}`,
+                marginPt: 24,
+                scale: 2,
+                backgroundColor: '#ffffff',
+                onProgress: (p) => setDownloadProgress(p),
+            });
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to export history card PDF', error);
+            setDownloadError('Failed to generate PDF. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
-        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={5}>
-          <Stack direction='row' gap={2}>
-            <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-              {name}
-            </Typography>
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                isMenuOpen &&
+                menuRef.current &&
+                moreButtonRef.current &&
+                !menuRef.current.contains(event.target as Node) &&
+                !moreButtonRef.current.contains(event.target as Node)
+            ) {
+                setIsMenuOpen(false);
+            }
+        };
 
-            <TagPill>{Percentage}</TagPill>
-          </Stack>
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
 
-          <Stack direction='row' gap={1} mt={1} alignItems='center'>
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              {date}
-            </Typography>
-            <StyledDivider orientation='vertical' flexItem />
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              {size}
-            </Typography>
-            <StyledDivider orientation='vertical' flexItem />
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              {position}
-            </Typography>
-            <StyledDivider orientation='vertical' flexItem />
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              {level}
-            </Typography>
-            <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-              {level}
-            </Typography>
-          </Stack>
+    return (
+        <HistoryCommunityCardRoot ref={cardRef}>
+            {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mx: 2, mt: 2, mb: 0 }} />}
+            <Grid container spacing={2} alignItems='center'>
+                <Grid size={{ xs: 12, sm: 4, md: 2 }}>
+                    <HistoryImage m={1}>
+                        <Image src={ResumeIcon} alt='Resume preview' fill />
+                    </HistoryImage>
+                </Grid>
 
-          <Stack direction='row' gap={3} alignItems='center' mt={2}>
-            <Stack direction='row' gap={0.5} alignItems='center'>
-              <VoiceIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                {Voice}
-              </Typography>
-            </Stack>
-            <Stack direction='row' gap={0.5} alignItems='center'>
-              <ImageIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                {Photo}
-              </Typography>
-            </Stack>
-            <Stack direction='row' gap={0.5} alignItems='center'>
-              <VideoIcon />
-              <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                {Video}
-              </Typography>
-            </Stack>
-          </Stack>
+                <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={5}>
+                    <Stack direction='row' gap={2}>
+                        <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+                            {name}
+                        </Typography>
 
-          <Stack direction='row' gap={1} mt={4}>
-            <Position />
+                        <TagPill>{Percentage}</TagPill>
+                    </Stack>
 
-            <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
-              {description}
-            </Typography>
-          </Stack>
-        </Grid>
+                    <Stack direction='row' gap={1} mt={1} alignItems='center'>
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            {date}
+                        </Typography>
+                        <StyledDivider orientation='vertical' flexItem />
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            {size}
+                        </Typography>
+                        <StyledDivider orientation='vertical' flexItem />
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            {position}
+                        </Typography>
+                        <StyledDivider orientation='vertical' flexItem />
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            {level}
+                        </Typography>
+                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                            {level}
+                        </Typography>
+                    </Stack>
 
-        <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-          <Stack gap={11} alignItems='flex-end'>
-            <RelativeStack direction='row' gap={3}>
-              <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label='More options'>
-                <Dotsvertical />
-              </MoreButton>
+                    <Stack direction='row' gap={3} alignItems='center' mt={2}>
+                        <Stack direction='row' gap={0.5} alignItems='center'>
+                            <VoiceIcon />
+                            <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                {Voice}
+                            </Typography>
+                        </Stack>
+                        <Stack direction='row' gap={0.5} alignItems='center'>
+                            <ImageIcon />
+                            <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                {Photo}
+                            </Typography>
+                        </Stack>
+                        <Stack direction='row' gap={0.5} alignItems='center'>
+                            <VideoIcon />
+                            <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                {Video}
+                            </Typography>
+                        </Stack>
+                    </Stack>
 
-              <PopupMenu ref={menuRef} isOpen={isMenuOpen}>
-                <MenuContentStack>
-                  <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleFavorite}>
-                    <FrameFaw />
-                    <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                      Favorite
-                    </Typography>
-                  </MenuItemStack>
-                  <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleDelete}>
-                    <TrashIcon />
-                    <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                      Delete
-                    </Typography>
-                  </MenuItemStack>
-                </MenuContentStack>
-              </PopupMenu>
-            </RelativeStack>
-            <Stack direction='row' gap={2}>
-              <MuiButton variant='outlined' color='secondary' onClick={handleEditClick}>
-                Edit
-              </MuiButton>
-              <MuiButton variant='contained' color='secondary' loading={isDownloading} onClick={handleDownload}>
-                {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
-              </MuiButton>
-            </Stack>
-          </Stack>
-        </Grid>
-      </Grid>
-    </HistoryCommunityCardRoot>
-  );
+                    <Stack direction='row' gap={1} mt={4}>
+                        <Position />
+
+                        <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
+                            {description}
+                        </Typography>
+                    </Stack>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 3, md: 3 }}>
+                    <Stack gap={11} alignItems='flex-end'>
+                        <RelativeStack direction='row' gap={3}>
+                            <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label='More options'>
+                                <Dotsvertical />
+                            </MoreButton>
+
+                            <PopupMenu ref={menuRef} isOpen={isMenuOpen}>
+                                <MenuContentStack>
+                                    <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleFavorite}>
+                                        <FrameFaw />
+                                        <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                            Favorite
+                                        </Typography>
+                                    </MenuItemStack>
+                                    <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleDelete}>
+                                        <TrashIcon />
+                                        <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                                            Delete
+                                        </Typography>
+                                    </MenuItemStack>
+                                </MenuContentStack>
+                            </PopupMenu>
+                        </RelativeStack>
+                        <Stack direction='row' gap={2}>
+                            <MuiButton variant='outlined' color='secondary' onClick={handleEditClick}>
+                                More
+                            </MuiButton>
+                            {/*<MuiButton*/}
+                            {/*    variant='contained'*/}
+                            {/*    color='secondary'*/}
+                            {/*    loading={isDownloading}*/}
+                            {/*    onClick={handleDownload}*/}
+                            {/*>*/}
+                            {/*    {isDownloading*/}
+                            {/*        ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%`*/}
+                            {/*        : 'Download PDF'}*/}
+                            {/*</MuiButton>*/}
+                        </Stack>
+                    </Stack>
+                </Grid>
+            </Grid>
+        </HistoryCommunityCardRoot>
+    );
 };
 
 const HistorySection = () => {
-  const [displayedItems, setDisplayedItems] = useState<THistoryChannel[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
-  const sortButtonRef = useRef<HTMLDivElement>(null);
-  const sortMenuRef = useRef<HTMLDivElement>(null);
+    const [displayedItems, setDisplayedItems] = useState<THistoryChannel[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+    const observerTarget = useRef<HTMLDivElement>(null);
+    const sortButtonRef = useRef<HTMLDivElement>(null);
+    const sortMenuRef = useRef<HTMLDivElement>(null);
 
-  const ITEMS_PER_PAGE = 3;
+    const ITEMS_PER_PAGE = 3;
 
-  const [sortOption, setSortOption] = useState<THistorySortOption>('NEW_TO_OLD');
+    const [sortOption, setSortOption] = useState<THistorySortOption>('NEW_TO_OLD');
 
-  const selectedSortLabel = useMemo(
-    () => SORT_OPTIONS.find((o) => o.value === sortOption)?.label ?? 'Sort',
-    [sortOption],
-  );
-
-  const parseDateToTimestamp = (value: string) => {
-    const [mm, dd, yyyy] = value.split('/').map((x) => Number(x));
-    if (!mm || !dd || !yyyy) return 0;
-    const t = new Date(yyyy, mm - 1, dd).getTime();
-    return Number.isFinite(t) ? t : 0;
-  };
-
-  const parseSizeMB = (value: string) => {
-    // Expected format: "2.85 MB"
-    const n = Number.parseFloat(value.replace(/mb/i, '').trim());
-    return Number.isFinite(n) ? n : 0;
-  };
-
-  const parseFitScore = (value: string) => {
-    // Expected format: "89%"
-    const n = Number.parseFloat(value.replace('%', '').trim());
-    return Number.isFinite(n) ? n : 0;
-  };
-
-  const sortedDisplayedItems = useMemo(() => {
-    const items = [...displayedItems];
-    switch (sortOption) {
-      case 'NEW_TO_OLD':
-        return items.sort((a, b) => parseDateToTimestamp(b.date) - parseDateToTimestamp(a.date));
-      case 'OLD_TO_NEW':
-        return items.sort((a, b) => parseDateToTimestamp(a.date) - parseDateToTimestamp(b.date));
-      case 'SIZE':
-        return items.sort((a, b) => parseSizeMB(b.size) - parseSizeMB(a.size));
-      case 'FIT_SCORE':
-        return items.sort((a, b) => parseFitScore(b.Percentage) - parseFitScore(a.Percentage));
-      default:
-        return items;
-    }
-  }, [displayedItems, sortOption]);
-
-  const handleSortClick = () => {
-    setIsSortMenuOpen((prev) => !prev);
-  };
-
-  const handleSortSelect = (option: THistorySortOption) => {
-    setSortOption(option);
-    setIsSortMenuOpen(false);
-  };
-
-  const loadMoreItems = useCallback(() => {
-    if (isLoading || currentIndex >= communityChannels.length) return;
-
-    setIsLoading(true);
-
-    setTimeout(() => {
-      const nextItems = communityChannels.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
-
-      setDisplayedItems((prev) => [...prev, ...nextItems]);
-      setCurrentIndex((prev) => prev + ITEMS_PER_PAGE);
-      setIsLoading(false);
-    }, 500);
-  }, [currentIndex, isLoading]);
-
-  useEffect(() => {
-    loadMoreItems();
-  }, [loadMoreItems]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isSortMenuOpen &&
-        sortMenuRef.current &&
-        sortButtonRef.current &&
-        !sortMenuRef.current.contains(event.target as Node) &&
-        !sortButtonRef.current.contains(event.target as Node)
-      ) {
-        setIsSortMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isSortMenuOpen]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoading && currentIndex < communityChannels.length) {
-          loadMoreItems();
-        }
-      },
-      { threshold: 0.1 },
+    const selectedSortLabel = useMemo(
+        () => SORT_OPTIONS.find((o) => o.value === sortOption)?.label ?? 'Sort',
+        [sortOption],
     );
 
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
+    const parseDateToTimestamp = (value: string) => {
+        const [mm, dd, yyyy] = value.split('/').map((x) => Number(x));
+        if (!mm || !dd || !yyyy) return 0;
+        const t = new Date(yyyy, mm - 1, dd).getTime();
+        return Number.isFinite(t) ? t : 0;
     };
-  }, [isLoading, currentIndex, loadMoreItems]);
 
-  return (
-    <Stack gap={1}>
-      <SectionHeader>
-        <Typography variant='h5' fontWeight='500' color='text.primary'>
-          History{' '}
-        </Typography>
-        <Stack direction='row' alignItems='center'>
-          <MuiCheckbox
-            label={
-              <Typography variant='body2' fontWeight='400' color='text.primary'>
-                Bookmarks{' '}
-              </Typography>
+    const parseSizeMB = (value: string) => {
+        // Expected format: "2.85 MB"
+        const n = Number.parseFloat(value.replace(/mb/i, '').trim());
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const parseFitScore = (value: string) => {
+        // Expected format: "89%"
+        const n = Number.parseFloat(value.replace('%', '').trim());
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const sortedDisplayedItems = useMemo(() => {
+        const items = [...displayedItems];
+        switch (sortOption) {
+            case 'NEW_TO_OLD':
+                return items.sort((a, b) => parseDateToTimestamp(b.date) - parseDateToTimestamp(a.date));
+            case 'OLD_TO_NEW':
+                return items.sort((a, b) => parseDateToTimestamp(a.date) - parseDateToTimestamp(b.date));
+            case 'SIZE':
+                return items.sort((a, b) => parseSizeMB(b.size) - parseSizeMB(a.size));
+            case 'FIT_SCORE':
+                return items.sort((a, b) => parseFitScore(b.Percentage) - parseFitScore(a.Percentage));
+            default:
+                return items;
+        }
+    }, [displayedItems, sortOption]);
+
+    const handleSortClick = () => {
+        setIsSortMenuOpen((prev) => !prev);
+    };
+
+    const handleSortSelect = (option: THistorySortOption) => {
+        setSortOption(option);
+        setIsSortMenuOpen(false);
+    };
+
+    const loadMoreItems = useCallback(() => {
+        if (isLoading || currentIndex >= communityChannels.length) return;
+
+        setIsLoading(true);
+
+        setTimeout(() => {
+            const nextItems = communityChannels.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
+
+            setDisplayedItems((prev) => [...prev, ...nextItems]);
+            setCurrentIndex((prev) => prev + ITEMS_PER_PAGE);
+            setIsLoading(false);
+        }, 500);
+    }, [currentIndex, isLoading]);
+
+    useEffect(() => {
+        loadMoreItems();
+    }, [loadMoreItems]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                isSortMenuOpen &&
+                sortMenuRef.current &&
+                sortButtonRef.current &&
+                !sortMenuRef.current.contains(event.target as Node) &&
+                !sortButtonRef.current.contains(event.target as Node)
+            ) {
+                setIsSortMenuOpen(false);
             }
-          />
+        };
 
-          <HeaderDivider orientation='vertical' flexItem sx={{ ml: 2 }} />
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isSortMenuOpen]);
 
-          <RelativeStack ref={sortButtonRef}>
-            <MuiButton
-              text={selectedSortLabel}
-              color='secondary'
-              variant='text'
-              sx={{
-                gap: '0.4rem',
-                backgroundColor: 'transparent',
-                '&:hover': { backgroundColor: 'transparent' },
-              }}
-              onClick={handleSortClick}
-              endIcon={<KeyboardArrowDownRoundedIcon fontSize='small' />}
-            />
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !isLoading && currentIndex < communityChannels.length) {
+                    loadMoreItems();
+                }
+            },
+            { threshold: 0.1 },
+        );
 
-            <PopupMenu ref={sortMenuRef} isOpen={isSortMenuOpen}>
-              <SortMenuContentStack>
-                {SORT_OPTIONS.map((opt) => {
-                  const isSelected = sortOption === opt.value;
-                  return (
-                    <MenuItemStack
-                      key={opt.value}
-                      direction='row'
-                      alignItems='center'
-                      gap={1}
-                      onClick={() => handleSortSelect(opt.value)}
-                      sx={{
-                        px: 1,
-                        py: 0.75,
-                        borderRadius: 1,
-                        width: '100%',
-                        backgroundColor: isSelected ? 'action.selected' : 'transparent',
-                      }}
-                    >
-                      <Typography variant='subtitle2' fontWeight={isSelected ? 600 : 400} color='text.primary'>
-                        {opt.label}
-                      </Typography>
-                    </MenuItemStack>
-                  );
-                })}
-              </SortMenuContentStack>
-            </PopupMenu>
-          </RelativeStack>
+        const currentTarget = observerTarget.current;
+        if (currentTarget) {
+            observer.observe(currentTarget);
+        }
+
+        return () => {
+            if (currentTarget) {
+                observer.unobserve(currentTarget);
+            }
+        };
+    }, [isLoading, currentIndex, loadMoreItems]);
+
+    return (
+        <Stack gap={1}>
+            <SectionHeader>
+                <Typography variant='h5' fontWeight='500' color='text.primary'>
+                    History{' '}
+                </Typography>
+                <Stack direction='row' alignItems='center'>
+                    <MuiCheckbox
+                        label={
+                            <Typography variant='body2' fontWeight='400' color='text.primary'>
+                                Bookmarks{' '}
+                            </Typography>
+                        }
+                    />
+
+                    <HeaderDivider orientation='vertical' flexItem sx={{ ml: 2 }} />
+
+                    <RelativeStack ref={sortButtonRef}>
+                        <MuiButton
+                            text={selectedSortLabel}
+                            color='secondary'
+                            variant='text'
+                            sx={{
+                                gap: '0.4rem',
+                                backgroundColor: 'transparent',
+                                '&:hover': { backgroundColor: 'transparent' },
+                            }}
+                            onClick={handleSortClick}
+                            endIcon={<KeyboardArrowDownRoundedIcon fontSize='small' />}
+                        />
+
+                        <PopupMenu ref={sortMenuRef} isOpen={isSortMenuOpen}>
+                            <SortMenuContentStack>
+                                {SORT_OPTIONS.map((opt) => {
+                                    const isSelected = sortOption === opt.value;
+                                    return (
+                                        <MenuItemStack
+                                            key={opt.value}
+                                            direction='row'
+                                            alignItems='center'
+                                            gap={1}
+                                            onClick={() => handleSortSelect(opt.value)}
+                                            sx={{
+                                                px: 1,
+                                                py: 0.75,
+                                                borderRadius: 1,
+                                                width: '100%',
+                                                backgroundColor: isSelected ? 'action.selected' : 'transparent',
+                                            }}
+                                        >
+                                            <Typography
+                                                variant='subtitle2'
+                                                fontWeight={isSelected ? 600 : 400}
+                                                color='text.primary'
+                                            >
+                                                {opt.label}
+                                            </Typography>
+                                        </MenuItemStack>
+                                    );
+                                })}
+                            </SortMenuContentStack>
+                        </PopupMenu>
+                    </RelativeStack>
+                </Stack>
+            </SectionHeader>
+
+            {sortedDisplayedItems.map((channel, index) => (
+                <HistoryCard key={`${channel.id}-${index}`} {...channel} />
+            ))}
+
+            <Stack ref={observerTarget} alignItems='center' justifyContent='center' py={2}>
+                {isLoading && <CircularProgress size={30} />}
+                {currentIndex >= communityChannels.length && displayedItems.length > 0 && (
+                    <Typography variant='body2' color='text.secondary'>
+                        No more items to load
+                    </Typography>
+                )}
+            </Stack>
         </Stack>
-      </SectionHeader>
-      
-      {sortedDisplayedItems.map((channel, index) => (
-        <HistoryCard key={`${channel.id}-${index}`} {...channel} />
-      ))}
-
-      <Stack ref={observerTarget} alignItems='center' justifyContent='center' py={2}>
-        {isLoading && <CircularProgress size={30} />}
-        {currentIndex >= communityChannels.length && displayedItems.length > 0 && (
-          <Typography variant='body2' color='text.secondary'>
-            No more items to load
-          </Typography>
-        )}
-      </Stack>
-    </Stack>
-  );
+    );
 };
 
 export default HistorySection;
