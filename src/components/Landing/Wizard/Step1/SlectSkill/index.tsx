@@ -176,8 +176,7 @@ const AtsFriendlyChip = styled(MuiChips)(({ theme }) => ({
     height: '26px',
 }));
 
-const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
-    const { setStage } = props;
+const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
     const theme = useTheme();
     const tooltipLines = [
         'Start with your job title or the role you are applying for.',
@@ -197,8 +196,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = (props) => {
     const backgroundVoices =
         (backgroundSection?.voices as { id: string; url: string; blob: Blob; duration: number }[]) ?? [];
 
-    // In resume-builder, the page uses an internal scroll container.
-    // When new attachments are added, auto-scroll down so they are immediately visible.
+    // When new attachments are added, auto-scroll so uploads stay visible.
     const prevCountsRef = useRef({ files: 0, voices: 0 });
     const didInitAutoScrollRef = useRef(false);
     useEffect(() => {

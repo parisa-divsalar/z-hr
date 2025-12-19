@@ -2,7 +2,6 @@ import React, { FunctionComponent, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
-import ResumeBuilderMoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
 import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeGeneratorFrame';
 import MoreFeatures from '@/components/Landing/Wizard/Step3/MoreFeatures';
 
@@ -10,11 +9,9 @@ import ResumeEditor from './ResumeEditor';
 
 interface Step3Props {
   setActiveStep: (activeStep: number) => void;
-  variant?: 'landing' | 'resume-builder';
 }
 
-const Step3: FunctionComponent<Step3Props> = (props) => {
-  const { setActiveStep, variant = 'landing' } = props;
+const Step3: FunctionComponent<Step3Props> = ({ setActiveStep }) => {
   const [stage, setStage] = useState<'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME'>('RESUME_EDITOR');
 
   if (stage === 'RESUME_EDITOR')
@@ -32,14 +29,6 @@ const Step3: FunctionComponent<Step3Props> = (props) => {
     );
 
   if (stage === 'MORE_FEATURES') {
-    if (variant === 'resume-builder') {
-      return (
-        <Stack width='100%'>
-          <ResumeBuilderMoreFeatures onBack={() => setStage('RESUME_EDITOR')} onSubmit={() => setStage('RESUME_GENERATOR_FRAME')} />
-        </Stack>
-      );
-    }
-
     return <MoreFeatures setStage={setStage} />;
   }
 

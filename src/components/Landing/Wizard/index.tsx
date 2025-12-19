@@ -11,11 +11,9 @@ import StepWrapper from '@/components/Landing/Wizard/Stepper';
 interface WizardProps {
     setAiStatus: (status: AIStatus) => void;
     initialStep?: number;
-    variant?: 'landing' | 'resume-builder';
 }
 
-const Wizard: FunctionComponent<WizardProps> = (props) => {
-    const { setAiStatus, initialStep = 1, variant = 'landing' } = props;
+const Wizard: FunctionComponent<WizardProps> = ({ setAiStatus, initialStep = 1 }) => {
     const [activeStep, setActiveStep] = useState<number>(initialStep);
 
     const getSubChildWizard = () => {
@@ -25,62 +23,15 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
             case 2:
                 return <Step2 setActiveStep={setActiveStep} />;
             case 3:
-                return <Step3 setActiveStep={setActiveStep} variant={variant} />;
+                return <Step3 setActiveStep={setActiveStep} />;
             default:
                 return <Stack />;
         }
     };
 
-    if (variant === 'resume-builder') {
-        return (
-            <Stack
-                width='100%'
-                height='100%'
-                alignItems='center'
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    minHeight: 0,
-                    overflow: 'hidden',
-                }}
-            >
-                {/* Fixed header (not part of the scroll area) */}
-                <Stack
-                    width='100%'
-                    alignItems='center'
-                    sx={{
-                        flex: '0 0 auto',
-                        py: 2,
-                        zIndex: 10,
-                        backdropFilter: 'blur(10px)',
-                    }}
-                >
-                    <StepWrapper activeStep={activeStep} />
-                </Stack>
-
-                {/* Scrollable content (starts under the stepper) */}
-                <Stack
-                    id='resume-builder-scroll'
-                    width='100%'
-                    flex={1}
-                    minHeight={0}
-                    alignItems='center'
-                    py={5}
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1rem',
-                        overflowY: 'auto',
-                    }}
-                >
-                    {getSubChildWizard()}
-                </Stack>
-            </Stack>
-        );
-    }
-
     return (
         <Stack
+            id='resume-builder-scroll'
             width='100%'
             height='100%'
             alignItems='center'
@@ -90,9 +41,6 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
                 flexDirection: 'column',
                 gap: '1rem',
                 minHeight: 0,
-                // Allow the wizard content to grow (e.g. auto-growing textareas) without being clipped.
-                // In landing variant we don't use the dedicated internal scroll container,
-                // so the root must be scrollable.
                 overflowY: 'auto',
                 overflowX: 'hidden',
             }}

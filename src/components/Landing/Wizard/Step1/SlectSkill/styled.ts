@@ -10,15 +10,8 @@ export const MainContainer = styled(Stack)(() => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    minHeight: '100%',
-    height: '100%',
     padding: '1rem',
     boxSizing: 'border-box',
-    // If the wizard step is rendered inside a fixed-height container (dialog/sheet),
-    // scroll within the step instead of scrolling the whole page.
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    WebkitOverflowScrolling: 'touch',
 }));
 
 export const SkillContainer = styled(Stack)(() => ({
