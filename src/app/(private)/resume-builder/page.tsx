@@ -17,6 +17,21 @@ export default function ResumeBuilderPage() {
     const [initialStep, setInitialStep] = useState<number>(1);
     const [isIntroOpen, setIsIntroOpen] = useState<boolean>(true);
 
+    // Ensure scrolling is confined to the resume builder container (internal scroll),
+    // not the whole page/body.
+    useEffect(() => {
+        const prevBodyOverflow = document.body.style.overflow;
+        const prevHtmlOverflow = document.documentElement.style.overflow;
+
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = prevBodyOverflow;
+            document.documentElement.style.overflow = prevHtmlOverflow;
+        };
+    }, []);
+
     useEffect(() => {
         const stepParam = searchParams.get('step');
         if (stepParam) {

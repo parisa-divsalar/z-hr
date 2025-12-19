@@ -34,7 +34,7 @@ const Wizard: FunctionComponent<WizardProps> = (props) => {
   return (
     <Stack
       width='100%'
-      height='100%'
+      height={variant === 'resume-builder' ? 'auto' : '100%'}
       alignItems='center'
       py={5}
       sx={{

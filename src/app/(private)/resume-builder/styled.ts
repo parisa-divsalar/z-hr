@@ -26,8 +26,10 @@ export const ResumeBuilderRoot = styled(Box)(({ theme }) => ({
     backgroundPosition: 'center',
     boxSizing: 'border-box',
     minHeight: 0,
-    height: '85vh',
-    maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
+    // Fill the available viewport area inside the app layout.
+    // This ensures the page itself doesn't scroll; only this container does.
+    height: 'calc(100vh - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
+    maxHeight: 'calc(100vh - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
     overflowY: 'auto', // scroll only inside this content
     padding: theme.spacing(3),
     paddingBottom: 0,
