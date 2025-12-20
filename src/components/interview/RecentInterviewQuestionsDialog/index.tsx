@@ -90,7 +90,12 @@ const RecentInterviewQuestionsDialog: React.FC<RecentInterviewQuestionsDialogPro
     }, [title]);
 
     const handleDownloadPdf = async () => {
-        if (!pdfContentRef.current || isDownloading) return;
+        if (isDownloading) return;
+
+        if (!pdfContentRef.current) {
+            setDownloadError('PDF content is still rendering. Please try again in a moment.');
+            return;
+        }
 
         setIsDownloading(true);
         setDownloadError(null);
@@ -107,7 +112,7 @@ const RecentInterviewQuestionsDialog: React.FC<RecentInterviewQuestionsDialogPro
         } catch (e) {
             // eslint-disable-next-line no-console
             console.error('Failed to generate PDF', e);
-            setDownloadError('Failed to generate PDF. Please try again.');
+            setDownloadError(e instanceof Error ? e.message : 'Failed to generate PDF. Please try again.');
         } finally {
             setIsDownloading(false);
         }
@@ -138,6 +143,7 @@ const RecentInterviewQuestionsDialog: React.FC<RecentInterviewQuestionsDialogPro
                         loading={isDownloading}
                         onClick={handleDownloadPdf}
                         endIcon={<DownloadRoundedIcon />}
+                        disabled={isDownloading}
                     >
                         {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
                     </MuiButton>
@@ -159,6 +165,10 @@ const RecentInterviewQuestionsDialog: React.FC<RecentInterviewQuestionsDialogPro
                         border: '1px solid',
                         borderColor: 'divider',
                         boxShadow: 1,
+                        fontSize: '12px',
+                        '& .MuiTypography-root': {
+                            fontSize: '12px !important',
+                        },
                     }}
                 >
                     <Typography color='text.primary' variant='subtitle1' fontWeight={500} mb={1.5}>

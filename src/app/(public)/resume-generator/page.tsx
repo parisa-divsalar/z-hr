@@ -65,7 +65,7 @@ const ResumeGeneratorPage = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to export PDF', error);
-      setDownloadError('Failed to generate PDF. Please try again.');
+      setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
     } finally {
       setIsDownloading(false);
     }

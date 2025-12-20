@@ -273,7 +273,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             });
         } catch (error) {
             console.error('Failed to export resume PDF', error);
-            setDownloadError('Failed to generate PDF. Please try again.');
+            setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
         } finally {
             setIsDownloading(false);
         }

@@ -10,12 +10,11 @@ import '@/assets/styles/globals.css';
 export const metadata = {
   title: 'z-cv',
   description: 'description',
-  themeColor: '#4D49FC',
   icons: {
     icon: '/icons/favicon.ico',
     apple: '/icons/icon-192x192.png',
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
 };
 
 export const viewport = {

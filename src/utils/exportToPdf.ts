@@ -1,3 +1,6 @@
+type html2canvasType = typeof import('html2canvas')['default'];
+type JsPDFCtor = typeof import('jspdf').jsPDF;
+
 type PdfOrientation = 'p' | 'l';
 type PdfUnit = 'pt';
 type PdfImageCompression = 'FAST' | 'MEDIUM' | 'SLOW' | 'NONE';
@@ -69,7 +72,7 @@ export const sanitizeFileName = (input: string) => {
         .slice(0, 120);
 };
 
-const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T | undefined> => {
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number): Promise<T | undefined> => {
     let timeoutId: number | undefined;
     try {
         const timeoutPromise = new Promise<undefined>((resolve) => {
@@ -111,6 +114,70 @@ const waitForElementImages = async (element: HTMLElement, timeoutMs: number) => 
  * Export a DOM element to PDF while preserving the current UI.
  * Implementation uses html2canvas -> jsPDF with page-by-page slicing (clean pagination).
  */
+const resolveHtml2Canvas = (module: unknown): html2canvasType => {
+    if (typeof module === 'function') {
+        return module as unknown as html2canvasType;
+    }
+
+    if (module && typeof module === 'object' && 'default' in module) {
+        return (module as { default: html2canvasType }).default;
+    }
+
+    return module as html2canvasType;
+};
+
+const resolveJsPdfConstructor = (module: unknown): JsPDFCtor | undefined => {
+    if (!module) return undefined;
+
+    if (typeof module === 'function') {
+        return module as unknown as JsPDFCtor;
+    }
+
+    if (module && typeof module === 'object') {
+        const asModule = module as { jsPDF?: JsPDFCtor; default?: JsPDFCtor };
+        return asModule.jsPDF ?? asModule.default;
+    }
+
+    return undefined;
+};
+
+const isNearlyWhite = (r: number, g: number, b: number, a: number) => {
+    // Treat transparent as white (common for canvas backgrounds).
+    if (a < 10) return true;
+    return r >= 248 && g >= 248 && b >= 248;
+};
+
+/**
+ * Try to find a horizontal "blank" row (mostly white pixels) close to the target break.
+ * This helps avoid cutting text lines in half when we slice the canvas into pages.
+ */
+const findWhitespaceBreakY = (
+    ctx: CanvasRenderingContext2D,
+    canvasWidth: number,
+    regionStartY: number,
+    regionHeight: number,
+): number | undefined => {
+    if (regionHeight <= 2) return undefined;
+
+    const imageData = ctx.getImageData(0, regionStartY, canvasWidth, regionHeight);
+    const { data, width } = imageData;
+
+    // Scan from bottom to top to keep as much content as possible.
+    for (let row = regionHeight - 1; row >= 0; row--) {
+        let whiteCount = 0;
+        const rowStart = row * width * 4;
+        for (let x = 0; x < width; x++) {
+            const i = rowStart + x * 4;
+            if (isNearlyWhite(data[i], data[i + 1], data[i + 2], data[i + 3])) whiteCount++;
+        }
+        const ratio = whiteCount / Math.max(1, width);
+        if (ratio >= 0.995) {
+            return regionStartY + row;
+        }
+    }
+    return undefined;
+};
+
 export async function exportElementToPdf(element: HTMLElement, options: ExportElementToPdfOptions): Promise<void> {
     const {
         fileName,
@@ -135,7 +202,34 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
 
     onProgress?.(0.05);
 
-    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')]);
+    // Chrome/Chromium often blocks downloads that happen after long async work because the original "user gesture"
+    // activation is lost. Firefox is usually more permissive. To make Chrome reliable, we pre-open a window/tab
+    // synchronously (still within the click event) and later navigate it to the generated PDF.
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isFirefox = /Firefox\//i.test(ua);
+    const isChromium = /Chrome\//i.test(ua) || /Chromium\//i.test(ua) || /Edg\//i.test(ua);
+    const shouldPreOpen = isChromium && !isFirefox;
+    let preOpenedWindow: Window | null = null;
+    if (shouldPreOpen) {
+        try {
+            preOpenedWindow = window.open('', '_blank', 'noopener,noreferrer');
+            if (preOpenedWindow?.document) {
+                preOpenedWindow.document.title = 'Preparing PDF…';
+                preOpenedWindow.document.body.innerHTML =
+                    '<p style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; padding: 16px;">Preparing PDF…</p>';
+            }
+        } catch {
+            preOpenedWindow = null;
+        }
+    }
+
+    const [html2canvasModule, jsPdfModule] = await Promise.all([import('html2canvas'), import('jspdf')]);
+    const html2canvas = resolveHtml2Canvas(html2canvasModule);
+    const jsPDFConstructor = resolveJsPdfConstructor(jsPdfModule);
+
+    if (!jsPDFConstructor) {
+        throw new Error('Failed to load jsPDF constructor.');
+    }
 
     // Best-effort: ensure fonts/images are ready so the PDF matches the UI.
     if (waitForFonts) {
@@ -169,7 +263,7 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
 
     onProgress?.(0.35);
 
-    const pdf = new jsPDF({ orientation, unit, format, compress: true });
+    const pdf = new jsPDFConstructor({ orientation, unit, format, compress: true });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
@@ -177,12 +271,48 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
     const contentHeightPt = Math.max(1, pageHeight - marginPt * 2);
 
     // We render each page at the same width, then slice the canvas by the height that fits per page.
+    // To prevent cutting text lines across pages, we try to shift each cut to a nearby blank row.
     const sliceHeightPx = Math.floor((contentHeightPt * canvas.width) / contentWidthPt);
-    const totalSlices = Math.max(1, Math.ceil(canvas.height / Math.max(1, sliceHeightPx)));
+    const estimatedTotalSlices = Math.max(1, Math.ceil(canvas.height / Math.max(1, sliceHeightPx)));
 
-    for (let pageIndex = 0; pageIndex < totalSlices; pageIndex++) {
-        const sy = pageIndex * sliceHeightPx;
-        const sHeight = Math.min(sliceHeightPx, canvas.height - sy);
+    const fullCtx = canvas.getContext('2d', { willReadFrequently: true } as CanvasRenderingContext2DSettings | undefined);
+
+    const slices: Array<{ sy: number; sHeight: number }> = [];
+    let sy = 0;
+    while (sy < canvas.height) {
+        const remaining = canvas.height - sy;
+        const desired = Math.min(sliceHeightPx, remaining);
+
+        // Last slice: just take the remaining content.
+        if (desired >= remaining) {
+            slices.push({ sy, sHeight: remaining });
+            break;
+        }
+
+        let sHeight = desired;
+        if (fullCtx) {
+            const desiredBreakY = sy + desired;
+            const searchRangePx = 140;
+            const minSlicePx = Math.min(desired - 40, 240);
+            const regionStartY = Math.max(sy + Math.max(60, minSlicePx), desiredBreakY - searchRangePx);
+            const regionHeight = Math.max(0, desiredBreakY - regionStartY);
+            if (regionHeight > 0) {
+                const breakY = findWhitespaceBreakY(fullCtx, canvas.width, regionStartY, regionHeight);
+                if (breakY && breakY > sy + 120) {
+                    sHeight = breakY - sy;
+                }
+            }
+        }
+
+        // Tiny overlap reduces visible seams if the break isn't perfectly blank.
+        const overlapPx = 2;
+        sHeight = Math.min(remaining, Math.max(1, sHeight + overlapPx));
+        slices.push({ sy, sHeight });
+        sy += sHeight;
+    }
+
+    for (let pageIndex = 0; pageIndex < slices.length; pageIndex++) {
+        const { sy, sHeight } = slices[pageIndex];
 
         const pageCanvas = document.createElement('canvas');
         pageCanvas.width = canvas.width;
@@ -212,12 +342,74 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
         const compression = imageCompression === 'NONE' ? undefined : imageCompression;
         pdf.addImage(imgData, imageType, marginPt, marginPt, contentWidthPt, imgHeightPt, undefined, compression);
 
-        onProgress?.(0.35 + (0.6 * (pageIndex + 1)) / totalSlices);
+        onProgress?.(0.35 + (0.6 * (pageIndex + 1)) / Math.max(1, Math.max(slices.length, estimatedTotalSlices)));
     }
 
     onProgress?.(0.98);
-    pdf.save(finalName);
+    // Some browsers/webviews silently block downloads after async work.
+    // We generate a Blob and try multiple download strategies.
+    const blob = pdf.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+    let didAttemptDownload = false;
+    let lastError: unknown;
+
+    // 1) file-saver (best on most desktop browsers)
+    try {
+        const { saveAs } = await import('file-saver');
+        saveAs(blob, finalName);
+        didAttemptDownload = true;
+    } catch (e) {
+        lastError = e;
+    }
+
+    // 2) Native <a download> (works well in many environments; file-saver internally does similar but can be blocked)
+    try {
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = finalName;
+        a.rel = 'noopener';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        didAttemptDownload = true;
+    } catch (e) {
+        lastError = e;
+    }
+
+    // 3) Navigate pre-opened window (Chrome-friendly) or open a new tab so user can manually save/share
+    try {
+        if (preOpenedWindow && !preOpenedWindow.closed) {
+            preOpenedWindow.location.href = blobUrl;
+            didAttemptDownload = true;
+        } else if (!didAttemptDownload) {
+            window.open(blobUrl, '_blank', 'noopener,noreferrer');
+            didAttemptDownload = true;
+        }
+    } catch (e) {
+        lastError = e;
+    } finally {
+        // Give the browser a bit of time to start reading the blob URL before revoking it.
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
+    }
+
+    // 4) Ultimate fallback: jsPDF's own save. If this also gets blocked, surface an error to the caller.
+    if (!didAttemptDownload) {
+        try {
+            pdf.save(finalName);
+            didAttemptDownload = true;
+        } catch (e) {
+            lastError = e;
+        }
+    }
+
+    if (!didAttemptDownload) {
+        throw new Error(
+            `PDF was generated but the browser blocked the download. ${
+                lastError instanceof Error ? lastError.message : 'Please try another browser.'
+            }`,
+        );
+    }
+
     onProgress?.(1);
 }
-
-
