@@ -7,6 +7,7 @@ import ArrowRightIcon from '@/assets/images/dashboard/arrow-right.svg';
 import HeadIcon from '@/assets/images/dashboard/comm.svg';
 import { SectionHeader, SuggestedJobCardItem, TagPill } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
+import { PrivateRoutes } from '@/config/routes';
 
 type SkillInfoItem = {
   title: string;
@@ -44,9 +45,15 @@ const SkillCard = ({ items }: SkillCardProps) => {
             )}
           </Stack>
         ))}
-        <Stack direction='row' alignItems='center' justifyContent='cnter'>
-          <MuiButton color='secondary' size='medium' fullWidth variant='text'>
-            View{' '}
+        <Stack direction='row' alignItems='center' justifyContent='cnter' gap={1}>
+          <MuiButton
+            color='secondary'
+            size='medium'
+            fullWidth
+            variant='text'
+            href={PrivateRoutes.historyEdite}
+          >
+            View
           </MuiButton>
 
           <MuiButton size='medium' fullWidth color='secondary'>

@@ -1,5 +1,8 @@
+ 'use client';
+
 import { Stack, Typography, Divider } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { useRouter } from 'next/navigation';
 
 import ArrowRightIcon from '@/assets/images/dashboard/arrow-right.svg';
 import Box1Icon from '@/assets/images/dashboard/box1.svg';
@@ -68,6 +71,11 @@ const SuggestedJobCard = () => {
 };
 
 const SuggestedPositions = () => {
+  const router = useRouter();
+
+  const navigateToHistory = () => {
+    router.push('/history');
+  };
   return (
     <Stack gap={2} mt={5}>
       <SectionHeader>
@@ -77,7 +85,13 @@ const SuggestedPositions = () => {
             Suggested Positions
           </Typography>
         </Stack>
-        <MuiButton text='more' color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
+        <MuiButton
+          text='more'
+          color='secondary'
+          variant='text'
+          endIcon={<ArrowRightIcon />}
+          onClick={navigateToHistory}
+        />
       </SectionHeader>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
