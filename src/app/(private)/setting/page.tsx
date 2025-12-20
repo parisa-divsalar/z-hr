@@ -16,13 +16,14 @@ const Setting = () => {
     const [selectedRadio, setSelectedRadio] = useState('option1');
     const { accessToken } = useAuthStore();
 
-    const handlePasswordSubmit = async ({ password, repeatPassword }: NewPasswordFormValues) => {
+    const handlePasswordSubmit = async ({ currentPassword, password, repeatPassword }: NewPasswordFormValues) => {
         if (!accessToken) {
             throw new Error('Session expired. Please login again.');
         }
 
         await updatePassword({
             userId: accessToken,
+            currentPassword,
             password,
             confirmPassword: repeatPassword,
         });
@@ -74,16 +75,17 @@ const Setting = () => {
             </Stack>
 
             <Stack gap={1} className='settings-stack' p={3} mt={3}>
-                <Typography variant='h5' fontWeight='500' color='text.primary'>
-                    Change password
-                </Typography>
-                <Typography variant='subtitle1' fontWeight='492' color='text.primary'>
-                    Use the form below to update your password without leaving the dashboard.
+                <Typography variant='h5' fontWeight='492' color='text.primary' mt={3}>
+                    Password
                 </Typography>
 
                 <NewPasswordForm
                     showCodeField={false}
-                    buttonLabel='Change password'
+                    showCurrentPassword
+                    fieldGridSize={6}
+                    showResetButton
+                    buttonLabel='Save'
+                    primaryButtonWidth={68}
                     successMessage='Password updated successfully'
                     onSubmit={handlePasswordSubmit}
                 />
