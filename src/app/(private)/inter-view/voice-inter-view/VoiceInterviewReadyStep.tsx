@@ -1,10 +1,8 @@
 import { Stack, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
-import RepeatIcon from '@/assets/images/dashboard/repeat.svg';
-import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
-import MuiButton from '@/components/UI/MuiButton';
-
-import { CenterGrayBox } from './styled';
+import VoiceQuestionsList from './VoiceQuestionsList';
+import { VoiceScoreSards } from './styled';
 
 interface VoiceInterviewReadyStepProps {
     answer: string;
@@ -17,57 +15,49 @@ interface VoiceInterviewReadyStepProps {
     onRepeat?: () => void;
 }
 
-const VoiceInterviewReadyStep = ({ onStart, onRepeat }: VoiceInterviewReadyStepProps) => {
+const VoiceInterviewReadyStep = (_props: VoiceInterviewReadyStepProps) => {
     return (
-        <CenterGrayBox isIntro>
-            <Typography variant='h5' color='text.primary' fontWeight='600' mt={4}>
-                You voice interview score{' '}
-            </Typography>
+        <Stack width='100%' sx={{ alignSelf: 'stretch' }}>
+            <Grid container width='100%'>
+                <Grid size={{ xs: 12 }}>
+                    <VoiceScoreSards className='scoreSards' mt={2} mb={2}>
+                        <Stack
+                            sx={{
+                                width: 61,
+                                height: 61,
+                                borderRadius: '50%',
+                                bgcolor: 'success.main',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Typography variant='h4' color='primary.light' fontWeight='500' textAlign='center'>
+                                34%
+                            </Typography>
+                        </Stack>
 
-            <Stack
-                mt={3}
-                sx={{
-                    width: 61,
-                    height: 61,
-                    borderRadius: '50%',
-                    bgcolor: 'success.light',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <Typography variant='h4' color='primary.light' fontWeight='500' textAlign='center'>
-                    34%
-                </Typography>
-            </Stack>
-            <Typography variant='subtitle1' color='text.secondary' fontWeight='500' mt={3} textAlign='center'>
-                Number of questions{' '}
-            </Typography>
+                        <Typography variant='body2' color='text.secondary' fontWeight='492' ml={3}>
+                            Number of questions{' '}
+                        </Typography>
+                        <Typography variant='body1' color='text.primary' fontWeight='584'>
+                            10 Questions{' '}
+                        </Typography>
 
-            <Typography variant='h5' color='text.primary' fontWeight='600' mt={1} textAlign='center'>
-                10 Questions{' '}
-            </Typography>
-            <Typography variant='subtitle1' color='text.secondary' fontWeight='500' mt={1} textAlign='center'>
-                Time duration{' '}
-            </Typography>
-            <Typography variant='h5' color='text.primary' fontWeight='600' mt={1} textAlign='center'>
-                09:57{' '}
-            </Typography>
+                        <Typography variant='body2' color='text.secondary' fontWeight='492' ml={3}>
+                            Time duration{' '}
+                        </Typography>
+                        <Typography variant='body1' color='text.primary' fontWeight='584'>
+                            09:57{' '}
+                        </Typography>
+                    </VoiceScoreSards>
+                </Grid>
 
-            <Stack direction='row' spacing={3} mt={6} mb={3}>
-                <MuiButton variant='outlined' color='secondary' endIcon={<ArrowRightIcon />} onClick={onStart}>
-                    Interview page
-                </MuiButton>
-                <MuiButton
-                    color='secondary'
-                    startIcon={<RepeatIcon />}
-                    onClick={onRepeat}
-                    sx={{ width: 172, gap: 1.5 }}
-                >
-                    Repeat{' '}
-                </MuiButton>
-            </Stack>
-        </CenterGrayBox>
+                <Grid size={{ xs: 12 }}>
+                    <VoiceQuestionsList />
+                </Grid>
+            </Grid>
+        </Stack>
     );
 };
 

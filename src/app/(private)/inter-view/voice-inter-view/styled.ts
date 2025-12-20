@@ -1,4 +1,4 @@
-import { Box, Grid, Stack } from '@mui/material';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import { InputContent as BaseInputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
@@ -57,3 +57,63 @@ export const VoiceInputContainer = styled(BaseContainerSkill)(() => ({
 }));
 
 export const VoiceInputContent = styled(BaseInputContent)(() => ({}));
+
+export const VoiceQuestionCard = styled(Stack)(() => ({
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    borderRadius: 16,
+    width: '100%',
+    overflow: 'hidden',
+    marginTop: '10px',
+}));
+
+export const VoiceQuestionBadge = styled(Box)(({ theme }) => ({
+    width: 38,
+    height: 54,
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 584,
+    fontSize: 14,
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.primary.main,
+}));
+
+export const VoiceQuestionTexts = styled(Stack)(({ theme }) => ({
+    flex: 1,
+    gap: theme.spacing(0.5),
+    minWidth: 0,
+    overflow: 'hidden',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+}));
+
+export const VoiceQuestionTitle = styled(Typography)({
+    wordBreak: 'break-word',
+});
+
+export const VoiceAnswerText = styled(Typography)({
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    flex: 1,
+    minWidth: 0,
+});
+
+export const VoiceScoreSards = styled(Stack, {
+    name: 'scoreSards',
+    slot: 'Root',
+})(({ theme }) => ({
+    width: '100%',
+    height: '86px',
+    borderRadius: '8px',
+    backgroundColor: theme.palette.grey[50],
+    padding: theme.spacing(2),
+
+    display: 'flex',
+    flexDirection: 'row',
+    gap: theme.spacing(1),
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+}));
