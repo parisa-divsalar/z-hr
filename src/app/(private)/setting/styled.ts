@@ -9,6 +9,6 @@ export const SettingRoot = styled(Box)(({ theme }) => ({
     '& .settings-stack': {
         border: `1px solid ${theme.palette.grey[100]}`,
         paddingBlock: theme.spacing(1),
-        borderRadius: theme.shape.borderRadius,
+        borderRadius: '8px',
     },
 }));

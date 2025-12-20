@@ -42,7 +42,7 @@ const Setting = () => {
                 <Typography variant='h5' fontWeight='492' color='text.primary' mt={2}>
                     Language{' '}
                 </Typography>
-                <Stack direction='row' gap={6} flexWrap='wrap' mt={3}>
+                <Stack direction='row' gap={6} flexWrap='wrap' mt={3} pb={3}>
                     {radioOptions.map((radio) => (
                         <MuiRadioButton
                             key={radio.value}
