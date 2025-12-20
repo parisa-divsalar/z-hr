@@ -1,5 +1,5 @@
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 
 import { FilesStack as BaseFilesStack } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import { RemoveFileButton as BaseRemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
@@ -212,8 +212,13 @@ export const EntryActionsGroup = styled(Stack)(() => ({
     flexShrink: 0,
 }));
 
-export const AddEntryButton = styled(MuiButton)(() => ({
+export const AddEntryButton = styled(MuiButton, {
+    shouldForwardProp: (prop) => prop !== 'highlighted',
+})<{ highlighted?: boolean }>(({ theme, highlighted }) => ({
     flexShrink: 0,
+    borderWidth: highlighted ? '1px' : undefined,
+    borderColor: highlighted ? theme.palette.success.main : undefined,
+    boxShadow: highlighted ? `0 0 0 8px ${alpha(theme.palette.success.main, 0.16)}` : undefined,
 }));
 
 export const BackgroundEntryIndex = styled(Stack)(({ theme }) => ({

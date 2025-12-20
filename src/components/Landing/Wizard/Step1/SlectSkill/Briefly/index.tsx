@@ -265,6 +265,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 
     const hasBackgroundText = backgroundText.trim() !== '';
     const hasDraft = hasBackgroundText || uploadedFiles.length > 0 || voiceRecordings.length > 0;
+    const shouldHighlightAddButton = backgroundEntries.length === 0 && !isEditingEntry;
     const entriesListRef = useRef<HTMLDivElement | null>(null);
     const previousEntriesLengthRef = useRef<number>(backgroundEntries.length);
 
@@ -326,6 +327,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                         startIcon={<AddIcon />}
                         onClick={onAddBackgroundEntry}
                         disabled={!hasDraft}
+                        highlighted={shouldHighlightAddButton}
                     >
                         Add
                     </AddEntryButton>
