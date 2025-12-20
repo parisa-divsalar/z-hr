@@ -28,7 +28,7 @@ const SideBar = () => {
 
   const handleConfirmLogout = () => {
     logout();
-    router.replace(PublicRoutes.landing);
+    router.replace(PublicRoutes.login);
     setOpenLogoutDialog(false);
   };
 
