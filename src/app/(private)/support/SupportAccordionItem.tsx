@@ -26,7 +26,7 @@ interface SupportAccordionItemProps {
   item: AccordionItemData;
   isExpanded: boolean;
   onToggle: () => void;
-  onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
+  onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
 }
 
 const SupportAccordionItem = ({ item, isExpanded, onToggle, onKeyDown }: SupportAccordionItemProps) => (
@@ -68,4 +68,6 @@ const SupportAccordionItem = ({ item, isExpanded, onToggle, onKeyDown }: Support
 );
 
 export default SupportAccordionItem;
+
+
 

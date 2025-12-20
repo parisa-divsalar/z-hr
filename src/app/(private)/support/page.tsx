@@ -7,8 +7,8 @@ import { Typography } from '@mui/material';
 import { PageTitle } from '@/app/(private)/payment/styled';
 import { GridContainer, ContentWrapper, SupportRoot } from '@/app/(private)/support/styled';
 
-import SupportAccordionItem from './SupportAccordionItem';
 import { accordionData } from './mockData';
+import SupportAccordionItem from './SupportAccordionItem';
 
 const Support = () => {
     const [expandedItems, setExpandedItems] = useState<Set<string>>(

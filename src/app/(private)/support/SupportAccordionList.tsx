@@ -22,7 +22,7 @@ const SupportAccordionList = () => {
         });
     };
 
-    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, id: string) => {
+    const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, id: string) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             toggleItem(id);
@@ -45,3 +45,5 @@ const SupportAccordionList = () => {
 };
 
 export default SupportAccordionList;
+
+

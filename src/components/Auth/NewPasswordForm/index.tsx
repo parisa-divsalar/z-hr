@@ -113,8 +113,6 @@ const NewPasswordForm = ({
         setDisabled(!(hasCode && isPasswordValid && isCurrentPasswordValid));
     }, [code, password, repeatPassword, currentPassword, showCodeField, showCurrentPassword]);
 
-    const gridSize = Math.min(Math.max(fieldGridSize, 1), 12);
-
     const responsiveSpan = Math.min(Math.max(fieldGridSize, 1), 12);
 
     const handleSubmit = async () => {

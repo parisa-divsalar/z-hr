@@ -8,8 +8,8 @@ import InterIcon from '@/assets/images/icons/interv.svg';
 import RecentInterviews from '@/components/interview/CartItems/RecentInterviews';
 import UpcomingInterview from '@/components/interview/CartItems/UpcomingInterview';
 import InterviewStats from '@/components/interview/InterviewStats';
-import { InterviewRoot } from '@/components/interview/styled';
 import { InterviewDialogProvider } from '@/components/interview/StartInterviewDialogProvider';
+import { InterviewRoot } from '@/components/interview/styled';
 
 const Interview = () => {
     return (

@@ -61,6 +61,15 @@
     box-sizing: border-box;
 }
 
+.sidebarWrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.resumeBuilderSidebar {
+    padding-top: calc(var(--navbar-height) - var(--children-padding) + 0.5rem);
+}
+
 .layoutBackground {
     position: absolute;
     inset: 0;

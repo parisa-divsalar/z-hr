@@ -1,8 +1,8 @@
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import VoiceQuestionsList from './VoiceQuestionsList';
 import { VoiceScoreSards } from './styled';
+import VoiceQuestionsList from './VoiceQuestionsList';
 
 interface VoiceInterviewReadyStepProps {
     answer: string;
