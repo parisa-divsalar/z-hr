@@ -5,12 +5,28 @@ import { useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 
 import { SettingRoot } from '@/app/(private)/setting/styled';
+import NewPasswordForm, { NewPasswordFormValues } from '@/components/Auth/NewPasswordForm';
 import MuiRadioButton from '@/components/UI/MuiRadioButton';
 import MuiSwichButton from '@/components/UI/MuiSwichButton';
+import { updatePassword } from '@/services/auth/update-password';
+import { useAuthStore } from '@/store/auth';
 
 const Setting = () => {
     const [isEnabled, setIsEnabled] = useState(false);
     const [selectedRadio, setSelectedRadio] = useState('option1');
+    const { accessToken } = useAuthStore();
+
+    const handlePasswordSubmit = async ({ password, repeatPassword }: NewPasswordFormValues) => {
+        if (!accessToken) {
+            throw new Error('Session expired. Please login again.');
+        }
+
+        await updatePassword({
+            userId: accessToken,
+            password,
+            confirmPassword: repeatPassword,
+        });
+    };
 
     const radioOptions = [
         { value: 'option1', label: 'English' },
@@ -55,6 +71,22 @@ const Setting = () => {
                         />
                     ))}
                 </Stack>
+            </Stack>
+
+            <Stack gap={1} className='settings-stack' p={3} mt={3}>
+                <Typography variant='h5' fontWeight='500' color='text.primary'>
+                    Change password
+                </Typography>
+                <Typography variant='subtitle1' fontWeight='492' color='text.primary'>
+                    Use the form below to update your password without leaving the dashboard.
+                </Typography>
+
+                <NewPasswordForm
+                    showCodeField={false}
+                    buttonLabel='Change password'
+                    successMessage='Password updated successfully'
+                    onSubmit={handlePasswordSubmit}
+                />
             </Stack>
         </SettingRoot>
     );
