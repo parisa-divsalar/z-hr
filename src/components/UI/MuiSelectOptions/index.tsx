@@ -1,6 +1,6 @@
 import React, { ForwardedRef, forwardRef, ReactNode, useMemo, useState } from 'react';
 
-import { FormControl, MenuItem, Select, SelectProps, Stack, Typography } from '@mui/material';
+import { alpha, FormControl, MenuItem, Select, SelectProps, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import InfoIcon from '@/assets/images/icons/info.svg';
@@ -104,6 +104,18 @@ const MuiSelectOptions = forwardRef<HTMLInputElement, MuiSelectOptionsProps>(
       bgcolor: theme.palette.common.white,
     };
 
+    const menuItemSx = {
+      '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+      },
+      '&.Mui-selected': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.16),
+      },
+      '&.Mui-selected:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.16),
+      },
+    };
+
     const defaultMenuProps = {
       PaperProps: {
         sx: defaultMenuPaperSx,
@@ -178,12 +190,17 @@ const MuiSelectOptions = forwardRef<HTMLInputElement, MuiSelectOptionsProps>(
             sx={selectSxValue}
           >
             {forceDisplayEmpty && placeholder && (
-              <MenuItem value='' disabled>
+              <MenuItem value='' disabled sx={menuItemSx}>
                 {placeholder}
               </MenuItem>
             )}
             {options.map((option, index) => (
-              <MenuItem key={`${option.value}-${index}`} value={option.value} disabled={option.disabled}>
+              <MenuItem
+                key={`${option.value}-${index}`}
+                value={option.value}
+                disabled={option.disabled}
+                sx={menuItemSx}
+              >
                 {option.label}
               </MenuItem>
             ))}
