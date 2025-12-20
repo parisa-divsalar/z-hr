@@ -13,7 +13,7 @@ import classes from '@/components/Layout/layout.module.css';
 import { MainNavbarContainer, MainNavbarContent } from '@/components/Layout/Navbar/styled';
 import MuiAvatar from '@/components/UI/MuiAvatar';
 import MuiButton from '@/components/UI/MuiButton';
-import { PublicRoutes, VisibilityLayout } from '@/config/routes';
+import { PublicRoutes, isLayoutVisible } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 import { useThemeStore } from '@/store/common';
 
@@ -25,7 +25,7 @@ const Navbar = () => {
 
   const isHomeActive = pathname === '/' || pathname === '/(public)';
 
-  if (!VisibilityLayout.includes(pathname)) return null;
+  if (!isLayoutVisible(pathname)) return null;
 
   return (
     <MainNavbarContainer>

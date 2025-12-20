@@ -56,3 +56,23 @@ export const VisibilitySideBar: string[] = [
     PrivateRoutes.voiceInterView,
     PrivateRoutes.learningHub,
 ];
+
+const normalizeRoute = (value?: string | null) => {
+    if (!value) return '/';
+    if (value === '/') return '/';
+    return value.replace(/\/+$/, '');
+};
+
+export const isLayoutVisible = (pathname?: string | null) => {
+    const normalizedPathname = normalizeRoute(pathname);
+    return VisibilityLayout.some((route) => {
+        const normalizedRoute = normalizeRoute(route);
+        if (normalizedRoute === '/') {
+            return normalizedPathname === '/';
+        }
+        if (normalizedPathname === normalizedRoute) {
+            return true;
+        }
+        return normalizedPathname.startsWith(`${normalizedRoute}/`);
+    });
+};

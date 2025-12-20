@@ -11,12 +11,12 @@ import {
   MainFooterContent,
   IconButtonWrapper,
 } from '@/components/Layout/Footer/styled';
-import { VisibilityLayout } from '@/config/routes';
+import { isLayoutVisible } from '@/config/routes';
 
 const Footer = () => {
   const pathname = usePathname();
 
-  if (!VisibilityLayout.includes(pathname)) return null;
+  if (!isLayoutVisible(pathname)) return null;
 
   return (
     <MainFooterContainer>
