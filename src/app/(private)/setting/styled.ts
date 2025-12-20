@@ -6,9 +6,9 @@ export const SettingRoot = styled(Box)(({ theme }) => ({
     height: '85vh',
     maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
     overflowY: 'auto', // scroll only inside this content
-    boxSizing: 'border-box',
-    padding: 20,
-    border: `1px solid ${theme.palette.grey[100]}`,
-    borderRadius: '8px',
-    gap: 24,
+    '& .settings-stack': {
+        border: `1px solid ${theme.palette.grey[100]}`,
+        paddingBlock: theme.spacing(1),
+        borderRadius: theme.shape.borderRadius,
+    },
 }));
