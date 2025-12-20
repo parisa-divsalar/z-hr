@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 
@@ -11,10 +11,15 @@ import { CenterGrayBox, ChatInputContainer, ChatInputContent } from './styled';
 interface SkillInputStepProps {
     onBack?: () => void;
     onNext?: (answer: string) => void;
+    initialAnswer?: string;
 }
 
-const SkillInputStep = ({ onBack, onNext }: SkillInputStepProps) => {
-    const [answer, setAnswer] = useState('');
+const SkillInputStep = ({ onBack, onNext, initialAnswer = '' }: SkillInputStepProps) => {
+    const [answer, setAnswer] = useState(initialAnswer);
+
+    useEffect(() => {
+        setAnswer(initialAnswer);
+    }, [initialAnswer]);
 
     const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
         setAnswer(event.target.value);

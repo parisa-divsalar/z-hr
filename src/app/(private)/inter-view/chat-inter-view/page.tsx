@@ -8,7 +8,6 @@ import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
 import InterviewReadyStep from './InterviewReadyStep';
-import RepeatSkillInputStep from './RepeatSkillInputStep';
 import SkillInputStep from './SkillInputStep';
 import { ChatInterViewContent, ChatInterViewGrid, ChatInterViewRoot, CenterGrayBox } from './styled';
 
@@ -98,7 +97,7 @@ export default function ChatInterView() {
                     {step === 'skill-input' && <SkillInputStep onBack={handleBackToIntro} onNext={handleSkillSubmit} />}
 
                     {step === 'repeat-skill-input' && (
-                        <RepeatSkillInputStep
+                        <SkillInputStep
                             initialAnswer={skillAnswer}
                             onBack={handleBackToReady}
                             onNext={handleSkillSubmit}
