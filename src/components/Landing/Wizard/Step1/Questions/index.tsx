@@ -454,25 +454,18 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
     );
 
     const steps = useMemo(() => {
-        const truncate = (value: string, max = 160) => {
-            const t = value.trim();
-            if (t.length <= max) {
-                return t;
-            }
-            return `${t.slice(0, max)}…`;
-        };
-
         const toCount = (v: unknown) => (Array.isArray(v) ? v.length : 0);
 
-        const sectionLines = (section?: { text?: string; files?: unknown[]; voices?: unknown[] }) => {
+        const sectionLines = (section?: {
+            text?: string;
+            files?: unknown[];
+            voices?: unknown[];
+        }) => {
+            const text = section?.text?.trim() ?? '';
             const lines: string[] = [];
-            const text = section?.text?.trim();
-            if (text) {
-                lines.push(truncate(text));
-            }
             lines.push(`files: ${toCount(section?.files)}`);
             lines.push(`voices: ${toCount(section?.voices)}`);
-            return lines;
+            return { text, lines };
         };
 
         const listSectionLines = (entries?: Array<{ text?: string; files?: unknown[]; voices?: unknown[] }>) => {
@@ -488,7 +481,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
             safeEntries.forEach((e, idx) => {
                 const t = e?.text?.trim();
                 if (t) {
-                    lines.push(`${idx + 1}. ${truncate(t, 120)}`);
+                    lines.push(`${idx + 1}. ${t}`);
                 }
             });
 
@@ -503,10 +496,15 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
             return safeSkills;
         };
 
+        const backgroundSummary = sectionLines(wizardData.background as any);
+        const jobDescriptionSummary = sectionLines(wizardData.jobDescription as any);
+        const additionalInfoSummary = sectionLines(wizardData.additionalInfo as any);
+
         return [
             {
                 id: 'background',
-                lines: sectionLines(wizardData.background as any),
+                text: backgroundSummary.text,
+                lines: backgroundSummary.lines,
                 attachments: wizardData.background as any,
             },
             {
@@ -526,12 +524,14 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
             },
             {
                 id: 'jobDescription',
-                lines: sectionLines(wizardData.jobDescription as any),
+                text: jobDescriptionSummary.text,
+                lines: jobDescriptionSummary.lines,
                 attachments: wizardData.jobDescription as any,
             },
             {
                 id: 'additionalInfo',
-                lines: sectionLines(wizardData.additionalInfo as any),
+                text: additionalInfoSummary.text,
+                lines: additionalInfoSummary.lines,
                 attachments: wizardData.additionalInfo as any,
             },
         ];
@@ -621,6 +621,22 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
                                     </Stack>
 
                                     <Stack component='ul' sx={{ pl: 3, m: 0 }} gap={0.5}>
+                                        {step.text && (
+                                            <Typography
+                                                component='li'
+                                                variant='subtitle2'
+                                                fontWeight={400}
+                                                color='text.primary'
+                                                sx={{
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                }}
+                                            >
+                                                {step.text}
+                                            </Typography>
+                                        )}
+
                                         {step.lines.map((line, lineIdx) => (
                                             <Typography
                                                 key={`${step.id}-${lineIdx}`}
@@ -628,6 +644,11 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
                                                 variant='subtitle2'
                                                 fontWeight={400}
                                                 color='text.primary'
+                                                sx={{
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                }}
                                             >
                                                 {line}
                                             </Typography>
