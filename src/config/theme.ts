@@ -357,8 +357,8 @@ export const lightTheme = createTheme({
         },
         success: {
             main: '#106915',
-            light: '#25BC2D',
-            dark: '#106915',
+            light: '#9FFC49',
+            dark: '#1d3408',
         },
         warning: {
             main: '#FE8A15',

@@ -81,13 +81,13 @@ const QuestionCard: React.FC<InterviewQuestionItem> = ({ number, name, question,
                         />
                     </Stack>
 
-                    <Stack justifyContent='flex-end' alignItems='flex-end' direction='row' gap={1}>
-                        <CheckCircleIcon style={{ marginTop: 8, display: 'block' }} />
+                    <Stack justifyContent='flex-end' alignItems='center' direction='row' gap={1}>
+                        <CheckCircleIcon sx={{ alignSelf: 'center' }} />
 
-                        <Typography variant='subtitle2' fontWeight={400} color='text.secondary' mt={1}>
+                        <Typography variant='subtitle2' fontWeight={400} color='text.secondary'>
                             {title}
                         </Typography>
-                        <Typography variant='subtitle2' fontWeight={492} color='text.primary' mt={1}>
+                        <Typography variant='subtitle2' fontWeight={492} color='text.primary'>
                             {label}
                         </Typography>
                     </Stack>

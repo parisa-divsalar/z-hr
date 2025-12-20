@@ -78,13 +78,15 @@ const PaymentPage = () => {
         const paletteKey =
           value === 'success' ? 'success' : value === 'pending' ? 'warning' : 'error';
         const paletteColor = theme.palette[paletteKey];
+        const backgroundColor =
+          value === 'success' ? theme.palette.success.light : paletteColor.light || paletteColor.main;
 
         return (
           <MuiBadge
             label={value}
             color={value}
             border={`1px solid ${paletteColor.main}`}
-            backgroundColor={paletteColor.light || paletteColor.main}
+            backgroundColor={backgroundColor}
             textColor={paletteColor.main}
           />
         );

@@ -1,66 +1,42 @@
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const PaymentRoot = styled(Box)(({ theme }) => ({
-  maxHeight: '100vh', // limit height to viewport
-  overflowY: 'auto', // scroll only inside this content
-  boxSizing: 'border-box',
-  padding: 24,
-  border: `1px solid ${theme.palette.grey[100]}`,
-  borderRadius: '8px',
-  gap: 24,
-  // Avoid forcing full width so margins don't get cut off on the right side
-  marginTop: 10,
-}));
-
-export const ViewButton = styled(Button)(({ theme }) => ({
-  padding: '6px 16px',
-  borderRadius: '20px',
-  backgroundColor: theme.palette.grey[100],
-  color: theme.palette.text.primary,
-  fontSize: '13px',
-  fontWeight: 500,
-  textTransform: 'none',
-  border: 'none',
-  boxShadow: 'none',
-  transition: 'all 0.2s ease',
-
-  '&:hover': {
-    backgroundColor: theme.palette.grey[200],
-    boxShadow: 'none',
-  },
-
-  [theme.breakpoints.down('sm')]: {
-    padding: '4px 12px',
-    fontSize: '12px',
-  },
+    maxHeight: '100vh', // limit height to viewport
+    overflowY: 'auto', // scroll only inside this content
+    boxSizing: 'border-box',
+    padding: 24,
+    border: `1px solid ${theme.palette.grey[100]}`,
+    borderRadius: '8px',
+    gap: 24,
+    marginTop: 10,
 }));
 
 export const PageTitle = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-
-  '& h1': {
-    fontSize: '24px',
-    fontWeight: 700,
-    color: theme.palette.text.primary,
-    margin: 0,
-  },
-
-  '& p': {
-    fontSize: '14px',
-    color: theme.palette.text.secondary,
-    margin: theme.spacing(1, 0, 0, 0),
-  },
-
-  [theme.breakpoints.down('sm')]: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(3),
 
     '& h1': {
-      fontSize: '20px',
+        fontSize: '24px',
+        fontWeight: 700,
+        color: theme.palette.text.primary,
+        margin: 0,
     },
 
     '& p': {
-      fontSize: '13px',
+        fontSize: '14px',
+        color: theme.palette.text.secondary,
+        margin: theme.spacing(1, 0, 0, 0),
     },
-  },
+
+    [theme.breakpoints.down('sm')]: {
+        marginBottom: theme.spacing(2),
+
+        '& h1': {
+            fontSize: '20px',
+        },
+
+        '& p': {
+            fontSize: '13px',
+        },
+    },
 }));

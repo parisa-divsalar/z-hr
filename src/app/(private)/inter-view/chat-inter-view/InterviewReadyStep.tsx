@@ -14,18 +14,15 @@ interface InterviewReadyStepProps {
 const InterviewReadyStep = (_props: InterviewReadyStepProps) => {
     return (
         <Stack width='100%' sx={{ alignSelf: 'stretch' }}>
-            <Typography variant='h5' color='text.primary' fontWeight='492' mt={2}>
-                You chat interview score{' '}
-            </Typography>
             <Grid container width='100%'>
                 <Grid size={{ xs: 12 }}>
-                    <ScoreSards className='scoreSards'>
+                    <ScoreSards className='scoreSards' mt={2} mb={2}>
                         <Stack
                             sx={{
                                 width: 61,
                                 height: 61,
                                 borderRadius: '50%',
-                                bgcolor: 'success.light',
+                                bgcolor: 'success.main',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
