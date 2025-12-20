@@ -105,7 +105,7 @@ const LoginPage = () => {
                 const { data } = await apiClientClient.post('auth/login', values);
                 const accessToken = data?.data.userId;
                 useAuthStore.getState().loginSuccess(accessToken, '');
-                router.push('/');
+                router.push('/landing');
             } catch (error: any) {
                 console.error('login Error', error);
                 showToast(getErrorMessage(error), 'error');

@@ -1,5 +1,5 @@
 export const PublicRoutes = {
-    landing: '/',
+    landing: '/landing',
     login: '/auth/login',
     forgetPassword: '/auth/reset-password',
     newPassword: '/auth/new-password',

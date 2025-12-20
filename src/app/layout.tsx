@@ -18,6 +18,12 @@ export const metadata = {
   manifest: '/manifest.json',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#4D49FC',
+};
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en' dir='ltr' className={`${interphasesFont.variable}`}>

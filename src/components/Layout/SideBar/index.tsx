@@ -16,7 +16,7 @@ import HeadphonesRoundedIcon from '@/assets/images/menu/Icon7.svg';
 import MicRoundedIcon from '@/assets/images/menu/Icon8.svg';
 import LogoutDialog from '@/components/Layout/SideBar/LogoutDialog';
 import { ItemButton, SidebarContainer, ItemIcon } from '@/components/Layout/SideBar/styled';
-import { PrivateRoutes, PublicRoutes, VisibilitySideBar } from '@/config/routes';
+import { PrivateRoutes, VisibilitySideBar } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 
 const SideBar = () => {
@@ -26,9 +26,8 @@ const SideBar = () => {
 
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
 
-  const handleConfirmLogout = () => {
-    logout();
-    router.replace(PublicRoutes.login);
+  const handleConfirmLogout = async () => {
+    await logout();
     setOpenLogoutDialog(false);
   };
 

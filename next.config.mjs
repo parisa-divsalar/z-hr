@@ -1,9 +1,7 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    dirs: ['src'],
-  },
+  turbopack: {},
 
   webpack(config) {
     config.module.rules = config.module.rules.map((rule) => {

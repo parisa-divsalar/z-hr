@@ -7,5 +7,5 @@ export interface useAuthStoreProps {
   loginStart: () => void;
   loginFailure: () => void;
   loginSuccess: (accessToken: string, refreshToken: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
