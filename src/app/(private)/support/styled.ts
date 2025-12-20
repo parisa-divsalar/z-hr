@@ -82,7 +82,9 @@ interface AccordionHeaderProps {
     expanded?: boolean;
 }
 
-export const AccordionHeader = styled('button')<AccordionHeaderProps>(({ theme, expanded: _expanded }) => ({
+export const AccordionHeader = styled('button', {
+    shouldForwardProp: (prop) => prop !== 'expanded',
+})<AccordionHeaderProps>(({ theme, expanded: _expanded }) => ({
     width: '100%',
     display: 'flex',
     alignItems: 'center',
@@ -159,7 +161,9 @@ interface ChevronWrapperProps {
     expanded?: boolean;
 }
 
-export const ChevronWrapper = styled(Box)<ChevronWrapperProps>(({ theme, expanded }) => ({
+export const ChevronWrapper = styled(Box, {
+    shouldForwardProp: (prop) => prop !== 'expanded',
+})<ChevronWrapperProps>(({ theme, expanded }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -181,7 +185,9 @@ interface ContentRegionProps {
     expanded?: boolean;
 }
 
-export const ContentRegion = styled(Box)<ContentRegionProps>(({ expanded }) => ({
+export const ContentRegion = styled(Box, {
+    shouldForwardProp: (prop) => prop !== 'expanded',
+})<ContentRegionProps>(({ expanded }) => ({
     maxHeight: expanded ? '500px' : '0',
     overflow: 'hidden',
     transition: 'max-height 300ms ease, opacity 200ms ease',
