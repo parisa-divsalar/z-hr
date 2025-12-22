@@ -10,6 +10,58 @@ const COL_DIVIDER = '#F0F0F0';
 const ROW_DIVIDER = '#F6F6F6';
 const HEADER_ROW_HEIGHT = 92;
 
+const PLAN_NAME_TYPOGRAPHY = { variant: 'h6', color: 'info.main', fontWeight: 492 };
+const DEFAULT_FEATURE_LABEL_TYPOGRAPHY = { variant: 'body2', sx: { color: '#555' } };
+
+const SX = {
+    desktopGrid: (plansCount) => ({
+        display: 'grid',
+        // Keep all columns the same width on desktop (Best for + N plans)
+        gridTemplateColumns: { xs: '1fr', md: `repeat(${plansCount + 1}, minmax(0, 1fr))` },
+        width: '100%',
+    }),
+    featuresCol: {
+        boxSizing: 'border-box',
+        borderRight: `1px solid ${COL_DIVIDER}`,
+    },
+    featuresHeaderCell: {
+        px: 2,
+        minHeight: HEADER_ROW_HEIGHT,
+        display: 'flex',
+        alignItems: 'center',
+    },
+    featureLabelCell: {
+        px: 2,
+        py: 1.5,
+        minHeight: 48,
+        display: 'flex',
+        alignItems: 'center',
+        borderTop: `1px solid ${ROW_DIVIDER}`,
+    },
+    planValueCell: {
+        px: 2,
+        py: 1.5,
+        minHeight: 48,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTop: `1px solid ${ROW_DIVIDER}`,
+    },
+    pricingLabelCell: {
+        px: 2,
+        py: 1.5,
+        borderTop: `1px solid ${ROW_DIVIDER}`,
+    },
+    pricingLabelTypography: { color: '#555', fontWeight: 600 },
+    mobileFeatureRow: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        py: 1.25,
+        borderTop: `1px solid ${ROW_DIVIDER}`,
+    },
+};
+
 /**
  * NOTE:
  * Replace the strings/values in `PLANS` + `FEATURES` with the exact content from your screenshot.
@@ -62,6 +114,7 @@ const FEATURES = [
     {
         id: 'planName',
         label: 'Plan Name',
+        labelTypography: PLAN_NAME_TYPOGRAPHY,
         availability: { starter: true, pro: true, careerPlus: true, elite: true },
     },
     {
@@ -174,6 +227,16 @@ function AvailabilityIcon({ value }) {
     );
 }
 
+function FeatureLabel({ feature, sx }) {
+    const t = feature.labelTypography ?? DEFAULT_FEATURE_LABEL_TYPOGRAPHY;
+
+    return (
+        <Typography variant={t.variant} color={t.color} fontWeight={t.fontWeight} sx={{ ...(t.sx ?? {}), ...(sx ?? {}) }}>
+            {feature.label}
+        </Typography>
+    );
+}
+
 function PlanHeader({ plan }) {
     return (
         <Box
@@ -273,55 +336,26 @@ function PriceFooter({ plan, isHighlighted }) {
 
 function DesktopComparisonTable() {
     const highlightedId = PLANS.find((p) => p.isPopular)?.id;
+    const highlightedRowIdx = 0; // row that starts with "Plan Name"
 
     return (
-        <Box
-            sx={{
-                display: 'grid',
-                // Keep all columns the same width on desktop (Best for + 4 plans)
-                gridTemplateColumns: { xs: '1fr', md: 'repeat(5, minmax(0, 1fr))' },
-                width: '100%',
-            }}
-        >
+        <Box sx={SX.desktopGrid(PLANS.length)}>
             {/* Features column */}
-            <Box
-                sx={{
-                    boxSizing: 'border-box',
-                    borderRight: `1px solid ${COL_DIVIDER}`,
-                }}
-            >
-                <Box sx={{ px: 2, minHeight: HEADER_ROW_HEIGHT, display: 'flex', alignItems: 'center' }}>
+            <Box sx={SX.featuresCol}>
+                <Box sx={SX.featuresHeaderCell}>
                     <Typography variant='h6' fontWeight='492'>
                         Best for
                     </Typography>
                 </Box>
 
-                {FEATURES.map((f) => (
-                    <Box
-                        key={f.id}
-                        sx={{
-                            px: 2,
-                            py: 1.5,
-                            minHeight: 48,
-                            display: 'flex',
-                            alignItems: 'center',
-                            borderTop: `1px solid ${ROW_DIVIDER}`,
-                        }}
-                    >
-                        <Typography variant='body2' sx={{ color: '#555' }}>
-                            {f.label}
-                        </Typography>
+                {FEATURES.map((f, fIdx) => (
+                    <Box key={f.id} sx={[SX.featureLabelCell, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}>
+                        <FeatureLabel feature={f} />
                     </Box>
                 ))}
 
-                <Box
-                    sx={{
-                        px: 2,
-                        py: 1.5,
-                        borderTop: `1px solid ${ROW_DIVIDER}`,
-                    }}
-                >
-                    <Typography variant='body2' sx={{ color: '#555', fontWeight: 600 }}>
+                <Box sx={SX.pricingLabelCell}>
+                    <Typography variant='body2' sx={SX.pricingLabelTypography}>
                         Pricing
                     </Typography>
                 </Box>
@@ -351,18 +385,10 @@ function DesktopComparisonTable() {
                         }}
                     >
                         <PlanHeader plan={plan} />
-                        {FEATURES.map((f) => (
+                        {FEATURES.map((f, fIdx) => (
                             <Box
                                 key={f.id}
-                                sx={{
-                                    px: 2,
-                                    py: 1.5,
-                                    minHeight: 48,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderTop: `1px solid ${ROW_DIVIDER}`,
-                                }}
+                                sx={[SX.planValueCell, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}
                             >
                                 {f.id === 'planName' ? (
                                     <PlanNameCell plan={plan} />
@@ -383,6 +409,7 @@ function DesktopComparisonTable() {
 
 function MobilePlanCards() {
     const highlightedId = PLANS.find((p) => p.isPopular)?.id;
+    const highlightedRowIdx = 0; // row that starts with "Plan Name"
 
     return (
         <Stack spacing={2.5}>
@@ -405,20 +432,12 @@ function MobilePlanCards() {
                             </Box>
 
                             <Box sx={{ mt: 1.5 }}>
-                                {FEATURES.map((f) => (
+                                {FEATURES.map((f, fIdx) => (
                                     <Box
                                         key={f.id}
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            py: 1.25,
-                                            borderTop: `1px solid ${ROW_DIVIDER}`,
-                                        }}
+                                        sx={[SX.mobileFeatureRow, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}
                                     >
-                                        <Typography variant='body2' sx={{ color: '#555', pr: 2 }}>
-                                            {f.label}
-                                        </Typography>
+                                        <FeatureLabel feature={f} sx={{ pr: 2 }} />
                                         {f.id === 'planName' ? (
                                             <Stack direction='row' alignItems='center' spacing={1}>
                                                 <Typography variant='h6' color='info.main' fontWeight='492'>
