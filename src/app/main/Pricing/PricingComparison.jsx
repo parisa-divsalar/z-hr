@@ -8,6 +8,7 @@ const HIGHLIGHT_BORDER = '#5B5BFF';
 const OUTER_BORDER = '#EAEAEA';
 const COL_DIVIDER = '#F0F0F0';
 const ROW_DIVIDER = '#F6F6F6';
+const HEADER_ROW_HEIGHT = 92;
 
 /**
  * NOTE:
@@ -27,7 +28,7 @@ const PLANS = [
     },
     {
         id: 'pro',
-        topText: 'For serious job seekers\n' + ' & career switchers',
+        topText: 'For serious job seekers & career ',
         name: 'Pro',
         isPopular: false,
         price: '120 AED',
@@ -47,7 +48,7 @@ const PLANS = [
     },
     {
         id: 'elite',
-        topText: 'For professionals, power users & international',
+        topText: 'For professionals, power users ',
         name: 'Elite',
         isPopular: false,
         price: '450 AED',
@@ -59,107 +60,107 @@ const PLANS = [
 
 const FEATURES = [
     {
-        id: 'resumeBuilder',
+        id: 'planName',
         label: 'Plan Name',
         availability: { starter: true, pro: true, careerPlus: true, elite: true },
     },
     {
-        id: 'templates',
+        id: 'atsFriendly',
         label: 'ATS-friendly',
         availability: { starter: false, pro: true, careerPlus: true, elite: true },
     },
     {
-        id: 'atsChecker',
+        id: 'withWatermark',
         label: 'With watermark',
         availability: { starter: false, pro: true, careerPlus: true, elite: true },
     },
     {
-        id: 'aiBullets',
+        id: 'templates',
         label: 'Templates',
         availability: { starter: false, pro: true, careerPlus: true, elite: true },
     },
     {
-        id: 'aiCover',
+        id: 'jobDescriptionMatch',
         label: 'Job Description Match',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'aiCover',
+        id: 'languagesSupported',
         label: 'languages supported',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'aiCover',
+        id: 'format',
         label: 'Format',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'aiCover',
+        id: 'aiResumeBuilder',
         label: 'AI resume builder',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'aiCover',
+        id: 'aiCoverLetter',
         label: 'AI Cover Letter',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'aiCover',
+        id: 'imagesInput',
         label: 'Images input',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'voiceInput',
         label: 'Voice input',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'videoInput',
         label: 'Video input',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'fileInput',
         label: 'File input',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'wizardEdit',
         label: 'Wizard Edit',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'learningHub',
         label: 'Learning Hub',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'skillGap',
         label: 'Skill gap',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'voiceInterview',
         label: 'Voice interview',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'videoInterview',
         label: 'Video interview',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'questionInterview',
         label: 'Question interview',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'positionSuggestion',
         label: 'Position Suggestion',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
-        id: 'keywordGap',
+        id: 'processingSpeed',
         label: 'Processing Speed',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
@@ -175,38 +176,53 @@ function AvailabilityIcon({ value }) {
 
 function PlanHeader({ plan }) {
     return (
-        <Box sx={{ px: 2, py: 1.5 }}>
-            <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>
+        <Box
+            sx={{
+                px: 2,
+                minHeight: HEADER_ROW_HEIGHT,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+            }}
+        >
+            <Typography variant='h6' color='text.primary' fontWeight='492'>
                 {plan.topText}
             </Typography>
-            <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
-                <Link
-                    href='#'
-                    underline='hover'
-                    sx={{
-                        typography: 'subtitle1',
-                        fontWeight: 600,
-                        color: 'primary.main',
-                        lineHeight: 1.2,
-                    }}
-                >
-                    {plan.name}
-                </Link>
-                {plan.isPopular && (
-                    <Chip
-                        label='Popular'
-                        size='small'
-                        sx={{
-                            height: 22,
-                            borderRadius: 999,
-                            bgcolor: '#A855F7',
-                            color: '#fff',
-                            '& .MuiChip-label': { px: 1, fontSize: 12, fontWeight: 600 },
-                        }}
-                    />
-                )}
-            </Stack>
         </Box>
+    );
+}
+
+function PlanNameCell({ plan }) {
+    return (
+        <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
+            <Link
+                href='#'
+                underline='hover'
+                sx={{
+                    typography: 'subtitle1',
+                    fontWeight: 492,
+                    fontSize: '18px',
+                    color: 'primary.main',
+                    lineHeight: 1.2,
+                }}
+            >
+                {plan.name}
+            </Link>
+            {plan.isPopular && (
+                <Chip
+                    label='Popular'
+                    size='small'
+                    sx={{
+                        height: 22,
+                        borderRadius: 999,
+                        bgcolor: '#A855F7',
+                        color: '#fff',
+                        '& .MuiChip-label': { px: 1, fontSize: 12, fontWeight: 600 },
+                    }}
+                />
+            )}
+        </Stack>
     );
 }
 
@@ -262,7 +278,8 @@ function DesktopComparisonTable() {
         <Box
             sx={{
                 display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '280px repeat(4, minmax(0, 1fr))' },
+                // Keep all columns the same width on desktop (Best for + 4 plans)
+                gridTemplateColumns: { xs: '1fr', md: 'repeat(5, minmax(0, 1fr))' },
                 width: '100%',
             }}
         >
@@ -273,8 +290,8 @@ function DesktopComparisonTable() {
                     borderRight: `1px solid ${COL_DIVIDER}`,
                 }}
             >
-                <Box sx={{ px: 2, py: 3 }}>
-                    <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
+                <Box sx={{ px: 2, minHeight: HEADER_ROW_HEIGHT, display: 'flex', alignItems: 'center' }}>
+                    <Typography variant='h6' fontWeight='492'>
                         Best for
                     </Typography>
                 </Box>
@@ -347,7 +364,11 @@ function DesktopComparisonTable() {
                                     borderTop: `1px solid ${ROW_DIVIDER}`,
                                 }}
                             >
-                                <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                                {f.id === 'planName' ? (
+                                    <PlanNameCell plan={plan} />
+                                ) : (
+                                    <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                                )}
                             </Box>
                         ))}
                         <Box sx={{ borderTop: `1px solid ${ROW_DIVIDER}` }}>
@@ -398,7 +419,32 @@ function MobilePlanCards() {
                                         <Typography variant='body2' sx={{ color: '#555', pr: 2 }}>
                                             {f.label}
                                         </Typography>
-                                        <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                                        {f.id === 'planName' ? (
+                                            <Stack direction='row' alignItems='center' spacing={1}>
+                                                <Typography variant='h6' color='info.main' fontWeight='492'>
+                                                    {plan.name}
+                                                </Typography>
+                                                {plan.isPopular && (
+                                                    <Chip
+                                                        label='Popular'
+                                                        size='small'
+                                                        sx={{
+                                                            height: 22,
+                                                            borderRadius: 999,
+                                                            bgcolor: '#A855F7',
+                                                            color: '#fff',
+                                                            '& .MuiChip-label': {
+                                                                px: 1,
+                                                                fontSize: 12,
+                                                                fontWeight: 600,
+                                                            },
+                                                        }}
+                                                    />
+                                                )}
+                                            </Stack>
+                                        ) : (
+                                            <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                                        )}
                                     </Box>
                                 ))}
                             </Box>
