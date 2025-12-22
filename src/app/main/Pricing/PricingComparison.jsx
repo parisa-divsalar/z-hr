@@ -17,7 +17,7 @@ const ROW_DIVIDER = '#F6F6F6';
 const PLANS = [
     {
         id: 'starter',
-        topText: 'Free Plan',
+        topText: 'Perfect for students & first resume',
         name: 'Starter',
         isPopular: false,
         price: 'Free',
@@ -27,7 +27,7 @@ const PLANS = [
     },
     {
         id: 'pro',
-        topText: 'Best value for individuals',
+        topText: 'For serious job seekers\n' + ' & career switchers',
         name: 'Pro',
         isPopular: false,
         price: '120 AED',
@@ -37,7 +37,7 @@ const PLANS = [
     },
     {
         id: 'careerPlus',
-        topText: 'Most recommended for job seekers',
+        topText: 'Active job seekers, career changers',
         name: 'Career Plus',
         isPopular: true,
         price: '250 AED',
@@ -47,7 +47,7 @@ const PLANS = [
     },
     {
         id: 'elite',
-        topText: 'For power users & teams',
+        topText: 'For professionals, power users & international',
         name: 'Elite',
         isPopular: false,
         price: '450 AED',
@@ -270,6 +270,7 @@ function DesktopComparisonTable() {
             <Box
                 sx={{
                     boxSizing: 'border-box',
+                    borderRight: `1px solid ${COL_DIVIDER}`,
                 }}
             >
                 <Box sx={{ px: 2, py: 3 }}>
