@@ -509,7 +509,7 @@ export default function PricingComparison() {
 
     return (
         <Box sx={{ width: '100%' }}>
-            <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 3 } }}>
+            <Box sx={{ maxWidth: 1200, mx: 'auto', px: 0 }}>
                 <Box
                     sx={{
                         backgroundColor: '#fff',
@@ -518,7 +518,7 @@ export default function PricingComparison() {
                         overflow: 'hidden',
                     }}
                 >
-                    <Box sx={{ p: { xs: 2, md: 2 } }}>
+                    <Box sx={{ px: 0, py: { xs: 2, md: 2 } }}>
                         {isMobile ? <MobilePlanCards /> : <DesktopComparisonTable />}
                     </Box>
                 </Box>
