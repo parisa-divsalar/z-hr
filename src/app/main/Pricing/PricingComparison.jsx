@@ -2,15 +2,17 @@
 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, Card, CardContent, Chip, Link, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Chip, Link, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+
+import MuiButton from '@/components/UI/MuiButton';
 
 const HIGHLIGHT_BORDER = '#5B5BFF';
 const OUTER_BORDER = '#EAEAEA';
 const COL_DIVIDER = '#F0F0F0';
-const ROW_DIVIDER = '#F6F6F6';
+const ROW_DIVIDER = '#EAEAEA';
 const HEADER_ROW_HEIGHT = 92;
 
-const PLAN_NAME_TYPOGRAPHY = { variant: 'h6', color: 'info.main', fontWeight: 492 };
+const PLAN_NAME_TYPOGRAPHY = { variant: 'h6', color: 'info.main', sx: { fontWeight: 492 } };
 const DEFAULT_FEATURE_LABEL_TYPOGRAPHY = { variant: 'body2', sx: { color: '#555' } };
 
 const SX = {
@@ -23,34 +25,52 @@ const SX = {
     featuresCol: {
         boxSizing: 'border-box',
         borderRight: `1px solid ${COL_DIVIDER}`,
+        // Make the last "Pricing" row stretch to match the height of plan footers
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
     },
     featuresHeaderCell: {
         px: 2,
         minHeight: HEADER_ROW_HEIGHT,
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
+        flex: '0 0 auto',
+        borderBottom: `1px solid ${ROW_DIVIDER}`,
     },
     featureLabelCell: {
         px: 2,
         py: 1.5,
         minHeight: 48,
+        height: { md: 48 },
+        overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
-        borderTop: `1px solid ${ROW_DIVIDER}`,
+        justifyContent: 'center',
+        borderBottom: `1px solid ${ROW_DIVIDER}`,
+        flex: '0 0 auto',
     },
     planValueCell: {
         px: 2,
         py: 1.5,
         minHeight: 48,
+        height: { md: 48 },
+        overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderTop: `1px solid ${ROW_DIVIDER}`,
+        borderBottom: `1px solid ${ROW_DIVIDER}`,
+        flex: '0 0 auto',
     },
     pricingLabelCell: {
         px: 2,
         py: 1.5,
-        borderTop: `1px solid ${ROW_DIVIDER}`,
+        // Fill the footer row height so it aligns with plan price footers
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     pricingLabelTypography: { color: '#555', fontWeight: 600 },
     mobileFeatureRow: {
@@ -58,7 +78,7 @@ const SX = {
         alignItems: 'center',
         justifyContent: 'space-between',
         py: 1.25,
-        borderTop: `1px solid ${ROW_DIVIDER}`,
+        borderBottom: `1px solid ${ROW_DIVIDER}`,
     },
 };
 
@@ -231,7 +251,17 @@ function FeatureLabel({ feature, sx }) {
     const t = feature.labelTypography ?? DEFAULT_FEATURE_LABEL_TYPOGRAPHY;
 
     return (
-        <Typography variant='subtitle1' fontWeight='400' color='text.primary'>
+        <Typography
+            {...t}
+            sx={{
+                ...(t.sx ?? {}),
+                // Prevent row height mismatch on desktop (this grid is column-based, not row-based)
+                whiteSpace: { xs: 'normal', md: 'nowrap' },
+                overflow: { md: 'hidden' },
+                textOverflow: { md: 'ellipsis' },
+                ...(sx ?? {}),
+            }}
+        >
             {feature.label}
         </Typography>
     );
@@ -246,6 +276,7 @@ function PlanHeader({ plan }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 textAlign: 'center',
+                borderBottom: `1px solid ${ROW_DIVIDER}`,
             }}
         >
             <Typography variant='h6' color='text.primary' fontWeight='492'>
@@ -257,7 +288,13 @@ function PlanHeader({ plan }) {
 
 function PlanNameCell({ plan }) {
     return (
-        <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
+        <Stack
+            direction='row'
+            alignItems='center'
+            justifyContent='center'
+            spacing={1}
+            sx={{ minWidth: 0, maxWidth: '100%' }}
+        >
             <Link
                 href='#'
                 underline='hover'
@@ -267,6 +304,10 @@ function PlanNameCell({ plan }) {
                     fontSize: '18px',
                     color: 'primary.main',
                     lineHeight: 1.2,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    minWidth: 0,
                 }}
             >
                 {plan.name}
@@ -280,6 +321,7 @@ function PlanNameCell({ plan }) {
                         borderRadius: 999,
                         bgcolor: '#A855F7',
                         color: '#fff',
+                        flex: '0 0 auto',
                         '& .MuiChip-label': { px: 1, fontSize: 12, fontWeight: 600 },
                     }}
                 />
@@ -292,44 +334,20 @@ function PriceFooter({ plan, isHighlighted }) {
     const isFree = plan.priceTone === 'free';
 
     return (
-        <Box sx={{ px: 2, py: 1.5 }}>
-            <Typography
-                variant='h4'
-                sx={{
-                    fontWeight: 800,
-                    letterSpacing: -0.3,
-                    color: isFree ? 'primary.main' : 'text.primary',
-                    lineHeight: 1.1,
-                }}
-            >
+        <Stack
+            gap={2}
+            justifyContent='center'
+            alignItems='center'
+            sx={{ flex: 1, width: '100%', textAlign: 'center', px: '10px' }}
+        >
+            <Typography variant='h5' fontWeight='584' color='primary.main'>
                 {plan.price}
             </Typography>
-            <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-                {plan.taxNote}
-            </Typography>
 
-            <Button
-                fullWidth
-                variant={isHighlighted ? 'contained' : plan.cta.variant}
-                color='primary'
-                sx={{
-                    mt: 2,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 700,
-                    py: 1.1,
-                    ...(isHighlighted
-                        ? { boxShadow: 'none' }
-                        : {
-                              color: 'text.primary',
-                              borderColor: 'rgba(0,0,0,0.16)',
-                              '&:hover': { borderColor: 'rgba(0,0,0,0.28)' },
-                          }),
-                }}
-            >
+            <MuiButton fullWidth variant={isHighlighted ? 'contained' : plan.cta.variant} color='primary'>
                 {plan.cta.label}
-            </Button>
-        </Box>
+            </MuiButton>
+        </Stack>
     );
 }
 
@@ -373,6 +391,10 @@ function DesktopComparisonTable() {
                             boxSizing: 'border-box',
                             position: 'relative',
                             borderLeft: showLeftDivider ? `1px solid ${COL_DIVIDER}` : 'none',
+                            // Keep columns equal height so the footer row stays aligned
+                            display: 'flex',
+                            flexDirection: 'column',
+                            height: '100%',
                             ...(isHighlighted
                                 ? {
                                       borderRadius: 3,
@@ -396,7 +418,7 @@ function DesktopComparisonTable() {
                                 )}
                             </Box>
                         ))}
-                        <Box sx={{ borderTop: `1px solid ${ROW_DIVIDER}` }}>
+                        <Box sx={{ flex: 1, display: 'flex' }}>
                             <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                         </Box>
                     </Box>
@@ -470,7 +492,7 @@ function MobilePlanCards() {
                                 ))}
                             </Box>
 
-                            <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${ROW_DIVIDER}`, textAlign: 'center' }}>
+                            <Box sx={{ mt: 1.5, pt: 1.5, textAlign: 'center' }}>
                                 <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                             </Box>
                         </CardContent>
