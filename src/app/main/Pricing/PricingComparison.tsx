@@ -1,10 +1,14 @@
 'use client';
 
+import type { ComponentProps } from 'react';
+
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Card, CardContent, Chip, Link, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
+
+import type { SxProps, Theme } from '@mui/material/styles';
 
 const HIGHLIGHT_BORDER = '#5B5BFF';
 const OUTER_BORDER = '#EAEAEA';
@@ -12,11 +16,36 @@ const COL_DIVIDER = '#F0F0F0';
 const ROW_DIVIDER = '#EAEAEA';
 const HEADER_ROW_HEIGHT = 92;
 
-const PLAN_NAME_TYPOGRAPHY = { variant: 'h6', color: 'info.main', sx: { fontWeight: 492 } };
-const DEFAULT_FEATURE_LABEL_TYPOGRAPHY = { variant: 'body2', sx: { color: '#555' } };
+type PlanId = 'starter' | 'pro' | 'careerPlus' | 'elite';
+
+type Plan = {
+    id: PlanId;
+    topText: string;
+    name: string;
+    isPopular: boolean;
+    price: string;
+    priceTone: 'free' | 'paid';
+    taxNote?: string;
+    cta: { label: string; variant: 'contained' | 'outlined' | 'text' };
+};
+
+type FeatureLabelTypography = {
+    variant?: ComponentProps<typeof Typography>['variant'];
+    sx?: SxProps<Theme>;
+};
+
+type Feature = {
+    id: string;
+    label: string;
+    labelTypography?: FeatureLabelTypography;
+    availability: Record<PlanId, boolean>;
+};
+
+const PLAN_NAME_TYPOGRAPHY: FeatureLabelTypography = { variant: 'h6', sx: { color: 'info.main', fontWeight: 492 } };
+const DEFAULT_FEATURE_LABEL_TYPOGRAPHY: FeatureLabelTypography = { variant: 'body2', sx: { color: '#555' } };
 
 const SX = {
-    desktopGrid: (plansCount) => ({
+    desktopGrid: (plansCount: number) => ({
         display: 'grid',
         // Keep all columns the same width on desktop (Best for + N plans)
         gridTemplateColumns: { xs: '1fr', md: `repeat(${plansCount + 1}, minmax(0, 1fr))` },
@@ -91,7 +120,7 @@ const SX = {
  * Replace the strings/values in `PLANS` + `FEATURES` with the exact content from your screenshot.
  * The layout is wired so swapping data keeps the grid aligned pixel-perfect.
  */
-const PLANS = [
+const PLANS: Plan[] = [
     {
         id: 'starter',
         topText: 'Perfect for students & first resume',
@@ -134,7 +163,7 @@ const PLANS = [
     },
 ];
 
-const FEATURES = [
+const FEATURES: Feature[] = [
     {
         id: 'planName',
         label: 'Plan Name',
@@ -243,7 +272,7 @@ const FEATURES = [
     },
 ];
 
-function AvailabilityIcon({ value }) {
+function AvailabilityIcon({ value }: { value: boolean }) {
     return value ? (
         <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
     ) : (
@@ -251,17 +280,22 @@ function AvailabilityIcon({ value }) {
     );
 }
 
-function FeatureLabel({ feature, sx }) {
+function FeatureLabel({ feature, sx }: { feature: Feature; sx?: SxProps<Theme> }) {
     const t = feature.labelTypography ?? DEFAULT_FEATURE_LABEL_TYPOGRAPHY;
+    // `SxProps` can itself be an array; flatten to avoid nested arrays (MUI types don't allow that).
+    const combinedSx: SxProps<Theme> = [
+        ...(t.sx ? (Array.isArray(t.sx) ? t.sx : [t.sx]) : []),
+        ...(sx ? (Array.isArray(sx) ? sx : [sx]) : []),
+    ];
 
     return (
-        <Typography variant='subtitle1' color='text.primary' fontWeight='450'>
+        <Typography variant={t.variant ?? 'subtitle1'} color='text.primary' fontWeight='450' sx={combinedSx}>
             {feature.label}
         </Typography>
     );
 }
 
-function PlanHeader({ plan }) {
+function PlanHeader({ plan }: { plan: Plan }) {
     return (
         <Box
             sx={{
@@ -281,7 +315,7 @@ function PlanHeader({ plan }) {
     );
 }
 
-function PlanNameCell({ plan }) {
+function PlanNameCell({ plan }: { plan: Plan }) {
     return (
         <Stack
             direction='row'
@@ -325,15 +359,14 @@ function PlanNameCell({ plan }) {
     );
 }
 
-function PriceFooter({ plan, isHighlighted }) {
-    const isFree = plan.priceTone === 'free';
-
+function PriceFooter({ plan, isHighlighted }: { plan: Plan; isHighlighted: boolean }) {
     return (
         <Stack
             gap={2}
             justifyContent='center'
+            mt={2}
             alignItems='flex-start'
-            sx={{ flex: 1, width: '100%', textAlign: 'left', px: 2 }}
+            sx={{ flex: 1, width: '100%', textAlign: 'left', px: 2, pb: 2 }}
         >
             <Typography variant='h5' fontWeight='584' color='primary.main'>
                 {plan.price}
@@ -503,7 +536,7 @@ export default function PricingComparison() {
     const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <900px
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <Stack width='100%' mt={4}>
             <Box sx={{ maxWidth: 1200, mx: 'auto', px: 0 }}>
                 <Box
                     sx={{
@@ -518,6 +551,6 @@ export default function PricingComparison() {
                     </Box>
                 </Box>
             </Box>
-        </Box>
+        </Stack>
     );
 }

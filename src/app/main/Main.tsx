@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
+import Blog from '@/app/main/Blog';
 import CraftResume from '@/app/main/CraftResume';
 import HeroSection from '@/app/main/HeroSection';
 import KeyBenefits from '@/app/main/KeyBenefits';
@@ -46,6 +47,7 @@ export default function MinaComponent() {
 
                 <ProductFeatures />
                 <Pricing />
+                <Blog />
                 {/*<PricingPlans />*/}
                 {/*<Testimonials />*/}
             </main>

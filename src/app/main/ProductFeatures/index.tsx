@@ -1,6 +1,6 @@
 import { FC } from 'react';
 
-import { Button, Container, Typography } from '@mui/material';
+import { Button, Container, Stack, Typography } from '@mui/material';
 import Image, { StaticImageData } from 'next/image';
 
 import AIBulletImage from '@/assets/images/main/ai-bullet.png';
@@ -8,7 +8,6 @@ import ATSScoreImage from '@/assets/images/main/ats-score.png';
 import KeywordImage from '@/assets/images/main/keyword.png';
 import ModernATSImage from '@/assets/images/main/modern-ats.png';
 import OneClickImage from '@/assets/images/main/one-click.png';
-
 
 interface Feature {
     title: string;
@@ -63,16 +62,12 @@ const ProductFeatures: FC = () => {
                         intelligence.
                     </Typography>
                 </Typography>
-
-                <Button variant='contained' color='secondary' size='medium'>
-                    Get Started Free
-                </Button>
             </div>
             <div
                 style={{
                     gap: '0',
                     display: 'grid',
-                    marginTop: '5rem',
+                    marginTop: '3rem',
                     borderRadius: '24px',
                     gridTemplateColumns: '1fr 1fr 1fr',
                     overflow: 'hidden',
@@ -106,8 +101,14 @@ const ProductFeatures: FC = () => {
                     </div>
                 ))}
             </div>
+
+            <Stack direction='row' justifyContent='center' mt={3}>
+                <Button variant='contained' color='secondary' size='medium'>
+                    Get Started Free
+                </Button>
+            </Stack>
         </Container>
     );
 };
 
-export default ProductFeatures
+export default ProductFeatures;
