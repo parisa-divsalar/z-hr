@@ -231,7 +231,7 @@ function FeatureLabel({ feature, sx }) {
     const t = feature.labelTypography ?? DEFAULT_FEATURE_LABEL_TYPOGRAPHY;
 
     return (
-        <Typography variant={t.variant} color={t.color} fontWeight={t.fontWeight} sx={{ ...(t.sx ?? {}), ...(sx ?? {}) }}>
+        <Typography variant='subtitle1' fontWeight='400' color='text.primary'>
             {feature.label}
         </Typography>
     );
@@ -241,7 +241,6 @@ function PlanHeader({ plan }) {
     return (
         <Box
             sx={{
-                px: 2,
                 minHeight: HEADER_ROW_HEIGHT,
                 display: 'flex',
                 alignItems: 'center',
@@ -435,7 +434,10 @@ function MobilePlanCards() {
                                 {FEATURES.map((f, fIdx) => (
                                     <Box
                                         key={f.id}
-                                        sx={[SX.mobileFeatureRow, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}
+                                        sx={[
+                                            SX.mobileFeatureRow,
+                                            fIdx === highlightedRowIdx && { bgcolor: 'info.light' },
+                                        ]}
                                     >
                                         <FeatureLabel feature={f} sx={{ pr: 2 }} />
                                         {f.id === 'planName' ? (
