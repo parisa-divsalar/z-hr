@@ -1,0 +1,378 @@
+'use client';
+
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Link,
+    Stack,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
+
+const HIGHLIGHT_BORDER = '#5B5BFF';
+const OUTER_BORDER = '#EAEAEA';
+const COL_DIVIDER = '#F0F0F0';
+const ROW_DIVIDER = '#F6F6F6';
+
+/**
+ * NOTE:
+ * Replace the strings/values in `PLANS` + `FEATURES` with the exact content from your screenshot.
+ * The layout is wired so swapping data keeps the grid aligned pixel-perfect.
+ */
+const PLANS = [
+    {
+        id: 'starter',
+        topText: 'Free Plan',
+        name: 'Starter',
+        isPopular: false,
+        price: 'Free',
+        priceTone: 'free',
+        taxNote: 'Total price with 9% Tax',
+        cta: { label: 'Upgrade Now', variant: 'outlined' },
+    },
+    {
+        id: 'pro',
+        topText: 'Best value for individuals',
+        name: 'Pro',
+        isPopular: false,
+        price: '120 AED',
+        priceTone: 'paid',
+        taxNote: 'Total price with 9% Tax',
+        cta: { label: 'Upgrade Now', variant: 'outlined' },
+    },
+    {
+        id: 'careerPlus',
+        topText: 'Most recommended for job seekers',
+        name: 'Career Plus',
+        isPopular: true,
+        price: '250 AED',
+        priceTone: 'paid',
+        taxNote: 'Total price with 9% Tax',
+        cta: { label: 'Upgrade Now', variant: 'contained' },
+    },
+    {
+        id: 'elite',
+        topText: 'For power users & teams',
+        name: 'Elite',
+        isPopular: false,
+        price: '450 AED',
+        priceTone: 'paid',
+        taxNote: 'Total price with 9% Tax',
+        cta: { label: 'Upgrade Now', variant: 'outlined' },
+    },
+];
+
+const FEATURES = [
+    {
+        id: 'resumeBuilder',
+        label: 'Resume Builder',
+        availability: { starter: true, pro: true, careerPlus: true, elite: true },
+    },
+    {
+        id: 'templates',
+        label: 'Premium Templates',
+        availability: { starter: false, pro: true, careerPlus: true, elite: true },
+    },
+    {
+        id: 'atsChecker',
+        label: 'ATS Score Checker',
+        availability: { starter: false, pro: true, careerPlus: true, elite: true },
+    },
+    {
+        id: 'aiBullets',
+        label: 'AI Bullet Points',
+        availability: { starter: false, pro: true, careerPlus: true, elite: true },
+    },
+    {
+        id: 'aiCover',
+        label: 'AI Cover Letter',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Keyword Gap Analyzer',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+];
+
+function AvailabilityIcon({ value }) {
+    return value ? (
+        <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
+    ) : (
+        <CloseIcon sx={{ color: 'error.main', fontSize: 20 }} />
+    );
+}
+
+function PlanHeader({ plan }) {
+    return (
+        <Box sx={{ px: 2, py: 1.5 }}>
+            <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>
+                {plan.topText}
+            </Typography>
+            <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
+                <Link
+                    href='#'
+                    underline='hover'
+                    sx={{
+                        typography: 'subtitle1',
+                        fontWeight: 600,
+                        color: 'primary.main',
+                        lineHeight: 1.2,
+                    }}
+                >
+                    {plan.name}
+                </Link>
+                {plan.isPopular && (
+                    <Chip
+                        label='Popular'
+                        size='small'
+                        sx={{
+                            height: 22,
+                            borderRadius: 999,
+                            bgcolor: '#A855F7',
+                            color: '#fff',
+                            '& .MuiChip-label': { px: 1, fontSize: 12, fontWeight: 600 },
+                        }}
+                    />
+                )}
+            </Stack>
+        </Box>
+    );
+}
+
+function PriceFooter({ plan, isHighlighted }) {
+    const isFree = plan.priceTone === 'free';
+
+    return (
+        <Box sx={{ px: 2, py: 1.5 }}>
+            <Typography
+                variant='h4'
+                sx={{
+                    fontWeight: 800,
+                    letterSpacing: -0.3,
+                    color: isFree ? 'primary.main' : 'text.primary',
+                    lineHeight: 1.1,
+                }}
+            >
+                {plan.price}
+            </Typography>
+            <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
+                {plan.taxNote}
+            </Typography>
+
+            <Button
+                fullWidth
+                variant={isHighlighted ? 'contained' : plan.cta.variant}
+                color='primary'
+                sx={{
+                    mt: 2,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    py: 1.1,
+                    ...(isHighlighted
+                        ? { boxShadow: 'none' }
+                        : {
+                              color: 'text.primary',
+                              borderColor: 'rgba(0,0,0,0.16)',
+                              '&:hover': { borderColor: 'rgba(0,0,0,0.28)' },
+                          }),
+                }}
+            >
+                {plan.cta.label}
+            </Button>
+        </Box>
+    );
+}
+
+function DesktopComparisonTable() {
+    const highlightedId = PLANS.find((p) => p.isPopular)?.id;
+
+    return (
+        <Box
+            sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '280px repeat(4, minmax(0, 1fr))' },
+                width: '100%',
+            }}
+        >
+            {/* Features column */}
+            <Box
+                sx={{
+                    boxSizing: 'border-box',
+                }}
+            >
+                <Box sx={{ px: 2, py: 1.5 }}>
+                    <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
+                        Best for
+                    </Typography>
+                </Box>
+
+                {FEATURES.map((f) => (
+                    <Box
+                        key={f.id}
+                        sx={{
+                            px: 2,
+                            py: 1.5,
+                            minHeight: 48,
+                            display: 'flex',
+                            alignItems: 'center',
+                            borderTop: `1px solid ${ROW_DIVIDER}`,
+                        }}
+                    >
+                        <Typography variant='body2' sx={{ color: '#555' }}>
+                            {f.label}
+                        </Typography>
+                    </Box>
+                ))}
+
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 1.5,
+                        borderTop: `1px solid ${ROW_DIVIDER}`,
+                    }}
+                >
+                    <Typography variant='body2' sx={{ color: '#555', fontWeight: 600 }}>
+                        Pricing
+                    </Typography>
+                </Box>
+            </Box>
+
+            {/* Plan columns */}
+            {PLANS.map((plan, idx) => {
+                const isHighlighted = plan.id === highlightedId;
+                const prevPlan = PLANS[idx - 1];
+                const showLeftDivider = idx > 0 && !isHighlighted && !(prevPlan && prevPlan.id === highlightedId);
+
+                return (
+                    <Box
+                        key={plan.id}
+                        sx={{
+                            boxSizing: 'border-box',
+                            position: 'relative',
+                            borderLeft: showLeftDivider ? `1px solid ${COL_DIVIDER}` : 'none',
+                            ...(isHighlighted
+                                ? {
+                                      borderRadius: 3,
+                                      border: `2px solid ${HIGHLIGHT_BORDER}`,
+                                      boxShadow: '0px 8px 24px rgba(0,0,0,0.06)',
+                                      zIndex: 1,
+                                  }
+                                : {}),
+                        }}
+                    >
+                        <PlanHeader plan={plan} />
+
+                        {FEATURES.map((f) => (
+                            <Box
+                                key={f.id}
+                                sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    minHeight: 48,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderTop: `1px solid ${ROW_DIVIDER}`,
+                                }}
+                            >
+                                <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                            </Box>
+                        ))}
+
+                        <Box sx={{ borderTop: `1px solid ${ROW_DIVIDER}` }}>
+                            <PriceFooter plan={plan} isHighlighted={isHighlighted} />
+                        </Box>
+                    </Box>
+                );
+            })}
+        </Box>
+    );
+}
+
+function MobilePlanCards() {
+    const highlightedId = PLANS.find((p) => p.isPopular)?.id;
+
+    return (
+        <Stack spacing={2.5}>
+            {PLANS.map((plan) => {
+                const isHighlighted = plan.id === highlightedId;
+
+                return (
+                    <Card
+                        key={plan.id}
+                        variant='outlined'
+                        sx={{
+                            borderRadius: 3,
+                            border: isHighlighted ? `2px solid ${HIGHLIGHT_BORDER}` : `1px solid ${OUTER_BORDER}`,
+                            boxShadow: isHighlighted ? '0px 8px 24px rgba(0,0,0,0.06)' : 'none',
+                        }}
+                    >
+                        <CardContent sx={{ p: 2.5 }}>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <PlanHeader plan={plan} />
+                            </Box>
+
+                            <Box sx={{ mt: 1.5 }}>
+                                {FEATURES.map((f) => (
+                                    <Box
+                                        key={f.id}
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            py: 1.25,
+                                            borderTop: `1px solid ${ROW_DIVIDER}`,
+                                        }}
+                                    >
+                                        <Typography variant='body2' sx={{ color: '#555', pr: 2 }}>
+                                            {f.label}
+                                        </Typography>
+                                        <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                                    </Box>
+                                ))}
+                            </Box>
+
+                            <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${ROW_DIVIDER}`, textAlign: 'center' }}>
+                                <PriceFooter plan={plan} isHighlighted={isHighlighted} />
+                            </Box>
+                        </CardContent>
+                    </Card>
+                );
+            })}
+        </Stack>
+    );
+}
+
+export default function PricingComparison() {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <900px
+
+    return (
+        <Box sx={{ width: '100%' }}>
+            <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 3 } }}>
+                <Box
+                    sx={{
+                        backgroundColor: '#fff',
+                        border: `1px solid ${OUTER_BORDER}`,
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                    }}
+                >
+                    <Box sx={{ p: { xs: 2, md: 2 } }}>
+                        {isMobile ? <MobilePlanCards /> : <DesktopComparisonTable />}
+                    </Box>
+                </Box>
+            </Box>
+        </Box>
+    );
+}
+
+
