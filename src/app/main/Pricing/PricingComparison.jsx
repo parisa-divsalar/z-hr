@@ -35,7 +35,8 @@ const SX = {
         minHeight: HEADER_ROW_HEIGHT,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        textAlign: 'left',
         flex: '0 0 auto',
         borderBottom: `1px solid ${ROW_DIVIDER}`,
     },
@@ -47,7 +48,8 @@ const SX = {
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        textAlign: 'left',
         borderBottom: `1px solid ${ROW_DIVIDER}`,
         flex: '0 0 auto',
     },
@@ -59,7 +61,8 @@ const SX = {
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        textAlign: 'left',
         borderBottom: `1px solid ${ROW_DIVIDER}`,
         flex: '0 0 auto',
     },
@@ -70,7 +73,8 @@ const SX = {
         flex: 1,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        textAlign: 'left',
     },
     pricingLabelTypography: { color: '#555', fontWeight: 600 },
     mobileFeatureRow: {
@@ -251,17 +255,7 @@ function FeatureLabel({ feature, sx }) {
     const t = feature.labelTypography ?? DEFAULT_FEATURE_LABEL_TYPOGRAPHY;
 
     return (
-        <Typography
-            {...t}
-            sx={{
-                ...(t.sx ?? {}),
-                // Prevent row height mismatch on desktop (this grid is column-based, not row-based)
-                whiteSpace: { xs: 'normal', md: 'nowrap' },
-                overflow: { md: 'hidden' },
-                textOverflow: { md: 'ellipsis' },
-                ...(sx ?? {}),
-            }}
-        >
+        <Typography variant='subtitle1' color='text.primary' fontWeight='450'>
             {feature.label}
         </Typography>
     );
@@ -274,8 +268,9 @@ function PlanHeader({ plan }) {
                 minHeight: HEADER_ROW_HEIGHT,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                px: 2,
                 borderBottom: `1px solid ${ROW_DIVIDER}`,
             }}
         >
@@ -291,7 +286,7 @@ function PlanNameCell({ plan }) {
         <Stack
             direction='row'
             alignItems='center'
-            justifyContent='center'
+            justifyContent='flex-start'
             spacing={1}
             sx={{ minWidth: 0, maxWidth: '100%' }}
         >
@@ -337,8 +332,8 @@ function PriceFooter({ plan, isHighlighted }) {
         <Stack
             gap={2}
             justifyContent='center'
-            alignItems='center'
-            sx={{ flex: 1, width: '100%', textAlign: 'center', px: '10px' }}
+            alignItems='flex-start'
+            sx={{ flex: 1, width: '100%', textAlign: 'left', px: 2 }}
         >
             <Typography variant='h5' fontWeight='584' color='primary.main'>
                 {plan.price}
