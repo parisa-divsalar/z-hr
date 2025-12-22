@@ -2,18 +2,7 @@
 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Chip,
-    Link,
-    Stack,
-    Typography,
-    useMediaQuery,
-    useTheme,
-} from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, Link, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 const HIGHLIGHT_BORDER = '#5B5BFF';
 const OUTER_BORDER = '#EAEAEA';
@@ -71,23 +60,43 @@ const PLANS = [
 const FEATURES = [
     {
         id: 'resumeBuilder',
-        label: 'Resume Builder',
+        label: 'Plan Name',
         availability: { starter: true, pro: true, careerPlus: true, elite: true },
     },
     {
         id: 'templates',
-        label: 'Premium Templates',
+        label: 'ATS-friendly',
         availability: { starter: false, pro: true, careerPlus: true, elite: true },
     },
     {
         id: 'atsChecker',
-        label: 'ATS Score Checker',
+        label: 'With watermark',
         availability: { starter: false, pro: true, careerPlus: true, elite: true },
     },
     {
         id: 'aiBullets',
-        label: 'AI Bullet Points',
+        label: 'Templates',
         availability: { starter: false, pro: true, careerPlus: true, elite: true },
+    },
+    {
+        id: 'aiCover',
+        label: 'Job Description Match',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'aiCover',
+        label: 'languages supported',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'aiCover',
+        label: 'Format',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'aiCover',
+        label: 'AI resume builder',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
         id: 'aiCover',
@@ -95,8 +104,63 @@ const FEATURES = [
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
     {
+        id: 'aiCover',
+        label: 'Images input',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
         id: 'keywordGap',
-        label: 'Keyword Gap Analyzer',
+        label: 'Voice input',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Video input',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'File input',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Wizard Edit',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Learning Hub',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Skill gap',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Voice interview',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Video interview',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Question interview',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Position Suggestion',
+        availability: { starter: false, pro: false, careerPlus: true, elite: true },
+    },
+    {
+        id: 'keywordGap',
+        label: 'Processing Speed',
         availability: { starter: false, pro: false, careerPlus: true, elite: true },
     },
 ];
@@ -208,7 +272,7 @@ function DesktopComparisonTable() {
                     boxSizing: 'border-box',
                 }}
             >
-                <Box sx={{ px: 2, py: 1.5 }}>
+                <Box sx={{ px: 2, py: 3 }}>
                     <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
                         Best for
                     </Typography>
@@ -269,7 +333,6 @@ function DesktopComparisonTable() {
                         }}
                     >
                         <PlanHeader plan={plan} />
-
                         {FEATURES.map((f) => (
                             <Box
                                 key={f.id}
@@ -286,7 +349,6 @@ function DesktopComparisonTable() {
                                 <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
                             </Box>
                         ))}
-
                         <Box sx={{ borderTop: `1px solid ${ROW_DIVIDER}` }}>
                             <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                         </Box>
@@ -374,5 +436,3 @@ export default function PricingComparison() {
         </Box>
     );
 }
-
-
