@@ -1,3 +1,6 @@
+import Stack from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
+
 import type { SxProps, Theme } from '@mui/material';
 
 type SxMap = Record<string, SxProps<Theme>>;
@@ -90,3 +93,10 @@ export const imageCardSliderSx: SxMap = {
         },
     },
 };
+export const BlogSection = styled(Stack)(({ theme }) => ({
+    paddingTop: theme.spacing(4),
+    backgroundColor: theme.palette.secondary.contrastText,
+    [theme.breakpoints.up('md')]: {
+        paddingTop: theme.spacing(6),
+    },
+}));

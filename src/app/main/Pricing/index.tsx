@@ -7,7 +7,10 @@ import PricingComparison from '@/app/main/Pricing/PricingComparison';
 const Pricing = () => {
     return (
         <Stack
-            sx={{ pt: { xs: 4, md: 6 } }}
+            sx={(theme) => ({
+                pt: { xs: 4, md: 6 },
+                backgroundColor: theme.palette.secondary.contrastText,
+            })}
             justifyContent='center'
             alignItems='center'
             width='100%'

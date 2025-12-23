@@ -1,21 +1,15 @@
 'use client';
 
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 
 import ImageCardSlider from '@/app/main/Blog/ImageCardSlider';
 
+import { BlogSection } from './ImageCardSlider.styles';
+
 const Blog = () => {
     return (
-        <Stack
-            sx={{ pt: { xs: 4, md: 6 } }}
-            justifyContent='center'
-            alignItems='center'
-            width='100%'
-            textAlign='center'
-            gap={2}
-            mt={5}
-        >
-            <Typography variant='h2' color='secondary.main' fontWeight={'700'}>
+        <BlogSection justifyContent='center' alignItems='center' width='100%' textAlign='center' gap={2}>
+            <Typography variant='h2' color='secondary.main' fontWeight={'700'} pt={12}>
                 Blog{' '}
             </Typography>
 
@@ -28,7 +22,13 @@ const Blog = () => {
             </Typography>
 
             <ImageCardSlider />
-        </Stack>
+
+            <Stack direction='row' justifyContent='center' mt={5} mb={15}>
+                <Button variant='contained' color='secondary' size='medium'>
+                    View Archive{' '}
+                </Button>
+            </Stack>
+        </BlogSection>
     );
 };
 
