@@ -54,6 +54,7 @@ const FAQ_ITEMS: FaqItem[] = [
 
 const Sparkle = (props: { size?: number }) => {
     const size = props.size ?? 18;
+    const gradientId = React.useId();
     return (
         <Box
             component='svg'
@@ -65,7 +66,7 @@ const Sparkle = (props: { size?: number }) => {
             sx={faqSx.sparkleSvg}
         >
             <defs>
-                <linearGradient id='faqSparkleGradient' x1='0' y1='0' x2='24' y2='24'>
+                <linearGradient id={gradientId} x1='0' y1='0' x2='24' y2='24'>
                     <stop offset='0' stopColor='#8B5CF6' />
                     <stop offset='0.55' stopColor='#22C55E' />
                     <stop offset='1' stopColor='#06B6D4' />
@@ -73,14 +74,11 @@ const Sparkle = (props: { size?: number }) => {
             </defs>
             <path
                 d='M12 1.75l1.55 6.1 6.1 1.55-6.1 1.55L12 17.05l-1.55-6.1-6.1-1.55 6.1-1.55L12 1.75z'
-                stroke='url(#faqSparkleGradient)'
-                strokeWidth='1.7'
-                strokeLinejoin='round'
+                fill={`url(#${gradientId})`}
             />
             <path
                 d='M18.75 13.2l.9 3.55 3.55.9-3.55.9-.9 3.55-.9-3.55-3.55-.9 3.55-.9.9-3.55z'
-                fill='url(#faqSparkleGradient)'
-                opacity='0.9'
+                fill={`url(#${gradientId})`}
             />
         </Box>
     );

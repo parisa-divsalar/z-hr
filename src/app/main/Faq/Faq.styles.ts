@@ -7,7 +7,6 @@ export const faqSx: SxMap = {
     sparkleSvg: { display: 'block' },
 
     section: {
-        bgcolor: '#F7F8FA',
         py: { xs: 6, md: 10 },
         position: 'relative',
     },
