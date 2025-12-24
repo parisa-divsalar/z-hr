@@ -184,7 +184,13 @@ const extractDateOfBirth = (payload: any): string => {
 
 const extractHeadline = (payload: any): string => {
     if (!payload || typeof payload !== 'object') return '';
-    const title = payload.title ?? payload.position ?? payload.mainSkill ?? payload.profile?.title ?? payload.profile?.position ?? '';
+    const title =
+        payload.title ??
+        payload.position ??
+        payload.mainSkill ??
+        payload.profile?.title ??
+        payload.profile?.position ??
+        '';
     const visa = payload.visaStatus ?? payload.profile?.visaStatus ?? '';
     const years =
         payload.yearsOfExperience ??
@@ -217,6 +223,38 @@ const resolveCvPayload = (record: any): any => {
     return record;
 };
 
+const formatExperienceEditText = (items: ResumeExperience[]): string => {
+    return items
+        .map((exp) => (exp.description ?? '').trim())
+        .filter(Boolean)
+        .join('\n\n');
+};
+
+const applyExperienceEditText = (current: ResumeExperience[], text: string): ResumeExperience[] => {
+    const blocks = String(text ?? '')
+        .split(/\n\s*\n+/)
+        .map((b) => b.trim())
+        .filter(Boolean);
+
+    const base = current.length ? current.map((e) => ({ ...e })) : [];
+    const maxLen = Math.max(base.length, blocks.length);
+    const next: ResumeExperience[] = [];
+
+    for (let i = 0; i < maxLen; i++) {
+        const existing = base[i] ?? createEmptyExperience(i + 1);
+        next.push({
+            ...existing,
+            id: i + 1,
+            description: blocks[i] ?? '',
+        });
+    }
+
+    // Remove trailing completely empty items (keeps UX clean in view mode)
+    return next.filter((exp) =>
+        [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
+    );
+};
+
 interface ResumeEditorProps {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
     setActiveStep: (activeStep: number) => void;
@@ -238,6 +276,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [summary, setSummary] = useState('');
     const [skills, setSkills] = useState<string[]>([]);
     const [experiences, setExperiences] = useState<ResumeExperience[]>([]);
+    const [experienceEditText, setExperienceEditText] = useState('');
     const [isCvLoading, setIsCvLoading] = useState(false);
     const [cvError, setCvError] = useState<string | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -300,10 +339,16 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         if (section === 'skills' && skills.length === 0) {
             setSkills(['']);
         }
+        if (section === 'experience') {
+            setExperienceEditText(formatExperienceEditText(experiences));
+        }
         setEditingSection(section);
     };
 
     const handleSave = () => {
+        if (editingSection === 'experience') {
+            setExperiences((prev) => applyExperienceEditText(prev, experienceEditText));
+        }
         setEditingSection(null);
     };
 
@@ -419,27 +464,23 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
-                        {(editingSection === 'experience'
-                            ? experiences
-                            : experiences.filter((exp) =>
-                                  [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
-                              )
-                        ).map((experience, index) => {
-                            const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
+                        {editingSection === 'experience' ? (
+                            <ExperienceTextareaAutosize
+                                value={experienceEditText}
+                                onChange={(e) => setExperienceEditText(e.target.value)}
+                            />
+                        ) : (
+                            experiences
+                                .filter((exp) =>
+                                    [exp.company, exp.position, exp.description].some(
+                                        (v) => String(v ?? '').trim().length > 0,
+                                    ),
+                                )
+                                .map((experience, index) => {
+                                    const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
 
-                            return (
-                                <Wrapper key={experience.id}>
-                                    {editingSection === 'experience' ? (
-                                        <>
-                                            <ExperienceTextareaAutosize
-                                                value={experience.description}
-                                                onChange={(e) =>
-                                                    handleExperienceChange(experience.id, 'description', e.target.value)
-                                                }
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
+                                    return (
+                                        <Wrapper key={experience.id}>
                                             {(experience.company || experience.position) && (
                                                 <Box mb={1}>
                                                     {experience.company && (
@@ -455,11 +496,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                                     {experience.description}
                                                 </ExperienceDescription>
                                             )}
-                                        </>
-                                    )}
-                                </Wrapper>
-                            );
-                        })}
+                                        </Wrapper>
+                                    );
+                                })
+                        )}
                     </ExperienceContainer>
                 </CardContent>
             </MainCardContainer>
