@@ -65,10 +65,24 @@ const createEmptyProfile = (): ResumeProfile => ({
     headline: '',
 });
 
+const formatProfileEditText = (profile: ResumeProfile): string => {
+    const parts = [profile.fullName ?? '', profile.dateOfBirth ?? '', profile.headline ?? ''];
+    return parts.join('\n').trimEnd();
+};
+
+const applyProfileEditText = (text: string): ResumeProfile => {
+    const lines = String(text ?? '').split(/\r?\n/);
+    return {
+        fullName: String(lines[0] ?? '').trim(),
+        dateOfBirth: String(lines[1] ?? '').trim(),
+        headline: lines.slice(2).join('\n').trim(),
+    };
+};
+
 const normalizeLineList = (value: any): string[] => {
     if (Array.isArray(value)) {
         return value
-            .map((v) => (typeof v === 'string' ? v : v?.value ?? v?.text ?? v?.label ?? ''))
+            .map((v) => (typeof v === 'string' ? v : (v?.value ?? v?.text ?? v?.label ?? '')))
             .map((v) => String(v ?? '').trim())
             .filter(Boolean);
     }
@@ -83,7 +97,11 @@ const normalizeLineList = (value: any): string[] => {
     return [];
 };
 
-const formatLineListEditText = (items: string[]): string => items.map((x) => String(x ?? '').trim()).filter(Boolean).join('\n');
+const formatLineListEditText = (items: string[]): string =>
+    items
+        .map((x) => String(x ?? '').trim())
+        .filter(Boolean)
+        .join('\n');
 
 const applyLineListEditText = (text: string): string[] =>
     String(text ?? '')
@@ -187,6 +205,25 @@ const extractJobDescriptionText = (payload: any): string => {
         payload.positionDescription ??
         payload.position_description ??
         payload.description ??
+        ''
+    );
+};
+
+const extractAdditionalInfoText = (payload: any): string => {
+    if (!payload || typeof payload !== 'object') return '';
+
+    const additionalInfo = (payload as any).additionalInfo;
+    if (typeof additionalInfo === 'string') return additionalInfo;
+
+    return (
+        additionalInfo?.text ??
+        (payload as any).additionalInfoText ??
+        (payload as any).additional_info ??
+        (payload as any).additional_info_text ??
+        (payload as any).otherInfo ??
+        (payload as any).otherInformation ??
+        (payload as any).extraInfo ??
+        (payload as any).notes ??
         ''
     );
 };
@@ -348,7 +385,13 @@ const extractDateOfBirth = (payload: any): string => {
 
 const extractHeadline = (payload: any): string => {
     if (!payload || typeof payload !== 'object') return '';
-    const title = payload.title ?? payload.position ?? payload.mainSkill ?? payload.profile?.title ?? payload.profile?.position ?? '';
+    const title =
+        payload.title ??
+        payload.position ??
+        payload.mainSkill ??
+        payload.profile?.title ??
+        payload.profile?.position ??
+        '';
     const visa = payload.visaStatus ?? payload.profile?.visaStatus ?? '';
     const years =
         payload.yearsOfExperience ??
@@ -408,7 +451,9 @@ const applyExperienceEditText = (current: ResumeExperience[], text: string): Res
     }
 
     // Remove trailing completely empty items (keeps UX clean in view mode)
-    return next.filter((exp) => [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0));
+    return next.filter((exp) =>
+        [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
+    );
 };
 
 interface ResumeEditorProps {
@@ -429,7 +474,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const lastAutoFetchKeyRef = useRef<string | null>(null);
 
     const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
-    const [profileDraft, setProfileDraft] = useState<ResumeProfile>(createEmptyProfile());
+    const [profileEditText, setProfileEditText] = useState('');
     const [summary, setSummary] = useState('');
     const [skills, setSkills] = useState<string[]>([]);
     const [contactWays, setContactWays] = useState<string[]>([]);
@@ -439,6 +484,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [certificates, setCertificates] = useState<string[]>([]);
     const [certificatesEditText, setCertificatesEditText] = useState('');
     const [jobDescription, setJobDescription] = useState('');
+    const [additionalInfo, setAdditionalInfo] = useState('');
+    const [additionalInfoEditText, setAdditionalInfoEditText] = useState('');
     const [experiences, setExperiences] = useState<ResumeExperience[]>([]);
     const [experienceEditText, setExperienceEditText] = useState('');
     const [isCvLoading, setIsCvLoading] = useState(false);
@@ -465,6 +512,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 setLanguages([]);
                 setCertificates([]);
                 setJobDescription('');
+                setAdditionalInfo('');
                 setExperiences([]);
                 return;
             }
@@ -474,12 +522,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
             const detectedContactWays =
                 extractContactWays(payload).length > 0 ? extractContactWays(payload) : extractContactWays(record);
-            const detectedLanguages = extractLanguages(payload).length > 0 ? extractLanguages(payload) : extractLanguages(record);
+            const detectedLanguages =
+                extractLanguages(payload).length > 0 ? extractLanguages(payload) : extractLanguages(record);
             const detectedCertificates =
                 normalizeCertificates(extractCertificateEntries(payload)).length > 0
                     ? normalizeCertificates(extractCertificateEntries(payload))
                     : normalizeCertificates(extractCertificateEntries(record));
             const detectedJobDescription = extractJobDescriptionText(payload) || extractJobDescriptionText(record);
+            const detectedAdditionalInfo = extractAdditionalInfoText(payload) || extractAdditionalInfoText(record);
             const extracted = extractExperienceEntries(payload).length
                 ? extractExperienceEntries(payload)
                 : extractExperienceEntries(record);
@@ -496,6 +546,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             setLanguages(detectedLanguages);
             setCertificates(detectedCertificates);
             setJobDescription(detectedJobDescription);
+            setAdditionalInfo(detectedAdditionalInfo);
             setExperiences(normalizedExperiences);
         } catch (error) {
             console.error('Failed to load CV preview', error);
@@ -517,7 +568,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
     const handleEdit = (section: string) => {
         if (section === 'profile') {
-            setProfileDraft(profile);
+            setProfileEditText(formatProfileEditText(profile));
         }
         if (section === 'skills' && skills.length === 0) {
             setSkills(['']);
@@ -531,6 +582,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         if (section === 'certificates') {
             setCertificatesEditText(formatCertificateEditText(certificates));
         }
+        if (section === 'additionalInfo') {
+            setAdditionalInfoEditText(additionalInfo);
+        }
         if (section === 'experience') {
             setExperienceEditText(formatExperienceEditText(experiences));
         }
@@ -539,11 +593,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
     const handleSave = () => {
         if (editingSection === 'profile') {
-            setProfile({
-                fullName: String(profileDraft.fullName ?? '').trim(),
-                dateOfBirth: String(profileDraft.dateOfBirth ?? '').trim(),
-                headline: String(profileDraft.headline ?? '').trim(),
-            });
+            setProfile(applyProfileEditText(profileEditText));
         }
         if (editingSection === 'contactWays') {
             setContactWays(applyLineListEditText(contactWaysEditText));
@@ -553,6 +603,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         }
         if (editingSection === 'certificates') {
             setCertificates(applyCertificateEditText(certificatesEditText));
+        }
+        if (editingSection === 'additionalInfo') {
+            setAdditionalInfo(additionalInfoEditText);
         }
         if (editingSection === 'experience') {
             setExperiences((prev) => applyExperienceEditText(prev, experienceEditText));
@@ -568,10 +621,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         const newSkills = [...skills];
         newSkills[index] = value;
         setSkills(newSkills);
-    };
-
-    const handleExperienceChange = (id: number, field: string, value: string) => {
-        setExperiences(experiences.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)));
     };
 
     const handleDownloadPdf = useCallback(async () => {
@@ -610,8 +659,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         onEdit={() => handleEdit('profile')}
                         onSave={handleSave}
                         onCancel={handleCancel}
-                        draftProfile={profileDraft}
-                        onDraftChange={(field, value) => setProfileDraft((prev) => ({ ...prev, [field]: value }))}
+                        editText={profileEditText}
+                        onEditTextChange={setProfileEditText}
                     />
                     {isCvLoading && (
                         <Typography variant='caption' color='text.secondary' mt={1}>
@@ -750,7 +799,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             ) : (
                                 <Box>
                                     {certificates.map((text, idx) => (
-                                        <Typography key={idx} variant='body2' color='text.primary' mt={idx === 0 ? 0 : 1.5}>
+                                        <Typography
+                                            key={idx}
+                                            variant='body2'
+                                            color='text.primary'
+                                            mt={idx === 0 ? 0 : 1.5}
+                                        >
                                             {text}
                                         </Typography>
                                     ))}
@@ -799,7 +853,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         ) : (
                             experiences
                                 .filter((exp) =>
-                                    [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
+                                    [exp.company, exp.position, exp.description].some(
+                                        (v) => String(v ?? '').trim().length > 0,
+                                    ),
                                 )
                                 .map((experience, index) => {
                                     const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
@@ -817,13 +873,37 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                                 </Box>
                                             )}
                                             {experience.description && (
-                                                <ExperienceDescription variant='body2'>{experience.description}</ExperienceDescription>
+                                                <ExperienceDescription variant='body2'>
+                                                    {experience.description}
+                                                </ExperienceDescription>
                                             )}
                                         </Wrapper>
                                     );
                                 })
                         )}
                     </ExperienceContainer>
+
+                    {(additionalInfo.trim().length > 0 || editingSection === 'additionalInfo') && (
+                        <SectionContainer>
+                            <SectionHeader
+                                title='Additional Info'
+                                onEdit={() => handleEdit('additionalInfo')}
+                                isEditing={editingSection === 'additionalInfo'}
+                                onSave={handleSave}
+                                onCancel={handleCancel}
+                            />
+                            <Box mt={2}>
+                                {editingSection === 'additionalInfo' ? (
+                                    <ExperienceTextareaAutosize
+                                        value={additionalInfoEditText}
+                                        onChange={(e) => setAdditionalInfoEditText(e.target.value)}
+                                    />
+                                ) : (
+                                    <SummaryText sx={{ whiteSpace: 'pre-line' }}>{additionalInfo}</SummaryText>
+                                )}
+                            </Box>
+                        </SectionContainer>
+                    )}
                 </CardContent>
             </MainCardContainer>
 

@@ -18,6 +18,7 @@ export const ProfileHeaderContainer = styled(Box)(({ theme }) => ({
 export const ProfileInfo = styled(Box)(() => ({
     flex: 1,
     marginLeft: '1rem',
+    minWidth: 0,
 }));
 
 export const ActionButtons = styled(Box)(() => ({
@@ -123,6 +124,8 @@ export const AvatarContainer = styled(Box)(() => ({
     display: 'flex',
     alignItems: 'center',
     gap: '24px',
+    flex: 1,
+    minWidth: 0,
 }));
 
 // Section Header styled components
