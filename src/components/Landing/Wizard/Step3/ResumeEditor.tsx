@@ -1,13 +1,9 @@
 'use client';
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 
-import { Check, Close } from '@mui/icons-material';
-import { Box, CardContent, IconButton, Typography } from '@mui/material';
+import { Box, CardContent, Typography } from '@mui/material';
 
-import EditIcon from '@/assets/images/icons/edit.svg';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
-import RefreshIcon from '@/assets/images/icons/refresh.svg';
-import StarIcon from '@/assets/images/icons/star.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { getCV } from '@/services/cv/get-cv';
@@ -29,10 +25,8 @@ import {
     ExperienceContainer,
     ExperienceItem,
     ExperienceItemSmall,
-    ExperienceHeader,
     CompanyName,
     JobDetails,
-    ExperienceActions,
     ExperienceDescription,
     SkillTextField,
     CompanyTextField,
@@ -294,10 +288,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         }
     }, [requestId, accessToken]);
 
-    const handleRefreshPreview = useCallback(() => {
-        void loadCvData();
-    }, [loadCvData]);
-
     useEffect(() => {
         if (!requestId || !accessToken) return;
 
@@ -424,77 +414,52 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     </SectionContainer>
 
                     <ExperienceContainer>
-                        <SectionHeader title='Experience' />
+                        <SectionHeader
+                            title='Experience'
+                            onEdit={() => handleEdit('experience')}
+                            isEditing={editingSection === 'experience'}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                        />
                         {experiences.map((experience, index) => {
-                            const key = `experience-${experience.id}`;
-                            const isEditing = editingSection === key;
                             const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
 
                             return (
                                 <Wrapper key={experience.id}>
-                                    <ExperienceHeader>
-                                        <Box>
-                                            {isEditing ? (
-                                                <>
-                                                    <CompanyTextField
-                                                        value={experience.company}
-                                                        onChange={(e) =>
-                                                            handleExperienceChange(experience.id, 'company', e.target.value)
-                                                        }
-                                                        variant='standard'
-                                                        fullWidth
-                                                    />
-                                                    <PositionTextField
-                                                        value={experience.position}
-                                                        onChange={(e) =>
-                                                            handleExperienceChange(experience.id, 'position', e.target.value)
-                                                        }
-                                                        variant='standard'
-                                                        size='small'
-                                                        fullWidth
-                                                    />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <CompanyName variant='h6'>{experience.company || '—'}</CompanyName>
-                                                    <JobDetails variant='body2'>{experience.position || '—'}</JobDetails>
-                                                </>
-                                            )}
-                                        </Box>
-                                        <ExperienceActions>
-                                            {isEditing ? (
-                                                <>
-                                                    <IconButton size='small' onClick={handleSave} color='success'>
-                                                        <Check fontSize='small' />
-                                                    </IconButton>
-                                                    <IconButton size='small' onClick={handleCancel} color='error'>
-                                                        <Close fontSize='small' />
-                                                    </IconButton>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <IconButton size='small' onClick={() => handleEdit(key)}>
-                                                        <EditIcon />
-                                                    </IconButton>
-                                                    <IconButton size='small' onClick={handleRefreshPreview}>
-                                                        <RefreshIcon />
-                                                    </IconButton>
-                                                    <IconButton size='small'>
-                                                        <StarIcon />
-                                                    </IconButton>
-                                                </>
-                                            )}
-                                        </ExperienceActions>
-                                    </ExperienceHeader>
-                                    {isEditing ? (
-                                        <ExperienceTextareaAutosize
-                                            value={experience.description}
-                                            onChange={(e) =>
-                                                handleExperienceChange(experience.id, 'description', e.target.value)
-                                            }
-                                        />
+                                    {editingSection === 'experience' ? (
+                                        <>
+                                            <CompanyTextField
+                                                value={experience.company}
+                                                onChange={(e) => handleExperienceChange(experience.id, 'company', e.target.value)}
+                                                variant='standard'
+                                                fullWidth
+                                            />
+                                            <PositionTextField
+                                                value={experience.position}
+                                                onChange={(e) =>
+                                                    handleExperienceChange(experience.id, 'position', e.target.value)
+                                                }
+                                                variant='standard'
+                                                size='small'
+                                                fullWidth
+                                            />
+                                            <ExperienceTextareaAutosize
+                                                value={experience.description}
+                                                onChange={(e) =>
+                                                    handleExperienceChange(experience.id, 'description', e.target.value)
+                                                }
+                                            />
+                                        </>
                                     ) : (
-                                        <ExperienceDescription variant='body2'>{experience.description || '—'}</ExperienceDescription>
+                                        <>
+                                            <Box mb={1}>
+                                                <CompanyName variant='h6'>{experience.company || '—'}</CompanyName>
+                                                <JobDetails variant='body2'>{experience.position || '—'}</JobDetails>
+                                            </Box>
+                                            <ExperienceDescription variant='body2'>
+                                                {experience.description || '—'}
+                                            </ExperienceDescription>
+                                        </>
                                     )}
                                 </Wrapper>
                             );
