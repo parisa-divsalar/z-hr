@@ -4,51 +4,49 @@ import React from 'react';
 
 import { IconButton, Typography } from '@mui/material';
 
-import AvatarSrc from '@/assets/images/bg/avatar.png';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
-import MuiAvatar from '@/components/UI/MuiAvatar';
 
 import { ProfileHeaderContainer, ProfileInfo, ActionButtons, AvatarContainer } from './styled';
 
 interface ProfileHeaderProps {
-  fullName?: string;
-  location?: string;
-  headline?: string;
+    fullName?: string;
+    dateOfBirth?: string;
+    headline?: string;
 }
 
-const ProfileHeader = ({ fullName, location, headline }: ProfileHeaderProps) => {
-  return (
-    <ProfileHeaderContainer>
-      <AvatarContainer>
-        <MuiAvatar size='large' src={AvatarSrc.src} />
-        <ProfileInfo>
-          <Typography variant='subtitle1' fontWeight='600' color='text.primary' gutterBottom>
-            {fullName || '—'}
-          </Typography>
-          <Typography variant='body1' color='text.secondary' gutterBottom>
-            {location || '—'}
-          </Typography>
-          <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-            {headline || '—'}
-          </Typography>
-        </ProfileInfo>
-      </AvatarContainer>
+const ProfileHeader = ({ fullName, dateOfBirth, headline }: ProfileHeaderProps) => {
+    return (
+        <ProfileHeaderContainer>
+            <AvatarContainer>
+                {/*<MuiAvatar size='large' src={AvatarSrc.src} />*/}
+                <ProfileInfo>
+                    <Typography variant='subtitle1' fontWeight='600' color='text.primary' gutterBottom>
+                        {fullName || '—'}
+                    </Typography>
+                    <Typography variant='body1' color='text.secondary' gutterBottom>
+                        {dateOfBirth || '—'}
+                    </Typography>
+                    <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                        {headline || '—'}
+                    </Typography>
+                </ProfileInfo>
+            </AvatarContainer>
 
-      <ActionButtons>
-        <IconButton size='small'>
-          <EditIcon />
-        </IconButton>
-        <IconButton size='small'>
-          <RefreshIcon />
-        </IconButton>
-        <IconButton size='small'>
-          <StarIcon />
-        </IconButton>
-      </ActionButtons>
-    </ProfileHeaderContainer>
-  );
+            <ActionButtons>
+                <IconButton size='small'>
+                    <EditIcon />
+                </IconButton>
+                <IconButton size='small'>
+                    <RefreshIcon />
+                </IconButton>
+                <IconButton size='small'>
+                    <StarIcon />
+                </IconButton>
+            </ActionButtons>
+        </ProfileHeaderContainer>
+    );
 };
 
 export default ProfileHeader;

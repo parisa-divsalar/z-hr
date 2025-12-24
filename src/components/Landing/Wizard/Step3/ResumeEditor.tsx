@@ -50,7 +50,7 @@ type ResumeExperience = {
 
 type ResumeProfile = {
     fullName: string;
-    location: string;
+    dateOfBirth: string;
     headline: string;
 };
 
@@ -63,7 +63,7 @@ const createEmptyExperience = (id: number): ResumeExperience => ({
 
 const createEmptyProfile = (): ResumeProfile => ({
     fullName: '',
-    location: '',
+    dateOfBirth: '',
     headline: '',
 });
 
@@ -174,15 +174,18 @@ const extractFullName = (payload: any): string => {
     );
 };
 
-const extractLocation = (payload: any): string => {
+const extractDateOfBirth = (payload: any): string => {
     if (!payload || typeof payload !== 'object') return '';
     return (
-        payload.location ??
-        payload.city ??
-        payload.country ??
-        payload.profile?.location ??
-        payload.profile?.city ??
-        payload.profile?.country ??
+        payload.dateOfBirth ??
+        payload.birthDate ??
+        payload.dob ??
+        payload.profile?.dateOfBirth ??
+        payload.profile?.birthDate ??
+        payload.profile?.dob ??
+        payload.personal?.dateOfBirth ??
+        payload.personal?.birthDate ??
+        payload.personal?.dob ??
         ''
     );
 };
@@ -272,7 +275,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
             setProfile({
                 fullName: extractFullName(payload) || extractFullName(record),
-                location: extractLocation(payload) || extractLocation(record),
+                dateOfBirth: extractDateOfBirth(payload) || extractDateOfBirth(record),
                 headline: extractHeadline(payload) || extractHeadline(record),
             });
             setSummary(detectedSummary);
@@ -347,7 +350,11 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         <ResumeContainer>
             <MainCardContainer ref={pdfRef}>
                 <CardContent>
-                    <ProfileHeader fullName={profile.fullName} location={profile.location} headline={profile.headline} />
+                    <ProfileHeader
+                        fullName={profile.fullName}
+                        dateOfBirth={profile.dateOfBirth}
+                        headline={profile.headline}
+                    />
                     {isCvLoading && (
                         <Typography variant='caption' color='text.secondary' mt={1}>
                             Still fetching the latest CV preview…
