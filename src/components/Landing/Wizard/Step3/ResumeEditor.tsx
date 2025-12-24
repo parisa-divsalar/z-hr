@@ -429,6 +429,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const lastAutoFetchKeyRef = useRef<string | null>(null);
 
     const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
+    const [profileDraft, setProfileDraft] = useState<ResumeProfile>(createEmptyProfile());
     const [summary, setSummary] = useState('');
     const [skills, setSkills] = useState<string[]>([]);
     const [contactWays, setContactWays] = useState<string[]>([]);
@@ -515,6 +516,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     }, [requestId, accessToken, loadCvData]);
 
     const handleEdit = (section: string) => {
+        if (section === 'profile') {
+            setProfileDraft(profile);
+        }
         if (section === 'skills' && skills.length === 0) {
             setSkills(['']);
         }
@@ -534,6 +538,13 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     };
 
     const handleSave = () => {
+        if (editingSection === 'profile') {
+            setProfile({
+                fullName: String(profileDraft.fullName ?? '').trim(),
+                dateOfBirth: String(profileDraft.dateOfBirth ?? '').trim(),
+                headline: String(profileDraft.headline ?? '').trim(),
+            });
+        }
         if (editingSection === 'contactWays') {
             setContactWays(applyLineListEditText(contactWaysEditText));
         }
@@ -595,6 +606,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         fullName={profile.fullName}
                         dateOfBirth={profile.dateOfBirth}
                         headline={profile.headline}
+                        isEditing={editingSection === 'profile'}
+                        onEdit={() => handleEdit('profile')}
+                        onSave={handleSave}
+                        onCancel={handleCancel}
+                        draftProfile={profileDraft}
+                        onDraftChange={(field, value) => setProfileDraft((prev) => ({ ...prev, [field]: value }))}
                     />
                     {isCvLoading && (
                         <Typography variant='caption' color='text.secondary' mt={1}>

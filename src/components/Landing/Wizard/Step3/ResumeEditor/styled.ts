@@ -160,6 +160,19 @@ export const StyledTextareaAutosize = styled(TextareaAutosize)(({ theme }) => ({
     color: theme.palette.text.primary,
 }));
 
+export const ProfileFieldTextareaAutosize = styled(TextareaAutosize)(({ theme }) => ({
+    width: '100%',
+    minHeight: '36px',
+    padding: '8px',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    fontSize: '14px',
+    lineHeight: '1.4',
+    fontWeight: '400',
+    color: theme.palette.text.primary,
+    resize: 'none',
+}));
+
 export const ExperienceTextareaAutosize = styled(TextareaAutosize)(({ theme }) => ({
     width: '100%',
     minHeight: '60px',
