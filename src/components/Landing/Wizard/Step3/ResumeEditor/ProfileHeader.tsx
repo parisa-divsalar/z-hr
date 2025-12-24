@@ -6,10 +6,15 @@ import { Check, Close } from '@mui/icons-material';
 import { IconButton, Typography } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
-import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 
-import { ProfileHeaderContainer, ProfileInfo, ActionButtons, AvatarContainer, ExperienceTextareaAutosize } from './styled';
+import {
+    ProfileHeaderContainer,
+    ProfileInfo,
+    ActionButtons,
+    AvatarContainer,
+    ExperienceTextareaAutosize,
+} from './styled';
 
 interface ProfileHeaderProps {
     fullName?: string;
@@ -79,9 +84,7 @@ const ProfileHeader = ({
                     <IconButton size='small' onClick={onEdit}>
                         <EditIcon />
                     </IconButton>
-                    <IconButton size='small'>
-                        <RefreshIcon />
-                    </IconButton>
+
                     <IconButton size='small'>
                         <StarIcon />
                     </IconButton>
