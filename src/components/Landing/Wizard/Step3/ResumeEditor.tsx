@@ -799,14 +799,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             ) : (
                                 <Box>
                                     {certificates.map((text, idx) => (
-                                        <Typography
+                                        <SummaryText
                                             key={idx}
-                                            variant='body2'
-                                            color='text.primary'
-                                            mt={idx === 0 ? 0 : 1.5}
+                                            sx={{ mt: idx === 0 ? 0 : 1.5 }}
                                         >
                                             {text}
-                                        </Typography>
+                                        </SummaryText>
                                     ))}
                                 </Box>
                             )}

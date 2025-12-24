@@ -41,10 +41,6 @@ export const ResumeContainer = styled(Box)(() => ({
     padding: '24px',
 }));
 
-export const CardContentContainer = styled('div')(() => ({
-    padding: 0,
-}));
-
 export const SectionContainer = styled(Box)(({ theme }) => ({
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3),
@@ -61,7 +57,7 @@ export const SummaryText = styled(Typography)(({ theme }) => ({
     color: theme.palette.text.primary,
     lineHeight: 1.6,
     fontSize: '14px',
-    fontWeight: '500',
+    fontWeight: 400,
 }));
 
 export const SkillsContainer = styled(Box)(({ theme }) => ({
@@ -102,7 +98,8 @@ export const ExperienceItemSmall = styled(Box)(({ theme }) => ({
 
 export const CompanyName = styled(Typography)(({ theme }) => ({
     color: theme.palette.text.primary,
-    fontWeight: '500',
+    fontSize: '14px',
+    fontWeight: 400,
     marginBottom: '4px',
 }));
 
@@ -161,19 +158,6 @@ export const StyledTextareaAutosize = styled(TextareaAutosize)(({ theme }) => ({
     lineHeight: '1.6',
     fontWeight: '400',
     color: theme.palette.text.primary,
-}));
-
-export const ProfileFieldTextareaAutosize = styled(TextareaAutosize)(({ theme }) => ({
-    width: '100%',
-    minHeight: '36px',
-    padding: '8px',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    fontSize: '14px',
-    lineHeight: '1.4',
-    fontWeight: '400',
-    color: theme.palette.text.primary,
-    resize: 'none',
 }));
 
 export const ExperienceTextareaAutosize = styled(TextareaAutosize)(({ theme }) => ({
