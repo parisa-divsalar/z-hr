@@ -236,6 +236,11 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const requestId = useWizardStore((state) => state.requestId);
     const accessToken = useAuthStore((state) => state.accessToken);
     const pdfRef = useRef<HTMLDivElement | null>(null);
+    /**
+     * Prevent duplicate auto-fetches (especially in React Strict Mode dev where effects run twice).
+     * We still allow manual refresh via the "Refresh" handler.
+     */
+    const lastAutoFetchKeyRef = useRef<string | null>(null);
 
     const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
     const [summary, setSummary] = useState('');
@@ -294,8 +299,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     }, [loadCvData]);
 
     useEffect(() => {
-        loadCvData();
-    }, [loadCvData]);
+        if (!requestId || !accessToken) return;
+
+        const key = `${accessToken}:${requestId}`;
+        if (lastAutoFetchKeyRef.current === key) return;
+        lastAutoFetchKeyRef.current = key;
+
+        void loadCvData();
+    }, [requestId, accessToken, loadCvData]);
 
     const handleEdit = (section: string) => {
         if (section === 'skills' && skills.length === 0) {
