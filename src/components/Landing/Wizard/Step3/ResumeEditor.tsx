@@ -10,7 +10,7 @@ import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
-import { apiClientClient } from '@/services/api-client';
+import { getCV } from '@/services/cv/get-cv';
 import { useAuthStore } from '@/store/auth';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf } from '@/utils/exportToPdf';
@@ -48,11 +48,23 @@ type ResumeExperience = {
     description: string;
 };
 
+type ResumeProfile = {
+    fullName: string;
+    location: string;
+    headline: string;
+};
+
 const createEmptyExperience = (id: number): ResumeExperience => ({
     id,
     company: '',
     position: '',
     description: '',
+});
+
+const createEmptyProfile = (): ResumeProfile => ({
+    fullName: '',
+    location: '',
+    headline: '',
 });
 
 const formatExperiencePosition = (entry: Record<string, any>) => {
@@ -88,35 +100,13 @@ const extractExperienceEntries = (payload: any): any[] => {
     return [];
 };
 
-const ensureTwoExperiences = (items: ResumeExperience[]): ResumeExperience[] => {
-    const trimmed = items.slice(0, 2);
-    while (trimmed.length < 2) {
-        trimmed.push(createEmptyExperience(trimmed.length + 1));
+const ensureMinimumExperiences = (items: ResumeExperience[], minCount = 2): ResumeExperience[] => {
+    const normalized = items.map((item, index) => ({ ...item, id: index + 1 }));
+    while (normalized.length < minCount) {
+        normalized.push(createEmptyExperience(normalized.length + 1));
     }
-    return trimmed.map((item, index) => ({ ...item, id: index + 1 }));
+    return normalized;
 };
-
-const DEFAULT_SUMMARY =
-    "I'm a highly skilled front-end developer with 12 years of experience based in Dubai. Over the years, I've worked on numerous projects, honing my skills in HTML, CSS, and JavaScript. My passion lies in creating responsive and user-friendly interfaces that enhance the overall user experience.";
-
-const DEFAULT_SKILLS = ['React', 'JavaScript', 'HTML', 'CSS', 'UI/UX Design', 'Problem-solving'];
-
-const DEFAULT_EXPERIENCES: ResumeExperience[] = [
-    {
-        id: 1,
-        company: 'Tech Solutions Inc.',
-        position: 'Front-end Developer • 09-09-2020 — 12-12-2023 • Dubai',
-        description:
-            'Led development of responsive web applications using React and modern JavaScript frameworks. Collaborated with cross-functional teams to deliver high-quality user experiences and implemented best practices for code quality and performance optimization.',
-    },
-    {
-        id: 2,
-        company: 'Digital Innovations Ltd.',
-        position: 'Front-end Developer • 01-01-2018 — 08-08-2020 • Dubai',
-        description:
-            'Developed and maintained multiple client projects focusing on user interface design and front-end development. Worked closely with designers to implement pixel-perfect interfaces and ensured cross-browser compatibility.',
-    },
-];
 
 const normalizeSkillArray = (value: any): string[] => {
     if (Array.isArray(value)) {
@@ -171,6 +161,67 @@ const extractSummary = (payload: any): string => {
     );
 };
 
+const extractFullName = (payload: any): string => {
+    if (!payload || typeof payload !== 'object') return '';
+    return (
+        payload.fullName ??
+        payload.name ??
+        payload.profile?.fullName ??
+        payload.profile?.name ??
+        payload.personal?.fullName ??
+        payload.personal?.name ??
+        ''
+    );
+};
+
+const extractLocation = (payload: any): string => {
+    if (!payload || typeof payload !== 'object') return '';
+    return (
+        payload.location ??
+        payload.city ??
+        payload.country ??
+        payload.profile?.location ??
+        payload.profile?.city ??
+        payload.profile?.country ??
+        ''
+    );
+};
+
+const extractHeadline = (payload: any): string => {
+    if (!payload || typeof payload !== 'object') return '';
+    const title = payload.title ?? payload.position ?? payload.mainSkill ?? payload.profile?.title ?? payload.profile?.position ?? '';
+    const visa = payload.visaStatus ?? payload.profile?.visaStatus ?? '';
+    const years =
+        payload.yearsOfExperience ??
+        payload.experienceYears ??
+        payload.profile?.yearsOfExperience ??
+        payload.profile?.experienceYears ??
+        '';
+
+    const parts = [title, visa && `Visa: ${visa}`, years && `${years} Years of experience`].filter(Boolean);
+    return parts.join(' • ');
+};
+
+const resolveCvRecord = (raw: any): any | null => {
+    const candidate = Array.isArray(raw) ? raw[0] : raw;
+    if (!candidate || typeof candidate !== 'object') return null;
+    return (candidate as any).result ?? (candidate as any).data ?? candidate;
+};
+
+const resolveCvPayload = (record: any): any => {
+    if (!record || typeof record !== 'object') return {};
+    const body = (record as any).bodyOfResume;
+    if (body && typeof body === 'object') return body;
+    if (typeof body === 'string') {
+        try {
+            return JSON.parse(body);
+        } catch {
+            return record;
+        }
+    }
+    return record;
+};
+
 interface ResumeEditorProps {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
     setActiveStep: (activeStep: number) => void;
@@ -183,9 +234,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const accessToken = useAuthStore((state) => state.accessToken);
     const pdfRef = useRef<HTMLDivElement | null>(null);
 
-    const [summary, setSummary] = useState(DEFAULT_SUMMARY);
-    const [skills, setSkills] = useState(DEFAULT_SKILLS);
-    const [experiences, setExperiences] = useState(DEFAULT_EXPERIENCES);
+    const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
+    const [summary, setSummary] = useState('');
+    const [skills, setSkills] = useState<string[]>([]);
+    const [experiences, setExperiences] = useState<ResumeExperience[]>(ensureMinimumExperiences([]));
     const [isCvLoading, setIsCvLoading] = useState(false);
     const [cvError, setCvError] = useState<string | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -199,23 +251,32 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setCvError(null);
 
         try {
-            const response = await apiClientClient.get('cv/get-cv', {
-                params: {
-                    requestId,
-                    userId: accessToken,
-                },
-            });
-
-            const payload = response.data;
-            const detectedSummary = extractSummary(payload);
-            const detectedSkills = extractSkills(payload);
-            const normalizedExperiences = ensureTwoExperiences(normalizeExperiences(extractExperienceEntries(payload)));
-
-            if (detectedSummary) {
-                setSummary(detectedSummary);
+            const raw = await getCV({ requestId, userId: accessToken });
+            const record = resolveCvRecord(raw);
+            if (!record) {
+                setCvError('Resume data is empty.');
+                setProfile(createEmptyProfile());
+                setSummary('');
+                setSkills([]);
+                setExperiences(ensureMinimumExperiences([]));
+                return;
             }
 
-            setSkills(detectedSkills.length ? detectedSkills : DEFAULT_SKILLS);
+            const payload = resolveCvPayload(record);
+            const detectedSummary = extractSummary(payload) || extractSummary(record);
+            const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
+            const extracted = extractExperienceEntries(payload).length
+                ? extractExperienceEntries(payload)
+                : extractExperienceEntries(record);
+            const normalizedExperiences = ensureMinimumExperiences(normalizeExperiences(extracted));
+
+            setProfile({
+                fullName: extractFullName(payload) || extractFullName(record),
+                location: extractLocation(payload) || extractLocation(record),
+                headline: extractHeadline(payload) || extractHeadline(record),
+            });
+            setSummary(detectedSummary);
+            setSkills(detectedSkills);
             setExperiences(normalizedExperiences);
         } catch (error) {
             console.error('Failed to load CV preview', error);
@@ -234,6 +295,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     }, [loadCvData]);
 
     const handleEdit = (section: string) => {
+        if (section === 'skills' && skills.length === 0) {
+            setSkills(['']);
+        }
         setEditingSection(section);
     };
 
@@ -283,7 +347,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         <ResumeContainer>
             <MainCardContainer ref={pdfRef}>
                 <CardContent>
-                    <ProfileHeader />
+                    <ProfileHeader fullName={profile.fullName} location={profile.location} headline={profile.headline} />
                     {isCvLoading && (
                         <Typography variant='caption' color='text.secondary' mt={1}>
                             Still fetching the latest CV preview…
@@ -322,147 +386,101 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             onCancel={handleCancel}
                         />
                         <SkillsContainer>
-                            {editingSection === 'skills'
-                                ? skills.map((skill, index) => (
-                                      <SkillTextField
-                                          key={index}
-                                          value={skill}
-                                          onChange={(e) => handleSkillsChange(index, e.target.value)}
-                                          size='small'
-                                      />
-                                  ))
-                                : skills.map((skill, index) => <SkillItem key={index}>{skill}</SkillItem>)}
+                            {skills.length === 0 ? (
+                                <Typography variant='body2' color='text.secondary'>
+                                    No skills found.
+                                </Typography>
+                            ) : editingSection === 'skills' ? (
+                                skills.map((skill, index) => (
+                                    <SkillTextField
+                                        key={index}
+                                        value={skill}
+                                        onChange={(e) => handleSkillsChange(index, e.target.value)}
+                                        size='small'
+                                    />
+                                ))
+                            ) : (
+                                skills.map((skill, index) => <SkillItem key={index}>{skill}</SkillItem>)
+                            )}
                         </SkillsContainer>
                     </SectionContainer>
 
                     <ExperienceContainer>
                         <SectionHeader title='Experience' />
+                        {experiences.map((experience, index) => {
+                            const key = `experience-${experience.id}`;
+                            const isEditing = editingSection === key;
+                            const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
 
-                        <ExperienceItem>
-                            <ExperienceHeader>
-                                <Box>
-                                    {editingSection === 'experience-1' ? (
-                                        <>
-                                            <CompanyTextField
-                                                value={experiences[0].company}
-                                                onChange={(e) => handleExperienceChange(1, 'company', e.target.value)}
-                                                variant='standard'
-                                                fullWidth
-                                            />
-                                            <PositionTextField
-                                                value={experiences[0].position}
-                                                onChange={(e) => handleExperienceChange(1, 'position', e.target.value)}
-                                                variant='standard'
-                                                size='small'
-                                                fullWidth
-                                            />
-                                        </>
+                            return (
+                                <Wrapper key={experience.id}>
+                                    <ExperienceHeader>
+                                        <Box>
+                                            {isEditing ? (
+                                                <>
+                                                    <CompanyTextField
+                                                        value={experience.company}
+                                                        onChange={(e) =>
+                                                            handleExperienceChange(experience.id, 'company', e.target.value)
+                                                        }
+                                                        variant='standard'
+                                                        fullWidth
+                                                    />
+                                                    <PositionTextField
+                                                        value={experience.position}
+                                                        onChange={(e) =>
+                                                            handleExperienceChange(experience.id, 'position', e.target.value)
+                                                        }
+                                                        variant='standard'
+                                                        size='small'
+                                                        fullWidth
+                                                    />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CompanyName variant='h6'>{experience.company || '—'}</CompanyName>
+                                                    <JobDetails variant='body2'>{experience.position || '—'}</JobDetails>
+                                                </>
+                                            )}
+                                        </Box>
+                                        <ExperienceActions>
+                                            {isEditing ? (
+                                                <>
+                                                    <IconButton size='small' onClick={handleSave} color='success'>
+                                                        <Check fontSize='small' />
+                                                    </IconButton>
+                                                    <IconButton size='small' onClick={handleCancel} color='error'>
+                                                        <Close fontSize='small' />
+                                                    </IconButton>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <IconButton size='small' onClick={() => handleEdit(key)}>
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <IconButton size='small' onClick={handleRefreshPreview}>
+                                                        <RefreshIcon />
+                                                    </IconButton>
+                                                    <IconButton size='small'>
+                                                        <StarIcon />
+                                                    </IconButton>
+                                                </>
+                                            )}
+                                        </ExperienceActions>
+                                    </ExperienceHeader>
+                                    {isEditing ? (
+                                        <ExperienceTextareaAutosize
+                                            value={experience.description}
+                                            onChange={(e) =>
+                                                handleExperienceChange(experience.id, 'description', e.target.value)
+                                            }
+                                        />
                                     ) : (
-                                        <>
-                                            <CompanyName variant='h6'>{experiences[0].company}</CompanyName>
-                                            <JobDetails variant='body2'>{experiences[0].position}</JobDetails>
-                                        </>
+                                        <ExperienceDescription variant='body2'>{experience.description || '—'}</ExperienceDescription>
                                     )}
-                                </Box>
-                                <ExperienceActions>
-                                    {editingSection === 'experience-1' ? (
-                                        <>
-                                            <IconButton size='small' onClick={handleSave} color='success'>
-                                                <Check fontSize='small' />
-                                            </IconButton>
-                                            <IconButton size='small' onClick={handleCancel} color='error'>
-                                                <Close fontSize='small' />
-                                            </IconButton>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <IconButton size='small' onClick={() => handleEdit('experience-1')}>
-                                                <EditIcon />
-                                            </IconButton>
-                                            <IconButton size='small' onClick={handleRefreshPreview}>
-                                                <RefreshIcon />
-                                            </IconButton>
-                                            <IconButton size='small'>
-                                                <StarIcon />
-                                            </IconButton>
-                                        </>
-                                    )}
-                                </ExperienceActions>
-                            </ExperienceHeader>
-                            {editingSection === 'experience-1' ? (
-                                <ExperienceTextareaAutosize
-                                    value={experiences[0].description}
-                                    onChange={(e) => handleExperienceChange(1, 'description', e.target.value)}
-                                />
-                            ) : (
-                                <ExperienceDescription variant='body2'>
-                                    {experiences[0].description}
-                                </ExperienceDescription>
-                            )}
-                        </ExperienceItem>
-
-                        <ExperienceItemSmall>
-                            <ExperienceHeader>
-                                <Box>
-                                    {editingSection === 'experience-2' ? (
-                                        <>
-                                            <CompanyTextField
-                                                value={experiences[1].company}
-                                                onChange={(e) => handleExperienceChange(2, 'company', e.target.value)}
-                                                variant='standard'
-                                                fullWidth
-                                            />
-                                            <PositionTextField
-                                                value={experiences[1].position}
-                                                onChange={(e) => handleExperienceChange(2, 'position', e.target.value)}
-                                                variant='standard'
-                                                size='small'
-                                                fullWidth
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CompanyName variant='h6'>{experiences[1].company}</CompanyName>
-                                            <JobDetails variant='body2'>{experiences[1].position}</JobDetails>
-                                        </>
-                                    )}
-                                </Box>
-                                <ExperienceActions>
-                                    {editingSection === 'experience-2' ? (
-                                        <>
-                                            <IconButton size='small' onClick={handleSave} color='success'>
-                                                <Check fontSize='small' />
-                                            </IconButton>
-                                            <IconButton size='small' onClick={handleCancel} color='error'>
-                                                <Close fontSize='small' />
-                                            </IconButton>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <IconButton size='small' onClick={() => handleEdit('experience-2')}>
-                                                <EditIcon />
-                                            </IconButton>
-                                            <IconButton size='small' onClick={handleRefreshPreview}>
-                                                <RefreshIcon />
-                                            </IconButton>
-                                            <IconButton size='small'>
-                                                <StarIcon />
-                                            </IconButton>
-                                        </>
-                                    )}
-                                </ExperienceActions>
-                            </ExperienceHeader>
-                            {editingSection === 'experience-2' ? (
-                                <ExperienceTextareaAutosize
-                                    value={experiences[1].description}
-                                    onChange={(e) => handleExperienceChange(2, 'description', e.target.value)}
-                                />
-                            ) : (
-                                <ExperienceDescription variant='body2'>
-                                    {experiences[1].description}
-                                </ExperienceDescription>
-                            )}
-                        </ExperienceItemSmall>
+                                </Wrapper>
+                            );
+                        })}
                     </ExperienceContainer>
                 </CardContent>
             </MainCardContainer>

@@ -12,20 +12,26 @@ import MuiAvatar from '@/components/UI/MuiAvatar';
 
 import { ProfileHeaderContainer, ProfileInfo, ActionButtons, AvatarContainer } from './styled';
 
-const ProfileHeader = () => {
+interface ProfileHeaderProps {
+  fullName?: string;
+  location?: string;
+  headline?: string;
+}
+
+const ProfileHeader = ({ fullName, location, headline }: ProfileHeaderProps) => {
   return (
     <ProfileHeaderContainer>
       <AvatarContainer>
         <MuiAvatar size='large' src={AvatarSrc.src} />
         <ProfileInfo>
           <Typography variant='subtitle1' fontWeight='600' color='text.primary' gutterBottom>
-            Zayd Al-Mansoori
+            {fullName || '—'}
           </Typography>
           <Typography variant='body1' color='text.secondary' gutterBottom>
-            Dubai
+            {location || '—'}
           </Typography>
           <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-            Front-end Developer • Visa status • 12 Years of experience
+            {headline || '—'}
           </Typography>
         </ProfileInfo>
       </AvatarContainer>
