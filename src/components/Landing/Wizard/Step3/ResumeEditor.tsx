@@ -29,8 +29,6 @@ import {
     JobDetails,
     ExperienceDescription,
     SkillTextField,
-    CompanyTextField,
-    PositionTextField,
     StyledTextareaAutosize,
     ExperienceTextareaAutosize,
 } from './ResumeEditor/styled';
@@ -94,7 +92,7 @@ const extractExperienceEntries = (payload: any): any[] => {
     return [];
 };
 
-const ensureMinimumExperiences = (items: ResumeExperience[], minCount = 2): ResumeExperience[] => {
+const ensureMinimumExperiences = (items: ResumeExperience[], minCount = 0): ResumeExperience[] => {
     const normalized = items.map((item, index) => ({ ...item, id: index + 1 }));
     while (normalized.length < minCount) {
         normalized.push(createEmptyExperience(normalized.length + 1));
@@ -239,7 +237,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
     const [summary, setSummary] = useState('');
     const [skills, setSkills] = useState<string[]>([]);
-    const [experiences, setExperiences] = useState<ResumeExperience[]>(ensureMinimumExperiences([]));
+    const [experiences, setExperiences] = useState<ResumeExperience[]>([]);
     const [isCvLoading, setIsCvLoading] = useState(false);
     const [cvError, setCvError] = useState<string | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -260,7 +258,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 setProfile(createEmptyProfile());
                 setSummary('');
                 setSkills([]);
-                setExperiences(ensureMinimumExperiences([]));
+                setExperiences([]);
                 return;
             }
 
@@ -421,28 +419,18 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
-                        {experiences.map((experience, index) => {
+                        {(editingSection === 'experience'
+                            ? experiences
+                            : experiences.filter((exp) =>
+                                  [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
+                              )
+                        ).map((experience, index) => {
                             const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
 
                             return (
                                 <Wrapper key={experience.id}>
                                     {editingSection === 'experience' ? (
                                         <>
-                                            <CompanyTextField
-                                                value={experience.company}
-                                                onChange={(e) => handleExperienceChange(experience.id, 'company', e.target.value)}
-                                                variant='standard'
-                                                fullWidth
-                                            />
-                                            <PositionTextField
-                                                value={experience.position}
-                                                onChange={(e) =>
-                                                    handleExperienceChange(experience.id, 'position', e.target.value)
-                                                }
-                                                variant='standard'
-                                                size='small'
-                                                fullWidth
-                                            />
                                             <ExperienceTextareaAutosize
                                                 value={experience.description}
                                                 onChange={(e) =>
@@ -452,13 +440,21 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                         </>
                                     ) : (
                                         <>
-                                            <Box mb={1}>
-                                                <CompanyName variant='h6'>{experience.company || '—'}</CompanyName>
-                                                <JobDetails variant='body2'>{experience.position || '—'}</JobDetails>
-                                            </Box>
-                                            <ExperienceDescription variant='body2'>
-                                                {experience.description || '—'}
-                                            </ExperienceDescription>
+                                            {(experience.company || experience.position) && (
+                                                <Box mb={1}>
+                                                    {experience.company && (
+                                                        <CompanyName variant='h6'>{experience.company}</CompanyName>
+                                                    )}
+                                                    {experience.position && (
+                                                        <JobDetails variant='body2'>{experience.position}</JobDetails>
+                                                    )}
+                                                </Box>
+                                            )}
+                                            {experience.description && (
+                                                <ExperienceDescription variant='body2'>
+                                                    {experience.description}
+                                                </ExperienceDescription>
+                                            )}
                                         </>
                                     )}
                                 </Wrapper>
