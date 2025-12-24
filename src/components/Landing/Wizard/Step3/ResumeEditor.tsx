@@ -6,6 +6,7 @@ import { Box, CardContent, Typography } from '@mui/material';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { editCV } from '@/services/cv/edit-cv';
 import { getCV } from '@/services/cv/get-cv';
 import { useAuthStore } from '@/store/auth';
 import { useWizardStore } from '@/store/wizard';
@@ -424,6 +425,86 @@ const resolveCvPayload = (record: any): any => {
     return record;
 };
 
+const buildUpdatedCvPayload = (
+    basePayload: any,
+    values: {
+        profile: ResumeProfile;
+        summary: string;
+        skills: string[];
+        contactWays: string[];
+        languages: ResumeLanguage[];
+        certificates: string[];
+        jobDescription: string;
+        additionalInfo: string;
+        experiences: ResumeExperience[];
+    },
+) => {
+    const base = basePayload && typeof basePayload === 'object' ? basePayload : {};
+    const baseProfile = base.profile && typeof base.profile === 'object' ? base.profile : {};
+
+    const nextProfile = {
+        ...baseProfile,
+        fullName: values.profile.fullName,
+        name: values.profile.fullName,
+        dateOfBirth: values.profile.dateOfBirth,
+        birthDate: values.profile.dateOfBirth,
+        title: values.profile.headline,
+        headline: values.profile.headline,
+        summary: values.summary,
+    };
+
+    const normalizeAdditionalInfo = () => {
+        const existing = base.additionalInfo;
+        if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
+            return { ...existing, text: values.additionalInfo };
+        }
+        return values.additionalInfo;
+    };
+
+    const normalizeJobDescription = () => {
+        const existing = base.jobDescription;
+        if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
+            return { ...existing, text: values.jobDescription };
+        }
+        return { text: values.jobDescription };
+    };
+
+    const nextExperiences = values.experiences.map((exp) => ({
+        company: exp.company,
+        companyName: exp.company,
+        position: exp.position,
+        title: exp.position,
+        description: exp.description,
+    }));
+
+    const next = {
+        ...base,
+        fullName: values.profile.fullName,
+        name: values.profile.fullName,
+        dateOfBirth: values.profile.dateOfBirth,
+        birthDate: values.profile.dateOfBirth,
+        title: values.profile.headline,
+        mainSkill: values.profile.headline,
+        summary: values.summary,
+        skills: values.skills,
+        skillList: values.skills,
+        contactWays: values.contactWays,
+        contactWay: values.contactWays,
+        languages: values.languages,
+        certificates: values.certificates,
+        certifications: values.certificates,
+        jobDescription: normalizeJobDescription(),
+        jobDescriptionText: values.jobDescription,
+        additionalInfo: normalizeAdditionalInfo(),
+        additionalInfoText: values.additionalInfo,
+        experiences: nextExperiences,
+        experience: nextExperiences,
+        profile: nextProfile,
+    };
+
+    return next;
+};
+
 const formatExperienceEditText = (items: ResumeExperience[]): string => {
     return items
         .map((exp) => (exp.description ?? '').trim())
@@ -450,7 +531,6 @@ const applyExperienceEditText = (current: ResumeExperience[], text: string): Res
         });
     }
 
-    // Remove trailing completely empty items (keeps UX clean in view mode)
     return next.filter((exp) =>
         [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
     );
@@ -467,6 +547,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const requestId = useWizardStore((state) => state.requestId);
     const accessToken = useAuthStore((state) => state.accessToken);
     const pdfRef = useRef<HTMLDivElement | null>(null);
+    const cvPayloadRef = useRef<any>(null);
     /**
      * Prevent duplicate auto-fetches (especially in React Strict Mode dev where effects run twice).
      * We still allow manual refresh via the "Refresh" handler.
@@ -490,6 +571,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [experienceEditText, setExperienceEditText] = useState('');
     const [isCvLoading, setIsCvLoading] = useState(false);
     const [cvError, setCvError] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadError, setDownloadError] = useState<string | null>(null);
     const [downloadProgress, setDownloadProgress] = useState<number>(0);
@@ -505,6 +588,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             const record = resolveCvRecord(raw);
             if (!record) {
                 setCvError('Resume data is empty.');
+                cvPayloadRef.current = null;
                 setProfile(createEmptyProfile());
                 setSummary('');
                 setSkills([]);
@@ -518,6 +602,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             }
 
             const payload = resolveCvPayload(record);
+            cvPayloadRef.current = payload;
             const detectedSummary = extractSummary(payload) || extractSummary(record);
             const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
             const detectedContactWays =
@@ -551,6 +636,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         } catch (error) {
             console.error('Failed to load CV preview', error);
             setCvError('Unable to load resume data. Please try again.');
+            cvPayloadRef.current = null;
         } finally {
             setIsCvLoading(false);
         }
@@ -567,6 +653,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     }, [requestId, accessToken, loadCvData]);
 
     const handleEdit = (section: string) => {
+        setSaveError(null);
         if (section === 'profile') {
             setProfileEditText(formatProfileEditText(profile));
         }
@@ -591,29 +678,68 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setEditingSection(section);
     };
 
-    const handleSave = () => {
-        if (editingSection === 'profile') {
-            setProfile(applyProfileEditText(profileEditText));
+    const handleSave = async () => {
+        if (!editingSection) return;
+        if (!requestId) {
+            setSaveError('requestId is missing. Please refresh and try again.');
+            return;
         }
-        if (editingSection === 'contactWays') {
-            setContactWays(applyLineListEditText(contactWaysEditText));
+        if (isSaving) return;
+
+        setIsSaving(true);
+        setSaveError(null);
+
+        const nextProfile = editingSection === 'profile' ? applyProfileEditText(profileEditText) : profile;
+        const nextContactWays =
+            editingSection === 'contactWays' ? applyLineListEditText(contactWaysEditText) : contactWays;
+        const nextLanguages = editingSection === 'languages' ? applyLanguagesEditText(languagesEditText) : languages;
+        const nextCertificates =
+            editingSection === 'certificates' ? applyCertificateEditText(certificatesEditText) : certificates;
+        const nextAdditionalInfo = editingSection === 'additionalInfo' ? additionalInfoEditText : additionalInfo;
+        const nextExperiences =
+            editingSection === 'experience' ? applyExperienceEditText(experiences, experienceEditText) : experiences;
+        const normalizedSkills = skills.map((s) => String(s ?? '').trim()).filter(Boolean);
+        const normalizedContactWays = nextContactWays.map((c) => String(c ?? '').trim()).filter(Boolean);
+
+        // Apply local state updates (optimistic)
+        if (editingSection === 'profile') setProfile(nextProfile);
+        if (editingSection === 'contactWays') setContactWays(normalizedContactWays);
+        if (editingSection === 'languages') setLanguages(nextLanguages);
+        if (editingSection === 'certificates') setCertificates(nextCertificates);
+        if (editingSection === 'additionalInfo') setAdditionalInfo(nextAdditionalInfo);
+        if (editingSection === 'experience') setExperiences(nextExperiences);
+
+        const updatedPayload = buildUpdatedCvPayload(cvPayloadRef.current, {
+            profile: nextProfile,
+            summary,
+            skills: normalizedSkills,
+            contactWays: normalizedContactWays,
+            languages: nextLanguages,
+            certificates: nextCertificates,
+            jobDescription,
+            additionalInfo: nextAdditionalInfo,
+            experiences: nextExperiences,
+        });
+
+        try {
+            await editCV({
+                userId: accessToken,
+                requestId,
+                bodyOfResume: updatedPayload,
+            });
+
+            await loadCvData();
+            setEditingSection(null);
+        } catch (error) {
+            console.error('Failed to edit CV', error);
+            setSaveError(error instanceof Error ? error.message : 'Failed to save changes. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
-        if (editingSection === 'languages') {
-            setLanguages(applyLanguagesEditText(languagesEditText));
-        }
-        if (editingSection === 'certificates') {
-            setCertificates(applyCertificateEditText(certificatesEditText));
-        }
-        if (editingSection === 'additionalInfo') {
-            setAdditionalInfo(additionalInfoEditText);
-        }
-        if (editingSection === 'experience') {
-            setExperiences((prev) => applyExperienceEditText(prev, experienceEditText));
-        }
-        setEditingSection(null);
     };
 
     const handleCancel = () => {
+        setSaveError(null);
         setEditingSection(null);
     };
 
@@ -672,6 +798,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             {cvError}
                         </Typography>
                     )}
+                    {saveError && <MuiAlert severity='error' message={saveError} />}
                     {downloadError && <MuiAlert severity='error' message={downloadError} />}
 
                     <SectionContainer>
@@ -799,10 +926,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             ) : (
                                 <Box>
                                     {certificates.map((text, idx) => (
-                                        <SummaryText
-                                            key={idx}
-                                            sx={{ mt: idx === 0 ? 0 : 1.5 }}
-                                        >
+                                        <SummaryText key={idx} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
                                             {text}
                                         </SummaryText>
                                     ))}
