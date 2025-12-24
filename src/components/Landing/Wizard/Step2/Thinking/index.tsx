@@ -43,19 +43,6 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             });
             console.log('res 349587398573', res);
 
-            if (res.status === 200) {
-                try {
-                    await apiClientClient.get('cv/get-cv', {
-                        params: {
-                            requestId,
-                            userId: accessToken,
-                        },
-                    });
-                } catch (getErr) {
-                    console.log('get cv error', getErr);
-                }
-            }
-
             setActiveStep(3);
         } catch (err) {
             setIsSubmitting(false);
