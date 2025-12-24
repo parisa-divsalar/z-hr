@@ -40,6 +40,12 @@ type ResumeExperience = {
     description: string;
 };
 
+type ResumeLanguage = {
+    id: number;
+    name: string;
+    level: string;
+};
+
 type ResumeProfile = {
     fullName: string;
     dateOfBirth: string;
@@ -58,6 +64,164 @@ const createEmptyProfile = (): ResumeProfile => ({
     dateOfBirth: '',
     headline: '',
 });
+
+const normalizeLineList = (value: any): string[] => {
+    if (Array.isArray(value)) {
+        return value
+            .map((v) => (typeof v === 'string' ? v : v?.value ?? v?.text ?? v?.label ?? ''))
+            .map((v) => String(v ?? '').trim())
+            .filter(Boolean);
+    }
+
+    if (typeof value === 'string') {
+        return value
+            .split(/\r?\n|[,;]+/)
+            .map((v) => v.trim())
+            .filter(Boolean);
+    }
+
+    return [];
+};
+
+const formatLineListEditText = (items: string[]): string => items.map((x) => String(x ?? '').trim()).filter(Boolean).join('\n');
+
+const applyLineListEditText = (text: string): string[] =>
+    String(text ?? '')
+        .split(/\r?\n+/)
+        .map((x) => x.trim())
+        .filter(Boolean);
+
+const extractContactWays = (payload: any): string[] => {
+    if (!payload || typeof payload !== 'object') return [];
+
+    const candidates = [
+        payload.contactWay,
+        payload.contactWays,
+        payload.contactMethods,
+        payload.contacts,
+        payload.contact,
+        payload.contactInfo,
+        payload.profile?.contactWay,
+        payload.profile?.contactMethods,
+    ];
+
+    for (const candidate of candidates) {
+        const normalized = normalizeLineList(candidate);
+        if (normalized.length) return normalized;
+    }
+
+    return [];
+};
+
+const normalizeLanguages = (raw: any[]): ResumeLanguage[] => {
+    return raw
+        .map((entry, index) => {
+            const safe = typeof entry === 'object' && entry !== null ? entry : { name: entry };
+            const name = String(safe.name ?? safe.language ?? safe.title ?? safe.value ?? '').trim();
+            const level = String(safe.level ?? safe.proficiency ?? safe.grade ?? safe.rank ?? '').trim();
+            return {
+                id: index + 1,
+                name,
+                level,
+            };
+        })
+        .filter((x) => x.name.length > 0 || x.level.length > 0)
+        .map((x, index) => ({ ...x, id: index + 1 }));
+};
+
+const extractLanguages = (payload: any): ResumeLanguage[] => {
+    if (!payload || typeof payload !== 'object') return [];
+
+    const candidates = [
+        payload.languages,
+        payload.languageSkills,
+        payload.language_skills,
+        payload.profile?.languages,
+        payload.profile?.languageSkills,
+    ];
+
+    for (const candidate of candidates) {
+        if (Array.isArray(candidate)) {
+            const normalized = normalizeLanguages(candidate);
+            if (normalized.length) return normalized;
+        }
+        if (typeof candidate === 'string') {
+            const lines = applyLineListEditText(candidate);
+            const normalized = normalizeLanguages(lines);
+            if (normalized.length) return normalized;
+        }
+    }
+
+    return [];
+};
+
+const formatLanguagesEditText = (items: ResumeLanguage[]): string => {
+    return items
+        .map((l) => {
+            const name = String(l.name ?? '').trim();
+            const level = String(l.level ?? '').trim();
+            return [name, level].filter(Boolean).join(' - ');
+        })
+        .filter(Boolean)
+        .join('\n');
+};
+
+const applyLanguagesEditText = (text: string): ResumeLanguage[] => {
+    const lines = applyLineListEditText(text);
+    const parsed = lines.map((line) => {
+        const parts = line.split(/\s*[-–—•|]\s*/).map((p) => p.trim());
+        const name = parts[0] ?? '';
+        const level = parts.slice(1).join(' ') ?? '';
+        return { name, level };
+    });
+    return normalizeLanguages(parsed);
+};
+
+const extractJobDescriptionText = (payload: any): string => {
+    if (!payload || typeof payload !== 'object') return '';
+    return (
+        payload.jobDescription?.text ??
+        payload.jobDescriptionText ??
+        payload.job_description ??
+        payload.job_description_text ??
+        payload.positionDescription ??
+        payload.position_description ??
+        payload.description ??
+        ''
+    );
+};
+
+const extractCertificateEntries = (payload: any): any[] => {
+    if (!payload || typeof payload !== 'object') return [];
+    if (Array.isArray(payload.certificates)) return payload.certificates;
+    if (Array.isArray(payload.certificate)) return payload.certificate;
+    if (Array.isArray(payload.certifications)) return payload.certifications;
+    if (Array.isArray(payload.profile?.certificates)) return payload.profile.certificates;
+    if (Array.isArray(payload.profile?.certifications)) return payload.profile.certifications;
+    return [];
+};
+
+const normalizeCertificates = (raw: any[]): string[] => {
+    return raw
+        .map((entry) => {
+            if (typeof entry === 'string') return entry.trim();
+            if (!entry || typeof entry !== 'object') return '';
+            return String(entry.text ?? entry.title ?? entry.name ?? entry.description ?? entry.summary ?? '').trim();
+        })
+        .filter(Boolean);
+};
+
+const formatCertificateEditText = (items: string[]): string =>
+    items
+        .map((x) => String(x ?? '').trim())
+        .filter(Boolean)
+        .join('\n\n');
+
+const applyCertificateEditText = (text: string): string[] =>
+    String(text ?? '')
+        .split(/\n\s*\n+/)
+        .map((b) => b.trim())
+        .filter(Boolean);
 
 const formatExperiencePosition = (entry: Record<string, any>) => {
     const title = entry?.position ?? entry?.title ?? entry?.role ?? '';
@@ -184,13 +348,7 @@ const extractDateOfBirth = (payload: any): string => {
 
 const extractHeadline = (payload: any): string => {
     if (!payload || typeof payload !== 'object') return '';
-    const title =
-        payload.title ??
-        payload.position ??
-        payload.mainSkill ??
-        payload.profile?.title ??
-        payload.profile?.position ??
-        '';
+    const title = payload.title ?? payload.position ?? payload.mainSkill ?? payload.profile?.title ?? payload.profile?.position ?? '';
     const visa = payload.visaStatus ?? payload.profile?.visaStatus ?? '';
     const years =
         payload.yearsOfExperience ??
@@ -250,9 +408,7 @@ const applyExperienceEditText = (current: ResumeExperience[], text: string): Res
     }
 
     // Remove trailing completely empty items (keeps UX clean in view mode)
-    return next.filter((exp) =>
-        [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
-    );
+    return next.filter((exp) => [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0));
 };
 
 interface ResumeEditorProps {
@@ -275,6 +431,13 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
     const [summary, setSummary] = useState('');
     const [skills, setSkills] = useState<string[]>([]);
+    const [contactWays, setContactWays] = useState<string[]>([]);
+    const [contactWaysEditText, setContactWaysEditText] = useState('');
+    const [languages, setLanguages] = useState<ResumeLanguage[]>([]);
+    const [languagesEditText, setLanguagesEditText] = useState('');
+    const [certificates, setCertificates] = useState<string[]>([]);
+    const [certificatesEditText, setCertificatesEditText] = useState('');
+    const [jobDescription, setJobDescription] = useState('');
     const [experiences, setExperiences] = useState<ResumeExperience[]>([]);
     const [experienceEditText, setExperienceEditText] = useState('');
     const [isCvLoading, setIsCvLoading] = useState(false);
@@ -297,6 +460,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 setProfile(createEmptyProfile());
                 setSummary('');
                 setSkills([]);
+                setContactWays([]);
+                setLanguages([]);
+                setCertificates([]);
+                setJobDescription('');
                 setExperiences([]);
                 return;
             }
@@ -304,6 +471,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             const payload = resolveCvPayload(record);
             const detectedSummary = extractSummary(payload) || extractSummary(record);
             const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
+            const detectedContactWays =
+                extractContactWays(payload).length > 0 ? extractContactWays(payload) : extractContactWays(record);
+            const detectedLanguages = extractLanguages(payload).length > 0 ? extractLanguages(payload) : extractLanguages(record);
+            const detectedCertificates =
+                normalizeCertificates(extractCertificateEntries(payload)).length > 0
+                    ? normalizeCertificates(extractCertificateEntries(payload))
+                    : normalizeCertificates(extractCertificateEntries(record));
+            const detectedJobDescription = extractJobDescriptionText(payload) || extractJobDescriptionText(record);
             const extracted = extractExperienceEntries(payload).length
                 ? extractExperienceEntries(payload)
                 : extractExperienceEntries(record);
@@ -316,6 +491,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             });
             setSummary(detectedSummary);
             setSkills(detectedSkills);
+            setContactWays(detectedContactWays);
+            setLanguages(detectedLanguages);
+            setCertificates(detectedCertificates);
+            setJobDescription(detectedJobDescription);
             setExperiences(normalizedExperiences);
         } catch (error) {
             console.error('Failed to load CV preview', error);
@@ -339,6 +518,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         if (section === 'skills' && skills.length === 0) {
             setSkills(['']);
         }
+        if (section === 'contactWays') {
+            setContactWaysEditText(formatLineListEditText(contactWays));
+        }
+        if (section === 'languages') {
+            setLanguagesEditText(formatLanguagesEditText(languages));
+        }
+        if (section === 'certificates') {
+            setCertificatesEditText(formatCertificateEditText(certificates));
+        }
         if (section === 'experience') {
             setExperienceEditText(formatExperienceEditText(experiences));
         }
@@ -346,6 +534,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     };
 
     const handleSave = () => {
+        if (editingSection === 'contactWays') {
+            setContactWays(applyLineListEditText(contactWaysEditText));
+        }
+        if (editingSection === 'languages') {
+            setLanguages(applyLanguagesEditText(languagesEditText));
+        }
+        if (editingSection === 'certificates') {
+            setCertificates(applyCertificateEditText(certificatesEditText));
+        }
         if (editingSection === 'experience') {
             setExperiences((prev) => applyExperienceEditText(prev, experienceEditText));
         }
@@ -456,6 +653,119 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         </SkillsContainer>
                     </SectionContainer>
 
+                    <SectionContainer>
+                        <SectionHeader
+                            title='Contact'
+                            onEdit={() => handleEdit('contactWays')}
+                            isEditing={editingSection === 'contactWays'}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                        />
+                        <Box mt={2}>
+                            {editingSection === 'contactWays' ? (
+                                <ExperienceTextareaAutosize
+                                    value={contactWaysEditText}
+                                    onChange={(e) => setContactWaysEditText(e.target.value)}
+                                />
+                            ) : contactWays.length === 0 ? (
+                                <Typography variant='body2' color='text.secondary'>
+                                    No contact methods found.
+                                </Typography>
+                            ) : (
+                                <SkillsContainer>
+                                    {contactWays.map((item, idx) => (
+                                        <SkillItem key={idx}>{item}</SkillItem>
+                                    ))}
+                                </SkillsContainer>
+                            )}
+                        </Box>
+                    </SectionContainer>
+
+                    <SectionContainer>
+                        <SectionHeader
+                            title='Languages'
+                            onEdit={() => handleEdit('languages')}
+                            isEditing={editingSection === 'languages'}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                        />
+                        <Box mt={2}>
+                            {editingSection === 'languages' ? (
+                                <ExperienceTextareaAutosize
+                                    value={languagesEditText}
+                                    onChange={(e) => setLanguagesEditText(e.target.value)}
+                                />
+                            ) : languages.length === 0 ? (
+                                <Typography variant='body2' color='text.secondary'>
+                                    No languages found.
+                                </Typography>
+                            ) : (
+                                <SkillsContainer>
+                                    {languages.map((lang) => (
+                                        <SkillItem key={lang.id}>
+                                            {lang.name}
+                                            {lang.level ? ` - ${lang.level}` : ''}
+                                        </SkillItem>
+                                    ))}
+                                </SkillsContainer>
+                            )}
+                        </Box>
+                    </SectionContainer>
+
+                    <SectionContainer>
+                        <SectionHeader
+                            title='Certificates'
+                            onEdit={() => handleEdit('certificates')}
+                            isEditing={editingSection === 'certificates'}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                        />
+                        <Box mt={2}>
+                            {editingSection === 'certificates' ? (
+                                <ExperienceTextareaAutosize
+                                    value={certificatesEditText}
+                                    onChange={(e) => setCertificatesEditText(e.target.value)}
+                                />
+                            ) : certificates.length === 0 ? (
+                                <Typography variant='body2' color='text.secondary'>
+                                    No certificates found.
+                                </Typography>
+                            ) : (
+                                <Box>
+                                    {certificates.map((text, idx) => (
+                                        <Typography key={idx} variant='body2' color='text.primary' mt={idx === 0 ? 0 : 1.5}>
+                                            {text}
+                                        </Typography>
+                                    ))}
+                                </Box>
+                            )}
+                        </Box>
+                    </SectionContainer>
+
+                    <SectionContainer>
+                        <SectionHeader
+                            title='Job Description'
+                            onEdit={() => handleEdit('jobDescription')}
+                            isEditing={editingSection === 'jobDescription'}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                        />
+                        <SummaryContainer>
+                            {editingSection === 'jobDescription' ? (
+                                <StyledTextareaAutosize
+                                    value={jobDescription}
+                                    onChange={(e) => setJobDescription(e.target.value)}
+                                />
+                            ) : jobDescription ? (
+                                <SummaryText>{jobDescription}</SummaryText>
+                            ) : (
+                                <Typography variant='body2' color='text.secondary'>
+                                    No job description found.
+                                </Typography>
+                            )}
+                        </SummaryContainer>
+                    </SectionContainer>
+
                     <ExperienceContainer>
                         <SectionHeader
                             title='Experience'
@@ -472,9 +782,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         ) : (
                             experiences
                                 .filter((exp) =>
-                                    [exp.company, exp.position, exp.description].some(
-                                        (v) => String(v ?? '').trim().length > 0,
-                                    ),
+                                    [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
                                 )
                                 .map((experience, index) => {
                                     const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
@@ -492,9 +800,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                                 </Box>
                                             )}
                                             {experience.description && (
-                                                <ExperienceDescription variant='body2'>
-                                                    {experience.description}
-                                                </ExperienceDescription>
+                                                <ExperienceDescription variant='body2'>{experience.description}</ExperienceDescription>
                                             )}
                                         </Wrapper>
                                     );
