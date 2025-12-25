@@ -6,6 +6,7 @@ import { Box, CardContent, Typography } from '@mui/material';
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import MuiChips from '@/components/UI/MuiChips';
 import { editCV } from '@/services/cv/edit-cv';
 import { getCV } from '@/services/cv/get-cv';
 import { getImproved } from '@/services/cv/get-improved';
@@ -24,7 +25,6 @@ import {
     SummaryContainer,
     SummaryText,
     SkillsContainer,
-    SkillItem,
     ExperienceContainer,
     ExperienceItem,
     ExperienceItemSmall,
@@ -1021,7 +1021,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     />
                                 ))
                             ) : (
-                                skills.map((skill, index) => <SkillItem key={index}>{skill}</SkillItem>)
+                                skills.map((skill, index) => (
+                                    <MuiChips key={`${skill}-${index}`} label={skill} sx={{ mt: 0 }} />
+                                ))
                             )}
                         </SkillsContainer>
                     </SectionContainer>
