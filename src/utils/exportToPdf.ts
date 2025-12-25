@@ -60,6 +60,17 @@ export type ExportElementToPdfOptions = {
     preOpenWindow?: boolean;
 };
 
+export type ExportElementToPdfPreviewImageOptions = Omit<
+    ExportElementToPdfOptions,
+    'fileName' | 'onProgress' | 'imageCompression' | 'preOpenWindow'
+> & {
+    /**
+     * JPEG quality (0..1) when imageType is JPEG.
+     * Default: 0.82
+     */
+    jpegQuality?: number;
+};
+
 const INVALID_FILENAME_CHARS = new Set(['<', '>', ':', '"', '/', '\\', '|', '?', '*']);
 
 export const sanitizeFileName = (input: string) => {
@@ -117,6 +128,102 @@ const waitForElementImages = async (element: HTMLElement, timeoutMs: number) => 
         ),
     );
 };
+
+/**
+ * Render an element into an image that matches the **first page** of our PDF export pipeline.
+ * This is used for UI thumbnails / previews ("PDF image") without generating a full PDF file.
+ */
+export async function exportElementToPdfPreviewImage(
+    element: HTMLElement,
+    options: ExportElementToPdfPreviewImageOptions = { imageType: 'JPEG' },
+): Promise<string | null> {
+    const {
+        orientation = 'p',
+        format = 'a4',
+        unit = 'pt',
+        marginPt = 24,
+        scale = 1,
+        backgroundColor = '#ffffff',
+        imageType = 'JPEG',
+        waitForFonts = true,
+        waitForImages = true,
+        resourceTimeoutMs = 2500,
+        jpegQuality = 0.82,
+    } = options;
+
+    if (!element) return null;
+
+    // Best-effort: ensure fonts/images are ready so the preview matches the exported PDF.
+    if (waitForFonts) {
+        await waitForDocumentFonts(resourceTimeoutMs);
+    }
+    if (waitForImages) {
+        await waitForElementImages(element, resourceTimeoutMs);
+    }
+
+    const [html2canvasModule, jsPdfModule] = await Promise.all([import('html2canvas'), import('jspdf')]);
+    const html2canvas = resolveHtml2Canvas(html2canvasModule);
+    const jsPDFConstructor = resolveJsPdfConstructor(jsPdfModule);
+    if (!jsPDFConstructor) {
+        throw new Error('Failed to load jsPDF constructor.');
+    }
+
+    const pdf = new jsPDFConstructor({ orientation, unit, format, compress: true });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const contentWidthPt = Math.max(1, pageWidth - marginPt * 2);
+    const contentHeightPt = Math.max(1, pageHeight - marginPt * 2);
+
+    // Capture only enough DOM height for the first PDF page (fast, and guarantees the preview matches PDF framing).
+    const rect = element.getBoundingClientRect();
+    const captureWidthCss = Math.ceil(Math.max(1, element.scrollWidth || 0, rect.width || 0));
+    const fullHeightCss = Math.ceil(Math.max(1, element.scrollHeight || 0, rect.height || 0));
+
+    // Derivation: sliceHeightPx = (contentHeightPt * canvas.width) / contentWidthPt.
+    // canvas.width ≈ captureWidthCss * scale, so CSS height needed is:
+    // sliceHeightCss ≈ (contentHeightPt * captureWidthCss) / contentWidthPt.
+    const firstPageHeightCss = Math.ceil((contentHeightPt * captureWidthCss) / contentWidthPt) + 6;
+    const captureHeightCss = Math.min(fullHeightCss, firstPageHeightCss);
+
+    const canvas = await html2canvas(element, {
+        scale,
+        backgroundColor,
+        useCORS: true,
+        allowTaint: false,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
+        width: captureWidthCss,
+        height: captureHeightCss,
+        windowWidth: document.documentElement.clientWidth,
+        windowHeight: document.documentElement.clientHeight,
+    });
+
+    const sliceHeightPx = Math.min(canvas.height, Math.floor((contentHeightPt * canvas.width) / contentWidthPt));
+    if (sliceHeightPx <= 0 || canvas.width <= 0) return null;
+
+    const pageCanvas = document.createElement('canvas');
+    pageCanvas.width = canvas.width;
+    pageCanvas.height = sliceHeightPx;
+    const ctx = pageCanvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Force an opaque white background (prevents "gray/dirty" look when alpha is present).
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+    ctx.restore();
+
+    ctx.drawImage(canvas, 0, 0, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
+
+    const mimeType = imageType === 'JPEG' ? 'image/jpeg' : 'image/png';
+    try {
+        return imageType === 'JPEG' ? pageCanvas.toDataURL(mimeType, jpegQuality) : pageCanvas.toDataURL(mimeType);
+    } catch {
+        // Most common cause: tainted canvas due to cross-origin images without proper CORS headers.
+        return null;
+    }
+}
 
 /**
  * Export a DOM element to PDF while preserving the current UI.

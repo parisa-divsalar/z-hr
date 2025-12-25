@@ -9,9 +9,9 @@ import { useRouter } from 'next/navigation';
 import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
 import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
 import ArrowRightIcon from '@/assets/images/icons/links.svg';
+import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
-import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
@@ -65,19 +65,16 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
         setDownloadError(null);
         try {
             const date = new Date().toISOString().slice(0, 10);
-            const baseName =
-                sanitizeFileName(`Resume-${requestId ?? date}`) || sanitizeFileName('Resume') || 'Resume';
+            const baseName = sanitizeFileName(`Resume-${requestId ?? date}`) || sanitizeFileName('Resume') || 'Resume';
             await exportElementToPdf(resumePdfRef.current, {
                 fileName: baseName,
                 marginPt: 24,
                 scale: 2,
                 backgroundColor: '#ffffff',
                 onProgress: (p) => setDownloadProgress(p),
-                // Keep UX consistent with ResumeEditor (no new tab).
                 preOpenWindow: false,
             });
         } catch (error) {
-            // eslint-disable-next-line no-console
             console.error('Failed to export PDF', error);
             setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
         } finally {
@@ -86,14 +83,12 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
     }, [isDownloading, requestId]);
 
     const handleEdit = useCallback(() => {
-        // If we're inside Step3 (stage-based UI), go back to ResumeEditor without leaving the wizard.
         if (setStage) {
             setActiveStep?.(3);
             setStage('RESUME_EDITOR');
             return;
         }
 
-        // Fallback: navigate to wizard step 3 route (keeps requestId for reload-safe editing).
         const qs = new URLSearchParams();
         qs.set('step', '3');
         if (requestId) qs.set('requestId', requestId);
@@ -142,7 +137,7 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
                 <Grid size={{ xs: 12, lg: 3 }}>
                     <ResumePreview>
                         <Typography variant='body1' color='text.secondary'>
-                            Resume Preview
+                            Resume Previe
                         </Typography>
                     </ResumePreview>
                 </Grid>
@@ -190,7 +185,12 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
                                 ))}
                                 <Grid size={{ xs: 12, sm: 4, lg: 4 }} mt={6}>
                                     <ActionButtons>
-                                        <MuiButton variant='outlined' size='large' color='secondary' onClick={handleEdit}>
+                                        <MuiButton
+                                            variant='outlined'
+                                            size='large'
+                                            color='secondary'
+                                            onClick={handleEdit}
+                                        >
                                             Edit
                                         </MuiButton>
                                         <MuiButton

@@ -43,7 +43,7 @@ export const PurplePill = styled(Box)(() => ({
 
 export const ResumePreview = styled(Paper)(({ theme }) => ({
   height: 250,
-  backgroundColor: '#F5F5F5',
+  backgroundColor: '#fff',
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: theme.shape.borderRadius,
   display: 'flex',

@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Box, Stack, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { Box, CircularProgress, Dialog, IconButton, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -13,7 +14,7 @@ import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
-import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
+import { exportElementToPdf, exportElementToPdfPreviewImage, sanitizeFileName } from '@/utils/exportToPdf';
 
 import {
     Container,
@@ -33,6 +34,8 @@ import {
 const ResumeGeneratorPage = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
@@ -40,6 +43,11 @@ const ResumeGeneratorPage = () => {
     const requestId = useWizardStore((state) => state.requestId);
     const setRequestId = useWizardStore((state) => state.setRequestId);
     const resumePdfRef = useRef<HTMLDivElement | null>(null);
+
+    const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+    const [previewError, setPreviewError] = useState<string | null>(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     useEffect(() => {
         const raw = searchParams.get('requestId');
@@ -50,6 +58,73 @@ const ResumeGeneratorPage = () => {
             trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
         if (normalized) setRequestId(normalized);
     }, [searchParams, setRequestId]);
+
+    const renderResumeThumbnail = useCallback(async () => {
+        const element = resumePdfRef.current;
+        if (!element) return;
+
+        setIsPreviewLoading(true);
+        setPreviewError(null);
+
+        try {
+            const dataUrl = await exportElementToPdfPreviewImage(element, {
+                // Match PDF framing defaults (A4 portrait with margins), but keep it fast.
+                marginPt: 24,
+                scale: 1,
+                backgroundColor: '#ffffff',
+                imageType: 'JPEG',
+                jpegQuality: 0.82,
+                waitForFonts: true,
+                waitForImages: true,
+                resourceTimeoutMs: 2500,
+            });
+
+            if (!dataUrl) {
+                throw new Error('Preview image is empty.');
+            }
+
+            setPreviewSrc(dataUrl);
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to render resume thumbnail', e);
+            setPreviewError('Failed to render PDF preview.');
+            setPreviewSrc(null);
+        } finally {
+            setIsPreviewLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        setPreviewSrc(null);
+        setPreviewError(null);
+
+        // Retry a few times because ResumeEditor loads its content asynchronously.
+        const run = async () => {
+            for (let attempt = 0; attempt < 8; attempt++) {
+                if (cancelled) return;
+                if (resumePdfRef.current) {
+                    // Give the browser a tick to paint updated resume content.
+                    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+                    const textLen = (resumePdfRef.current.textContent ?? '').replace(/\s+/g, ' ').trim().length;
+                    // Heuristic: wait until the resume actually has some content before capturing.
+                    if (textLen < 40) {
+                        await new Promise((r) => window.setTimeout(r, 300));
+                        continue;
+                    }
+
+                    await renderResumeThumbnail();
+                    return;
+                }
+                await new Promise((r) => window.setTimeout(r, 250));
+            }
+        };
+
+        void run();
+        return () => {
+            cancelled = true;
+        };
+    }, [requestId, renderResumeThumbnail]);
 
     const resumeInfo = [
         { label: 'Created:', value: '09/09/2025' },
@@ -137,9 +212,30 @@ const ResumeGeneratorPage = () => {
             <Grid container spacing={{ xs: 3, sm: 4 }}>
                 <Grid size={{ xs: 12, lg: 3 }}>
                     <ResumePreview>
-                        <Typography variant='body1' color='text.secondary'>
-                            Resume Preview
-                        </Typography>
+                        {previewSrc ? (
+                            <Box
+                                component='img'
+                                src={previewSrc}
+                                alt='Resume preview'
+                                onClick={() => setIsPreviewOpen(true)}
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain',
+                                    borderRadius: 1,
+                                    opacity: 1,
+                                    filter: 'none',
+                                    cursor: 'pointer',
+                                }}
+                            />
+                        ) : (
+                            <Stack alignItems='center' justifyContent='center' spacing={1} sx={{ px: 2 }}>
+                                {isPreviewLoading ? <CircularProgress size={22} /> : null}
+                                <Typography variant='body2' color='text.secondary' textAlign='center'>
+                                    {previewError ?? (isPreviewLoading ? 'Generating preview…' : 'Preview will appear here')}
+                                </Typography>
+                            </Stack>
+                        )}
                     </ResumePreview>
                 </Grid>
 
@@ -211,6 +307,72 @@ const ResumeGeneratorPage = () => {
                     </InfoTable>
                 </Grid>
             </Grid>
+
+            <Dialog
+                open={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                fullScreen={isSmallScreen}
+                maxWidth={false}
+                PaperProps={{
+                    sx: {
+                        bgcolor: '#fff',
+                        boxShadow: theme.shadows[6],
+                        overflow: 'hidden',
+                        borderRadius: isSmallScreen ? 0 : 2,
+                        m: { xs: 0, sm: 2 },
+                    },
+                }}
+                BackdropProps={{
+                    // User asked for a white/very light "gallery" background (not dark).
+                    sx: { backgroundColor: 'rgba(250,250,250,0.98)' },
+                }}
+            >
+                <Box
+                    sx={{
+                        position: 'relative',
+                        width: isSmallScreen ? '100vw' : '92vw',
+                        height: isSmallScreen ? '100vh' : '92vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: { xs: 1.5, sm: 2 },
+                    }}
+                >
+                    <IconButton
+                        aria-label='Close preview'
+                        onClick={() => setIsPreviewOpen(false)}
+                        sx={{
+                            position: 'absolute',
+                            top: 12,
+                            right: 12,
+                            color: theme.palette.text.primary,
+                            bgcolor: 'rgba(255,255,255,0.85)',
+                            border: `1px solid ${theme.palette.divider}`,
+                            '&:hover': { bgcolor: '#fff' },
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+
+                    {previewSrc ? (
+                        <Box
+                            component='img'
+                            src={previewSrc}
+                            alt='Resume preview large'
+                            onDoubleClick={handleEdit}
+                            sx={{
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                objectFit: 'contain',
+                                borderRadius: 1,
+                                bgcolor: '#fff',
+                                opacity: 1,
+                                filter: 'none',
+                            }}
+                        />
+                    ) : null}
+                </Box>
+            </Dialog>
 
             <StyledDivider />
 
