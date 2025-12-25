@@ -374,14 +374,27 @@ const extractDateOfBirth = (payload: any): string => {
     if (!payload || typeof payload !== 'object') return '';
     return (
         payload.dateOfBirth ??
+        payload.DateOfBirth ??
         payload.birthDate ??
+        payload.BirthDate ??
         payload.dob ??
+        payload.DOB ??
         payload.profile?.dateOfBirth ??
+        payload.profile?.DateOfBirth ??
         payload.profile?.birthDate ??
+        payload.profile?.BirthDate ??
         payload.profile?.dob ??
+        payload.profile?.DOB ??
         payload.personal?.dateOfBirth ??
+        payload.personal?.DateOfBirth ??
         payload.personal?.birthDate ??
+        payload.personal?.BirthDate ??
         payload.personal?.dob ??
+        payload.personal?.DOB ??
+        payload.personalInfo?.dateOfBirth ??
+        payload.personalInfo?.DateOfBirth ??
+        payload.personalInformation?.dateOfBirth ??
+        payload.personalInformation?.DateOfBirth ??
         ''
     );
 };
@@ -408,9 +421,77 @@ const extractHeadline = (payload: any): string => {
 };
 
 const resolveCvRecord = (raw: any): any | null => {
-    const candidate = Array.isArray(raw) ? raw[0] : raw;
-    if (!candidate || typeof candidate !== 'object') return null;
-    return (candidate as any).result ?? (candidate as any).data ?? candidate;
+    const unwrap = (candidate: any) => {
+        if (!candidate || typeof candidate !== 'object') return null;
+        return (candidate as any).result ?? (candidate as any).data ?? candidate;
+    };
+
+    const getTimeKey = (candidate: any): number => {
+        if (!candidate || typeof candidate !== 'object') return -1;
+        const c: any = candidate;
+        const value =
+            c.updatedAt ??
+            c.updatedDate ??
+            c.modifiedAt ??
+            c.modifiedDate ??
+            c.lastUpdatedAt ??
+            c.lastUpdate ??
+            c.createdAt ??
+            c.createdDate ??
+            c.insertDate ??
+            c.timestamp ??
+            c.time ??
+            null;
+
+        if (typeof value === 'number' && Number.isFinite(value)) return value;
+        if (typeof value === 'string') {
+            const ms = Date.parse(value);
+            if (!Number.isNaN(ms)) return ms;
+        }
+        return -1;
+    };
+
+    const hasBody = (candidate: any): boolean => {
+        if (!candidate || typeof candidate !== 'object') return false;
+        const body = (candidate as any).bodyOfResume ?? (candidate as any).BodyOfResume;
+        if (!body) return false;
+        if (typeof body === 'string') return body.trim().length > 0;
+        if (typeof body === 'object') return Object.keys(body).length > 0;
+        return true;
+    };
+
+    const pickFromArray = (arr: any[]): any | null => {
+        const unwrapped = arr.map(unwrap).filter(Boolean) as any[];
+        if (unwrapped.length === 0) return null;
+
+        // Prefer records that actually contain a body, then pick the newest by timestamp-like keys.
+        const bodyCandidates = unwrapped.filter(hasBody);
+        const pool = bodyCandidates.length ? bodyCandidates : unwrapped;
+
+        let best = pool[pool.length - 1];
+        let bestKey = getTimeKey(best);
+
+        for (const item of pool) {
+            const key = getTimeKey(item);
+            if (key > bestKey) {
+                best = item;
+                bestKey = key;
+            }
+        }
+
+        return best;
+    };
+
+    if (Array.isArray(raw)) {
+        return pickFromArray(raw);
+    }
+
+    const unwrapped = unwrap(raw);
+    if (Array.isArray(unwrapped)) {
+        return pickFromArray(unwrapped);
+    }
+
+    return unwrapped;
 };
 
 const resolveCvPayload = (record: any): any => {
