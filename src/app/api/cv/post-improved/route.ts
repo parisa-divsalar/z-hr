@@ -19,9 +19,6 @@ export async function POST(request: NextRequest) {
 
         const { searchParams } = new URL(request.url);
         const requestId = normalizeValue(payload?.requestId ?? searchParams.get('requestId'));
-        if (!requestId) {
-            return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
-        }
 
         const userIdFromCookie = normalizeValue((await cookies()).get('accessToken')?.value);
         const userId = normalizeValue(payload?.userId ?? searchParams.get('userId')) ?? userIdFromCookie;
@@ -31,18 +28,15 @@ export async function POST(request: NextRequest) {
 
         const lang = normalizeValue(payload?.lang ?? searchParams.get('lang')) ?? 'en';
 
-        const bodyOfResume = payload?.bodyOfResume ?? payload;
-        if (!bodyOfResume) {
-            return NextResponse.json({ message: 'bodyOfResume is required' }, { status: 400 });
-        }
+        const bodyOfResume = payload?.bodyOfResume;
+
+        const requestBody: Record<string, unknown> = { userId };
+        if (requestId) requestBody.requestId = requestId;
+        if (bodyOfResume !== undefined) requestBody.bodyOfResume = bodyOfResume;
 
         const response = await apiClientServer.post(
             `Apps/improve-cv-part?userId=${encodeURIComponent(userId)}&lang=${encodeURIComponent(lang)}`,
-            {
-                userId,
-                requestId,
-                bodyOfResume,
-            },
+            requestBody,
         );
 
         return NextResponse.json(response.data);

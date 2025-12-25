@@ -8,6 +8,8 @@ import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { editCV } from '@/services/cv/edit-cv';
 import { getCV } from '@/services/cv/get-cv';
+import { getImproved } from '@/services/cv/get-improved';
+import { postImproved } from '@/services/cv/post-improved';
 import { useAuthStore } from '@/store/auth';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf } from '@/utils/exportToPdf';
@@ -576,6 +578,54 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadError, setDownloadError] = useState<string | null>(null);
     const [downloadProgress, setDownloadProgress] = useState<number>(0);
+    const [improvingSection, setImprovingSection] = useState<string | null>(null);
+    const [improveError, setImproveError] = useState<string | null>(null);
+
+    const normalizeValue = (value: unknown): string | null => {
+        if (value === null || value === undefined) return null;
+        const str = String(value).trim();
+        if (!str) return null;
+        if (str.startsWith('"') && str.endsWith('"')) return str.slice(1, -1);
+        return str;
+    };
+
+    const extractPollingRequestId = (response: any): string | null => {
+        const direct =
+            response?.RequestId ??
+            response?.requestId ??
+            response?.requestID ??
+            response?.result?.RequestId ??
+            response?.result?.requestId ??
+            response?.data?.RequestId ??
+            response?.data?.requestId;
+        return normalizeValue(direct);
+    };
+
+    const extractImprovedText = (response: any): string | null => {
+        if (typeof response === 'string') return response.trim() || null;
+        const candidates = [
+            response?.bodyOfResume,
+            response?.BodyOfResume,
+            response?.improvedText,
+            response?.text,
+            response?.result,
+            response?.result?.bodyOfResume,
+            response?.result?.BodyOfResume,
+            response?.result?.improvedText,
+            response?.result?.text,
+            response?.data,
+            response?.data?.bodyOfResume,
+            response?.data?.BodyOfResume,
+            response?.data?.text,
+        ];
+        for (const candidate of candidates) {
+            if (typeof candidate === 'string') {
+                const trimmed = candidate.trim();
+                if (trimmed) return trimmed;
+            }
+        }
+        return null;
+    };
 
     const loadCvData = useCallback(async () => {
         if (!requestId || !accessToken) return;
@@ -749,6 +799,129 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setSkills(newSkills);
     };
 
+    const handleImprove = useCallback(
+        async (section: string) => {
+            if (improvingSection) return;
+            if (!requestId) {
+                setImproveError('requestId is missing. Please refresh and try again.');
+                return;
+            }
+
+            setImproveError(null);
+            setImprovingSection(section);
+
+            const getSectionText = () => {
+                switch (section) {
+                    case 'summary':
+                        return summary;
+                    case 'skills':
+                        return formatLineListEditText(skills);
+                    case 'contactWays':
+                        return formatLineListEditText(contactWays);
+                    case 'languages':
+                        return formatLanguagesEditText(languages);
+                    case 'certificates':
+                        return formatCertificateEditText(certificates);
+                    case 'jobDescription':
+                        return jobDescription;
+                    case 'experience':
+                        return formatExperienceEditText(experiences);
+                    case 'additionalInfo':
+                        return additionalInfo;
+                    default:
+                        return '';
+                }
+            };
+
+            const applyToSection = (text: string) => {
+                switch (section) {
+                    case 'summary':
+                        setSummary(text);
+                        return;
+                    case 'skills':
+                        setSkills(applyLineListEditText(text));
+                        return;
+                    case 'contactWays':
+                        setContactWays(applyLineListEditText(text));
+                        return;
+                    case 'languages': {
+                        const next = applyLanguagesEditText(text);
+                        setLanguages(next);
+                        return;
+                    }
+                    case 'certificates':
+                        setCertificates(applyCertificateEditText(text));
+                        return;
+                    case 'jobDescription':
+                        setJobDescription(text);
+                        return;
+                    case 'experience': {
+                        const nextExperiences = applyExperienceEditText(experiences, text);
+                        setExperiences(nextExperiences);
+                        setExperienceEditText(formatExperienceEditText(nextExperiences));
+                        return;
+                    }
+                    case 'additionalInfo':
+                        setAdditionalInfo(text);
+                        return;
+                }
+            };
+
+            try {
+                const currentText = getSectionText();
+                if (!String(currentText ?? '').trim()) {
+                    throw new Error('Nothing to improve for this section.');
+                }
+
+                const postResponse = await postImproved({
+                    userId: accessToken ?? undefined,
+                });
+
+                const pollingRequestId = extractPollingRequestId(postResponse) ?? requestId;
+                if (!pollingRequestId) {
+                    throw new Error('Missing requestId from improve response. Please try again.');
+                }
+
+                const start = Date.now();
+                const timeoutMs = 30_000;
+                const pollIntervalMs = 1_000;
+
+                let improved: string | null = null;
+                while (Date.now() - start < timeoutMs) {
+                    const res = await getImproved({ requestId: pollingRequestId });
+                    improved = extractImprovedText(res);
+                    if (improved) break;
+                    await new Promise<void>((resolve) => setTimeout(resolve, pollIntervalMs));
+                }
+
+                if (!improved) {
+                    throw new Error('Improvement is taking too long. Please try again.');
+                }
+
+                applyToSection(improved);
+            } catch (error) {
+                console.error('Failed to improve section', error);
+                setImproveError(error instanceof Error ? error.message : 'Failed to improve text. Please try again.');
+            } finally {
+                setImprovingSection(null);
+            }
+        },
+        [
+            accessToken,
+            additionalInfo,
+            certificates,
+            contactWays,
+            experiences,
+            extractPollingRequestId,
+            improvingSection,
+            jobDescription,
+            languages,
+            requestId,
+            skills,
+            summary,
+        ],
+    );
+
     const handleDownloadPdf = useCallback(async () => {
         if (!pdfRef.current || isDownloading) return;
 
@@ -799,13 +972,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         </Typography>
                     )}
                     {saveError && <MuiAlert severity='error' message={saveError} />}
+                    {improveError && <MuiAlert severity='error' message={improveError} />}
                     {downloadError && <MuiAlert severity='error' message={downloadError} />}
 
                     <SectionContainer>
                         <SectionHeader
                             title='Summary'
                             onEdit={() => handleEdit('summary')}
+                            onImprove={() => void handleImprove('summary')}
                             isEditing={editingSection === 'summary'}
+                            isImproving={improvingSection === 'summary'}
+                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'summary'}
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
@@ -822,7 +999,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         <SectionHeader
                             title='Skills'
                             onEdit={() => handleEdit('skills')}
+                            onImprove={() => void handleImprove('skills')}
                             isEditing={editingSection === 'skills'}
+                            isImproving={improvingSection === 'skills'}
+                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
@@ -850,7 +1030,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         <SectionHeader
                             title='Contact'
                             onEdit={() => handleEdit('contactWays')}
+                            onImprove={() => void handleImprove('contactWays')}
                             isEditing={editingSection === 'contactWays'}
+                            isImproving={improvingSection === 'contactWays'}
+                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
@@ -878,7 +1061,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         <SectionHeader
                             title='Languages'
                             onEdit={() => handleEdit('languages')}
+                            onImprove={() => void handleImprove('languages')}
                             isEditing={editingSection === 'languages'}
+                            isImproving={improvingSection === 'languages'}
+                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
@@ -909,7 +1095,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         <SectionHeader
                             title='Certificates'
                             onEdit={() => handleEdit('certificates')}
+                            onImprove={() => void handleImprove('certificates')}
                             isEditing={editingSection === 'certificates'}
+                            isImproving={improvingSection === 'certificates'}
+                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'certificates'}
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
@@ -939,7 +1128,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         <SectionHeader
                             title='Job Description'
                             onEdit={() => handleEdit('jobDescription')}
+                            onImprove={() => void handleImprove('jobDescription')}
                             isEditing={editingSection === 'jobDescription'}
+                            isImproving={improvingSection === 'jobDescription'}
+                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'jobDescription'}
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
@@ -963,7 +1155,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         <SectionHeader
                             title='Experience'
                             onEdit={() => handleEdit('experience')}
+                            onImprove={() => void handleImprove('experience')}
                             isEditing={editingSection === 'experience'}
+                            isImproving={improvingSection === 'experience'}
+                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'experience'}
                             onSave={handleSave}
                             onCancel={handleCancel}
                         />
@@ -1011,6 +1206,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                 title='Additional Info'
                                 onEdit={() => handleEdit('additionalInfo')}
                                 isEditing={editingSection === 'additionalInfo'}
+                                onImprove={() => void handleImprove('additionalInfo')}
+                                isImproving={improvingSection === 'additionalInfo'}
+                                improveDisabled={Boolean(improvingSection) && improvingSection !== 'additionalInfo'}
                                 onSave={handleSave}
                                 onCancel={handleCancel}
                             />
