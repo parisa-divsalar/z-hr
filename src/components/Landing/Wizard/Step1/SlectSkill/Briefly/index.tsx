@@ -321,7 +321,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 
                 {!isEditingEntry ? (
                     <AddEntryButton
-                        color='secondary'
+                        color='primary'
                         size='medium'
                         variant='outlined'
                         startIcon={<AddIcon />}
