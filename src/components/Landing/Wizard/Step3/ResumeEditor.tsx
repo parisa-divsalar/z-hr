@@ -672,6 +672,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     };
 
     const extractPollingRequestId = (response: any): string | null => {
+        const tryParseJsonString = (value: unknown): any | null => {
+            if (typeof value !== 'string') return null;
+            const trimmed = value.trim();
+            if (!trimmed) return null;
+            try {
+                return JSON.parse(trimmed);
+            } catch {
+                return null;
+            }
+        };
+
         const direct =
             response?.RequestId ??
             response?.requestId ??
@@ -683,6 +694,25 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         const normalizedDirect = normalizeValue(direct);
         if (normalizedDirect) return normalizedDirect;
+
+        // Swagger-ish POST response often wraps the job id in `result.value` or `result` as a JSON string.
+        const resultContainer = response?.result ?? response?.data?.result ?? null;
+        const resultValueDirect = resultContainer?.value ?? resultContainer?.Value ?? null;
+        const normalizedResultValue = normalizeValue(resultValueDirect);
+        if (normalizedResultValue) return normalizedResultValue;
+
+        const parsedResult = tryParseJsonString(resultContainer);
+        if (parsedResult && typeof parsedResult === 'object') {
+            const parsedValue =
+                (parsedResult as any).value ??
+                (parsedResult as any).Value ??
+                (parsedResult as any).RequestId ??
+                (parsedResult as any).requestId ??
+                (parsedResult as any).requestID ??
+                null;
+            const normalizedParsedValue = normalizeValue(parsedValue);
+            if (normalizedParsedValue) return normalizedParsedValue;
+        }
 
         const parameters: any[] =
             (Array.isArray(response?.parameters) ? response.parameters : null) ??
@@ -708,23 +738,29 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
     const extractImprovedText = (response: any): string | null => {
         if (typeof response === 'string') return response.trim() || null;
+        // Prefer the Swagger GET payload field.
+        const processed =
+            response?.processedContent ??
+            response?.ProcessedContent ??
+            response?.result?.processedContent ??
+            response?.result?.ProcessedContent ??
+            response?.data?.processedContent ??
+            response?.data?.ProcessedContent;
+        if (typeof processed === 'string') {
+            const trimmed = processed.trim();
+            if (trimmed) return trimmed;
+        }
         const candidates = [
-            response?.processedContent,
-            response?.ProcessedContent,
             response?.bodyOfResume,
             response?.BodyOfResume,
             response?.improvedText,
             response?.text,
             response?.result,
-            response?.result?.processedContent,
-            response?.result?.ProcessedContent,
             response?.result?.bodyOfResume,
             response?.result?.BodyOfResume,
             response?.result?.improvedText,
             response?.result?.text,
             response?.data,
-            response?.data?.processedContent,
-            response?.data?.ProcessedContent,
             response?.data?.bodyOfResume,
             response?.data?.BodyOfResume,
             response?.data?.text,
@@ -1002,7 +1038,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 let improved: string | null = null;
                 while (Date.now() - start < timeoutMs) {
                     const res = await getImproved({ requestId: pollingRequestId });
-                    improved = extractImprovedText(res);
+                    // The GET endpoint returns the improved text as `processedContent` (Swagger).
+                    const processedContent =
+                        res?.processedContent ??
+                        res?.ProcessedContent ??
+                        res?.result?.processedContent ??
+                        res?.result?.ProcessedContent ??
+                        res?.data?.processedContent ??
+                        res?.data?.ProcessedContent;
+                    improved =
+                        (typeof processedContent === 'string' ? processedContent.trim() : null) ??
+                        extractImprovedText(res);
                     if (improved) break;
                     await new Promise<void>((resolve) => setTimeout(resolve, pollIntervalMs));
                 }
