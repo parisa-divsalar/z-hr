@@ -1048,11 +1048,13 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     No contact methods found.
                                 </Typography>
                             ) : (
-                                <SkillsContainer>
-                                    {contactWays.map((item, idx) => (
-                                        <SkillItem key={idx}>{item}</SkillItem>
+                                <Box>
+                                    {contactWays.map((text, idx) => (
+                                        <SummaryText key={idx} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
+                                            {text}
+                                        </SummaryText>
                                     ))}
-                                </SkillsContainer>
+                                </Box>
                             )}
                         </Box>
                     </SectionContainer>
@@ -1079,14 +1081,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     No languages found.
                                 </Typography>
                             ) : (
-                                <SkillsContainer>
-                                    {languages.map((lang) => (
-                                        <SkillItem key={lang.id}>
+                                <Box>
+                                    {languages.map((lang, idx) => (
+                                        <SummaryText key={lang.id} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
                                             {lang.name}
                                             {lang.level ? ` - ${lang.level}` : ''}
-                                        </SkillItem>
+                                        </SummaryText>
                                     ))}
-                                </SkillsContainer>
+                                </Box>
                             )}
                         </Box>
                     </SectionContainer>
