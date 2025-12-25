@@ -2,8 +2,7 @@
 
 import React from 'react';
 
-import { Check, Close } from '@mui/icons-material';
-import { IconButton, Typography } from '@mui/material';
+import { Button, IconButton, Typography } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
@@ -43,12 +42,12 @@ const ProfileHeader = ({
         return (
             <ProfileHeaderContainer sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1 }}>
                 <ActionButtons sx={{ justifyContent: 'flex-end', width: '100%' }}>
-                    <IconButton size='small' onClick={onSave} color='success'>
-                        <Check fontSize='small' />
-                    </IconButton>
-                    <IconButton size='small' onClick={onCancel} color='error'>
-                        <Close fontSize='small' />
-                    </IconButton>
+                    <Button size='small' variant='text' color='inherit' onClick={onCancel}>
+                        Cancel
+                    </Button>
+                    <Button size='small' variant='contained' color='primary' onClick={onSave}>
+                        Save
+                    </Button>
                 </ActionButtons>
 
                 <ExperienceTextareaAutosize

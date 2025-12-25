@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { Check, Close } from '@mui/icons-material';
-import { CircularProgress, IconButton } from '@mui/material';
+import { Button, CircularProgress, IconButton } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
@@ -35,12 +34,12 @@ const SectionHeader = ({
             <SectionActions>
                 {isEditing ? (
                     <>
-                        <IconButton size='small' onClick={onSave} color='success'>
-                            <Check fontSize='small' />
-                        </IconButton>
-                        <IconButton size='small' onClick={onCancel} color='error'>
-                            <Close fontSize='small' />
-                        </IconButton>
+                        <Button size='small' variant='text' color='inherit' onClick={onCancel}>
+                            Cancel
+                        </Button>
+                        <Button size='small' variant='contained' color='primary' onClick={onSave}>
+                            Save
+                        </Button>
                     </>
                 ) : (
                     <>
