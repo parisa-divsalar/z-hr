@@ -957,7 +957,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
                 const postResponse = await postImproved({
                     userId: accessToken ?? undefined,
+                    lang: 'en',
+                    paragraph: String(currentText),
                 });
+
+                const improvedFromPost = extractImprovedText(postResponse);
+                if (improvedFromPost) {
+                    applyToSection(improvedFromPost);
+                    return;
+                }
 
                 const pollingRequestId = extractPollingRequestId(postResponse) ?? requestId;
                 if (!pollingRequestId) {
