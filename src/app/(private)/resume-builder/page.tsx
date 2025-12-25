@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import IntroDialog from '@/components/Landing/IntroDialog';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
+import { useWizardStore } from '@/store/wizard';
 
 import { ResumeBuilderRoot } from './styled';
 
@@ -16,6 +17,7 @@ export default function ResumeBuilderPage() {
     const [_aiStatus, setAiStatus] = useState<AIStatus>('START');
     const [initialStep, setInitialStep] = useState<number>(1);
     const [isIntroOpen, setIsIntroOpen] = useState<boolean>(true);
+    const setRequestId = useWizardStore((state) => state.setRequestId);
 
     // Ensure scrolling is confined to the resume builder container (internal scroll),
     // not the whole page/body.
@@ -42,6 +44,16 @@ export default function ResumeBuilderPage() {
             }
         }
     }, [searchParams]);
+
+    useEffect(() => {
+        const raw = searchParams.get('requestId');
+        if (!raw) return;
+        const trimmed = raw.trim();
+        if (!trimmed) return;
+        const normalized =
+            trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
+        if (normalized) setRequestId(normalized);
+    }, [searchParams, setRequestId]);
 
     return (
         <ResumeBuilderRoot id='resume-builder-root'>

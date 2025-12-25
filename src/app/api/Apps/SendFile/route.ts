@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { API_SERVER_BASE_URL } from '@/services/api-client';
 
+export const runtime = 'nodejs';
+export const maxDuration = 420; // 7 minutes (seconds) - allows long processing on supported platforms
+
+const SEND_FILE_TIMEOUT_MS = 7 * 60 * 1000;
+
 const parseUserIdFromToken = (tokenValue: string | undefined): string | null => {
     if (!tokenValue) return null;
     try {
@@ -15,15 +20,16 @@ const parseUserIdFromToken = (tokenValue: string | undefined): string | null => 
 };
 
 class ExternalResponseError extends Error {
-    constructor(public status: number, message: string) {
+    constructor(
+        public status: number,
+        message: string,
+    ) {
         super(message);
         this.name = 'ExternalResponseError';
     }
 }
 
 const createForwardHeaders = (contentType?: 'json' | 'form') => {
-    // Keep this minimal to avoid leaking hop-specific / browser headers to the API server.
-    // Also, DO NOT manually set multipart boundaries: let fetch do it when body is FormData.
     const headers = new Headers();
     headers.set('accept', 'text/plain');
     if (contentType === 'json') {
@@ -47,11 +53,20 @@ const forwardFileToApi = async (req: NextRequest, userId: string, lang: string) 
     const isJson = !isMultipart;
 
     const body = isJson ? JSON.stringify(await req.json()) : await req.formData();
-    const response = await fetch(sendFileUrl, {
-        method: 'POST',
-        headers: createForwardHeaders(isJson ? 'json' : 'form'),
-        body,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), SEND_FILE_TIMEOUT_MS);
+
+    let response: Response;
+    try {
+        response = await fetch(sendFileUrl, {
+            method: 'POST',
+            headers: createForwardHeaders(isJson ? 'json' : 'form'),
+            body,
+            signal: controller.signal,
+        });
+    } finally {
+        clearTimeout(timeoutId);
+    }
 
     const resultText = await response.text();
 

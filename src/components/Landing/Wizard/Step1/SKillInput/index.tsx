@@ -201,7 +201,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
     return (
         <MainContainer>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                Very good Ayla 😊
+                Very good 😊
             </Typography>
             <Typography variant='h5' color='text.primary' fontWeight='584'>
                 You should answer a few questions about your resume.

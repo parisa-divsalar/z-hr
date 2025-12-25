@@ -2,7 +2,7 @@
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
-import { Box, CardContent, Typography } from '@mui/material';
+import { Box, CardContent, CircularProgress, Typography } from '@mui/material';
 
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
@@ -622,14 +622,27 @@ const applyExperienceEditText = (current: ResumeExperience[], text: string): Res
 interface ResumeEditorProps {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
     setActiveStep: (activeStep: number) => void;
+    /**
+     * When set to 'preview', edit/improve actions and footer buttons are hidden.
+     * Useful for pages that only need the rendered resume + PDF export.
+     */
+    mode?: 'editor' | 'preview';
+    /**
+     * Optional ref override for the element that should be exported as PDF.
+     * If not provided, ResumeEditor manages its own ref internally.
+     */
+    pdfTargetRef?: React.MutableRefObject<HTMLDivElement | null>;
 }
 
 const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
-    const { setStage } = props;
+    const { setStage, mode = 'editor', pdfTargetRef } = props;
+    const isPreview = mode === 'preview';
     const [editingSection, setEditingSection] = useState<string | null>(null);
     const requestId = useWizardStore((state) => state.requestId);
     const accessToken = useAuthStore((state) => state.accessToken);
-    const pdfRef = useRef<HTMLDivElement | null>(null);
+    const canFetchCv = Boolean(requestId && accessToken);
+    const internalPdfRef = useRef<HTMLDivElement | null>(null);
+    const pdfRef = pdfTargetRef ?? internalPdfRef;
     const cvPayloadRef = useRef<any>(null);
     /**
      * Prevent duplicate auto-fetches (especially in React Strict Mode dev where effects run twice).
@@ -653,6 +666,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [experiences, setExperiences] = useState<ResumeExperience[]>([]);
     const [experienceEditText, setExperienceEditText] = useState('');
     const [isCvLoading, setIsCvLoading] = useState(false);
+    const [hasCvLoadedOnce, setHasCvLoadedOnce] = useState(false);
     const [cvError, setCvError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -836,6 +850,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             cvPayloadRef.current = null;
         } finally {
             setIsCvLoading(false);
+            setHasCvLoadedOnce(true);
         }
     }, [requestId, accessToken]);
 
@@ -848,6 +863,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         void loadCvData();
     }, [requestId, accessToken, loadCvData]);
+
+    const shouldBlockResumeRender = canFetchCv && !hasCvLoadedOnce;
 
     const handleEdit = (section: string) => {
         setSaveError(null);
@@ -1117,135 +1134,157 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         <ResumeContainer>
             <MainCardContainer ref={pdfRef}>
                 <CardContent>
-                    <ProfileHeader
-                        fullName={profile.fullName}
-                        dateOfBirth={profile.dateOfBirth}
-                        headline={profile.headline}
-                        isEditing={editingSection === 'profile'}
-                        onEdit={() => handleEdit('profile')}
-                        onSave={handleSave}
-                        onCancel={handleCancel}
-                        editText={profileEditText}
-                        onEditTextChange={setProfileEditText}
-                        hideActions={isExporting}
-                    />
-                    {isCvLoading && (
-                        <Typography variant='caption' color='text.secondary' mt={1}>
-                            Still fetching the latest CV preview…
-                        </Typography>
-                    )}
-                    {cvError && (
-                        <Typography variant='caption' color='error' mt={1}>
-                            {cvError}
-                        </Typography>
-                    )}
-                    {saveError && <MuiAlert severity='error' message={saveError} />}
-                    {improveError && <MuiAlert severity='error' message={improveError} />}
-                    {downloadError && <MuiAlert severity='error' message={downloadError} />}
-
-                    <SectionContainer>
-                        <SectionHeader
-                            title='Summary'
-                            onEdit={() => handleEdit('summary')}
-                            onImprove={() => void handleImprove('summary')}
-                            isEditing={editingSection === 'summary'}
-                            isImproving={improvingSection === 'summary'}
-                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'summary'}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hideActions={isExporting}
-                        />
-                        <SummaryContainer>
-                            {editingSection === 'summary' ? (
-                                <StyledTextareaAutosize value={summary} onChange={(e) => setSummary(e.target.value)} />
-                            ) : (
-                                <SummaryText>{summary}</SummaryText>
-                            )}
-                        </SummaryContainer>
-                    </SectionContainer>
-
-                    <SectionContainer>
-                        <SectionHeader
-                            title='Skills'
-                            onEdit={() => handleEdit('skills')}
-                            onImprove={() => void handleImprove('skills')}
-                            isEditing={editingSection === 'skills'}
-                            isImproving={improvingSection === 'skills'}
-                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hideActions={isExporting}
-                        />
-                        <SkillsContainer>
-                            {skills.length === 0 ? (
-                                <Typography variant='body2' color='text.secondary'>
-                                    No skills found.
-                                </Typography>
-                            ) : editingSection === 'skills' ? (
-                                skills.map((skill, index) => (
-                                    <SkillTextField
-                                        key={index}
-                                        value={skill}
-                                        onChange={(e) => handleSkillsChange(index, e.target.value)}
-                                        size='small'
-                                    />
-                                ))
-                            ) : (
-                                skills.map((skill, index) => (
-                                    <MuiChips key={`${skill}-${index}`} label={skill} sx={{ mt: 0 }} />
-                                ))
-                            )}
-                        </SkillsContainer>
-                    </SectionContainer>
-
-                    <SectionContainer>
-                        <SectionHeader
-                            title='Contact'
-                            onEdit={() => handleEdit('contactWays')}
-                            onImprove={() => void handleImprove('contactWays')}
-                            isEditing={editingSection === 'contactWays'}
-                            isImproving={improvingSection === 'contactWays'}
-                            improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hideActions={isExporting}
-                        />
-                        <Box mt={2}>
-                            {editingSection === 'contactWays' ? (
-                                <ExperienceTextareaAutosize
-                                    value={contactWaysEditText}
-                                    onChange={(e) => setContactWaysEditText(e.target.value)}
-                                />
-                            ) : contactWays.length === 0 ? (
-                                <Typography variant='body2' color='text.secondary'>
-                                    No contact methods found.
-                                </Typography>
-                            ) : (
-                                <Box>
-                                    {contactWays.map((text, idx) => (
-                                        <SummaryText key={idx} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
-                                            {text}
-                                        </SummaryText>
-                                    ))}
-                                </Box>
-                            )}
+                    {shouldBlockResumeRender ? (
+                        <Box
+                            sx={{
+                                minHeight: 520,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 1.5,
+                                px: 2,
+                            }}
+                        >
+                            <CircularProgress size={28} />
+                            <Typography variant='body2' color='text.secondary' textAlign='center'>
+                                Loading your resume…
+                            </Typography>
                         </Box>
-                    </SectionContainer>
+                    ) : (
+                        <>
+                            <ProfileHeader
+                                fullName={profile.fullName}
+                                dateOfBirth={profile.dateOfBirth}
+                                headline={profile.headline}
+                                isEditing={!isPreview && editingSection === 'profile'}
+                                onEdit={isPreview ? undefined : () => handleEdit('profile')}
+                                onSave={isPreview ? undefined : handleSave}
+                                onCancel={isPreview ? undefined : handleCancel}
+                                editText={profileEditText}
+                                onEditTextChange={isPreview ? undefined : setProfileEditText}
+                                hideActions={isExporting || isPreview}
+                            />
+                            {isCvLoading && (
+                                <Typography variant='caption' color='text.secondary' mt={1}>
+                                    Still fetching the latest CV preview…
+                                </Typography>
+                            )}
+                            {cvError && (
+                                <Typography variant='caption' color='error' mt={1}>
+                                    {cvError}
+                                </Typography>
+                            )}
+                            {saveError && <MuiAlert severity='error' message={saveError} />}
+                            {improveError && <MuiAlert severity='error' message={improveError} />}
+                            {downloadError && <MuiAlert severity='error' message={downloadError} />}
+
+                            <SectionContainer>
+                                <SectionHeader
+                                    title='Summary'
+                                    onEdit={isPreview ? undefined : () => handleEdit('summary')}
+                                    onImprove={isPreview ? undefined : () => void handleImprove('summary')}
+                                    isEditing={!isPreview && editingSection === 'summary'}
+                                    isImproving={!isPreview && improvingSection === 'summary'}
+                                    improveDisabled={Boolean(improvingSection) && improvingSection !== 'summary'}
+                                    onSave={isPreview ? undefined : handleSave}
+                                    onCancel={isPreview ? undefined : handleCancel}
+                                    hideActions={isExporting || isPreview}
+                                />
+                                <SummaryContainer>
+                                    {!isPreview && editingSection === 'summary' ? (
+                                        <StyledTextareaAutosize
+                                            value={summary}
+                                            onChange={(e) => setSummary(e.target.value)}
+                                        />
+                                    ) : (
+                                        <SummaryText>{summary}</SummaryText>
+                                    )}
+                                </SummaryContainer>
+                            </SectionContainer>
+
+                            <SectionContainer>
+                                <SectionHeader
+                                    title='Skills'
+                                    onEdit={isPreview ? undefined : () => handleEdit('skills')}
+                                    onImprove={isPreview ? undefined : () => void handleImprove('skills')}
+                                    isEditing={!isPreview && editingSection === 'skills'}
+                                    isImproving={!isPreview && improvingSection === 'skills'}
+                                    improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
+                                    onSave={isPreview ? undefined : handleSave}
+                                    onCancel={isPreview ? undefined : handleCancel}
+                                    hideActions={isExporting || isPreview}
+                                />
+                                <SkillsContainer>
+                                    {skills.length === 0 ? (
+                                        <Typography variant='body2' color='text.secondary'>
+                                            No skills found.
+                                        </Typography>
+                                    ) : !isPreview && editingSection === 'skills' ? (
+                                        skills.map((skill, index) => (
+                                            <SkillTextField
+                                                key={index}
+                                                value={skill}
+                                                onChange={(e) => handleSkillsChange(index, e.target.value)}
+                                                size='small'
+                                            />
+                                        ))
+                                    ) : (
+                                        skills.map((skill, index) => (
+                                            <MuiChips key={`${skill}-${index}`} label={skill} sx={{ mt: 0 }} />
+                                        ))
+                                    )}
+                                </SkillsContainer>
+                            </SectionContainer>
+
+                            <SectionContainer>
+                                <SectionHeader
+                                    title='Contact'
+                                    onEdit={isPreview ? undefined : () => handleEdit('contactWays')}
+                                    onImprove={isPreview ? undefined : () => void handleImprove('contactWays')}
+                                    isEditing={!isPreview && editingSection === 'contactWays'}
+                                    isImproving={!isPreview && improvingSection === 'contactWays'}
+                                    improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
+                                    onSave={isPreview ? undefined : handleSave}
+                                    onCancel={isPreview ? undefined : handleCancel}
+                                    hideActions={isExporting || isPreview}
+                                />
+                                <Box mt={2}>
+                                    {!isPreview && editingSection === 'contactWays' ? (
+                                        <ExperienceTextareaAutosize
+                                            value={contactWaysEditText}
+                                            onChange={(e) => setContactWaysEditText(e.target.value)}
+                                        />
+                                    ) : contactWays.length === 0 ? (
+                                        <Typography variant='body2' color='text.secondary'>
+                                            No contact methods found.
+                                        </Typography>
+                                    ) : (
+                                        <Box>
+                                            {contactWays.map((text, idx) => (
+                                                <SummaryText key={idx} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
+                                                    {text}
+                                                </SummaryText>
+                                            ))}
+                                        </Box>
+                                    )}
+                                </Box>
+                            </SectionContainer>
 
                     <SectionContainer>
                         <SectionHeader
                             title='Languages'
-                            onEdit={() => handleEdit('languages')}
-                            onImprove={() => void handleImprove('languages')}
-                            isEditing={editingSection === 'languages'}
-                            isImproving={improvingSection === 'languages'}
+                            onEdit={isPreview ? undefined : () => handleEdit('languages')}
+                            onImprove={isPreview ? undefined : () => void handleImprove('languages')}
+                            isEditing={!isPreview && editingSection === 'languages'}
+                            isImproving={!isPreview && improvingSection === 'languages'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hideActions={isExporting}
+                            onSave={isPreview ? undefined : handleSave}
+                            onCancel={isPreview ? undefined : handleCancel}
+                            hideActions={isExporting || isPreview}
                         />
                         <Box mt={2}>
-                            {editingSection === 'languages' ? (
+                            {!isPreview && editingSection === 'languages' ? (
                                 <ExperienceTextareaAutosize
                                     value={languagesEditText}
                                     onChange={(e) => setLanguagesEditText(e.target.value)}
@@ -1270,17 +1309,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     <SectionContainer>
                         <SectionHeader
                             title='Certificates'
-                            onEdit={() => handleEdit('certificates')}
-                            onImprove={() => void handleImprove('certificates')}
-                            isEditing={editingSection === 'certificates'}
-                            isImproving={improvingSection === 'certificates'}
+                            onEdit={isPreview ? undefined : () => handleEdit('certificates')}
+                            onImprove={isPreview ? undefined : () => void handleImprove('certificates')}
+                            isEditing={!isPreview && editingSection === 'certificates'}
+                            isImproving={!isPreview && improvingSection === 'certificates'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'certificates'}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hideActions={isExporting}
+                            onSave={isPreview ? undefined : handleSave}
+                            onCancel={isPreview ? undefined : handleCancel}
+                            hideActions={isExporting || isPreview}
                         />
                         <Box mt={2}>
-                            {editingSection === 'certificates' ? (
+                            {!isPreview && editingSection === 'certificates' ? (
                                 <ExperienceTextareaAutosize
                                     value={certificatesEditText}
                                     onChange={(e) => setCertificatesEditText(e.target.value)}
@@ -1304,17 +1343,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     <SectionContainer>
                         <SectionHeader
                             title='Job Description'
-                            onEdit={() => handleEdit('jobDescription')}
-                            onImprove={() => void handleImprove('jobDescription')}
-                            isEditing={editingSection === 'jobDescription'}
-                            isImproving={improvingSection === 'jobDescription'}
+                            onEdit={isPreview ? undefined : () => handleEdit('jobDescription')}
+                            onImprove={isPreview ? undefined : () => void handleImprove('jobDescription')}
+                            isEditing={!isPreview && editingSection === 'jobDescription'}
+                            isImproving={!isPreview && improvingSection === 'jobDescription'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'jobDescription'}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hideActions={isExporting}
+                            onSave={isPreview ? undefined : handleSave}
+                            onCancel={isPreview ? undefined : handleCancel}
+                            hideActions={isExporting || isPreview}
                         />
                         <SummaryContainer>
-                            {editingSection === 'jobDescription' ? (
+                            {!isPreview && editingSection === 'jobDescription' ? (
                                 <StyledTextareaAutosize
                                     value={jobDescription}
                                     onChange={(e) => setJobDescription(e.target.value)}
@@ -1332,16 +1371,16 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     <ExperienceContainer>
                         <SectionHeader
                             title='Experience'
-                            onEdit={() => handleEdit('experience')}
-                            onImprove={() => void handleImprove('experience')}
-                            isEditing={editingSection === 'experience'}
-                            isImproving={improvingSection === 'experience'}
+                            onEdit={isPreview ? undefined : () => handleEdit('experience')}
+                            onImprove={isPreview ? undefined : () => void handleImprove('experience')}
+                            isEditing={!isPreview && editingSection === 'experience'}
+                            isImproving={!isPreview && improvingSection === 'experience'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'experience'}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hideActions={isExporting}
+                            onSave={isPreview ? undefined : handleSave}
+                            onCancel={isPreview ? undefined : handleCancel}
+                            hideActions={isExporting || isPreview}
                         />
-                        {editingSection === 'experience' ? (
+                        {!isPreview && editingSection === 'experience' ? (
                             <ExperienceTextareaAutosize
                                 value={experienceEditText}
                                 onChange={(e) => setExperienceEditText(e.target.value)}
@@ -1383,17 +1422,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         <SectionContainer>
                             <SectionHeader
                                 title='Additional Info'
-                                onEdit={() => handleEdit('additionalInfo')}
-                                isEditing={editingSection === 'additionalInfo'}
-                                onImprove={() => void handleImprove('additionalInfo')}
-                                isImproving={improvingSection === 'additionalInfo'}
+                                onEdit={isPreview ? undefined : () => handleEdit('additionalInfo')}
+                                isEditing={!isPreview && editingSection === 'additionalInfo'}
+                                onImprove={isPreview ? undefined : () => void handleImprove('additionalInfo')}
+                                isImproving={!isPreview && improvingSection === 'additionalInfo'}
                                 improveDisabled={Boolean(improvingSection) && improvingSection !== 'additionalInfo'}
-                                onSave={handleSave}
-                                onCancel={handleCancel}
-                                hideActions={isExporting}
+                                onSave={isPreview ? undefined : handleSave}
+                                onCancel={isPreview ? undefined : handleCancel}
+                                hideActions={isExporting || isPreview}
                             />
                             <Box mt={2}>
-                                {editingSection === 'additionalInfo' ? (
+                                {!isPreview && editingSection === 'additionalInfo' ? (
                                     <ExperienceTextareaAutosize
                                         value={additionalInfoEditText}
                                         onChange={(e) => setAdditionalInfoEditText(e.target.value)}
@@ -1404,9 +1443,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             </Box>
                         </SectionContainer>
                     )}
+                        </>
+                    )}
                 </CardContent>
             </MainCardContainer>
 
+            {!isPreview ? (
             <FooterContainer>
                 {/*<MuiButton*/}
                 {/*    text='Back'*/}
@@ -1443,6 +1485,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     sx={{ width: '188px' }}
                 />
             </FooterContainer>
+            ) : null}
         </ResumeContainer>
     );
 };
