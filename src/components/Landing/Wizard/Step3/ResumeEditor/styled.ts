@@ -5,6 +5,7 @@ export const MainCardContainer = styled(Card)(({ theme }) => ({
     backgroundColor: 'white',
     borderRadius: theme.spacing(1.5),
     boxShadow: theme.shadows[1],
+    minWidth: '650px',
     marginBottom: theme.spacing(4),
 }));
 
