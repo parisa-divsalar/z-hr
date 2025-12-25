@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Check, Close } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
+import { CircularProgress, IconButton } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
@@ -14,9 +14,21 @@ interface SectionHeaderProps {
     isEditing?: boolean;
     onSave?: () => void;
     onCancel?: () => void;
+    onImprove?: () => void;
+    isImproving?: boolean;
+    improveDisabled?: boolean;
 }
 
-const SectionHeader = ({ title, onEdit, isEditing, onSave, onCancel }: SectionHeaderProps) => {
+const SectionHeader = ({
+    title,
+    onEdit,
+    isEditing,
+    onSave,
+    onCancel,
+    onImprove,
+    isImproving,
+    improveDisabled,
+}: SectionHeaderProps) => {
     return (
         <SectionHeaderContainer>
             <SectionTitle variant='subtitle1'>{title}</SectionTitle>
@@ -32,11 +44,15 @@ const SectionHeader = ({ title, onEdit, isEditing, onSave, onCancel }: SectionHe
                     </>
                 ) : (
                     <>
-                        <IconButton size='small' onClick={onEdit}>
+                        <IconButton size='small' onClick={onEdit} disabled={Boolean(isImproving)}>
                             <EditIcon />
                         </IconButton>
-                        <IconButton size='small'>
-                            <StarIcon />
+                        <IconButton
+                            size='small'
+                            onClick={onImprove}
+                            disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
+                        >
+                            {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
                         </IconButton>
                     </>
                 )}
