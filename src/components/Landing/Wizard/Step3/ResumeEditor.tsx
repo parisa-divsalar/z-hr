@@ -1,9 +1,9 @@
 'use client';
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import { Box, CardContent, Typography } from '@mui/material';
 
-import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
@@ -625,7 +625,7 @@ interface ResumeEditorProps {
 }
 
 const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
-    const { setStage, setActiveStep } = props;
+    const { setStage } = props;
     const [editingSection, setEditingSection] = useState<string | null>(null);
     const requestId = useWizardStore((state) => state.requestId);
     const accessToken = useAuthStore((state) => state.accessToken);
@@ -657,6 +657,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [downloadError, setDownloadError] = useState<string | null>(null);
     const [downloadProgress, setDownloadProgress] = useState<number>(0);
     const [improvingSection, setImprovingSection] = useState<string | null>(null);
@@ -1007,10 +1008,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         if (!pdfRef.current || isDownloading) return;
 
         setIsDownloading(true);
+        setIsExporting(true);
         setDownloadError(null);
         setDownloadProgress(0);
 
         try {
+            // Allow React to re-render (hide edit actions) before html2canvas captures the DOM.
+            await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+            await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
             const baseName = `Resume-${requestId ?? new Date().toISOString().slice(0, 10)}`;
             await exportElementToPdf(pdfRef.current, {
                 fileName: baseName,
@@ -1018,11 +1024,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 scale: 2,
                 backgroundColor: '#ffffff',
                 onProgress: (p) => setDownloadProgress(p),
+                // UX: don't yank the user into a new tab while downloading.
+                preOpenWindow: false,
             });
         } catch (error) {
             console.error('Failed to export resume PDF', error);
             setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
         } finally {
+            setIsExporting(false);
             setIsDownloading(false);
         }
     }, [isDownloading, requestId]);
@@ -1041,6 +1050,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         onCancel={handleCancel}
                         editText={profileEditText}
                         onEditTextChange={setProfileEditText}
+                        hideActions={isExporting}
                     />
                     {isCvLoading && (
                         <Typography variant='caption' color='text.secondary' mt={1}>
@@ -1066,6 +1076,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'summary'}
                             onSave={handleSave}
                             onCancel={handleCancel}
+                            hideActions={isExporting}
                         />
                         <SummaryContainer>
                             {editingSection === 'summary' ? (
@@ -1086,6 +1097,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
                             onSave={handleSave}
                             onCancel={handleCancel}
+                            hideActions={isExporting}
                         />
                         <SkillsContainer>
                             {skills.length === 0 ? (
@@ -1119,6 +1131,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
                             onSave={handleSave}
                             onCancel={handleCancel}
+                            hideActions={isExporting}
                         />
                         <Box mt={2}>
                             {editingSection === 'contactWays' ? (
@@ -1152,6 +1165,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
                             onSave={handleSave}
                             onCancel={handleCancel}
+                            hideActions={isExporting}
                         />
                         <Box mt={2}>
                             {editingSection === 'languages' ? (
@@ -1186,6 +1200,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'certificates'}
                             onSave={handleSave}
                             onCancel={handleCancel}
+                            hideActions={isExporting}
                         />
                         <Box mt={2}>
                             {editingSection === 'certificates' ? (
@@ -1219,6 +1234,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'jobDescription'}
                             onSave={handleSave}
                             onCancel={handleCancel}
+                            hideActions={isExporting}
                         />
                         <SummaryContainer>
                             {editingSection === 'jobDescription' ? (
@@ -1246,6 +1262,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'experience'}
                             onSave={handleSave}
                             onCancel={handleCancel}
+                            hideActions={isExporting}
                         />
                         {editingSection === 'experience' ? (
                             <ExperienceTextareaAutosize
@@ -1296,6 +1313,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                 improveDisabled={Boolean(improvingSection) && improvingSection !== 'additionalInfo'}
                                 onSave={handleSave}
                                 onCancel={handleCancel}
+                                hideActions={isExporting}
                             />
                             <Box mt={2}>
                                 {editingSection === 'additionalInfo' ? (
@@ -1313,14 +1331,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             </MainCardContainer>
 
             <FooterContainer>
-                <MuiButton
-                    text='Back'
-                    variant='outlined'
-                    color='secondary'
-                    size='large'
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => setActiveStep(2)}
-                />
+                {/*<MuiButton*/}
+                {/*    text='Back'*/}
+                {/*    variant='outlined'*/}
+                {/*    color='secondary'*/}
+                {/*    size='large'*/}
+                {/*    startIcon={<ArrowBackIcon />}*/}
+                {/*    onClick={() => setActiveStep(2)}*/}
+                {/*/>*/}
 
                 <MuiButton
                     color='secondary'
@@ -1329,7 +1347,13 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     text={isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
                     loading={isDownloading}
                     disabled={Boolean(cvError)}
-                    onClick={handleDownloadPdf}
+                    startIcon={<DownloadRoundedIcon />}
+                    type='button'
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void handleDownloadPdf();
+                    }}
                     sx={{ width: '188px' }}
                 />
 

@@ -25,6 +25,7 @@ interface ProfileHeaderProps {
     onCancel?: () => void;
     editText?: string;
     onEditTextChange?: (value: string) => void;
+    hideActions?: boolean;
 }
 
 const ProfileHeader = ({
@@ -37,18 +38,21 @@ const ProfileHeader = ({
     onCancel,
     editText,
     onEditTextChange,
+    hideActions,
 }: ProfileHeaderProps) => {
     if (isEditing) {
         return (
             <ProfileHeaderContainer sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1 }}>
-                <ActionButtons sx={{ justifyContent: 'flex-end', width: '100%' }}>
-                    <Button size='small' variant='text' color='inherit' onClick={onCancel}>
-                        Cancel
-                    </Button>
-                    <Button size='small' variant='contained' color='primary' onClick={onSave}>
-                        Save
-                    </Button>
-                </ActionButtons>
+                {!hideActions ? (
+                    <ActionButtons sx={{ justifyContent: 'flex-end', width: '100%' }}>
+                        <Button size='small' variant='text' color='inherit' onClick={onCancel}>
+                            Cancel
+                        </Button>
+                        <Button size='small' variant='contained' color='primary' onClick={onSave}>
+                            Save
+                        </Button>
+                    </ActionButtons>
+                ) : null}
 
                 <ExperienceTextareaAutosize
                     value={editText ?? ''}
@@ -78,17 +82,19 @@ const ProfileHeader = ({
                 </ProfileInfo>
             </AvatarContainer>
 
-            <ActionButtons>
-                <>
-                    <IconButton size='small' onClick={onEdit}>
-                        <EditIcon />
-                    </IconButton>
+            {!hideActions ? (
+                <ActionButtons>
+                    <>
+                        <IconButton size='small' onClick={onEdit}>
+                            <EditIcon />
+                        </IconButton>
 
-                    <IconButton size='small'>
-                        <StarIcon />
-                    </IconButton>
-                </>
-            </ActionButtons>
+                        <IconButton size='small'>
+                            <StarIcon />
+                        </IconButton>
+                    </>
+                </ActionButtons>
+            ) : null}
         </ProfileHeaderContainer>
     );
 };

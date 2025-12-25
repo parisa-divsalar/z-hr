@@ -1,3 +1,5 @@
+import type { MouseEventHandler } from 'react';
+
 import { Button, CircularProgress } from '@mui/material';
 
 type colorType = 'primary' | 'error' | 'secondary' | 'inherit';
@@ -7,7 +9,7 @@ type buttonType = 'submit' | 'button';
 
 interface PrimaryButtonProps {
   text?: string;
-  onClick?: () => void;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
   loading?: boolean;
   color?: colorType;
@@ -29,7 +31,7 @@ const MuiButton = (props: PrimaryButtonProps) => {
     text = '',
     variant = 'contained',
     size = 'medium',
-    type,
+    type = 'button',
     disabled,
     loading,
     color,
