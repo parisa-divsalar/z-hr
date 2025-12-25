@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { Box, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { useRouter } from 'next/navigation';
 
 import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
 import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
@@ -29,7 +30,14 @@ import {
     StyledDivider,
 } from './styled';
 
-const ResumeGeneratorFrame = () => {
+type ResumeGeneratorFrameProps = {
+    setStage?: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
+    setActiveStep?: (activeStep: number) => void;
+};
+
+const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
+    const { setStage, setActiveStep } = props;
+    const router = useRouter();
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
@@ -76,6 +84,21 @@ const ResumeGeneratorFrame = () => {
             setIsDownloading(false);
         }
     }, [isDownloading, requestId]);
+
+    const handleEdit = useCallback(() => {
+        // If we're inside Step3 (stage-based UI), go back to ResumeEditor without leaving the wizard.
+        if (setStage) {
+            setActiveStep?.(3);
+            setStage('RESUME_EDITOR');
+            return;
+        }
+
+        // Fallback: navigate to wizard step 3 route (keeps requestId for reload-safe editing).
+        const qs = new URLSearchParams();
+        qs.set('step', '3');
+        if (requestId) qs.set('requestId', requestId);
+        router.push(`/resume-builder?${qs.toString()}`);
+    }, [router, requestId, setActiveStep, setStage]);
 
     const featureCards = [
         {
@@ -167,7 +190,7 @@ const ResumeGeneratorFrame = () => {
                                 ))}
                                 <Grid size={{ xs: 12, sm: 4, lg: 4 }} mt={6}>
                                     <ActionButtons>
-                                        <MuiButton variant='outlined' size='large' color='secondary'>
+                                        <MuiButton variant='outlined' size='large' color='secondary' onClick={handleEdit}>
                                             Edit
                                         </MuiButton>
                                         <MuiButton

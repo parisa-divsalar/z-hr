@@ -7,6 +7,7 @@ import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import ResumeMoreTemplates from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesLeft';
 import ResumeTemplatesRight from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
 import MuiButton from '@/components/UI/MuiButton';
+import { useWizardStore } from '@/store/wizard';
 
 interface MoreFeaturesProps {
   setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES') => void;
@@ -15,6 +16,7 @@ interface MoreFeaturesProps {
 const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const { setStage } = props;
   const router = useRouter();
+  const requestId = useWizardStore((state) => state.requestId);
 
   return (
     <>
@@ -57,7 +59,11 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
           variant='contained'
           color='secondary'
           size='large'
-          onClick={() => router.push('/resume-generator')}
+          onClick={() => {
+            const qs = new URLSearchParams();
+            if (requestId) qs.set('requestId', requestId);
+            router.push(`/resume-generator${qs.toString() ? `?${qs.toString()}` : ''}`);
+          }}
         />
       </Stack>
     </>

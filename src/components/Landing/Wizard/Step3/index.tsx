@@ -33,7 +33,7 @@ const Step3: FunctionComponent<Step3Props> = ({ setActiveStep }) => {
     }
 
     if (stage === 'RESUME_GENERATOR_FRAME') {
-        return <ResumeGeneratorFrame />;
+        return <ResumeGeneratorFrame setStage={setStage} setActiveStep={setActiveStep} />;
     }
 
     return null;

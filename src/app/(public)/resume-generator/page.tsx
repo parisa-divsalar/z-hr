@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Box, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
 import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
@@ -30,12 +31,25 @@ import {
 } from './styled';
 
 const ResumeGeneratorPage = () => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [downloadError, setDownloadError] = useState<string | null>(null);
     const requestId = useWizardStore((state) => state.requestId);
+    const setRequestId = useWizardStore((state) => state.setRequestId);
     const resumePdfRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const raw = searchParams.get('requestId');
+        if (!raw) return;
+        const trimmed = raw.trim();
+        if (!trimmed) return;
+        const normalized =
+            trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
+        if (normalized) setRequestId(normalized);
+    }, [searchParams, setRequestId]);
 
     const resumeInfo = [
         { label: 'Created:', value: '09/09/2025' },
@@ -74,6 +88,13 @@ const ResumeGeneratorPage = () => {
             setIsDownloading(false);
         }
     }, [isDownloading, requestId]);
+
+    const handleEdit = useCallback(() => {
+        const qs = new URLSearchParams();
+        qs.set('step', '3');
+        if (requestId) qs.set('requestId', requestId);
+        router.push(`/resume-builder?${qs.toString()}`);
+    }, [router, requestId]);
 
     const featureCards = [
         {
@@ -168,7 +189,7 @@ const ResumeGeneratorPage = () => {
                                 ))}
                                 <Grid size={{ xs: 12, sm: 4, lg: 4 }} mt={6}>
                                     <ActionButtons>
-                                        <MuiButton variant='outlined' size='large' color='secondary'>
+                                        <MuiButton variant='outlined' size='large' color='secondary' onClick={handleEdit}>
                                             Edit
                                         </MuiButton>
                                         <MuiButton
