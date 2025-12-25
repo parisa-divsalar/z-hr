@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
 import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
@@ -10,6 +10,8 @@ import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
 import ArrowRightIcon from '@/assets/images/icons/links.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
+import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
 import {
@@ -32,7 +34,8 @@ const ResumeGeneratorFrame = () => {
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [downloadError, setDownloadError] = useState<string | null>(null);
-    const pdfRef = useRef<HTMLDivElement | null>(null);
+    const requestId = useWizardStore((state) => state.requestId);
+    const resumePdfRef = useRef<HTMLDivElement | null>(null);
 
     const resumeInfo = [
         { label: 'Created:', value: '09/09/2025' },
@@ -48,19 +51,22 @@ const ResumeGeneratorFrame = () => {
     };
 
     const handleDownload = useCallback(async () => {
-        if (!pdfRef.current || isDownloading) return;
+        if (!resumePdfRef.current || isDownloading) return;
         setIsDownloading(true);
         setDownloadProgress(0);
         setDownloadError(null);
         try {
             const date = new Date().toISOString().slice(0, 10);
-            const baseName = sanitizeFileName("Zayd-Al-Mansoori's-Resume") || 'Resume';
-            await exportElementToPdf(pdfRef.current, {
-                fileName: `${baseName}-${date}`,
+            const baseName =
+                sanitizeFileName(`Resume-${requestId ?? date}`) || sanitizeFileName('Resume') || 'Resume';
+            await exportElementToPdf(resumePdfRef.current, {
+                fileName: baseName,
                 marginPt: 24,
                 scale: 2,
                 backgroundColor: '#ffffff',
                 onProgress: (p) => setDownloadProgress(p),
+                // Keep UX consistent with ResumeEditor (no new tab).
+                preOpenWindow: false,
             });
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -69,7 +75,7 @@ const ResumeGeneratorFrame = () => {
         } finally {
             setIsDownloading(false);
         }
-    }, [isDownloading]);
+    }, [isDownloading, requestId]);
 
     const featureCards = [
         {
@@ -99,7 +105,16 @@ const ResumeGeneratorFrame = () => {
     ];
 
     return (
-        <Container ref={pdfRef}>
+        <Container>
+            {/* Render the same resume DOM as ResumeEditor (off-screen) and export that exact element. */}
+            <Box sx={{ position: 'fixed', left: '-100000px', top: 0, width: 900, pointerEvents: 'none' }}>
+                <ResumeEditor
+                    mode='preview'
+                    pdfTargetRef={resumePdfRef}
+                    setStage={() => undefined}
+                    setActiveStep={() => undefined}
+                />
+            </Box>
             <Grid container spacing={{ xs: 3, sm: 4 }}>
                 <Grid size={{ xs: 12, lg: 3 }}>
                     <ResumePreview>
