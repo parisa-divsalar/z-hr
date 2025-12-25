@@ -25,8 +25,12 @@ const selectMenuProps: SelectProps['MenuProps'] = {
             maxHeight: '180px',
             overflowY: 'auto',
             py: 1,
+            bgcolor: 'grey.50',
             '& .MuiMenu-list': { py: 0.5 },
-            '& .MuiMenuItem-root:hover': { bgcolor: 'primary.light' },
+            '& .MuiMenuItem-root:hover': { bgcolor: 'grey.100' },
+            '& .MuiMenuItem-root.Mui-selected': { bgcolor: 'grey.100' },
+            '& .MuiMenuItem-root.Mui-selected:hover': { bgcolor: 'grey.100' },
+            '& .MuiMenuItem-root.Mui-focusVisible': { bgcolor: 'grey.100' },
         },
     },
 };

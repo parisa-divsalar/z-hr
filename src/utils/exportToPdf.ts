@@ -50,6 +50,14 @@ export type ExportElementToPdfOptions = {
      * Called with a value between 0..1.
      */
     onProgress?: (progress: number) => void;
+    /**
+     * Chromium sometimes blocks downloads after long async work. We optionally pre-open a tab/window
+     * (within the original user gesture) and later navigate it to the generated PDF.
+     *
+     * Set to false to avoid opening a new tab (at the risk of the browser blocking the download).
+     * Default: auto (enabled on Chromium, disabled elsewhere)
+     */
+    preOpenWindow?: boolean;
 };
 
 const INVALID_FILENAME_CHARS = new Set(['<', '>', ':', '"', '/', '\\', '|', '?', '*']);
@@ -193,6 +201,7 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
         waitForImages = true,
         resourceTimeoutMs = 2500,
         onProgress,
+        preOpenWindow,
     } = options;
 
     if (!element) return;
@@ -208,7 +217,7 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
     const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
     const isFirefox = /Firefox\//i.test(ua);
     const isChromium = /Chrome\//i.test(ua) || /Chromium\//i.test(ua) || /Edg\//i.test(ua);
-    const shouldPreOpen = isChromium && !isFirefox;
+    const shouldPreOpen = preOpenWindow === undefined ? isChromium && !isFirefox : preOpenWindow;
     let preOpenedWindow: Window | null = null;
     if (shouldPreOpen) {
         try {
@@ -382,7 +391,7 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
         if (preOpenedWindow && !preOpenedWindow.closed) {
             preOpenedWindow.location.href = blobUrl;
             didAttemptDownload = true;
-        } else if (!didAttemptDownload) {
+        } else if (!didAttemptDownload && preOpenWindow !== false) {
             window.open(blobUrl, '_blank', 'noopener,noreferrer');
             didAttemptDownload = true;
         }

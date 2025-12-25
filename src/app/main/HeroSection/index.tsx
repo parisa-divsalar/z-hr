@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+
 import { Box, Button, Container, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 

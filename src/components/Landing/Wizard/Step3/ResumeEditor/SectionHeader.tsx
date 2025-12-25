@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { Check, Close } from '@mui/icons-material';
-import { CircularProgress, IconButton } from '@mui/material';
+import { Button, CircularProgress, IconButton } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
@@ -17,6 +16,7 @@ interface SectionHeaderProps {
     onImprove?: () => void;
     isImproving?: boolean;
     improveDisabled?: boolean;
+    hideActions?: boolean;
 }
 
 const SectionHeader = ({
@@ -28,35 +28,38 @@ const SectionHeader = ({
     onImprove,
     isImproving,
     improveDisabled,
+    hideActions,
 }: SectionHeaderProps) => {
     return (
         <SectionHeaderContainer>
             <SectionTitle variant='subtitle1'>{title}</SectionTitle>
-            <SectionActions>
-                {isEditing ? (
-                    <>
-                        <IconButton size='small' onClick={onSave} color='success'>
-                            <Check fontSize='small' />
-                        </IconButton>
-                        <IconButton size='small' onClick={onCancel} color='error'>
-                            <Close fontSize='small' />
-                        </IconButton>
-                    </>
-                ) : (
-                    <>
-                        <IconButton size='small' onClick={onEdit} disabled={Boolean(isImproving)}>
-                            <EditIcon />
-                        </IconButton>
-                        <IconButton
-                            size='small'
-                            onClick={onImprove}
-                            disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
-                        >
-                            {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
-                        </IconButton>
-                    </>
-                )}
-            </SectionActions>
+            {!hideActions ? (
+                <SectionActions>
+                    {isEditing ? (
+                        <>
+                            <Button size='small' variant='text' color='inherit' onClick={onCancel}>
+                                Cancel
+                            </Button>
+                            <Button size='small' variant='contained' color='primary' onClick={onSave}>
+                                Save
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <IconButton size='small' onClick={onEdit} disabled={Boolean(isImproving)}>
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton
+                                size='small'
+                                onClick={onImprove}
+                                disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
+                            >
+                                {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
+                            </IconButton>
+                        </>
+                    )}
+                </SectionActions>
+            ) : null}
         </SectionHeaderContainer>
     );
 };
