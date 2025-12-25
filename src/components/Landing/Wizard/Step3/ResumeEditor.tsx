@@ -680,22 +680,51 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             response?.result?.requestId ??
             response?.data?.RequestId ??
             response?.data?.requestId;
-        return normalizeValue(direct);
+
+        const normalizedDirect = normalizeValue(direct);
+        if (normalizedDirect) return normalizedDirect;
+
+        const parameters: any[] =
+            (Array.isArray(response?.parameters) ? response.parameters : null) ??
+            (Array.isArray(response?.result?.parameters) ? response.result.parameters : null) ??
+            (Array.isArray(response?.data?.parameters) ? response.data.parameters : null) ??
+            [];
+
+        for (const entry of parameters) {
+            if (!entry || typeof entry !== 'object') continue;
+            const name = String((entry as any).name ?? (entry as any).key ?? '')
+                .trim()
+                .toLowerCase();
+            if (!name) continue;
+            if (name === 'requestid' || name === 'request_id' || name === 'request-id') {
+                const value = (entry as any).value ?? (entry as any).Value ?? (entry as any).val;
+                const normalized = normalizeValue(value);
+                if (normalized) return normalized;
+            }
+        }
+
+        return null;
     };
 
     const extractImprovedText = (response: any): string | null => {
         if (typeof response === 'string') return response.trim() || null;
         const candidates = [
+            response?.processedContent,
+            response?.ProcessedContent,
             response?.bodyOfResume,
             response?.BodyOfResume,
             response?.improvedText,
             response?.text,
             response?.result,
+            response?.result?.processedContent,
+            response?.result?.ProcessedContent,
             response?.result?.bodyOfResume,
             response?.result?.BodyOfResume,
             response?.result?.improvedText,
             response?.result?.text,
             response?.data,
+            response?.data?.processedContent,
+            response?.data?.ProcessedContent,
             response?.data?.bodyOfResume,
             response?.data?.BodyOfResume,
             response?.data?.text,
@@ -960,12 +989,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     lang: 'en',
                     paragraph: String(currentText),
                 });
-
-                const improvedFromPost = extractImprovedText(postResponse);
-                if (improvedFromPost) {
-                    applyToSection(improvedFromPost);
-                    return;
-                }
 
                 const pollingRequestId = extractPollingRequestId(postResponse) ?? requestId;
                 if (!pollingRequestId) {

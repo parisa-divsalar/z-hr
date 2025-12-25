@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { apiClientServer } from '@/services/api-client';
 import CacheError from '@/services/cache-error';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const normalizeValue = (value?: string | null) => {
     if (!value) return null;
     const trimmed = value.trim();
@@ -26,7 +29,13 @@ export async function GET(request: NextRequest) {
             `Apps/get-improved-cv-part?RequestId=${encodeURIComponent(requestId)}`,
         );
 
-        return NextResponse.json(response.data);
+        return NextResponse.json(response.data, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                Pragma: 'no-cache',
+                Expires: '0',
+            },
+        });
     } catch (error) {
         return CacheError(error as AxiosError);
     }
