@@ -672,6 +672,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     };
 
     const extractPollingRequestId = (response: any): string | null => {
+        const tryParseJsonString = (value: unknown): any | null => {
+            if (typeof value !== 'string') return null;
+            const trimmed = value.trim();
+            if (!trimmed) return null;
+            try {
+                return JSON.parse(trimmed);
+            } catch {
+                return null;
+            }
+        };
+
         const direct =
             response?.RequestId ??
             response?.requestId ??
@@ -680,11 +691,65 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             response?.result?.requestId ??
             response?.data?.RequestId ??
             response?.data?.requestId;
-        return normalizeValue(direct);
+
+        const normalizedDirect = normalizeValue(direct);
+        if (normalizedDirect) return normalizedDirect;
+
+        // Swagger-ish POST response often wraps the job id in `result.value` or `result` as a JSON string.
+        const resultContainer = response?.result ?? response?.data?.result ?? null;
+        const resultValueDirect = resultContainer?.value ?? resultContainer?.Value ?? null;
+        const normalizedResultValue = normalizeValue(resultValueDirect);
+        if (normalizedResultValue) return normalizedResultValue;
+
+        const parsedResult = tryParseJsonString(resultContainer);
+        if (parsedResult && typeof parsedResult === 'object') {
+            const parsedValue =
+                (parsedResult as any).value ??
+                (parsedResult as any).Value ??
+                (parsedResult as any).RequestId ??
+                (parsedResult as any).requestId ??
+                (parsedResult as any).requestID ??
+                null;
+            const normalizedParsedValue = normalizeValue(parsedValue);
+            if (normalizedParsedValue) return normalizedParsedValue;
+        }
+
+        const parameters: any[] =
+            (Array.isArray(response?.parameters) ? response.parameters : null) ??
+            (Array.isArray(response?.result?.parameters) ? response.result.parameters : null) ??
+            (Array.isArray(response?.data?.parameters) ? response.data.parameters : null) ??
+            [];
+
+        for (const entry of parameters) {
+            if (!entry || typeof entry !== 'object') continue;
+            const name = String((entry as any).name ?? (entry as any).key ?? '')
+                .trim()
+                .toLowerCase();
+            if (!name) continue;
+            if (name === 'requestid' || name === 'request_id' || name === 'request-id') {
+                const value = (entry as any).value ?? (entry as any).Value ?? (entry as any).val;
+                const normalized = normalizeValue(value);
+                if (normalized) return normalized;
+            }
+        }
+
+        return null;
     };
 
     const extractImprovedText = (response: any): string | null => {
         if (typeof response === 'string') return response.trim() || null;
+        // Prefer the Swagger GET payload field.
+        const processed =
+            response?.processedContent ??
+            response?.ProcessedContent ??
+            response?.result?.processedContent ??
+            response?.result?.ProcessedContent ??
+            response?.data?.processedContent ??
+            response?.data?.ProcessedContent;
+        if (typeof processed === 'string') {
+            const trimmed = processed.trim();
+            if (trimmed) return trimmed;
+        }
         const candidates = [
             response?.bodyOfResume,
             response?.BodyOfResume,
@@ -957,6 +1022,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
                 const postResponse = await postImproved({
                     userId: accessToken ?? undefined,
+                    lang: 'en',
+                    paragraph: String(currentText),
                 });
 
                 const pollingRequestId = extractPollingRequestId(postResponse) ?? requestId;
@@ -971,7 +1038,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 let improved: string | null = null;
                 while (Date.now() - start < timeoutMs) {
                     const res = await getImproved({ requestId: pollingRequestId });
-                    improved = extractImprovedText(res);
+                    // The GET endpoint returns the improved text as `processedContent` (Swagger).
+                    const processedContent =
+                        res?.processedContent ??
+                        res?.ProcessedContent ??
+                        res?.result?.processedContent ??
+                        res?.result?.ProcessedContent ??
+                        res?.data?.processedContent ??
+                        res?.data?.ProcessedContent;
+                    improved =
+                        (typeof processedContent === 'string' ? processedContent.trim() : null) ??
+                        extractImprovedText(res);
                     if (improved) break;
                     await new Promise<void>((resolve) => setTimeout(resolve, pollIntervalMs));
                 }
