@@ -11,7 +11,6 @@ import {
     BookmarkIcon,
     CardContent,
     CardImage,
-    CardMoreButton,
     JobTitle,
     PriceTag,
     ResumeCard,
@@ -100,17 +99,13 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                                             </BookmarkIcon>
                                         </Box>
 
-                                        <Box display='flex' justifyContent='space-between' alignItems='center' mt={1}>
+                                        <Box display='flex' justifyContent='space-between' alignItems='center'>
                                             <PriceTag>
                                                 <Typography variant='caption' fontWeight='600' color='primary.main'>
                                                     {template.price}
                                                 </Typography>
                                             </PriceTag>
-                                            <CardMoreButton>
-                                                <Typography variant='caption' fontWeight='500' color='text.secondary'>
-                                                    More
-                                                </Typography>
-                                            </CardMoreButton>
+                                            <MuiButton text='More' variant='outlined' size='small' />
                                         </Box>
                                     </CardContent>
                                 </ResumeCard>

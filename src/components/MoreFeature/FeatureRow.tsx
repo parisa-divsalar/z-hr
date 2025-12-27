@@ -1,62 +1,20 @@
 import { FunctionComponent, ReactNode } from 'react';
 
 import { Box, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
 
-import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
-const RowContainer = styled(Box)(({ theme }) => ({
-    display: 'flex',
-    gap: theme.spacing(4),
-    padding: theme.spacing(1),
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    border: `1px solid ${theme.palette.grey[200]}`,
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-    width: '100%',
-    height: '171px',
-
-    [theme.breakpoints.down('md')]: {
-        flexDirection: 'column',
-        gap: theme.spacing(3),
-        padding: theme.spacing(2),
-        width: '100%',
-        height: 'auto',
-    },
-}));
-
-const RowLeft = styled(Box)(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-    flex: 1,
-    paddingTop: '18px',
-    height: '100%',
-    minHeight: 0,
-    [theme.breakpoints.down('md')]: {
-        flex: 'none',
-        paddingTop: 0,
-        height: 'auto',
-    },
-}));
-
-const TitleSection = styled(Box)(() => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '9px',
-    minHeight: 0,
-}));
-
-const RowRight = styled(Box)(() => ({
-    flex: '0 0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    overflow: 'hidden',
-
-    position: 'relative',
-}));
+import {
+    DescriptionText,
+    FooterRow,
+    LeftContent,
+    MoreButton,
+    RightPreview,
+    RowContainer,
+    RowLeft,
+    RowRight,
+    TitleSection,
+} from './FeatureRow.styled';
 
 interface FeatureRowProps {
     title: string;
@@ -82,74 +40,47 @@ const FeatureRow: FunctionComponent<FeatureRowProps> = ({
     return (
         <RowContainer>
             <RowLeft>
-                <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
+                <LeftContent>
                     <TitleSection>
                         <MuiCheckbox
                             label={
-                                <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+                                <Typography variant='subtitle1' fontWeight='492' color='text.primary'>
                                     {title}
                                 </Typography>
                             }
                         />
-                        <Typography
+                        <DescriptionText
                             variant='subtitle2'
-                            color='text.secondary'
+                            color='text.primary'
                             fontWeight='400'
-                            ml={1}
-                            mt={1}
-                            sx={{
-                                overflow: 'hidden',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                            }}
                         >
                             {description}
-                        </Typography>
+                        </DescriptionText>
                     </TitleSection>
 
-                    <Box
-                        ml={1}
-                        mt={1}
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 1.5,
-                            width: '100%',
-                        }}
-                    >
+                    <FooterRow>
                         {coinText ? (
-                            <Typography variant='subtitle2' color='text.secondary' fontWeight='500'>
+                            <Typography variant='subtitle2' color='text.primary' fontWeight='400'>
                                 {coinText}
                             </Typography>
                         ) : (
                             <Box />
                         )}
 
-                        <MuiButton
+                        <MoreButton
                             text='More'
-                            sx={{ backgroundColor: '#F0F0F2', color: 'secondary.main' }}
                             variant='contained'
                             color='secondary'
                             onClick={onMoreClick}
                         />
-                    </Box>
-                </Box>
+                    </FooterRow>
+                </LeftContent>
             </RowLeft>
 
-            <RowRight sx={{ alignItems: 'flex-end', justifyContent: 'center' }}>
-                <Box
-                    sx={{
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: rightWidth ?? 'auto',
-                        maxWidth: '100%',
-                    }}
-                >
+            <RowRight>
+                <RightPreview rightWidth={rightWidth}>
                     {right}
-                </Box>
+                </RightPreview>
             </RowRight>
         </RowContainer>
     );
