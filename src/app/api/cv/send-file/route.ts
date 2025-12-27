@@ -6,7 +6,7 @@ import { API_SERVER_BASE_URL } from '@/services/api-client';
 import CacheError from '@/services/cache-error';
 
 export const runtime = 'nodejs';
-export const maxDuration = 420; // 7 minutes (seconds) - allows long processing on supported platforms
+export const maxDuration = 300; // 7 minutes (seconds) - allows long processing on supported platforms
 
 const SEND_FILE_TIMEOUT_MS = 7 * 60 * 1000;
 
