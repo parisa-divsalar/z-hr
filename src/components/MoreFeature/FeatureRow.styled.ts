@@ -89,12 +89,16 @@ export const RightPreview = styled(Box, {
     shouldForwardProp: (prop) => prop !== 'rightWidth',
 })<{
     rightWidth?: number | string;
-}>(({ rightWidth }) => ({
+}>(({ theme, rightWidth }) => ({
     height: '100%',
     display: 'flex',
     alignItems: 'flex-start',
     width: rightWidth ?? 'auto',
     maxWidth: '100%',
+
+    [theme.breakpoints.down('md')]: {
+        width: '100%',
+    },
 }));
 
 

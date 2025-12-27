@@ -21,7 +21,7 @@ interface SuggestionPreviewProps {
 
 const SuggestionPreview: FunctionComponent<SuggestionPreviewProps> = ({ cards }) => {
     return (
-        <Box sx={{ height: '100%', overflow: 'hidden', position: 'relative' }}>
+        <Box sx={{ height: '100%', width: '100%', overflow: 'hidden', position: 'relative' }}>
             <CardsWrapper>
                 {cards.map((card, idx) => (
                     <SuggestionCard key={`${card.number}-${idx}`}>
@@ -47,5 +47,3 @@ const SuggestionPreview: FunctionComponent<SuggestionPreviewProps> = ({ cards })
 };
 
 export default SuggestionPreview;
-
-

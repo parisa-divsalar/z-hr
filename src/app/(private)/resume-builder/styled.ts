@@ -3,21 +3,6 @@ import { styled } from '@mui/material/styles';
 
 import ellipseBg from '@/assets/images/bg/Ellipse1.png';
 
-export const MoreFeaturesTemplatesWrapper = styled(Box)(() => ({
-    width: '100%',
-}));
-
-export const MoreFeaturesTemplateCard = styled(Box)(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: theme.spacing(1),
-    padding: theme.spacing(2),
-    borderRadius: 8,
-    border: `1px solid ${theme.palette.grey[100]}`,
-    height: 102,
-}));
-
 export const ResumeBuilderRoot = styled(Box)(({ theme }) => ({
     position: 'relative',
     backgroundImage: `url(${ellipseBg.src})`,

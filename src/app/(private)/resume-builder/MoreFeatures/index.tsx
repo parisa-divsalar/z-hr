@@ -24,6 +24,8 @@ interface MoreFeaturesProps {
     onSubmit: () => void;
 }
 
+const RIGHT_PREVIEW_WIDTH_PX = 126 * 2 + 12; // matches ResumeCardGrid (2 cols + gap)
+
 const learningHubTemplates = [
     { id: '1', title: 'Front-end', level: 'Mid-senior', price: '$20', isBookmarked: false },
     { id: '2', title: 'Front-end', level: 'Mid-senior', price: '$20', isBookmarked: false },
@@ -48,6 +50,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                     title='Job Position Suggestions'
                     description='Get personalized job position recommendations based on your resume content and skills.'
                     coinText='5 Coin'
+                    rightWidth={RIGHT_PREVIEW_WIDTH_PX}
                     right={
                         <SuggestionPreview
                             cards={[
@@ -63,6 +66,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                     title='Learning Hub'
                     description="Explore tailored learning paths, tutorials, and resources to boost your skills. Whether you're diving into a new tool or deepening your knowledge."
                     coinText='5 Coin'
+                    rightWidth={RIGHT_PREVIEW_WIDTH_PX}
                     right={
                         <ResumeCardGrid>
                             {learningHubTemplates.map((template) => (
@@ -118,6 +122,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                     title='Interview Questions'
                     description='Review common and role-specific interview questions to boost your confidence and improve your chances of success.'
                     coinText='5 Coin'
+                    rightWidth={RIGHT_PREVIEW_WIDTH_PX}
                     right={
                         <SuggestionPreview
                             cards={[

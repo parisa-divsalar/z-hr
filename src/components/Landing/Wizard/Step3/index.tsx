@@ -1,12 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import ResumeBuilderMoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
 import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeGeneratorFrame';
 import WizardMoreFeatures from '@/components/Landing/Wizard/Step3/MoreFeatures';
-import { useWizardStore } from '@/store/wizard';
 
 import ResumeEditor from './ResumeEditor';
 
@@ -17,13 +16,10 @@ interface Step3Props {
 const Step3: FunctionComponent<Step3Props> = ({ setActiveStep }) => {
     const [stage, setStage] = useState<'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME'>('RESUME_EDITOR');
     const pathname = usePathname();
-    const router = useRouter();
-    const requestId = useWizardStore((state) => state.requestId);
 
     const handleSubmitMoreFeatures = () => {
-        const qs = new URLSearchParams();
-        if (requestId) qs.set('requestId', requestId);
-        router.push(`/resume-generator${qs.toString() ? `?${qs.toString()}` : ''}`);
+        // In resume-builder flow, "Submit" should continue to the in-wizard ResumeGeneratorFrame stage.
+        setStage('RESUME_GENERATOR_FRAME');
     };
 
     if (stage === 'RESUME_EDITOR')
