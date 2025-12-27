@@ -59,6 +59,9 @@ export const SummaryText = styled(Typography)(({ theme }) => ({
     lineHeight: 1.6,
     fontSize: '14px',
     fontWeight: 400,
+    whiteSpace: 'pre-line',
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
 }));
 
 export const SkillsContainer = styled(Box)(({ theme }) => ({
@@ -102,12 +105,16 @@ export const CompanyName = styled(Typography)(({ theme }) => ({
     fontSize: '14px',
     fontWeight: 400,
     marginBottom: '4px',
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
 }));
 
 export const JobDetails = styled(Typography)(({ theme }) => ({
     color: theme.palette.text.primary,
     fontSize: '14px',
     fontWeight: 400,
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
 }));
 
 export const ExperienceDescription = styled(Typography)(({ theme }) => ({
@@ -115,6 +122,11 @@ export const ExperienceDescription = styled(Typography)(({ theme }) => ({
     fontSize: '14px',
     fontWeight: 400,
     lineHeight: 1.6,
+    // Preserve user-entered newlines while still wrapping text nicely.
+    whiteSpace: 'pre-line',
+    // Prevent long words/URLs from overflowing the container.
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
 }));
 
 // Profile Header styled components
