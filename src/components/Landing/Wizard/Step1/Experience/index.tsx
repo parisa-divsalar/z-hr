@@ -398,7 +398,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     };
 
     return (
-        <Stack alignItems='center' justifyContent='center'>
+        <Stack alignItems='center' justifyContent='flex-start' width='100%'>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
                 6. Your work experience history{' '}
             </Typography>
