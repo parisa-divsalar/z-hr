@@ -43,6 +43,7 @@ const Wizard: FunctionComponent<WizardProps> = ({ setAiStatus, initialStep = 1 }
                 minHeight: 0,
                 overflowY: 'auto',
                 overflowX: 'hidden',
+                scrollbarGutter: 'stable',
             }}
         >
             <StepWrapper activeStep={activeStep} />

@@ -271,10 +271,25 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 
     useEffect(() => {
         if (backgroundEntries.length > previousEntriesLengthRef.current) {
-            entriesListRef.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-            });
+            // When a new entry is added, avoid scrolling "up" (which feels like the page jumps under the navbar).
+            // Only scroll down inside the resume-builder scroll container if the list is below the visible viewport.
+            const container = document.getElementById('resume-builder-scroll') as HTMLElement | null;
+            const listEl = entriesListRef.current;
+            if (container && listEl) {
+                requestAnimationFrame(() => {
+                    const cRect = container.getBoundingClientRect();
+                    const lRect = listEl.getBoundingClientRect();
+
+                    const isListAboveViewport = lRect.top < cRect.top;
+                    const isListBelowViewport = lRect.bottom > cRect.bottom;
+
+                    // Never scroll upward automatically.
+                    if (!isListAboveViewport && isListBelowViewport) {
+                        const delta = lRect.bottom - cRect.bottom;
+                        container.scrollTo({ top: container.scrollTop + delta + 16, behavior: 'smooth' });
+                    }
+                });
+            }
         }
 
         previousEntriesLengthRef.current = backgroundEntries.length;
@@ -290,6 +305,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
                         onBackgroundTextChange(event.target.value)
                     }
+                    style={{ maxHeight: 240 }}
                     ref={backgroundRef}
                 />
             </ContainerSkill>
@@ -425,7 +441,6 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                                     <VoiceItem key={voice.id}>
                                                         <VoiceRecord
                                                             recordingState='idle'
-                                                            // eslint-disable-next-line @typescript-eslint/no-empty-function
                                                             setRecordingState={() => {}}
                                                             initialAudioUrl={voice.url}
                                                             initialAudioBlob={voice.blob}

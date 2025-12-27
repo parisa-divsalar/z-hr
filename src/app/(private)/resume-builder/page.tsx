@@ -19,21 +19,6 @@ export default function ResumeBuilderPage() {
     const [isIntroOpen, setIsIntroOpen] = useState<boolean>(true);
     const setRequestId = useWizardStore((state) => state.setRequestId);
 
-    // Ensure scrolling is confined to the resume builder container (internal scroll),
-    // not the whole page/body.
-    useEffect(() => {
-        const prevBodyOverflow = document.body.style.overflow;
-        const prevHtmlOverflow = document.documentElement.style.overflow;
-
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
-
-        return () => {
-            document.body.style.overflow = prevBodyOverflow;
-            document.documentElement.style.overflow = prevHtmlOverflow;
-        };
-    }, []);
-
     useEffect(() => {
         const stepParam = searchParams.get('step');
         if (stepParam) {
@@ -50,13 +35,21 @@ export default function ResumeBuilderPage() {
         if (!raw) return;
         const trimmed = raw.trim();
         if (!trimmed) return;
-        const normalized =
-            trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
+        const normalized = trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
         if (normalized) setRequestId(normalized);
     }, [searchParams, setRequestId]);
 
     return (
-        <ResumeBuilderRoot id='resume-builder-root'>
+        <ResumeBuilderRoot
+            id='resume-builder-root'
+            sx={{
+                height: 'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
+                maxHeight:
+                    'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
+
+                minHeight: 0,
+            }}
+        >
             <Stack width='100%' height='100%'>
                 <IntroDialog open={isIntroOpen} onClose={() => setIsIntroOpen(false)} />
                 <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
