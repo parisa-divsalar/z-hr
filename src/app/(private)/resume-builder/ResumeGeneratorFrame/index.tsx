@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { Box, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useRouter } from 'next/navigation';
 
@@ -124,21 +124,15 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
 
     return (
         <Container>
-            {/* Render the same resume DOM as ResumeEditor (off-screen) and export that exact element. */}
-            <Box sx={{ position: 'fixed', left: '-100000px', top: 0, width: 900, pointerEvents: 'none' }}>
-                <ResumeEditor
-                    mode='preview'
-                    pdfTargetRef={resumePdfRef}
-                    setStage={() => undefined}
-                    setActiveStep={() => undefined}
-                />
-            </Box>
             <Grid container spacing={{ xs: 3, sm: 4 }}>
                 <Grid size={{ xs: 12, lg: 3 }}>
                     <ResumePreview>
-                        <Typography variant='body1' color='text.secondary'>
-                            Resume Previe
-                        </Typography>
+                        <ResumeEditor
+                            mode='preview'
+                            pdfTargetRef={resumePdfRef}
+                            setStage={setStage ?? (() => undefined)}
+                            setActiveStep={setActiveStep ?? (() => undefined)}
+                        />
                     </ResumePreview>
                 </Grid>
 

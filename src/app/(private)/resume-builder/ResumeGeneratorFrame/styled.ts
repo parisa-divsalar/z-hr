@@ -47,8 +47,10 @@ export const ResumePreview = styled(Paper)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: theme.shape.borderRadius,
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  alignItems: 'flex-start',
+  justifyContent: 'flex-start',
+  overflow: 'auto',
+  padding: theme.spacing(1),
   boxShadow: theme.shadows[1],
   [theme.breakpoints.up('sm')]: {
     height: 350,
