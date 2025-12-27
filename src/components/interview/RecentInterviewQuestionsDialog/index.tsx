@@ -110,7 +110,6 @@ const RecentInterviewQuestionsDialog: React.FC<RecentInterviewQuestionsDialogPro
                 onProgress: (p) => setDownloadProgress(p),
             });
         } catch (e) {
-            // eslint-disable-next-line no-console
             console.error('Failed to generate PDF', e);
             setDownloadError(e instanceof Error ? e.message : 'Failed to generate PDF. Please try again.');
         } finally {
@@ -150,7 +149,6 @@ const RecentInterviewQuestionsDialog: React.FC<RecentInterviewQuestionsDialogPro
                 </ActionContainer>
             </StackContainer>
 
-            {/* Offscreen content to capture the full (non-scrolled) UI as PDF */}
             {open && (
                 <Box
                     ref={pdfContentRef}
