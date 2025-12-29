@@ -7,6 +7,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import { apiClientClient } from '@/services/api-client';
 import { useAuthStore } from '@/store/auth';
 import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
+import { clearWizardTextOnlySession, saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
 
 interface ThinkingProps {
     onCancel: () => void;
@@ -127,13 +128,24 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
             setSubmitError(message);
             // Helps diagnose 400s from the API server
-            // eslint-disable-next-line no-console
+
             console.error('Apps/SendFile failed:', errorObj?.response?.status, errorObj?.response?.data, errorObj);
         }
     };
 
     useEffect(() => {
         if (!hasSubmitted.current) {
+            const hasAnyFilesOrVoices = (wizardData.allFiles?.length ?? 0) > 0;
+
+            if (!hasAnyFilesOrVoices) {
+                saveWizardTextOnlySession(wizardData);
+                setRequestId(null);
+                setActiveStep(3);
+                hasSubmitted.current = true;
+                return stopPolling;
+            }
+
+            clearWizardTextOnlySession();
             handleSubmit();
             hasSubmitted.current = true;
             return stopPolling;

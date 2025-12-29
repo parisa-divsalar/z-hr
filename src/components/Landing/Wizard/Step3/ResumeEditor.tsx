@@ -14,6 +14,7 @@ import { postImproved } from '@/services/cv/post-improved';
 import { useAuthStore } from '@/store/auth';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf } from '@/utils/exportToPdf';
+import { loadWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
 
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import SectionHeader from './ResumeEditor/SectionHeader';
@@ -641,6 +642,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const requestId = useWizardStore((state) => state.requestId);
     const accessToken = useAuthStore((state) => state.accessToken);
     const canFetchCv = Boolean(requestId && accessToken);
+    const [isTextOnlyMode, setIsTextOnlyMode] = useState(false);
     const internalPdfRef = useRef<HTMLDivElement | null>(null);
     const pdfRef = pdfTargetRef ?? internalPdfRef;
     const cvPayloadRef = useRef<any>(null);
@@ -676,6 +678,81 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [downloadProgress, setDownloadProgress] = useState<number>(0);
     const [improvingSection, setImprovingSection] = useState<string | null>(null);
     const [improveError, setImproveError] = useState<string | null>(null);
+
+    useEffect(() => {
+        // If we have a requestId, the resume should be driven by API data.
+        if (canFetchCv) {
+            setIsTextOnlyMode(false);
+            return;
+        }
+
+        const session = loadWizardTextOnlySession();
+        if (!session) {
+            setIsTextOnlyMode(false);
+            return;
+        }
+
+        setIsTextOnlyMode(true);
+
+        // In text-only flow we intentionally avoid any API call.
+        // Populate the editor view from session-stored wizard data.
+        const headlineParts = [
+            String(session.mainSkill ?? '').trim(),
+            session.visaStatus ? `Visa: ${String(session.visaStatus).trim()}` : '',
+        ].filter(Boolean);
+
+        setProfile({
+            fullName: String(session.fullName ?? '').trim(),
+            dateOfBirth: String(session.dateOfBirth ?? '').trim(),
+            headline: headlineParts.join(' • '),
+        });
+
+        setSummary(String(session.background?.text ?? '').trim());
+        setSkills(Array.isArray(session.skills) ? session.skills.map((s) => String(s ?? '').trim()).filter(Boolean) : []);
+        setContactWays(
+            Array.isArray(session.contactWay) ? session.contactWay.map((c) => String(c ?? '').trim()).filter(Boolean) : [],
+        );
+        setLanguages(
+            Array.isArray(session.languages)
+                ? normalizeLanguages(session.languages as any[])
+                : typeof (session as any).languages === 'string'
+                  ? normalizeLanguages(applyLineListEditText((session as any).languages))
+                  : [],
+        );
+        setCertificates(
+            Array.isArray(session.certificates)
+                ? session.certificates
+                      .map((entry: any) => (typeof entry === 'string' ? entry : entry?.text ?? entry?.title ?? entry?.name))
+                      .map((v: any) => String(v ?? '').trim())
+                      .filter(Boolean)
+                : [],
+        );
+        setJobDescription(String(session.jobDescription?.text ?? '').trim());
+        setAdditionalInfo(String(session.additionalInfo?.text ?? '').trim());
+
+        setExperiences(
+            Array.isArray(session.experiences)
+                ? session.experiences
+                      .map((entry: any, idx: number) => ({
+                          id: idx + 1,
+                          company: '',
+                          position: '',
+                          description: String(entry?.text ?? '').trim(),
+                      }))
+                      .filter((exp) => exp.description.length > 0)
+                : [],
+        );
+
+        // Keep edit buffers in sync (if user toggles edit mode).
+        setProfileEditText(formatProfileEditText(createEmptyProfile()));
+        setContactWaysEditText('');
+        setLanguagesEditText('');
+        setCertificatesEditText('');
+        setAdditionalInfoEditText('');
+        setExperienceEditText('');
+        setCvError(null);
+        setHasCvLoadedOnce(true);
+    }, [canFetchCv]);
 
     const normalizeValue = (value: unknown): string | null => {
         if (value === null || value === undefined) return null;
@@ -1163,7 +1240,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                 onCancel={isPreview ? undefined : handleCancel}
                                 editText={profileEditText}
                                 onEditTextChange={isPreview ? undefined : setProfileEditText}
-                                hideActions={isExporting || isPreview}
+                                hideActions={isExporting || isPreview || isTextOnlyMode}
                             />
                             {isCvLoading && (
                                 <Typography variant='caption' color='text.secondary' mt={1}>
@@ -1189,7 +1266,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'summary'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview}
+                                    hideActions={isExporting || isPreview || isTextOnlyMode}
                                 />
                                 <SummaryContainer>
                                     {!isPreview && editingSection === 'summary' ? (
@@ -1213,7 +1290,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview}
+                                    hideActions={isExporting || isPreview || isTextOnlyMode}
                                 />
                                 <SkillsContainer>
                                     {skills.length === 0 ? (
@@ -1247,7 +1324,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview}
+                                    hideActions={isExporting || isPreview || isTextOnlyMode}
                                 />
                                 <Box mt={2}>
                                     {!isPreview && editingSection === 'contactWays' ? (
@@ -1281,7 +1358,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
-                            hideActions={isExporting || isPreview}
+                            hideActions={isExporting || isPreview || isTextOnlyMode}
                         />
                         <Box mt={2}>
                             {!isPreview && editingSection === 'languages' ? (
@@ -1316,7 +1393,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'certificates'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
-                            hideActions={isExporting || isPreview}
+                            hideActions={isExporting || isPreview || isTextOnlyMode}
                         />
                         <Box mt={2}>
                             {!isPreview && editingSection === 'certificates' ? (
@@ -1350,7 +1427,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'jobDescription'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
-                            hideActions={isExporting || isPreview}
+                            hideActions={isExporting || isPreview || isTextOnlyMode}
                         />
                         <SummaryContainer>
                             {!isPreview && editingSection === 'jobDescription' ? (
@@ -1378,7 +1455,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'experience'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
-                            hideActions={isExporting || isPreview}
+                            hideActions={isExporting || isPreview || isTextOnlyMode}
                         />
                         {!isPreview && editingSection === 'experience' ? (
                             <ExperienceTextareaAutosize
@@ -1429,7 +1506,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                 improveDisabled={Boolean(improvingSection) && improvingSection !== 'additionalInfo'}
                                 onSave={isPreview ? undefined : handleSave}
                                 onCancel={isPreview ? undefined : handleCancel}
-                                hideActions={isExporting || isPreview}
+                                hideActions={isExporting || isPreview || isTextOnlyMode}
                             />
                             <Box mt={2}>
                                 {!isPreview && editingSection === 'additionalInfo' ? (
