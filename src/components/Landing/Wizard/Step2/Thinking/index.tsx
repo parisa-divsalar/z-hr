@@ -46,6 +46,8 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             });
             console.log('res 349587398573', res);
 
+            // UX: keep the Thinking screen visible a tiny bit longer before jumping to the editor.
+            await new Promise<void>((resolve) => setTimeout(resolve, 5000));
             setActiveStep(3);
         } catch (err) {
             setIsSubmitting(false);

@@ -639,6 +639,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const { setStage, mode = 'editor', pdfTargetRef } = props;
     const isPreview = mode === 'preview';
     const [editingSection, setEditingSection] = useState<string | null>(null);
+    const wizardData = useWizardStore((state) => state.data);
     const requestId = useWizardStore((state) => state.requestId);
     const accessToken = useAuthStore((state) => state.accessToken);
     const canFetchCv = Boolean(requestId && accessToken);
@@ -646,7 +647,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [autoImproveIndex, setAutoImproveIndex] = useState<number>(-1);
     const [autoImprovePhase, setAutoImprovePhase] = useState<'idle' | 'request' | 'typing' | 'done'>('idle');
     const [autoImproved, setAutoImproved] = useState<Record<string, boolean>>({});
-    const autoImproveHasRunRef = useRef(false);
+    const autoImproveRunKeyRef = useRef<string | null>(null);
     const textOnlySummaryBackupRef = useRef<string | null>(null);
     const internalPdfRef = useRef<HTMLDivElement | null>(null);
     const pdfRef = pdfTargetRef ?? internalPdfRef;
@@ -701,8 +702,16 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         [],
     );
 
+    const isFileFlowMode = canFetchCv && !isTextOnlyMode;
+    const isAutoPipelineMode = isTextOnlyMode || isFileFlowMode;
+    const isPreCvLoading = isFileFlowMode && !hasCvLoadedOnce;
+
     const shouldSkeletonSection = (section: SectionKey) => {
-        if (!isTextOnlyMode) return false;
+        if (!isAutoPipelineMode) return false;
+        if (AUTO_IMPROVE_ORDER.indexOf(section) < 0) return false;
+
+        // While waiting for CV payload (file flow), skeleton the improved sections.
+        if (isPreCvLoading) return true;
         if (autoImprovePhase === 'done') return false;
 
         const idx = AUTO_IMPROVE_ORDER.indexOf(section);
@@ -720,11 +729,29 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     };
 
     const shouldSkeletonActions = (section: SectionKey) => {
-        if (!isTextOnlyMode) return false;
-        if (autoImprovePhase === 'done') return false;
+        if (!isAutoPipelineMode) return false;
         if (AUTO_IMPROVE_ORDER.indexOf(section) < 0) return false;
+        if (isPreCvLoading) return true;
+        if (autoImprovePhase === 'done') return false;
         return !autoImproved[section];
     };
+
+    // File flow: show initial profile from wizard/session while getCV is still loading.
+    useEffect(() => {
+        if (!isFileFlowMode) return;
+        if (hasCvLoadedOnce) return;
+
+        const headlineParts = [
+            String((wizardData as any)?.mainSkill ?? '').trim(),
+            (wizardData as any)?.visaStatus ? `Visa: ${String((wizardData as any).visaStatus).trim()}` : '',
+        ].filter(Boolean);
+
+        setProfile({
+            fullName: String((wizardData as any)?.fullName ?? '').trim(),
+            dateOfBirth: String((wizardData as any)?.dateOfBirth ?? '').trim(),
+            headline: headlineParts.join(' • '),
+        });
+    }, [isFileFlowMode, hasCvLoadedOnce, wizardData]);
 
     useEffect(() => {
         if (canFetchCv) {
@@ -1024,13 +1051,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     );
 
     useEffect(() => {
-        if (!isTextOnlyMode) return;
-        if (autoImproveHasRunRef.current) return;
+        const runKey = isTextOnlyMode ? 'text-only' : canFetchCv ? `api:${accessToken ?? ''}:${requestId ?? ''}` : null;
+        const shouldRun = (isTextOnlyMode && Boolean(loadWizardTextOnlySession())) || (canFetchCv && hasCvLoadedOnce);
+        if (!runKey || !shouldRun) return;
 
-        const session = loadWizardTextOnlySession();
-        if (!session) return;
+        if (autoImproveRunKeyRef.current === runKey) return;
+        autoImproveRunKeyRef.current = runKey;
 
-        autoImproveHasRunRef.current = true;
+        // Reset pipeline state when we start a new run.
+        setAutoImproveIndex(-1);
+        setAutoImproved({});
+        setAutoImprovePhase('idle');
 
         const run = async () => {
             try {
@@ -1076,7 +1107,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         void run();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isTextOnlyMode, AUTO_IMPROVE_ORDER, requestImprovedText]);
+    }, [isTextOnlyMode, canFetchCv, hasCvLoadedOnce, accessToken, requestId, AUTO_IMPROVE_ORDER, requestImprovedText]);
 
     const loadCvData = useCallback(async () => {
         if (!requestId || !accessToken) return;
@@ -1154,7 +1185,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         void loadCvData();
     }, [requestId, accessToken, loadCvData]);
 
-    const shouldBlockResumeRender = canFetchCv && !hasCvLoadedOnce;
+    // We render immediately (profile from session/wizard), then progressively replace with getCV + auto-improve.
+    const shouldBlockResumeRender = false;
 
     const renderSkeletonParagraph = (lines = 4) => (
         <Stack gap={1} mt={1.5}>
@@ -1526,7 +1558,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     onCancel={isPreview ? undefined : handleCancel}
                                     // Text-only: show actions only AFTER summary has been improved (before that show skeleton).
                                     hideActions={
-                                        isExporting || isPreview || (isTextOnlyMode && !Boolean(autoImproved.summary))
+                                        isExporting || isPreview || (isAutoPipelineMode && !Boolean(autoImproved.summary))
                                     }
                                     actionsSkeleton={shouldSkeletonActions('summary')}
                                 />
@@ -1537,6 +1569,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                             value={summary}
                                             onChange={(e) => setSummary(e.target.value)}
                                         />
+                                    ) : isPreCvLoading && !summary.trim() ? (
+                                        renderSkeletonParagraph(5)
                                     ) : (
                                         <SummaryText>{summary}</SummaryText>
                                     )}
