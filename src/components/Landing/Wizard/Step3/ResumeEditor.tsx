@@ -1,8 +1,8 @@
 'use client';
-import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
-import { Box, CardContent, CircularProgress, Typography } from '@mui/material';
+import { Box, CardContent, CircularProgress, Skeleton, Stack, Typography } from '@mui/material';
 
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
@@ -643,6 +643,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const accessToken = useAuthStore((state) => state.accessToken);
     const canFetchCv = Boolean(requestId && accessToken);
     const [isTextOnlyMode, setIsTextOnlyMode] = useState(false);
+    const [autoImproveIndex, setAutoImproveIndex] = useState<number>(-1);
+    const [autoImprovePhase, setAutoImprovePhase] = useState<'idle' | 'request' | 'typing' | 'done'>('idle');
+    const [autoImproved, setAutoImproved] = useState<Record<string, boolean>>({});
+    const autoImproveHasRunRef = useRef(false);
     const internalPdfRef = useRef<HTMLDivElement | null>(null);
     const pdfRef = pdfTargetRef ?? internalPdfRef;
     const cvPayloadRef = useRef<any>(null);
@@ -678,6 +682,53 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const [downloadProgress, setDownloadProgress] = useState<number>(0);
     const [improvingSection, setImprovingSection] = useState<string | null>(null);
     const [improveError, setImproveError] = useState<string | null>(null);
+
+    type SectionKey =
+        | 'summary'
+        | 'skills'
+        | 'contactWays'
+        | 'languages'
+        | 'certificates'
+        | 'jobDescription'
+        | 'experience'
+        | 'additionalInfo';
+
+    // Text-only mode: only improve the heavy free-text sections.
+    // Skills / Contact / Languages are shown straight from session (no improve).
+    const AUTO_IMPROVE_ORDER = useMemo<SectionKey[]>(
+        () => ['summary', 'certificates', 'jobDescription', 'experience', 'additionalInfo'],
+        [],
+    );
+
+    const shouldSkeletonSection = (section: SectionKey) => {
+        if (!isTextOnlyMode) return false;
+        if (autoImprovePhase === 'done') return false;
+
+        const idx = AUTO_IMPROVE_ORDER.indexOf(section);
+        if (idx < 0) return false;
+
+        // Before pipeline starts, skeleton everything under the profile header.
+        if (autoImproveIndex < 0) return true;
+
+        // Sections after the current one are always skeleton while pipeline is running.
+        if (idx > autoImproveIndex) return true;
+
+        // Current section: skeleton while waiting for the improved result (then typewriter starts).
+        if (idx === autoImproveIndex) {
+            return autoImprovePhase === 'idle' || autoImprovePhase === 'request';
+        }
+
+        // Previous sections (already revealed).
+        return false;
+    };
+
+    const shouldSkeletonActions = (section: SectionKey) => {
+        if (!isTextOnlyMode) return false;
+        if (autoImprovePhase === 'done') return false;
+        if (AUTO_IMPROVE_ORDER.indexOf(section) < 0) return false;
+        // While auto-improve is running, keep actions skeleton for current + pending sections.
+        return !autoImproved[section];
+    };
 
     useEffect(() => {
         // If we have a requestId, the resume should be driven by API data.
@@ -865,6 +916,162 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         return null;
     };
 
+    const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+    const typewriterWords = async (finalText: string, onUpdate: (partial: string) => void) => {
+        const normalized = String(finalText ?? '');
+        const tokens = normalized.split(/(\s+)/); // keep whitespace tokens
+        let acc = '';
+        for (const token of tokens) {
+            acc += token;
+            onUpdate(acc);
+            // Faster than real typing but still "chat-like".
+            await sleep(/\s+/.test(token) ? 10 : 28);
+        }
+    };
+
+    const applyTypedSectionText = (section: string, partialText: string) => {
+        switch (section) {
+            case 'summary':
+                setSummary(partialText);
+                return;
+            case 'jobDescription':
+                setJobDescription(partialText);
+                return;
+            case 'additionalInfo':
+                setAdditionalInfo(partialText);
+                return;
+            case 'experience': {
+                setExperiences((prev) => applyExperienceEditText(prev, partialText));
+                return;
+            }
+            case 'skills':
+                // Show as a growing list while typing, then the UI will render chips.
+                setSkills(applyLineListEditText(partialText));
+                return;
+            case 'contactWays':
+                setContactWays(applyLineListEditText(partialText));
+                return;
+            case 'languages':
+                setLanguages(applyLanguagesEditText(partialText));
+                return;
+            case 'certificates':
+                setCertificates(applyCertificateEditText(partialText));
+                return;
+        }
+    };
+
+    const getSectionTextForImprove = (section: string): string => {
+        switch (section) {
+            case 'summary':
+                return summary;
+            case 'skills':
+                return formatLineListEditText(skills);
+            case 'contactWays':
+                return formatLineListEditText(contactWays);
+            case 'languages':
+                return formatLanguagesEditText(languages);
+            case 'certificates':
+                return formatCertificateEditText(certificates);
+            case 'jobDescription':
+                return jobDescription;
+            case 'experience':
+                return formatExperienceEditText(experiences);
+            case 'additionalInfo':
+                return additionalInfo;
+            default:
+                return '';
+        }
+    };
+
+    const requestImprovedText = useCallback(
+        async (rawText: string): Promise<string> => {
+            const text = String(rawText ?? '').trim();
+            if (!text) return '';
+
+            const postResponse = await postImproved({
+                userId: accessToken ?? undefined,
+                lang: 'en',
+                paragraph: text,
+            });
+
+            const pollingRequestId = extractPollingRequestId(postResponse);
+            if (!pollingRequestId) {
+                throw new Error('Missing requestId from improve response. Please try again.');
+            }
+
+            const start = Date.now();
+            const timeoutMs = 45_000;
+            const pollIntervalMs = 1_000;
+
+            while (Date.now() - start < timeoutMs) {
+                const res = await getImproved({ requestId: pollingRequestId });
+                const processedContent =
+                    res?.processedContent ??
+                    res?.ProcessedContent ??
+                    res?.result?.processedContent ??
+                    res?.result?.ProcessedContent ??
+                    res?.data?.processedContent ??
+                    res?.data?.ProcessedContent;
+                const improved =
+                    (typeof processedContent === 'string' ? processedContent.trim() : null) ?? extractImprovedText(res);
+                if (improved) return improved;
+                await sleep(pollIntervalMs);
+            }
+
+            throw new Error('Improvement is taking too long. Please try again.');
+        },
+        [accessToken],
+    );
+
+    useEffect(() => {
+        if (!isTextOnlyMode) return;
+        if (autoImproveHasRunRef.current) return;
+
+        const session = loadWizardTextOnlySession();
+        if (!session) return;
+
+        autoImproveHasRunRef.current = true;
+
+        const run = async () => {
+            try {
+                setImproveError(null);
+                setAutoImprovePhase('request');
+
+                for (let i = 0; i < AUTO_IMPROVE_ORDER.length; i++) {
+                    const section = AUTO_IMPROVE_ORDER[i];
+                    setAutoImproveIndex(i);
+                    setAutoImprovePhase('request');
+
+                    const raw = getSectionTextForImprove(section);
+                    if (!String(raw ?? '').trim()) {
+                        setAutoImproved((prev) => ({ ...prev, [section]: true }));
+                        continue;
+                    }
+
+                    // Clear current content for a cleaner "generation" feeling.
+                    applyTypedSectionText(section, '');
+
+                    const improved = await requestImprovedText(raw);
+
+                    setAutoImprovePhase('typing');
+                    await typewriterWords(improved, (partial) => applyTypedSectionText(section, partial));
+
+                    setAutoImproved((prev) => ({ ...prev, [section]: true }));
+                }
+
+                setAutoImprovePhase('done');
+            } catch (err) {
+                const e = err as any;
+                setImproveError(e instanceof Error ? e.message : 'Failed to improve text. Please try again.');
+                setAutoImprovePhase('done');
+            }
+        };
+
+        void run();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isTextOnlyMode, AUTO_IMPROVE_ORDER, requestImprovedText]);
+
     const loadCvData = useCallback(async () => {
         if (!requestId || !accessToken) return;
 
@@ -943,8 +1150,26 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
     const shouldBlockResumeRender = canFetchCv && !hasCvLoadedOnce;
 
+    const renderSkeletonParagraph = (lines = 4) => (
+        <Stack gap={1} mt={1.5}>
+            {Array.from({ length: lines }).map((_, idx) => (
+                <Skeleton
+                    key={idx}
+                    variant='text'
+                    height={18}
+                    width={idx === lines - 1 ? '72%' : '100%'}
+                    sx={{ maxWidth: 720 }}
+                />
+            ))}
+        </Stack>
+    );
+
     const handleEdit = (section: string) => {
         setSaveError(null);
+        if (isTextOnlyMode) {
+            setSaveError('Editing is disabled in text-only mode.');
+            return;
+        }
         if (section === 'profile') {
             setProfileEditText(formatProfileEditText(profile));
         }
@@ -973,6 +1198,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         if (!editingSection) return;
         if (!requestId) {
             setSaveError('requestId is missing. Please refresh and try again.');
+            return;
+        }
+        if (isTextOnlyMode) {
+            setSaveError('Saving is disabled in text-only mode.');
             return;
         }
         if (isSaving) return;
@@ -1045,6 +1274,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             if (improvingSection) return;
             if (!requestId) {
                 setImproveError('requestId is missing. Please refresh and try again.');
+                return;
+            }
+            if (isTextOnlyMode) {
+                setImproveError('Improve is automatic in text-only mode.');
                 return;
             }
 
@@ -1172,6 +1405,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             requestId,
             skills,
             summary,
+            isTextOnlyMode,
         ],
     );
 
@@ -1259,17 +1493,20 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             <SectionContainer>
                                 <SectionHeader
                                     title='Summary'
-                                    onEdit={isPreview ? undefined : () => handleEdit('summary')}
-                                    onImprove={isPreview ? undefined : () => void handleImprove('summary')}
+                                    onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('summary')}
+                                    onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('summary')}
                                     isEditing={!isPreview && editingSection === 'summary'}
                                     isImproving={!isPreview && improvingSection === 'summary'}
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'summary'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
                                     hideActions={isExporting || isPreview || isTextOnlyMode}
+                                    actionsSkeleton={shouldSkeletonActions('summary')}
                                 />
                                 <SummaryContainer>
-                                    {!isPreview && editingSection === 'summary' ? (
+                                    {isTextOnlyMode && shouldSkeletonSection('summary') ? (
+                                        renderSkeletonParagraph(5)
+                                    ) : !isPreview && editingSection === 'summary' ? (
                                         <StyledTextareaAutosize
                                             value={summary}
                                             onChange={(e) => setSummary(e.target.value)}
@@ -1283,17 +1520,20 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             <SectionContainer>
                                 <SectionHeader
                                     title='Skills'
-                                    onEdit={isPreview ? undefined : () => handleEdit('skills')}
-                                    onImprove={isPreview ? undefined : () => void handleImprove('skills')}
+                                    onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('skills')}
+                                    onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('skills')}
                                     isEditing={!isPreview && editingSection === 'skills'}
                                     isImproving={!isPreview && improvingSection === 'skills'}
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
                                     hideActions={isExporting || isPreview || isTextOnlyMode}
+                                    actionsSkeleton={shouldSkeletonActions('skills')}
                                 />
                                 <SkillsContainer>
-                                    {skills.length === 0 ? (
+                                    {isTextOnlyMode && shouldSkeletonSection('skills') ? (
+                                        renderSkeletonParagraph(3)
+                                    ) : skills.length === 0 ? (
                                         <Typography variant='body2' color='text.secondary'>
                                             No skills found.
                                         </Typography>
@@ -1317,17 +1557,20 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             <SectionContainer>
                                 <SectionHeader
                                     title='Contact'
-                                    onEdit={isPreview ? undefined : () => handleEdit('contactWays')}
-                                    onImprove={isPreview ? undefined : () => void handleImprove('contactWays')}
+                                    onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('contactWays')}
+                                    onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('contactWays')}
                                     isEditing={!isPreview && editingSection === 'contactWays'}
                                     isImproving={!isPreview && improvingSection === 'contactWays'}
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
                                     hideActions={isExporting || isPreview || isTextOnlyMode}
+                                    actionsSkeleton={shouldSkeletonActions('contactWays')}
                                 />
                                 <Box mt={2}>
-                                    {!isPreview && editingSection === 'contactWays' ? (
+                                    {isTextOnlyMode && shouldSkeletonSection('contactWays') ? (
+                                        renderSkeletonParagraph(3)
+                                    ) : !isPreview && editingSection === 'contactWays' ? (
                                         <ExperienceTextareaAutosize
                                             value={contactWaysEditText}
                                             onChange={(e) => setContactWaysEditText(e.target.value)}
@@ -1351,17 +1594,20 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     <SectionContainer>
                         <SectionHeader
                             title='Languages'
-                            onEdit={isPreview ? undefined : () => handleEdit('languages')}
-                            onImprove={isPreview ? undefined : () => void handleImprove('languages')}
+                            onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('languages')}
+                            onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('languages')}
                             isEditing={!isPreview && editingSection === 'languages'}
                             isImproving={!isPreview && improvingSection === 'languages'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
                             hideActions={isExporting || isPreview || isTextOnlyMode}
+                            actionsSkeleton={shouldSkeletonActions('languages')}
                         />
                         <Box mt={2}>
-                            {!isPreview && editingSection === 'languages' ? (
+                            {isTextOnlyMode && shouldSkeletonSection('languages') ? (
+                                renderSkeletonParagraph(3)
+                            ) : !isPreview && editingSection === 'languages' ? (
                                 <ExperienceTextareaAutosize
                                     value={languagesEditText}
                                     onChange={(e) => setLanguagesEditText(e.target.value)}
@@ -1386,17 +1632,20 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     <SectionContainer>
                         <SectionHeader
                             title='Certificates'
-                            onEdit={isPreview ? undefined : () => handleEdit('certificates')}
-                            onImprove={isPreview ? undefined : () => void handleImprove('certificates')}
+                            onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('certificates')}
+                            onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('certificates')}
                             isEditing={!isPreview && editingSection === 'certificates'}
                             isImproving={!isPreview && improvingSection === 'certificates'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'certificates'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
                             hideActions={isExporting || isPreview || isTextOnlyMode}
+                            actionsSkeleton={shouldSkeletonActions('certificates')}
                         />
                         <Box mt={2}>
-                            {!isPreview && editingSection === 'certificates' ? (
+                            {isTextOnlyMode && shouldSkeletonSection('certificates') ? (
+                                renderSkeletonParagraph(3)
+                            ) : !isPreview && editingSection === 'certificates' ? (
                                 <ExperienceTextareaAutosize
                                     value={certificatesEditText}
                                     onChange={(e) => setCertificatesEditText(e.target.value)}
@@ -1420,17 +1669,20 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     <SectionContainer>
                         <SectionHeader
                             title='Job Description'
-                            onEdit={isPreview ? undefined : () => handleEdit('jobDescription')}
-                            onImprove={isPreview ? undefined : () => void handleImprove('jobDescription')}
+                            onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('jobDescription')}
+                            onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('jobDescription')}
                             isEditing={!isPreview && editingSection === 'jobDescription'}
                             isImproving={!isPreview && improvingSection === 'jobDescription'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'jobDescription'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
                             hideActions={isExporting || isPreview || isTextOnlyMode}
+                            actionsSkeleton={shouldSkeletonActions('jobDescription')}
                         />
                         <SummaryContainer>
-                            {!isPreview && editingSection === 'jobDescription' ? (
+                            {isTextOnlyMode && shouldSkeletonSection('jobDescription') ? (
+                                renderSkeletonParagraph(4)
+                            ) : !isPreview && editingSection === 'jobDescription' ? (
                                 <StyledTextareaAutosize
                                     value={jobDescription}
                                     onChange={(e) => setJobDescription(e.target.value)}
@@ -1448,16 +1700,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                     <ExperienceContainer>
                         <SectionHeader
                             title='Experience'
-                            onEdit={isPreview ? undefined : () => handleEdit('experience')}
-                            onImprove={isPreview ? undefined : () => void handleImprove('experience')}
+                            onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('experience')}
+                            onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('experience')}
                             isEditing={!isPreview && editingSection === 'experience'}
                             isImproving={!isPreview && improvingSection === 'experience'}
                             improveDisabled={Boolean(improvingSection) && improvingSection !== 'experience'}
                             onSave={isPreview ? undefined : handleSave}
                             onCancel={isPreview ? undefined : handleCancel}
                             hideActions={isExporting || isPreview || isTextOnlyMode}
+                            actionsSkeleton={shouldSkeletonActions('experience')}
                         />
-                        {!isPreview && editingSection === 'experience' ? (
+                        {isTextOnlyMode && shouldSkeletonSection('experience') ? (
+                            renderSkeletonParagraph(5)
+                        ) : !isPreview && editingSection === 'experience' ? (
                             <ExperienceTextareaAutosize
                                 value={experienceEditText}
                                 onChange={(e) => setExperienceEditText(e.target.value)}
@@ -1495,21 +1750,24 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                         )}
                     </ExperienceContainer>
 
-                    {(additionalInfo.trim().length > 0 || editingSection === 'additionalInfo') && (
+                    {(isTextOnlyMode || additionalInfo.trim().length > 0 || editingSection === 'additionalInfo') && (
                         <SectionContainer>
                             <SectionHeader
                                 title='Additional Info'
-                                onEdit={isPreview ? undefined : () => handleEdit('additionalInfo')}
+                                onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('additionalInfo')}
                                 isEditing={!isPreview && editingSection === 'additionalInfo'}
-                                onImprove={isPreview ? undefined : () => void handleImprove('additionalInfo')}
+                                onImprove={isPreview || isTextOnlyMode ? undefined : () => void handleImprove('additionalInfo')}
                                 isImproving={!isPreview && improvingSection === 'additionalInfo'}
                                 improveDisabled={Boolean(improvingSection) && improvingSection !== 'additionalInfo'}
                                 onSave={isPreview ? undefined : handleSave}
                                 onCancel={isPreview ? undefined : handleCancel}
                                 hideActions={isExporting || isPreview || isTextOnlyMode}
+                                actionsSkeleton={shouldSkeletonActions('additionalInfo')}
                             />
                             <Box mt={2}>
-                                {!isPreview && editingSection === 'additionalInfo' ? (
+                                {isTextOnlyMode && shouldSkeletonSection('additionalInfo') ? (
+                                    renderSkeletonParagraph(4)
+                                ) : !isPreview && editingSection === 'additionalInfo' ? (
                                     <ExperienceTextareaAutosize
                                         value={additionalInfoEditText}
                                         onChange={(e) => setAdditionalInfoEditText(e.target.value)}

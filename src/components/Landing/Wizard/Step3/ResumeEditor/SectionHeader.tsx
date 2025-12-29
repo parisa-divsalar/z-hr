@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button, CircularProgress, IconButton } from '@mui/material';
+import { Button, CircularProgress, IconButton, Skeleton } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
@@ -17,6 +17,11 @@ interface SectionHeaderProps {
     isImproving?: boolean;
     improveDisabled?: boolean;
     hideActions?: boolean;
+    /**
+     * When true, render skeleton placeholders for action buttons (edit/improve).
+     * Useful for auto-improve flows where actions are temporarily unavailable.
+     */
+    actionsSkeleton?: boolean;
 }
 
 const SectionHeader = ({
@@ -29,11 +34,14 @@ const SectionHeader = ({
     isImproving,
     improveDisabled,
     hideActions,
+    actionsSkeleton,
 }: SectionHeaderProps) => {
+    const shouldShowActions = !hideActions || Boolean(actionsSkeleton);
+
     return (
         <SectionHeaderContainer>
             <SectionTitle variant='subtitle1'>{title}</SectionTitle>
-            {!hideActions ? (
+            {shouldShowActions ? (
                 <SectionActions>
                     {isEditing ? (
                         <>
@@ -46,16 +54,25 @@ const SectionHeader = ({
                         </>
                     ) : (
                         <>
-                            <IconButton size='small' onClick={onEdit} disabled={Boolean(isImproving)}>
-                                <EditIcon />
-                            </IconButton>
-                            <IconButton
-                                size='small'
-                                onClick={onImprove}
-                                disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
-                            >
-                                {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
-                            </IconButton>
+                            {actionsSkeleton ? (
+                                <>
+                                    <Skeleton variant='circular' width={28} height={28} />
+                                    <Skeleton variant='circular' width={28} height={28} />
+                                </>
+                            ) : (
+                                <>
+                                    <IconButton size='small' onClick={onEdit} disabled={Boolean(isImproving)}>
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        size='small'
+                                        onClick={onImprove}
+                                        disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
+                                    >
+                                        {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
+                                    </IconButton>
+                                </>
+                            )}
                         </>
                     )}
                 </SectionActions>
