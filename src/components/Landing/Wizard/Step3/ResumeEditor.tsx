@@ -723,6 +723,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const pdfRef = pdfTargetRef ?? internalPdfRef;
     const cvPayloadRef = useRef<any>(null);
     /**
+     * File-flow only: becomes `${accessToken}:${requestId}` after we have successfully loaded a CV record
+     * from get-cv. This prevents the auto-improve pipeline from running too early (e.g. when coming from
+     * text-only session first, then switching to file flow).
+     */
+    const [cvLoadedKey, setCvLoadedKey] = useState<string | null>(null);
+    /**
      * Prevent duplicate auto-fetches (especially in React Strict Mode dev where effects run twice).
      * We still allow manual refresh via the "Refresh" handler.
      */
@@ -771,9 +777,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const isAutoPipelineMode = isTextOnlyMode || isFileFlowMode;
     const isPreCvLoading = isFileFlowMode && !hasCvLoadedOnce;
 
-    // Auto pipeline: improve get-cv (file-flow) and session (text-only) data section-by-section.
+    // Auto pipeline: improve only paragraph-like sections (NOT list-like fields such as skills/contact/languages).
     const AUTO_IMPROVE_ORDER = useMemo<SectionKey[]>(
-        () => ['summary', 'skills', 'contactWays', 'languages', 'certificates', 'jobDescription', 'experience', 'additionalInfo'],
+        () => ['summary', 'certificates', 'jobDescription', 'experience', 'additionalInfo'],
         [],
     );
 
@@ -925,6 +931,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setCvError(null);
         setHasCvLoadedOnce(true);
     }, [canFetchCv]);
+
+    // When request context changes, require a fresh get-cv load before auto-improve can run.
+    useEffect(() => {
+        if (!accessToken || !requestId) {
+            setCvLoadedKey(null);
+            return;
+        }
+        setCvLoadedKey(null);
+    }, [accessToken, requestId]);
 
     const normalizeValue = (value: unknown): string | null => {
         if (value === null || value === undefined) return null;
@@ -1146,8 +1161,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     );
 
     useEffect(() => {
-        const runKey = isTextOnlyMode ? 'text-only' : canFetchCv ? `api:${accessToken ?? ''}:${requestId ?? ''}` : null;
-        const shouldRun = (isTextOnlyMode && Boolean(loadWizardTextOnlySession())) || (canFetchCv && hasCvLoadedOnce);
+        const apiKey = canFetchCv ? `${accessToken ?? ''}:${requestId ?? ''}` : null;
+        const runKey = isTextOnlyMode ? 'text-only' : apiKey ? `api:${apiKey}` : null;
+        const shouldRun =
+            (isTextOnlyMode && Boolean(loadWizardTextOnlySession())) || (apiKey && cvLoadedKey === apiKey);
         if (!runKey || !shouldRun) return;
 
         if (autoImproveRunKeyRef.current === runKey) return;
@@ -1202,7 +1219,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         void run();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isTextOnlyMode, canFetchCv, hasCvLoadedOnce, accessToken, requestId, AUTO_IMPROVE_ORDER, requestImprovedText]);
+    }, [
+        isTextOnlyMode,
+        canFetchCv,
+        accessToken,
+        requestId,
+        cvLoadedKey,
+        AUTO_IMPROVE_ORDER,
+        requestImprovedText,
+    ]);
 
     const loadCvData = useCallback(async () => {
         if (!requestId || !accessToken) return;
@@ -1216,6 +1241,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             if (!record) {
                 setCvError('Resume data is empty.');
                 cvPayloadRef.current = null;
+                setCvLoadedKey(null);
                 // Keep profile from session/wizard so refresh doesn't wipe it.
                 setBackgroundText('');
                 setSummary('');
@@ -1231,6 +1257,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
             const payload = resolveCvPayload(record);
             cvPayloadRef.current = payload;
+            setCvLoadedKey(`${accessToken}:${requestId}`);
             const detectedSummary = extractSummary(payload) || extractSummary(record);
             const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
             const detectedContactWays =
@@ -1262,6 +1289,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             console.error('Failed to load CV preview', error);
             setCvError('Unable to load resume data. Please try again.');
             cvPayloadRef.current = null;
+            setCvLoadedKey(null);
         } finally {
             setIsCvLoading(false);
             setHasCvLoadedOnce(true);
@@ -1719,14 +1747,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={
-                                        isExporting ||
-                                        isPreview ||
-                                        isTextOnlyMode ||
-                                        shouldBlockBelowSummary ||
-                                        (isAutoPipelineMode && !Boolean(autoImproved.skills))
-                                    }
-                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('skills')}
+                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
+                                    actionsSkeleton={shouldBlockBelowSummary}
                                 />
                                 <SkillsContainer>
                                     {shouldBlockBelowSummary ? (
@@ -1768,14 +1790,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={
-                                        isExporting ||
-                                        isPreview ||
-                                        isTextOnlyMode ||
-                                        shouldBlockBelowSummary ||
-                                        (isAutoPipelineMode && !Boolean(autoImproved.contactWays))
-                                    }
-                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('contactWays')}
+                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
+                                    actionsSkeleton={shouldBlockBelowSummary}
                                 />
                                 <Box mt={2}>
                                     {shouldBlockBelowSummary ? (
@@ -1815,14 +1831,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={
-                                        isExporting ||
-                                        isPreview ||
-                                        isTextOnlyMode ||
-                                        shouldBlockBelowSummary ||
-                                        (isAutoPipelineMode && !Boolean(autoImproved.languages))
-                                    }
-                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('languages')}
+                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
+                                    actionsSkeleton={shouldBlockBelowSummary}
                                 />
                                 <Box mt={2}>
                                     {shouldBlockBelowSummary ? (
