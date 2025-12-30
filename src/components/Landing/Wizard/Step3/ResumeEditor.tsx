@@ -429,6 +429,52 @@ const extractSummary = (payload: any): string => {
     );
 };
 
+const cleanSummaryText = (value: string): string => {
+    const normalize = (text: string, seen = new Set<string>()): string => {
+        const trimmed = String(text ?? '').trim();
+        if (!trimmed) return '';
+        if (seen.has(trimmed)) return trimmed;
+        seen.add(trimmed);
+
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (typeof parsed === 'string') {
+                return normalize(parsed, seen);
+            }
+            if (parsed && typeof parsed === 'object') {
+                const candidate =
+                    parsed.result ??
+                    parsed.text ??
+                    parsed.summary ??
+                    parsed.value ??
+                    parsed.output ??
+                    parsed.description ??
+                    parsed.body ??
+                    parsed.data ??
+                    null;
+                if (typeof candidate === 'string' && candidate.trim()) {
+                    return normalize(candidate, seen);
+                }
+            }
+        } catch {
+            // fall through to manual cleanup
+        }
+
+        if (trimmed.startsWith('{"result"')) {
+            const withoutPrefix = trimmed.replace(/^\s*\{"result"\s*:\s*/i, '');
+            const withoutSuffix = withoutPrefix.replace(/\}\s*$/, '');
+            const unwrapped = withoutSuffix.replace(/^"(.*)"$/, '$1').replace(/\\"/g, '"');
+            if (unwrapped !== trimmed) {
+                return normalize(unwrapped, seen);
+            }
+        }
+
+        return trimmed;
+    };
+
+    return normalize(value);
+};
+
 const extractFullName = (payload: any): string => {
     if (!payload || typeof payload !== 'object') return '';
     return (
@@ -724,11 +770,11 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const pdfRef = pdfTargetRef ?? internalPdfRef;
     const cvPayloadRef = useRef<any>(null);
     /**
-     * File-flow only: becomes `${accessToken}:${requestId}` after we have successfully loaded a CV record
-     * from get-cv. This prevents the auto-improve pipeline from running too early (e.g. when coming from
-     * text-only session first, then switching to file flow).
+     * File-flow only: tracks the last request identity (`accessToken:requestId`) and a run-specific key.
+     * The run key includes a timestamp so we can re-trigger auto-improve every time new data loads.
      */
-    const [cvLoadedKey, setCvLoadedKey] = useState<string | null>(null);
+    const [cvLoadedApiKey, setCvLoadedApiKey] = useState<string | null>(null);
+    const [cvLoadedRunKey, setCvLoadedRunKey] = useState<string | null>(null);
     /**
      * Prevent duplicate auto-fetches (especially in React Strict Mode dev where effects run twice).
      * We still allow manual refresh via the "Refresh" handler.
@@ -879,8 +925,9 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             headline: headlineParts.join(' • '),
         });
 
-        setSummary(String(session.background?.text ?? '').trim());
-        setBackgroundText(String(session.background?.text ?? '').trim());
+        const sanitizedSessionSummary = cleanSummaryText(String(session.background?.text ?? '').trim());
+        setSummary(sanitizedSessionSummary);
+        setBackgroundText(sanitizedSessionSummary);
         setSkills(
             Array.isArray(session.skills) ? session.skills.map((s) => String(s ?? '').trim()).filter(Boolean) : [],
         );
@@ -935,11 +982,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
     // When request context changes, require a fresh get-cv load before auto-improve can run.
     useEffect(() => {
-        if (!accessToken || !requestId) {
-            setCvLoadedKey(null);
-            return;
-        }
-        setCvLoadedKey(null);
+        setCvLoadedApiKey(null);
+        setCvLoadedRunKey(null);
     }, [accessToken, requestId]);
 
     const normalizeValue = (value: unknown): string | null => {
@@ -1162,10 +1206,17 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     );
 
     useEffect(() => {
+        const textOnlySessionExists = Boolean(loadWizardTextOnlySession());
         const apiKey = canFetchCv ? `${accessToken ?? ''}:${requestId ?? ''}` : null;
-        const runKey = isTextOnlyMode ? 'text-only' : apiKey ? `api:${apiKey}` : null;
+        const runKey =
+            isTextOnlyMode && textOnlySessionExists
+                ? 'text-only'
+                : cvLoadedRunKey
+                ? `api:${cvLoadedRunKey}`
+                : null;
         const shouldRun =
-            (isTextOnlyMode && Boolean(loadWizardTextOnlySession())) || (apiKey && cvLoadedKey === apiKey);
+            (isTextOnlyMode && textOnlySessionExists) ||
+            (!isTextOnlyMode && apiKey && cvLoadedApiKey === apiKey && Boolean(cvLoadedRunKey));
         if (!runKey || !shouldRun) return;
 
         if (autoImproveRunKeyRef.current === runKey) return;
@@ -1220,7 +1271,16 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         void run();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isTextOnlyMode, canFetchCv, accessToken, requestId, cvLoadedKey, AUTO_IMPROVE_ORDER, requestImprovedText]);
+    }, [
+        isTextOnlyMode,
+        canFetchCv,
+        accessToken,
+        requestId,
+        cvLoadedApiKey,
+        cvLoadedRunKey,
+        AUTO_IMPROVE_ORDER,
+        requestImprovedText,
+    ]);
 
     const loadCvData = useCallback(async () => {
         if (!requestId || !accessToken) return;
@@ -1234,7 +1294,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             if (!record) {
                 setCvError('Resume data is empty.');
                 cvPayloadRef.current = null;
-                setCvLoadedKey(null);
+                setCvLoadedApiKey(null);
+                setCvLoadedRunKey(null);
                 // Keep profile from session/wizard so refresh doesn't wipe it.
                 setBackgroundText('');
                 setSummary('');
@@ -1250,8 +1311,11 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
             const payload = resolveCvPayload(record);
             cvPayloadRef.current = payload;
-            setCvLoadedKey(`${accessToken}:${requestId}`);
-            const detectedSummary = extractSummary(payload) || extractSummary(record);
+            const apiKey = `${accessToken}:${requestId}`;
+            setCvLoadedApiKey(apiKey);
+            setCvLoadedRunKey(`${apiKey}:${Date.now()}`);
+            const rawSummary = extractSummary(payload) || extractSummary(record);
+            const detectedSummary = cleanSummaryText(rawSummary);
             const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
             const detectedContactWays =
                 extractContactWays(payload).length > 0 ? extractContactWays(payload) : extractContactWays(record);
@@ -1282,7 +1346,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             console.error('Failed to load CV preview', error);
             setCvError('Unable to load resume data. Please try again.');
             cvPayloadRef.current = null;
-            setCvLoadedKey(null);
+            setCvLoadedApiKey(null);
+            setCvLoadedRunKey(null);
         } finally {
             setIsCvLoading(false);
             setHasCvLoadedOnce(true);
@@ -1789,7 +1854,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     actionsSkeleton={shouldBlockBelowSummary}
                                 />
                                 <Box mt={2}>
-                                    {shouldBlockBelowSummary ? (
+                                    {shouldBlockBelowSummary && contactWays.length === 0 ? (
                                         renderSkeletonParagraph(3)
                                     ) : isAutoPipelineMode && shouldSkeletonSection('contactWays') ? (
                                         renderSkeletonParagraph(3)
@@ -1830,7 +1895,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     actionsSkeleton={shouldBlockBelowSummary}
                                 />
                                 <Box mt={2}>
-                                    {shouldBlockBelowSummary ? (
+                                    {shouldBlockBelowSummary && languages.length === 0 ? (
                                         renderSkeletonParagraph(3)
                                     ) : isAutoPipelineMode && shouldSkeletonSection('languages') ? (
                                         renderSkeletonParagraph(3)
