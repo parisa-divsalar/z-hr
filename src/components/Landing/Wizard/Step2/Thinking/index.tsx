@@ -14,7 +14,6 @@ interface ThinkingProps {
     setActiveStep: (activeStep: number) => void;
 }
 
-const POLL_INTERVAL = 3000;
 const SEND_FILE_TIMEOUT_MS = 7 * 60 * 1000; // 7 minutes
 
 const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep }) => {
@@ -26,58 +25,10 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
     const [isSubmitting, setIsSubmitting] = useState(true);
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const [subRequests, setSubRequests] = useState<Array<Record<string, unknown>>>([]);
-
-    let pollTimer: NodeJS.Timeout | null = null;
+    const [subRequests] = useState<Array<Record<string, unknown>>>([]);
 
     const stopPolling = () => {
-        if (pollTimer) {
-            clearTimeout(pollTimer);
-            pollTimer = null;
-        }
-    };
-
-    const addCV = async (requestId: string, bodyOfResume: any) => {
-        try {
-            const res = await apiClientClient.post('cv/add-cv', {
-                userId: accessToken,
-                requestId,
-                bodyOfResume,
-            });
-            console.log('res 349587398573', res);
-
-            // UX: keep the Thinking screen visible a tiny bit longer before jumping to the editor.
-            await new Promise<void>((resolve) => setTimeout(resolve, 5000));
-            setActiveStep(3);
-        } catch (err) {
-            setIsSubmitting(false);
-            console.log('err 3-507349', err);
-        }
-    };
-
-    const pollStatus = async (requestId: string, bodyOfResume: any) => {
-        try {
-            const res = await apiClientClient.get(`cv/cv-analysis-detailed?requestId=${requestId}`);
-            const status = res.data.main_request_status;
-            console.log('status', status);
-
-            const rawSubRequests = res.data?.sub_requests;
-            if (Array.isArray(rawSubRequests)) {
-                setSubRequests(rawSubRequests);
-            } else {
-                setSubRequests([]);
-            }
-
-            if (status === 2 || status === 3) {
-                await addCV(requestId, bodyOfResume);
-                return;
-            }
-
-            pollTimer = setTimeout(() => pollStatus(requestId, bodyOfResume), POLL_INTERVAL);
-        } catch (err) {
-            console.log('poll error', err);
-            setIsSubmitting(false);
-        }
+        // Polling is handled in Step3 (ResumeEditor) via pollCvAnalysisAndCreateCv.
     };
 
     const handleSubmit = async () => {
@@ -107,7 +58,8 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             const requestId: string = res.data.result as string;
             setRequestId(requestId);
 
-            await pollStatus(requestId, bodyOfResume);
+            // Polling & CV creation happen in Step3 (ResumeEditor).
+            setActiveStep(3);
         } catch (err) {
             setIsSubmitting(false);
             const errorObj = err as any;
