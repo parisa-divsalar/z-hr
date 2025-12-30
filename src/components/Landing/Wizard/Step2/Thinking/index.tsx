@@ -7,7 +7,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import { apiClientClient } from '@/services/api-client';
 import { useAuthStore } from '@/store/auth';
 import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
-import { clearWizardTextOnlySession, saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
+import { saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
 
 interface ThinkingProps {
     onCancel: () => void;
@@ -41,6 +41,13 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
              * Backend contract varies between environments; sending both covers both cases.
              */
             const { zipBlob, serializable: bodyOfResume } = await buildWizardZipBlob(wizardData);
+
+            /**
+             * Persist a **serializable** version of the wizard payload into sessionStorage.
+             * This enables Step3 (ResumeEditor) to seed sections immediately (same as text-only flow),
+             * even when we have files/voices and will also fetch CV from the backend.
+             */
+            saveWizardTextOnlySession(bodyOfResume as any);
 
             const formData = new FormData();
             const zipFile = new File([zipBlob], 'info.zip', { type: 'application/zip' });
@@ -99,7 +106,6 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
                 return stopPolling;
             }
 
-            clearWizardTextOnlySession();
             handleSubmit();
             hasSubmitted.current = true;
             return stopPolling;

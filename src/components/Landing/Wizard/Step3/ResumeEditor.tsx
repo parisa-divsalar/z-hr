@@ -475,69 +475,6 @@ const cleanSummaryText = (value: string): string => {
     return normalize(value);
 };
 
-const extractFullName = (payload: any): string => {
-    if (!payload || typeof payload !== 'object') return '';
-    return (
-        payload.fullName ??
-        payload.name ??
-        payload.profile?.fullName ??
-        payload.profile?.name ??
-        payload.personal?.fullName ??
-        payload.personal?.name ??
-        ''
-    );
-};
-
-const extractDateOfBirth = (payload: any): string => {
-    if (!payload || typeof payload !== 'object') return '';
-    return (
-        payload.dateOfBirth ??
-        payload.DateOfBirth ??
-        payload.birthDate ??
-        payload.BirthDate ??
-        payload.dob ??
-        payload.DOB ??
-        payload.profile?.dateOfBirth ??
-        payload.profile?.DateOfBirth ??
-        payload.profile?.birthDate ??
-        payload.profile?.BirthDate ??
-        payload.profile?.dob ??
-        payload.profile?.DOB ??
-        payload.personal?.dateOfBirth ??
-        payload.personal?.DateOfBirth ??
-        payload.personal?.birthDate ??
-        payload.personal?.BirthDate ??
-        payload.personal?.dob ??
-        payload.personal?.DOB ??
-        payload.personalInfo?.dateOfBirth ??
-        payload.personalInfo?.DateOfBirth ??
-        payload.personalInformation?.dateOfBirth ??
-        payload.personalInformation?.DateOfBirth ??
-        ''
-    );
-};
-
-const extractHeadline = (payload: any): string => {
-    if (!payload || typeof payload !== 'object') return '';
-    const title =
-        payload.title ??
-        payload.position ??
-        payload.mainSkill ??
-        payload.profile?.title ??
-        payload.profile?.position ??
-        '';
-    const visa = payload.visaStatus ?? payload.profile?.visaStatus ?? '';
-    const years =
-        payload.yearsOfExperience ??
-        payload.experienceYears ??
-        payload.profile?.yearsOfExperience ??
-        payload.profile?.experienceYears ??
-        '';
-
-    const parts = [title, visa && `Visa: ${visa}`, years && `${years} Years of experience`].filter(Boolean);
-    return parts.join(' • ');
-};
-
 const resolveCvRecord = (raw: any): any | null => {
     const unwrap = (candidate: any) => {
         if (!candidate || typeof candidate !== 'object') return null;
@@ -761,6 +698,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const accessToken = useAuthStore((state) => state.accessToken);
     const canFetchCv = Boolean(requestId && accessToken);
     const [isTextOnlyMode, setIsTextOnlyMode] = useState(false);
+    /**
+     * When present, Step3 was seeded from sessionStorage (same payload used by text-only flow).
+     * We use this to:
+     * - avoid "pre CV loading" skeleton gating in file flow
+     * - trigger the auto-improve pipeline without waiting for getCV
+     * - avoid overwriting session-seeded/improved sections when getCV resolves
+     */
+    const [sessionSeededRunKey, setSessionSeededRunKey] = useState<string | null>(null);
+    const lastSessionSeedKeyRef = useRef<string | null>(null);
     const [autoImproveIndex, setAutoImproveIndex] = useState<number>(-1);
     const [autoImprovePhase, setAutoImprovePhase] = useState<'idle' | 'request' | 'typing' | 'done'>('idle');
     const [autoImproved, setAutoImproved] = useState<Record<string, boolean>>({});
@@ -822,7 +768,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
     const isFileFlowMode = canFetchCv && !isTextOnlyMode;
     const isAutoPipelineMode = isTextOnlyMode || isFileFlowMode;
-    const isPreCvLoading = isFileFlowMode && !hasCvLoadedOnce;
+    const isSessionSeeded = Boolean(sessionSeededRunKey);
+    const isPreCvLoading = isFileFlowMode && !hasCvLoadedOnce && !isSessionSeeded;
 
     // Auto pipeline: improve only paragraph-like sections (NOT list-like fields such as skills/contact/languages).
     const AUTO_IMPROVE_ORDER = useMemo<SectionKey[]>(
@@ -868,6 +815,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     useEffect(() => {
         if (!isFileFlowMode) return;
         if (hasCvLoadedOnce) return;
+        // If we seeded from text-only session payload (even in file flow), don't override it with profile-only session.
+        if (isSessionSeeded) return;
 
         const wizardProfile: WizardProfileSession = {
             fullName: String((wizardData as any)?.fullName ?? '').trim(),
@@ -885,7 +834,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             dateOfBirth: String(src?.dateOfBirth ?? '').trim(),
             headline: buildHeadline(src?.mainSkill, src?.visaStatus),
         });
-    }, [isFileFlowMode, hasCvLoadedOnce, wizardData]);
+    }, [isFileFlowMode, hasCvLoadedOnce, wizardData, isSessionSeeded]);
 
     // Persist profile fields into sessionStorage so refresh/get-cv won't wipe them.
     useEffect(() => {
@@ -901,51 +850,62 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     }, [wizardData]);
 
     useEffect(() => {
-        if (canFetchCv) {
-            setIsTextOnlyMode(false);
-            return;
-        }
-
         const session = loadWizardTextOnlySession();
         if (!session) {
-            setIsTextOnlyMode(false);
+            setSessionSeededRunKey(null);
+            lastSessionSeedKeyRef.current = null;
+            // If we cannot fetch CV and we have no session, this is neither text-only nor file-flow seeded.
+            if (!canFetchCv) setIsTextOnlyMode(false);
             return;
         }
 
-        setIsTextOnlyMode(true);
+        // Text-only mode is still defined by "no requestId/accessToken but session exists".
+        setIsTextOnlyMode(!canFetchCv);
+
+        /**
+         * Seed once per request context.
+         * - In text-only: requestId is null, seedKey becomes "text-only".
+         * - In file-flow: requestId exists, seedKey becomes `api:${accessToken}:${requestId}`.
+         */
+        const seedKey = canFetchCv ? `api:${accessToken ?? ''}:${requestId ?? ''}` : 'text-only';
+        if (lastSessionSeedKeyRef.current === seedKey) return;
+        lastSessionSeedKeyRef.current = seedKey;
+        setSessionSeededRunKey(`${seedKey}:${Date.now()}`);
 
         const headlineParts = [
-            String(session.mainSkill ?? '').trim(),
-            session.visaStatus ? `Visa: ${String(session.visaStatus).trim()}` : '',
+            String((session as any).mainSkill ?? '').trim(),
+            (session as any).visaStatus ? `Visa: ${String((session as any).visaStatus).trim()}` : '',
         ].filter(Boolean);
 
         setProfile({
-            fullName: String(session.fullName ?? '').trim(),
-            dateOfBirth: String(session.dateOfBirth ?? '').trim(),
+            fullName: String((session as any).fullName ?? '').trim(),
+            dateOfBirth: String((session as any).dateOfBirth ?? '').trim(),
             headline: headlineParts.join(' • '),
         });
 
-        const sanitizedSessionSummary = cleanSummaryText(String(session.background?.text ?? '').trim());
+        const sanitizedSessionSummary = cleanSummaryText(String((session as any).background?.text ?? '').trim());
         setSummary(sanitizedSessionSummary);
         setBackgroundText(sanitizedSessionSummary);
         setSkills(
-            Array.isArray(session.skills) ? session.skills.map((s) => String(s ?? '').trim()).filter(Boolean) : [],
+            Array.isArray((session as any).skills)
+                ? (session as any).skills.map((s: any) => String(s ?? '').trim()).filter(Boolean)
+                : [],
         );
         setContactWays(
-            Array.isArray(session.contactWay)
-                ? session.contactWay.map((c) => String(c ?? '').trim()).filter(Boolean)
+            Array.isArray((session as any).contactWay)
+                ? (session as any).contactWay.map((c: any) => String(c ?? '').trim()).filter(Boolean)
                 : [],
         );
         setLanguages(
-            Array.isArray(session.languages)
-                ? normalizeLanguages(session.languages as any[])
+            Array.isArray((session as any).languages)
+                ? normalizeLanguages((session as any).languages as any[])
                 : typeof (session as any).languages === 'string'
                   ? normalizeLanguages(applyLineListEditText((session as any).languages))
                   : [],
         );
         setCertificates(
-            Array.isArray(session.certificates)
-                ? session.certificates
+            Array.isArray((session as any).certificates)
+                ? (session as any).certificates
                       .map((entry: any) =>
                           typeof entry === 'string' ? entry : (entry?.text ?? entry?.title ?? entry?.name),
                       )
@@ -953,19 +913,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                       .filter(Boolean)
                 : [],
         );
-        setJobDescription(String(session.jobDescription?.text ?? '').trim());
-        setAdditionalInfo(String(session.additionalInfo?.text ?? '').trim());
+        setJobDescription(String((session as any).jobDescription?.text ?? '').trim());
+        setAdditionalInfo(String((session as any).additionalInfo?.text ?? '').trim());
 
         setExperiences(
-            Array.isArray(session.experiences)
-                ? session.experiences
+            Array.isArray((session as any).experiences)
+                ? (session as any).experiences
                       .map((entry: any, idx: number) => ({
                           id: idx + 1,
                           company: '',
                           position: '',
                           description: String(entry?.text ?? '').trim(),
                       }))
-                      .filter((exp) => exp.description.length > 0)
+                      .filter((exp: any) => exp.description.length > 0)
                 : [],
         );
 
@@ -977,8 +937,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setAdditionalInfoEditText('');
         setExperienceEditText('');
         setCvError(null);
-        setHasCvLoadedOnce(true);
-    }, [canFetchCv]);
+
+        // Text-only doesn't fetch CV; mark as loaded so file-flow skeleton gating doesn't kick in.
+        if (!canFetchCv) setHasCvLoadedOnce(true);
+    }, [canFetchCv, accessToken, requestId]);
 
     // When request context changes, require a fresh get-cv load before auto-improve can run.
     useEffect(() => {
@@ -1206,17 +1168,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     );
 
     useEffect(() => {
-        const textOnlySessionExists = Boolean(loadWizardTextOnlySession());
         const apiKey = canFetchCv ? `${accessToken ?? ''}:${requestId ?? ''}` : null;
-        const runKey =
-            isTextOnlyMode && textOnlySessionExists
-                ? 'text-only'
-                : cvLoadedRunKey
-                ? `api:${cvLoadedRunKey}`
-                : null;
+        const runKey = sessionSeededRunKey
+            ? `session:${sessionSeededRunKey}`
+            : cvLoadedRunKey
+              ? `api:${cvLoadedRunKey}`
+              : null;
         const shouldRun =
-            (isTextOnlyMode && textOnlySessionExists) ||
-            (!isTextOnlyMode && apiKey && cvLoadedApiKey === apiKey && Boolean(cvLoadedRunKey));
+            Boolean(sessionSeededRunKey) || (apiKey && cvLoadedApiKey === apiKey && Boolean(cvLoadedRunKey));
         if (!runKey || !shouldRun) return;
 
         if (autoImproveRunKeyRef.current === runKey) return;
@@ -1270,7 +1229,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         };
 
         void run();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         isTextOnlyMode,
         canFetchCv,
@@ -1278,6 +1236,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         requestId,
         cvLoadedApiKey,
         cvLoadedRunKey,
+        sessionSeededRunKey,
         AUTO_IMPROVE_ORDER,
         requestImprovedText,
     ]);
@@ -1296,16 +1255,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 cvPayloadRef.current = null;
                 setCvLoadedApiKey(null);
                 setCvLoadedRunKey(null);
-                // Keep profile from session/wizard so refresh doesn't wipe it.
-                setBackgroundText('');
-                setSummary('');
-                setSkills([]);
-                setContactWays([]);
-                setLanguages([]);
-                setCertificates([]);
-                setJobDescription('');
-                setAdditionalInfo('');
-                setExperiences([]);
+                // If we were seeded from session, don't wipe the UI.
+                if (!isSessionSeeded) {
+                    // Keep profile from session/wizard so refresh doesn't wipe it.
+                    setBackgroundText('');
+                    setSummary('');
+                    setSkills([]);
+                    setContactWays([]);
+                    setLanguages([]);
+                    setCertificates([]);
+                    setJobDescription('');
+                    setAdditionalInfo('');
+                    setExperiences([]);
+                }
                 return;
             }
 
@@ -1333,15 +1295,28 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             const normalizedExperiences = ensureMinimumExperiences(normalizeExperiences(extracted));
 
             // Profile fields should come from session/wizard (NOT get-cv) so they don't change on refresh.
-            setBackgroundText(detectedSummary);
-            setSummary(detectedSummary);
-            setSkills(detectedSkills);
-            setContactWays(detectedContactWays);
-            setLanguages(detectedLanguages);
-            setCertificates(detectedCertificates);
-            setJobDescription(detectedJobDescription);
-            setAdditionalInfo(detectedAdditionalInfo);
-            setExperiences(normalizedExperiences);
+            if (isSessionSeeded) {
+                // Seeded flow: keep session (and auto-improved) values; fill only missing fields from getCV.
+                setBackgroundText((prev) => (prev?.trim?.() ? prev : detectedSummary));
+                setSummary((prev) => (prev?.trim?.() ? prev : detectedSummary));
+                setSkills((prev) => (Array.isArray(prev) && prev.length ? prev : detectedSkills));
+                setContactWays((prev) => (Array.isArray(prev) && prev.length ? prev : detectedContactWays));
+                setLanguages((prev) => (Array.isArray(prev) && prev.length ? prev : detectedLanguages));
+                setCertificates((prev) => (Array.isArray(prev) && prev.length ? prev : detectedCertificates));
+                setJobDescription((prev) => (prev?.trim?.() ? prev : detectedJobDescription));
+                setAdditionalInfo((prev) => (prev?.trim?.() ? prev : detectedAdditionalInfo));
+                setExperiences((prev) => (Array.isArray(prev) && prev.length ? prev : normalizedExperiences));
+            } else {
+                setBackgroundText(detectedSummary);
+                setSummary(detectedSummary);
+                setSkills(detectedSkills);
+                setContactWays(detectedContactWays);
+                setLanguages(detectedLanguages);
+                setCertificates(detectedCertificates);
+                setJobDescription(detectedJobDescription);
+                setAdditionalInfo(detectedAdditionalInfo);
+                setExperiences(normalizedExperiences);
+            }
         } catch (error) {
             console.error('Failed to load CV preview', error);
             setCvError('Unable to load resume data. Please try again.');
@@ -1352,7 +1327,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             setIsCvLoading(false);
             setHasCvLoadedOnce(true);
         }
-    }, [requestId, accessToken]);
+    }, [requestId, accessToken, isSessionSeeded]);
 
     useEffect(() => {
         if (!requestId || !accessToken) return;
@@ -1365,7 +1340,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         const run = async () => {
             try {
-                const bodyOfResume = buildWizardSerializable(wizardData);
+                const bodyOfResume = loadWizardTextOnlySession() ?? buildWizardSerializable(wizardData);
                 await pollCvAnalysisAndCreateCv(requestId, bodyOfResume, accessToken, () => {
                     // Intentionally no-op: ResumeEditor currently doesn't render analysis progress,
                     // but we keep the hook for parity with the backend response.
