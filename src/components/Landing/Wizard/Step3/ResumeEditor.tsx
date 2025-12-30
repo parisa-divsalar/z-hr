@@ -59,6 +59,42 @@ type ResumeProfile = {
 
 const POLL_INTERVAL = 3000;
 
+const WIZARD_PROFILE_SESSION_KEY = 'wizardProfile:v1';
+
+type WizardProfileSession = {
+    fullName?: string;
+    dateOfBirth?: string;
+    visaStatus?: string;
+    mainSkill?: string;
+};
+
+const saveWizardProfileSession = (data: WizardProfileSession) => {
+    try {
+        if (typeof window === 'undefined') return;
+        sessionStorage.setItem(WIZARD_PROFILE_SESSION_KEY, JSON.stringify(data));
+    } catch {
+        // ignore
+    }
+};
+
+const loadWizardProfileSession = (): WizardProfileSession | null => {
+    try {
+        if (typeof window === 'undefined') return null;
+        const raw = sessionStorage.getItem(WIZARD_PROFILE_SESSION_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw) as WizardProfileSession;
+    } catch {
+        return null;
+    }
+};
+
+const buildHeadline = (mainSkill?: string, visaStatus?: string) => {
+    const headlineParts = [String(mainSkill ?? '').trim(), visaStatus ? `Visa: ${String(visaStatus).trim()}` : ''].filter(
+        Boolean,
+    );
+    return headlineParts.join(' • ');
+};
+
 export const pollCvAnalysisAndCreateCv = async (
     requestId: string,
     bodyOfResume: any,
@@ -731,12 +767,15 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         | 'experience'
         | 'additionalInfo';
 
-    // Auto pipeline: user asked to auto-improve only Summary.
-    const AUTO_IMPROVE_ORDER = useMemo<SectionKey[]>(() => ['summary'], []);
-
     const isFileFlowMode = canFetchCv && !isTextOnlyMode;
     const isAutoPipelineMode = isTextOnlyMode || isFileFlowMode;
     const isPreCvLoading = isFileFlowMode && !hasCvLoadedOnce;
+
+    // Auto pipeline: improve get-cv (file-flow) and session (text-only) data section-by-section.
+    const AUTO_IMPROVE_ORDER = useMemo<SectionKey[]>(
+        () => ['summary', 'skills', 'contactWays', 'languages', 'certificates', 'jobDescription', 'experience', 'additionalInfo'],
+        [],
+    );
 
     // UX: show Background immediately, then auto-improve Summary.
     // While Summary is not improved (and no improve error), keep the sections below in skeleton state.
@@ -777,17 +816,36 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         if (!isFileFlowMode) return;
         if (hasCvLoadedOnce) return;
 
-        const headlineParts = [
-            String((wizardData as any)?.mainSkill ?? '').trim(),
-            (wizardData as any)?.visaStatus ? `Visa: ${String((wizardData as any).visaStatus).trim()}` : '',
-        ].filter(Boolean);
-
-        setProfile({
+        const wizardProfile: WizardProfileSession = {
             fullName: String((wizardData as any)?.fullName ?? '').trim(),
             dateOfBirth: String((wizardData as any)?.dateOfBirth ?? '').trim(),
-            headline: headlineParts.join(' • '),
+            visaStatus: String((wizardData as any)?.visaStatus ?? '').trim(),
+            mainSkill: String((wizardData as any)?.mainSkill ?? '').trim(),
+        };
+
+        const hasWizardProfile = Object.values(wizardProfile).some((v) => String(v ?? '').trim().length > 0);
+        const fromSession = loadWizardProfileSession();
+        const src = hasWizardProfile ? wizardProfile : fromSession ?? wizardProfile;
+
+        setProfile({
+            fullName: String(src?.fullName ?? '').trim(),
+            dateOfBirth: String(src?.dateOfBirth ?? '').trim(),
+            headline: buildHeadline(src?.mainSkill, src?.visaStatus),
         });
     }, [isFileFlowMode, hasCvLoadedOnce, wizardData]);
+
+    // Persist profile fields into sessionStorage so refresh/get-cv won't wipe them.
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const payload: WizardProfileSession = {
+            fullName: String((wizardData as any)?.fullName ?? '').trim(),
+            dateOfBirth: String((wizardData as any)?.dateOfBirth ?? '').trim(),
+            visaStatus: String((wizardData as any)?.visaStatus ?? '').trim(),
+            mainSkill: String((wizardData as any)?.mainSkill ?? '').trim(),
+        };
+        if (!Object.values(payload).some((v) => String(v ?? '').trim().length > 0)) return;
+        saveWizardProfileSession(payload);
+    }, [wizardData]);
 
     useEffect(() => {
         if (canFetchCv) {
@@ -1158,7 +1216,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             if (!record) {
                 setCvError('Resume data is empty.');
                 cvPayloadRef.current = null;
-                setProfile(createEmptyProfile());
+                // Keep profile from session/wizard so refresh doesn't wipe it.
                 setBackgroundText('');
                 setSummary('');
                 setSkills([]);
@@ -1190,11 +1248,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 : extractExperienceEntries(record);
             const normalizedExperiences = ensureMinimumExperiences(normalizeExperiences(extracted));
 
-            setProfile({
-                fullName: extractFullName(payload) || extractFullName(record),
-                dateOfBirth: extractDateOfBirth(payload) || extractDateOfBirth(record),
-                headline: extractHeadline(payload) || extractHeadline(record),
-            });
+            // Profile fields should come from session/wizard (NOT get-cv) so they don't change on refresh.
             setBackgroundText(detectedSummary);
             setSummary(detectedSummary);
             setSkills(detectedSkills);
@@ -1665,13 +1719,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                    actionsSkeleton={shouldBlockBelowSummary}
+                                    hideActions={
+                                        isExporting ||
+                                        isPreview ||
+                                        isTextOnlyMode ||
+                                        shouldBlockBelowSummary ||
+                                        (isAutoPipelineMode && !Boolean(autoImproved.skills))
+                                    }
+                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('skills')}
                                 />
                                 <SkillsContainer>
                                     {shouldBlockBelowSummary ? (
                                         renderSkeletonParagraph(3)
-                                    ) : isTextOnlyMode && shouldSkeletonSection('skills') ? (
+                                    ) : isAutoPipelineMode && shouldSkeletonSection('skills') ? (
                                         renderSkeletonParagraph(3)
                                     ) : skills.length === 0 ? (
                                         <Typography variant='body2' color='text.secondary'>
@@ -1708,13 +1768,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                    actionsSkeleton={shouldBlockBelowSummary}
+                                    hideActions={
+                                        isExporting ||
+                                        isPreview ||
+                                        isTextOnlyMode ||
+                                        shouldBlockBelowSummary ||
+                                        (isAutoPipelineMode && !Boolean(autoImproved.contactWays))
+                                    }
+                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('contactWays')}
                                 />
                                 <Box mt={2}>
                                     {shouldBlockBelowSummary ? (
                                         renderSkeletonParagraph(3)
-                                    ) : isTextOnlyMode && shouldSkeletonSection('contactWays') ? (
+                                    ) : isAutoPipelineMode && shouldSkeletonSection('contactWays') ? (
                                         renderSkeletonParagraph(3)
                                     ) : !isPreview && editingSection === 'contactWays' ? (
                                         <ExperienceTextareaAutosize
@@ -1749,13 +1815,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                    actionsSkeleton={shouldBlockBelowSummary}
+                                    hideActions={
+                                        isExporting ||
+                                        isPreview ||
+                                        isTextOnlyMode ||
+                                        shouldBlockBelowSummary ||
+                                        (isAutoPipelineMode && !Boolean(autoImproved.languages))
+                                    }
+                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('languages')}
                                 />
                                 <Box mt={2}>
                                     {shouldBlockBelowSummary ? (
                                         renderSkeletonParagraph(3)
-                                    ) : isTextOnlyMode && shouldSkeletonSection('languages') ? (
+                                    ) : isAutoPipelineMode && shouldSkeletonSection('languages') ? (
                                         renderSkeletonParagraph(3)
                                     ) : !isPreview && editingSection === 'languages' ? (
                                         <ExperienceTextareaAutosize
@@ -1793,13 +1865,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'certificates'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                    actionsSkeleton={shouldBlockBelowSummary}
+                                    hideActions={
+                                        isExporting ||
+                                        isPreview ||
+                                        isTextOnlyMode ||
+                                        shouldBlockBelowSummary ||
+                                        (isAutoPipelineMode && !Boolean(autoImproved.certificates))
+                                    }
+                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('certificates')}
                                 />
                                 <Box mt={2}>
                                     {shouldBlockBelowSummary ? (
                                         renderSkeletonParagraph(3)
-                                    ) : isTextOnlyMode && shouldSkeletonSection('certificates') ? (
+                                    ) : isAutoPipelineMode && shouldSkeletonSection('certificates') ? (
                                         renderSkeletonParagraph(3)
                                     ) : !isPreview && editingSection === 'certificates' ? (
                                         <ExperienceTextareaAutosize
@@ -1838,13 +1916,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'jobDescription'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                    actionsSkeleton={shouldBlockBelowSummary}
+                                    hideActions={
+                                        isExporting ||
+                                        isPreview ||
+                                        isTextOnlyMode ||
+                                        shouldBlockBelowSummary ||
+                                        (isAutoPipelineMode && !Boolean(autoImproved.jobDescription))
+                                    }
+                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('jobDescription')}
                                 />
                                 <SummaryContainer>
                                     {shouldBlockBelowSummary ? (
                                         renderSkeletonParagraph(4)
-                                    ) : isTextOnlyMode && shouldSkeletonSection('jobDescription') ? (
+                                    ) : isAutoPipelineMode && shouldSkeletonSection('jobDescription') ? (
                                         renderSkeletonParagraph(4)
                                     ) : !isPreview && editingSection === 'jobDescription' ? (
                                         <StyledTextareaAutosize
@@ -1873,12 +1957,18 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'experience'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                    actionsSkeleton={shouldBlockBelowSummary}
+                                    hideActions={
+                                        isExporting ||
+                                        isPreview ||
+                                        isTextOnlyMode ||
+                                        shouldBlockBelowSummary ||
+                                        (isAutoPipelineMode && !Boolean(autoImproved.experience))
+                                    }
+                                    actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('experience')}
                                 />
                                 {shouldBlockBelowSummary ? (
                                     renderSkeletonParagraph(5)
-                                ) : isTextOnlyMode && shouldSkeletonSection('experience') ? (
+                                ) : isAutoPipelineMode && shouldSkeletonSection('experience') ? (
                                     renderSkeletonParagraph(5)
                                 ) : !isPreview && editingSection === 'experience' ? (
                                     <ExperienceTextareaAutosize
@@ -1944,13 +2034,19 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                         }
                                         onSave={isPreview ? undefined : handleSave}
                                         onCancel={isPreview ? undefined : handleCancel}
-                                        hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                        actionsSkeleton={shouldBlockBelowSummary}
+                                        hideActions={
+                                            isExporting ||
+                                            isPreview ||
+                                            isTextOnlyMode ||
+                                            shouldBlockBelowSummary ||
+                                            (isAutoPipelineMode && !Boolean(autoImproved.additionalInfo))
+                                        }
+                                        actionsSkeleton={shouldBlockBelowSummary || shouldSkeletonActions('additionalInfo')}
                                     />
                                     <Box mt={2}>
                                         {shouldBlockBelowSummary ? (
                                             renderSkeletonParagraph(4)
-                                        ) : isTextOnlyMode && shouldSkeletonSection('additionalInfo') ? (
+                                        ) : isAutoPipelineMode && shouldSkeletonSection('additionalInfo') ? (
                                             renderSkeletonParagraph(4)
                                         ) : !isPreview && editingSection === 'additionalInfo' ? (
                                             <ExperienceTextareaAutosize
