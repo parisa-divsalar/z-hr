@@ -1827,7 +1827,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
                             <SectionContainer>
                                 <SectionHeader
-                                    title='Skills'
+                                    title='Technical Skills'
                                     onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('skills')}
                                     onImprove={
                                         isPreview || isTextOnlyMode ? undefined : () => void handleImprove('skills')
@@ -2004,7 +2004,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
                             <ExperienceContainer>
                                 <SectionHeader
-                                    title='Experience'
+                                    title='Professional Experience'
                                     onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('experience')}
                                     onImprove={
                                         isPreview || isTextOnlyMode ? undefined : () => void handleImprove('experience')
