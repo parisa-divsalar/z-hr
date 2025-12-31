@@ -5,12 +5,8 @@ const STORAGE_KEY = 'wizardTextOnlyPayload:v1';
 export const saveWizardTextOnlySession = (data: WizardData) => {
     try {
         if (typeof window === 'undefined') return;
-        // Text-only flow must not contain File/Blob references. We still store as-is,
-        // but the caller should only use this when no files/voices exist.
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch {
-        // ignore storage errors (quota, privacy mode, etc.)
-    }
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...(data as any), __updatedAt: Date.now() }));
+    } catch {}
 };
 
 export const loadWizardTextOnlySession = (): WizardData | null => {
@@ -33,5 +29,3 @@ export const clearWizardTextOnlySession = () => {
         // ignore
     }
 };
-
-

@@ -20,7 +20,28 @@ const normalizeMainSkill = (value?: string) =>
         .trim()
         .replace(/^web\s*frameworks?\s*:\s*/i, '')
         .replace(/^wizard\s*status\s*:\s*/i, '')
+        .replace(/^visa\s*status\s*:\s*/i, '')
+        .replace(/^visa\s*:\s*/i, '')
         .trim();
+
+const normalizeVisaStatusValue = (value?: unknown): string => {
+    const raw = String(value ?? '')
+        .replace(/\r/g, '')
+        .trim();
+    if (!raw) return '';
+
+    const lines = raw
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+    for (const line of lines) {
+        const m = line.match(/^(?:visa\s*status|visa)\s*:\s*(.*)$/i);
+        if (m) return String(m[1] ?? '').trim();
+    }
+
+    return String(lines[0] ?? raw).trim();
+};
 
 interface ProfileHeaderProps {
     fullName?: string;
@@ -36,6 +57,11 @@ interface ProfileHeaderProps {
     editText?: string;
     onEditTextChange?: (value: string) => void;
     hideActions?: boolean;
+    /**
+     * Controls whether the "Improve" (star) icon is shown next to the edit icon.
+     * Defaults to true to keep existing behavior.
+     */
+    showImproveIcon?: boolean;
 }
 
 const ProfileHeader = ({
@@ -52,7 +78,25 @@ const ProfileHeader = ({
     editText,
     onEditTextChange,
     hideActions,
+    showImproveIcon = true,
 }: ProfileHeaderProps) => {
+    const normalizedVisaStatus = normalizeVisaStatusValue(visaStatus);
+    const normalizedMainSkill = normalizeMainSkill(mainSkill);
+
+    const shouldAppendMainSkill = (() => {
+        if (!normalizedMainSkill) return false;
+        if (!normalizedVisaStatus) return true;
+
+        const visaLower = normalizedVisaStatus.toLowerCase();
+        const skillLower = normalizedMainSkill.toLowerCase();
+
+        if (skillLower.includes('visa status')) return false;
+        if (visaLower === skillLower) return false;
+        if (visaLower.includes(skillLower)) return false;
+
+        return true;
+    })();
+
     if (isEditing) {
         return (
             <ProfileHeaderContainer sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1 }}>
@@ -89,12 +133,14 @@ const ProfileHeader = ({
                             {dateOfBirth || '—'}
                         </Typography>
                         <Typography variant='subtitle2' color='text.primary' gutterBottom>
-                            {`Visa Status: ${visaStatus || '—'}`}
-                            {normalizeMainSkill(mainSkill) ? ` • ${normalizeMainSkill(mainSkill)}` : ''}
+                            {`Visa Status: ${normalizedVisaStatus || '—'}`}
+                            {shouldAppendMainSkill ? ` • ${normalizedMainSkill}` : ''}
                         </Typography>
                         <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
                             <Box component='span'>{`Phone: ${phone || '—'}`}</Box>
-                            <Box component='span' sx={{ display: 'inline-block', mx: 2 }} />
+                            <Box component='span' sx={{ mx: 1.5 }}>
+                                {' | '}
+                            </Box>
                             <Box component='span'>{`Email: ${email || '—'}`}</Box>
                         </Typography>
                     </>
@@ -108,9 +154,11 @@ const ProfileHeader = ({
                             <EditIcon />
                         </IconButton>
 
-                        <IconButton size='small'>
-                            <StarIcon />
-                        </IconButton>
+                        {showImproveIcon ? (
+                            <IconButton size='small'>
+                                <StarIcon />
+                            </IconButton>
+                        ) : null}
                     </>
                 </ActionButtons>
             ) : null}

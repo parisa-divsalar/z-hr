@@ -16,6 +16,11 @@ interface SectionHeaderProps {
     onImprove?: () => void;
     isImproving?: boolean;
     improveDisabled?: boolean;
+    /**
+     * Controls whether the "Improve" (star) icon is shown next to the edit icon.
+     * Defaults to true to keep existing behavior.
+     */
+    showImproveIcon?: boolean;
     hideActions?: boolean;
     /**
      * When true, render skeleton placeholders for action buttons (edit/improve).
@@ -33,6 +38,7 @@ const SectionHeader = ({
     onImprove,
     isImproving,
     improveDisabled,
+    showImproveIcon = true,
     hideActions,
     actionsSkeleton,
 }: SectionHeaderProps) => {
@@ -57,20 +63,24 @@ const SectionHeader = ({
                             {actionsSkeleton ? (
                                 <>
                                     <Skeleton variant='circular' width={28} height={28} />
-                                    <Skeleton variant='circular' width={28} height={28} />
+                                    {showImproveIcon ? (
+                                        <Skeleton variant='circular' width={28} height={28} />
+                                    ) : null}
                                 </>
                             ) : (
                                 <>
                                     <IconButton size='small' onClick={onEdit} disabled={Boolean(isImproving)}>
                                         <EditIcon />
                                     </IconButton>
-                                    <IconButton
-                                        size='small'
-                                        onClick={onImprove}
-                                        disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
-                                    >
-                                        {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
-                                    </IconButton>
+                                    {showImproveIcon ? (
+                                        <IconButton
+                                            size='small'
+                                            onClick={onImprove}
+                                            disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
+                                        >
+                                            {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
+                                        </IconButton>
+                                    ) : null}
                                 </>
                             )}
                         </>

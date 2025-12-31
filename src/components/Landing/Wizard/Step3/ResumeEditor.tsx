@@ -66,12 +66,13 @@ type WizardProfileSession = {
     dateOfBirth?: string;
     visaStatus?: string;
     mainSkill?: string;
+    updatedAt?: number;
 };
 
 const saveWizardProfileSession = (data: WizardProfileSession) => {
     try {
         if (typeof window === 'undefined') return;
-        sessionStorage.setItem(WIZARD_PROFILE_SESSION_KEY, JSON.stringify(data));
+        sessionStorage.setItem(WIZARD_PROFILE_SESSION_KEY, JSON.stringify({ ...data, updatedAt: Date.now() }));
     } catch {
         // ignore
     }
@@ -94,6 +95,31 @@ const buildHeadline = (mainSkill?: string, visaStatus?: string) => {
         visaStatus ? `Visa: ${String(visaStatus).trim()}` : '',
     ].filter(Boolean);
     return headlineParts.join(' • ');
+};
+
+/**
+ * Defensive cleanup for visaStatus values that may accidentally contain:
+ * - multiple lines (e.g. pasted profile block)
+ * - repeated labels like "Visa Status: ..."
+ * We normalize to a single, label-free value so the UI doesn't show duplicate lines.
+ */
+const normalizeVisaStatusValue = (value?: unknown): string => {
+    const raw = String(value ?? '').replace(/\r/g, '').trim();
+    if (!raw) return '';
+
+    const lines = raw
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+    // Prefer a line that explicitly declares visa status.
+    for (const line of lines) {
+        const m = line.match(/^(?:visa\s*status|visa)\s*:\s*(.*)$/i);
+        if (m) return String(m[1] ?? '').trim();
+    }
+
+    // Otherwise take the first non-empty line (prevents accidental duplicates).
+    return String(lines[0] ?? raw).trim();
 };
 
 const extractFromHeadline = (headline?: string) => {
@@ -936,15 +962,24 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const headlineExtract = useMemo(() => extractFromHeadline(profile?.headline), [profile?.headline]);
 
     const resolvedVisaStatus = useMemo(() => {
-        const fromWizard = String((wizardData as any)?.visaStatus ?? '').trim();
+        const textOnly = loadWizardTextOnlySession() as any;
+        const textOnlyUpdatedAt = Number(textOnly?.__updatedAt ?? 0) || 0;
+        const textOnlyVisa = normalizeVisaStatusValue(textOnly?.visaStatus);
+
+        const profileSession = loadWizardProfileSession() as any;
+        const profileUpdatedAt = Number(profileSession?.updatedAt ?? 0) || 0;
+        const profileVisa = normalizeVisaStatusValue(profileSession?.visaStatus);
+
+        // Pick the newest session value (when both session keys exist).
+        if (textOnlyVisa || profileVisa) {
+            if (profileUpdatedAt > textOnlyUpdatedAt) return profileVisa;
+            if (textOnlyUpdatedAt > profileUpdatedAt) return textOnlyVisa;
+            // Tie-breaker: prefer profile session (it's the dedicated profile editor source).
+            return profileVisa || textOnlyVisa;
+        }
+
+        const fromWizard = normalizeVisaStatusValue((wizardData as any)?.visaStatus);
         if (fromWizard) return fromWizard;
-
-        const session = loadWizardTextOnlySession();
-        const fromSession = String((session as any)?.visaStatus ?? '').trim();
-        if (fromSession) return fromSession;
-
-        const fromProfileSession = String(loadWizardProfileSession()?.visaStatus ?? '').trim();
-        if (fromProfileSession) return fromProfileSession;
 
         return headlineExtract.visaStatus;
     }, [wizardData, sessionSeededRunKey, headlineExtract.visaStatus]);
@@ -2142,6 +2177,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                 onCancel={isPreview ? undefined : handleCancel}
                                 editText={profileEditText}
                                 onEditTextChange={isPreview ? undefined : setProfileEditText}
+                                showImproveIcon={false}
                                 hideActions={isExporting || isPreview}
                             />
                             {isCvLoading && (
@@ -2205,6 +2241,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'skills'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
+                                    showImproveIcon={false}
                                     hideActions={isExporting || isPreview || shouldBlockBelowSummary}
                                     actionsSkeleton={shouldBlockBelowSummary}
                                 />
@@ -2407,6 +2444,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     improveDisabled={Boolean(improvingSection) && improvingSection !== 'languages'}
                                     onSave={isPreview ? undefined : handleSave}
                                     onCancel={isPreview ? undefined : handleCancel}
+                                    showImproveIcon={false}
                                     hideActions={isExporting || isPreview || shouldBlockBelowSummary}
                                     actionsSkeleton={shouldBlockBelowSummary}
                                 />
