@@ -729,8 +729,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
     const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
     const [profileEditText, setProfileEditText] = useState('');
-    // Raw "background" text (shown immediately). Summary section will be auto-improved on top of this.
-    const [backgroundText, setBackgroundText] = useState('');
+    // Summary text (may be raw initially, then auto-improved/typed in pipeline mode).
     const [summary, setSummary] = useState('');
     const [skills, setSkills] = useState<string[]>([]);
     const [contactWays, setContactWays] = useState<string[]>([]);
@@ -777,7 +776,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         [],
     );
 
-    // UX: show Background immediately, then auto-improve Summary.
     // While Summary is not improved (and no improve error), keep the sections below in skeleton state.
     const shouldBlockBelowSummary = isAutoPipelineMode && !Boolean(autoImproved.summary) && !Boolean(improveError);
 
@@ -885,7 +883,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         const sanitizedSessionSummary = cleanSummaryText(String((session as any).background?.text ?? '').trim());
         setSummary(sanitizedSessionSummary);
-        setBackgroundText(sanitizedSessionSummary);
         setSkills(
             Array.isArray((session as any).skills)
                 ? (session as any).skills.map((s: any) => String(s ?? '').trim()).filter(Boolean)
@@ -1258,7 +1255,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 // If we were seeded from session, don't wipe the UI.
                 if (!isSessionSeeded) {
                     // Keep profile from session/wizard so refresh doesn't wipe it.
-                    setBackgroundText('');
                     setSummary('');
                     setSkills([]);
                     setContactWays([]);
@@ -1297,7 +1293,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             // Profile fields should come from session/wizard (NOT get-cv) so they don't change on refresh.
             if (isSessionSeeded) {
                 // Seeded flow: keep session (and auto-improved) values; fill only missing fields from getCV.
-                setBackgroundText((prev) => (prev?.trim?.() ? prev : detectedSummary));
                 setSummary((prev) => (prev?.trim?.() ? prev : detectedSummary));
                 setSkills((prev) => (Array.isArray(prev) && prev.length ? prev : detectedSkills));
                 setContactWays((prev) => (Array.isArray(prev) && prev.length ? prev : detectedContactWays));
@@ -1307,7 +1302,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 setAdditionalInfo((prev) => (prev?.trim?.() ? prev : detectedAdditionalInfo));
                 setExperiences((prev) => (Array.isArray(prev) && prev.length ? prev : normalizedExperiences));
             } else {
-                setBackgroundText(detectedSummary);
                 setSummary(detectedSummary);
                 setSkills(detectedSkills);
                 setContactWays(detectedContactWays);
@@ -1359,7 +1353,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         };
     }, [requestId, accessToken, wizardData, loadCvData]);
 
-    // We render immediately (profile from session/wizard), then progressively replace with getCV + auto-improve.
     const shouldBlockResumeRender = false;
 
     const renderSkeletonParagraph = (lines = 4) => (
@@ -1719,21 +1712,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             {downloadError && <MuiAlert severity='error' message={downloadError} />}
 
                             <SectionContainer>
-                                <SectionHeader title='Background' hideActions />
-                                <SummaryContainer>
-                                    {isPreCvLoading && !backgroundText.trim() ? (
-                                        renderSkeletonParagraph(5)
-                                    ) : backgroundText ? (
-                                        <SummaryText sx={{ whiteSpace: 'pre-line' }}>{backgroundText}</SummaryText>
-                                    ) : (
-                                        <Typography variant='body2' color='text.secondary'>
-                                            No background found.
-                                        </Typography>
-                                    )}
-                                </SummaryContainer>
-                            </SectionContainer>
-
-                            <SectionContainer>
                                 <SectionHeader
                                     title='Summary'
                                     onEdit={isPreview ? undefined : () => handleEdit('summary')}
@@ -1754,15 +1732,13 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     actionsSkeleton={shouldSkeletonActions('summary')}
                                 />
                                 <SummaryContainer>
-                                    {/* Text-only: show raw session text immediately; no skeleton for Summary. */}
+                                    {/* Summary should always render its current text (raw or improved). */}
                                     {!isPreview && editingSection === 'summary' ? (
                                         <StyledTextareaAutosize
                                             value={summary}
                                             onChange={(e) => setSummary(e.target.value)}
                                         />
                                     ) : isPreCvLoading && !summary.trim() ? (
-                                        renderSkeletonParagraph(5)
-                                    ) : shouldBlockBelowSummary ? (
                                         renderSkeletonParagraph(5)
                                     ) : (
                                         <SummaryText>{summary}</SummaryText>
