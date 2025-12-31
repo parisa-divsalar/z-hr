@@ -90,10 +90,24 @@ const loadWizardProfileSession = (): WizardProfileSession | null => {
 
 const buildHeadline = (mainSkill?: string, visaStatus?: string) => {
     const headlineParts = [
-        String(mainSkill ?? '').trim(),
+        mainSkill ? `Wizard Status: ${String(mainSkill).trim()}` : '',
         visaStatus ? `Visa: ${String(visaStatus).trim()}` : '',
     ].filter(Boolean);
     return headlineParts.join(' • ');
+};
+
+const extractFromHeadline = (headline?: string) => {
+    const text = String(headline ?? '').trim();
+    if (!text) return { mainSkill: '', visaStatus: '' };
+
+    // Expected shape: "Wizard Status: X • Visa: Y"
+    const mainSkillMatch = text.match(/Wizard Status:\s*([^•]+?)(?:\s*•|$)/i);
+    const visaMatch = text.match(/Visa:\s*([^•]+?)(?:\s*•|$)/i);
+
+    return {
+        mainSkill: String(mainSkillMatch?.[1] ?? '').trim(),
+        visaStatus: String(visaMatch?.[1] ?? '').trim(),
+    };
 };
 
 export const pollCvAnalysisAndCreateCv = async (
@@ -183,6 +197,38 @@ const applyLineListEditText = (text: string): string[] =>
         .split(/\r?\n+/)
         .map((x) => x.trim())
         .filter(Boolean);
+
+const extractEmailAndPhone = (ways: string[]) => {
+    const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+    const phoneRegex = /(\+?\d[\d\s\-().]{6,}\d)/;
+
+    const clean = (raw: string) =>
+        String(raw ?? '')
+            .trim()
+            .replace(/^mailto:/i, '')
+            .replace(/^tel:/i, '')
+            .replace(/^(email|e-mail)\s*:\s*/i, '')
+            .replace(/^(phone|mobile|tel)\s*:\s*/i, '')
+            .trim();
+
+    let email = '';
+    let phone = '';
+
+    for (const entry of ways) {
+        const text = clean(entry);
+        if (!email) {
+            const match = text.match(emailRegex);
+            if (match) email = match[0];
+        }
+        if (!phone) {
+            const match = text.match(phoneRegex);
+            if (match) phone = match[0].trim();
+        }
+        if (email && phone) break;
+    }
+
+    return { email, phone };
+};
 
 const extractContactWays = (payload: any): string[] => {
     if (!payload || typeof payload !== 'object') return [];
@@ -770,6 +816,41 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const isSessionSeeded = Boolean(sessionSeededRunKey);
     const isPreCvLoading = isFileFlowMode && !hasCvLoadedOnce && !isSessionSeeded;
 
+    const headlineExtract = useMemo(() => extractFromHeadline(profile?.headline), [profile?.headline]);
+
+    const resolvedVisaStatus = useMemo(() => {
+        const fromWizard = String((wizardData as any)?.visaStatus ?? '').trim();
+        if (fromWizard) return fromWizard;
+
+        const session = loadWizardTextOnlySession();
+        const fromSession = String((session as any)?.visaStatus ?? '').trim();
+        if (fromSession) return fromSession;
+
+        const fromProfileSession = String(loadWizardProfileSession()?.visaStatus ?? '').trim();
+        if (fromProfileSession) return fromProfileSession;
+
+        return headlineExtract.visaStatus;
+    }, [wizardData, sessionSeededRunKey, headlineExtract.visaStatus]);
+
+    const resolvedMainSkill = useMemo(() => {
+        const fromWizard = String((wizardData as any)?.mainSkill ?? '').trim();
+        if (fromWizard) return fromWizard;
+
+        const session = loadWizardTextOnlySession();
+        const fromSession = String((session as any)?.mainSkill ?? '').trim();
+        if (fromSession) return fromSession;
+
+        const fromProfileSession = String(loadWizardProfileSession()?.mainSkill ?? '').trim();
+        if (fromProfileSession) return fromProfileSession;
+
+        return headlineExtract.mainSkill;
+    }, [wizardData, sessionSeededRunKey, headlineExtract.mainSkill]);
+
+    const { phone: resolvedPhone, email: resolvedEmail } = useMemo(
+        () => extractEmailAndPhone(contactWays),
+        [contactWays],
+    );
+
     // Auto pipeline: improve only paragraph-like sections (NOT list-like fields such as skills/contact/languages).
     const AUTO_IMPROVE_ORDER = useMemo<SectionKey[]>(
         () => ['summary', 'certificates', 'jobDescription', 'experience', 'additionalInfo'],
@@ -870,15 +951,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         lastSessionSeedKeyRef.current = seedKey;
         setSessionSeededRunKey(`${seedKey}:${Date.now()}`);
 
-        const headlineParts = [
-            String((session as any).mainSkill ?? '').trim(),
-            (session as any).visaStatus ? `Visa: ${String((session as any).visaStatus).trim()}` : '',
-        ].filter(Boolean);
-
         setProfile({
             fullName: String((session as any).fullName ?? '').trim(),
             dateOfBirth: String((session as any).dateOfBirth ?? '').trim(),
-            headline: headlineParts.join(' • '),
+            headline: buildHeadline((session as any).mainSkill, (session as any).visaStatus),
         });
 
         const sanitizedSessionSummary = cleanSummaryText(String((session as any).background?.text ?? '').trim());
@@ -1688,7 +1764,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                             <ProfileHeader
                                 fullName={profile.fullName}
                                 dateOfBirth={profile.dateOfBirth}
-                                headline={profile.headline}
+                                visaStatus={resolvedVisaStatus}
+                                mainSkill={resolvedMainSkill}
+                                phone={resolvedPhone}
+                                email={resolvedEmail}
                                 isEditing={!isPreview && editingSection === 'profile'}
                                 onEdit={isPreview ? undefined : () => handleEdit('profile')}
                                 onSave={isPreview ? undefined : handleSave}
@@ -1785,49 +1864,6 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                         ))
                                     )}
                                 </SkillsContainer>
-                            </SectionContainer>
-
-                            <SectionContainer>
-                                <SectionHeader
-                                    title='Contact'
-                                    onEdit={isPreview || isTextOnlyMode ? undefined : () => handleEdit('contactWays')}
-                                    onImprove={
-                                        isPreview || isTextOnlyMode
-                                            ? undefined
-                                            : () => void handleImprove('contactWays')
-                                    }
-                                    isEditing={!isPreview && editingSection === 'contactWays'}
-                                    isImproving={!isPreview && improvingSection === 'contactWays'}
-                                    improveDisabled={Boolean(improvingSection) && improvingSection !== 'contactWays'}
-                                    onSave={isPreview ? undefined : handleSave}
-                                    onCancel={isPreview ? undefined : handleCancel}
-                                    hideActions={isExporting || isPreview || isTextOnlyMode || shouldBlockBelowSummary}
-                                    actionsSkeleton={shouldBlockBelowSummary}
-                                />
-                                <Box mt={2}>
-                                    {shouldBlockBelowSummary && contactWays.length === 0 ? (
-                                        renderSkeletonParagraph(3)
-                                    ) : isAutoPipelineMode && shouldSkeletonSection('contactWays') ? (
-                                        renderSkeletonParagraph(3)
-                                    ) : !isPreview && editingSection === 'contactWays' ? (
-                                        <ExperienceTextareaAutosize
-                                            value={contactWaysEditText}
-                                            onChange={(e) => setContactWaysEditText(e.target.value)}
-                                        />
-                                    ) : contactWays.length === 0 ? (
-                                        <Typography variant='body2' color='text.secondary'>
-                                            No contact methods found.
-                                        </Typography>
-                                    ) : (
-                                        <Box>
-                                            {contactWays.map((text, idx) => (
-                                                <SummaryText key={idx} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
-                                                    {text}
-                                                </SummaryText>
-                                            ))}
-                                        </Box>
-                                    )}
-                                </Box>
                             </SectionContainer>
 
                             <SectionContainer>

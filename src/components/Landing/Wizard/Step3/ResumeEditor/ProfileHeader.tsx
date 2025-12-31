@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, IconButton, Typography } from '@mui/material';
+import { Box, Button, IconButton, Typography } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
@@ -15,10 +15,20 @@ import {
     ExperienceTextareaAutosize,
 } from './styled';
 
+const normalizeMainSkill = (value?: string) =>
+    String(value ?? '')
+        .trim()
+        .replace(/^web\s*frameworks?\s*:\s*/i, '')
+        .replace(/^wizard\s*status\s*:\s*/i, '')
+        .trim();
+
 interface ProfileHeaderProps {
     fullName?: string;
     dateOfBirth?: string;
-    headline?: string;
+    visaStatus?: string;
+    mainSkill?: string;
+    phone?: string;
+    email?: string;
     isEditing?: boolean;
     onEdit?: () => void;
     onSave?: () => void;
@@ -31,7 +41,10 @@ interface ProfileHeaderProps {
 const ProfileHeader = ({
     fullName,
     dateOfBirth,
-    headline,
+    visaStatus,
+    mainSkill,
+    phone,
+    email,
     isEditing,
     onEdit,
     onSave,
@@ -69,14 +82,20 @@ const ProfileHeader = ({
                 {/*<MuiAvatar size='large' src={AvatarSrc.src} />*/}
                 <ProfileInfo>
                     <>
-                        <Typography variant='subtitle1' fontWeight='600' color='text.primary' gutterBottom>
+                        <Typography variant='body1' fontWeight='500' color='text.primary' gutterBottom>
                             {fullName || '—'}
                         </Typography>
-                        <Typography variant='body1' color='text.secondary' gutterBottom>
+                        <Typography variant='subtitle2' color='text.primary' gutterBottom>
                             {dateOfBirth || '—'}
                         </Typography>
-                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            {headline || '—'}
+                        <Typography variant='subtitle2' color='text.primary' gutterBottom>
+                            {`Visa Status: ${visaStatus || '—'}`}
+                            {normalizeMainSkill(mainSkill) ? ` • ${normalizeMainSkill(mainSkill)}` : ''}
+                        </Typography>
+                        <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
+                            <Box component='span'>{`Phone: ${phone || '—'}`}</Box>
+                            <Box component='span' sx={{ display: 'inline-block', mx: 2 }} />
+                            <Box component='span'>{`Email: ${email || '—'}`}</Box>
                         </Typography>
                     </>
                 </ProfileInfo>
