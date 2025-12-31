@@ -522,7 +522,16 @@ const applyCertificateEditText = (text: string): string[] =>
         .filter(Boolean);
 
 const formatExperiencePosition = (entry: Record<string, any>) => {
-    const title = entry?.position ?? entry?.title ?? entry?.role ?? '';
+    const title =
+        entry?.position ??
+        entry?.Position ??
+        entry?.title ??
+        entry?.Title ??
+        entry?.role ??
+        entry?.Role ??
+        entry?.jobTitle ??
+        entry?.job_title ??
+        '';
     const startDate = entry?.startDate ?? entry?.from ?? entry?.dateFrom ?? '';
     const endDate = entry?.endDate ?? entry?.to ?? entry?.dateTo ?? '';
     const period = startDate && endDate ? `${startDate} — ${endDate}` : startDate || endDate || '';
@@ -531,12 +540,34 @@ const formatExperiencePosition = (entry: Record<string, any>) => {
     return [title, period, location].filter(Boolean).join(' • ');
 };
 
-const formatExperienceDescription = (entry: Record<string, any>) =>
-    entry?.description ?? entry?.text ?? entry?.summary ?? entry?.details ?? '';
+const formatExperienceDescription = (entry: Record<string, any>) => {
+    const raw =
+        entry?.description ??
+        entry?.Description ??
+        entry?.text ??
+        entry?.Text ??
+        entry?.content ??
+        entry?.Content ??
+        entry?.summary ??
+        entry?.Summary ??
+        entry?.details ??
+        entry?.Details ??
+        '';
+
+    // Some APIs wrap text as `{ text: "..." }`.
+    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        const nested = (raw as any).text ?? (raw as any).Text ?? (raw as any).content ?? (raw as any).Content;
+        return typeof nested === 'string' ? nested : '';
+    }
+
+    return typeof raw === 'string' ? raw : '';
+};
 
 const normalizeExperiences = (raw: any[]): ResumeExperience[] =>
     raw.map((entry, index) => {
-        const safeEntry = typeof entry === 'object' && entry !== null ? entry : { position: entry };
+        // When the source is a plain string, treat it as the description/body so improve has text to work with.
+        const safeEntry =
+            typeof entry === 'object' && entry !== null ? entry : { text: String(entry ?? '').trim() };
         return {
             id: index + 1,
             company: safeEntry.company ?? safeEntry.companyName ?? safeEntry.organization ?? safeEntry.employer ?? '',
@@ -547,10 +578,45 @@ const normalizeExperiences = (raw: any[]): ResumeExperience[] =>
 
 const extractExperienceEntries = (payload: any): any[] => {
     if (!payload || typeof payload !== 'object') return [];
-    if (Array.isArray(payload.experiences)) return payload.experiences;
-    if (Array.isArray(payload.experience)) return payload.experience;
-    if (Array.isArray(payload.careerHistory)) return payload.careerHistory;
-    if (Array.isArray(payload.positions)) return payload.positions;
+    const unwrapList = (value: any): any[] | null => {
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            return trimmed ? [trimmed] : null;
+        }
+        if (!value || typeof value !== 'object') return null;
+        if (Array.isArray((value as any).items)) return (value as any).items;
+        if (Array.isArray((value as any).list)) return (value as any).list;
+        if (Array.isArray((value as any).entries)) return (value as any).entries;
+        if (Array.isArray((value as any).history)) return (value as any).history;
+        // Sometimes a single entry is returned as an object with a `text` field.
+        if (typeof (value as any).text === 'string' && (value as any).text.trim()) return [value];
+        if (typeof (value as any).Text === 'string' && (value as any).Text.trim()) return [value];
+        return null;
+    };
+
+    const candidates = [
+        payload.experiences,
+        payload.experience,
+        payload.careerHistory,
+        payload.positions,
+        // common API shapes
+        payload.professionalExperience,
+        payload.workExperience,
+        payload.workHistory,
+        payload.employmentHistory,
+        payload.employment,
+        // nested variants
+        payload.profile?.experiences,
+        payload.profile?.experience,
+        payload.profile?.professionalExperience,
+        payload.profile?.workExperience,
+    ];
+
+    for (const candidate of candidates) {
+        const list = unwrapList(candidate);
+        if (list) return list;
+    }
     return [];
 };
 
@@ -1156,18 +1222,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setJobDescription(String((session as any).jobDescription?.text ?? '').trim());
         setAdditionalInfo(String((session as any).additionalInfo?.text ?? '').trim());
 
-        setExperiences(
-            Array.isArray((session as any).experiences)
-                ? (session as any).experiences
-                      .map((entry: any, idx: number) => ({
-                          id: idx + 1,
-                          company: '',
-                          position: '',
-                          description: String(entry?.text ?? '').trim(),
-                      }))
-                      .filter((exp: any) => exp.description.length > 0)
-                : [],
-        );
+        const sessionExperiencesRaw = extractExperienceEntries(session);
+        setExperiences(ensureMinimumExperiences(normalizeExperiences(sessionExperiencesRaw)));
 
         // Keep edit buffers in sync (if user toggles edit mode).
         setProfileEditText(formatProfileEditText(createEmptyProfile()));
@@ -2190,9 +2246,23 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                     {cvError}
                                 </Typography>
                             )}
-                            {saveError && <MuiAlert severity='error' message={saveError} />}
-                            {improveError && <MuiAlert severity='error' message={improveError} />}
-                            {downloadError && <MuiAlert severity='error' message={downloadError} />}
+                            {saveError && (
+                                <MuiAlert severity='error' message={saveError} onDismiss={() => setSaveError(null)} />
+                            )}
+                            {improveError && (
+                                <MuiAlert
+                                    severity='error'
+                                    message={improveError}
+                                    onDismiss={() => setImproveError(null)}
+                                />
+                            )}
+                            {downloadError && (
+                                <MuiAlert
+                                    severity='error'
+                                    message={downloadError}
+                                    onDismiss={() => setDownloadError(null)}
+                                />
+                            )}
 
                             <SectionContainer>
                                 <SectionHeader
@@ -2397,13 +2467,22 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                         onChange={(e) => setExperienceEditText(e.target.value)}
                                     />
                                 ) : (
-                                    experiences
-                                        .filter((exp) =>
+                                    (() => {
+                                        const visibleExperiences = experiences.filter((exp) =>
                                             [exp.company, exp.position, exp.description].some(
                                                 (v) => String(v ?? '').trim().length > 0,
                                             ),
-                                        )
-                                        .map((experience, index) => {
+                                        );
+
+                                        if (visibleExperiences.length === 0) {
+                                            return (
+                                                <Typography variant='body2' color='text.secondary'>
+                                                    No professional experience found.
+                                                </Typography>
+                                            );
+                                        }
+
+                                        return visibleExperiences.map((experience, index) => {
                                             const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
 
                                             return (
@@ -2429,7 +2508,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                                     )}
                                                 </Wrapper>
                                             );
-                                        })
+                                        });
+                                    })()
                                 )}
                             </ExperienceContainer>
                             <SectionContainer>
