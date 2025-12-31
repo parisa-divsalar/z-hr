@@ -69,7 +69,7 @@ const ProfileHeader = ({
 
                 <ExperienceTextareaAutosize
                     value={editText ?? ''}
-                    placeholder={'Full name\nDate of birth\nHeadline'}
+                    placeholder={'Full name\n\nDD/MM/YYYY\n\nVisa Status: ... • ...\n\nPhone: ...\nEmail: ...'}
                     onChange={(e) => onEditTextChange?.(e.target.value)}
                 />
             </ProfileHeaderContainer>

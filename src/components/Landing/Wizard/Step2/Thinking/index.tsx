@@ -100,7 +100,8 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
             if (!hasAnyFilesOrVoices) {
                 saveWizardTextOnlySession(wizardData);
-                setRequestId(null);
+                const existingRequestId = useWizardStore.getState().requestId;
+                if (!existingRequestId) setRequestId(null);
                 setActiveStep(3);
                 hasSubmitted.current = true;
                 return stopPolling;

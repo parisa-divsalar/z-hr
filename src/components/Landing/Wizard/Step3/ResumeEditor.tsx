@@ -113,7 +113,7 @@ const extractFromHeadline = (headline?: string) => {
 export const pollCvAnalysisAndCreateCv = async (
     requestId: string,
     bodyOfResume: any,
-    accessToken: string,
+    userId?: string | null,
     onProgress?: (subRequests: any[]) => void,
 ): Promise<void> => {
     const poll = async (): Promise<void> => {
@@ -126,7 +126,7 @@ export const pollCvAnalysisAndCreateCv = async (
 
         if (status === 2) {
             await apiClientClient.post('cv/add-cv', {
-                userId: accessToken,
+                userId: userId ?? undefined,
                 requestId,
                 bodyOfResume,
             });
@@ -154,17 +154,104 @@ const createEmptyProfile = (): ResumeProfile => ({
     headline: '',
 });
 
-const formatProfileEditText = (profile: ResumeProfile): string => {
-    const parts = [profile.fullName ?? '', profile.dateOfBirth ?? '', profile.headline ?? ''];
-    return parts.join('\n').trimEnd();
+type ProfileEditMeta = {
+    visaStatus?: string;
+    mainSkill?: string;
+    phone?: string;
+    email?: string;
 };
 
-const applyProfileEditText = (text: string): ResumeProfile => {
-    const lines = String(text ?? '').split(/\r?\n/);
+type ParsedProfileEdit = {
+    profile: ResumeProfile;
+    visaStatus: string;
+    mainSkill: string;
+    phone: string;
+    email: string;
+};
+
+const formatProfileEditText = (profile: ResumeProfile, meta?: ProfileEditMeta): string => {
+    const extracted = extractFromHeadline(profile?.headline);
+    const fullName = String(profile?.fullName ?? '').trim();
+    const dateOfBirth = String(profile?.dateOfBirth ?? '').trim();
+    const visaStatus = String(meta?.visaStatus ?? extracted.visaStatus ?? '').trim();
+    const mainSkill = String(meta?.mainSkill ?? extracted.mainSkill ?? '').trim();
+    const phone = String(meta?.phone ?? '').trim();
+    const email = String(meta?.email ?? '').trim();
+
+    const visaLine = `Visa Status: ${visaStatus}${mainSkill ? ` • ${mainSkill}` : ''}`.trimEnd();
+    const contactBlock = `Phone: ${phone}\nEmail: ${email}`.trimEnd();
+
+    // Keep the same human-friendly layout as the rendered profile section.
+    return [fullName, dateOfBirth, visaLine, contactBlock].join('\n\n').trimEnd();
+};
+
+const applyProfileEditText = (text: string): ParsedProfileEdit => {
+    const raw = String(text ?? '');
+    const lines = raw.split(/\r?\n/).map((l) => l.trim());
+    const nonEmpty = lines.filter(Boolean);
+
+    const fullName = String(nonEmpty[0] ?? '').trim();
+    const dateOfBirth = String(nonEmpty[1] ?? '').trim();
+
+    let visaStatus = '';
+    let mainSkill = '';
+    let phone = '';
+    let email = '';
+
+    const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+    const phoneRegex = /(\+?\d[\d\s\-().]{6,}\d)/;
+
+    const parseVisa = (line: string) => {
+        const m =
+            line.match(/Visa\s*Status\s*:\s*([^•]+?)(?:\s*•\s*(.*))?$/i) ??
+            line.match(/Visa\s*:\s*([^•]+?)(?:\s*•\s*(.*))?$/i);
+        if (!m) return;
+        visaStatus = String(m[1] ?? '').trim();
+        mainSkill = String(m[2] ?? '').trim();
+    };
+
+    for (const line of nonEmpty) {
+        if (!visaStatus && /visa/i.test(line)) parseVisa(line);
+
+        if (!phone) {
+            const m = line.match(/phone\s*:\s*(.*)$/i);
+            if (m) phone = String(m[1] ?? '').trim();
+        }
+        if (!email) {
+            const m = line.match(/email\s*:\s*(.*)$/i);
+            if (m) email = String(m[1] ?? '').trim();
+        }
+
+        if (!email) {
+            const m = line.match(emailRegex);
+            if (m) email = String(m[0] ?? '').trim();
+        }
+        if (!phone) {
+            const m = line.match(phoneRegex);
+            if (m) phone = String(m[0] ?? '').trim();
+        }
+    }
+
+    // Backward compatibility: if user pastes the old "headline" format, extract from it.
+    if (!visaStatus && !mainSkill) {
+        const legacyHeadline = nonEmpty.slice(2).join(' • ');
+        const extracted = extractFromHeadline(legacyHeadline);
+        visaStatus = extracted.visaStatus;
+        mainSkill = extracted.mainSkill;
+    }
+
+    const headline = buildHeadline(mainSkill, visaStatus);
+
     return {
-        fullName: String(lines[0] ?? '').trim(),
-        dateOfBirth: String(lines[1] ?? '').trim(),
-        headline: lines.slice(2).join('\n').trim(),
+        profile: {
+            fullName,
+            dateOfBirth,
+            headline,
+        },
+        visaStatus,
+        mainSkill,
+        phone,
+        email,
     };
 };
 
@@ -228,6 +315,33 @@ const extractEmailAndPhone = (ways: string[]) => {
     }
 
     return { email, phone };
+};
+
+const applyPhoneEmailToContactWays = (current: string[], phone?: string, email?: string): string[] => {
+    const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+    const phoneRegex = /(\+?\d[\d\s\-().]{6,}\d)/;
+    const clean = (raw: string) =>
+        String(raw ?? '')
+            .trim()
+            .replace(/^mailto:/i, '')
+            .replace(/^tel:/i, '')
+            .replace(/^(email|e-mail)\s*:\s*/i, '')
+            .replace(/^(phone|mobile|tel)\s*:\s*/i, '')
+            .trim();
+
+    const normalizedPhone = String(phone ?? '').trim();
+    const normalizedEmail = String(email ?? '').trim();
+
+    const base = Array.isArray(current) ? current : [];
+    const filtered = base.filter((entry) => {
+        const text = clean(entry);
+        return !(emailRegex.test(text) || phoneRegex.test(text));
+    });
+
+    const next: string[] = [...filtered];
+    if (normalizedPhone) next.push(normalizedPhone);
+    if (normalizedEmail) next.push(normalizedEmail);
+    return next;
 };
 
 const extractContactWays = (payload: any): string[] => {
@@ -740,9 +854,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const isPreview = mode === 'preview';
     const [editingSection, setEditingSection] = useState<string | null>(null);
     const wizardData = useWizardStore((state) => state.data);
+    const updateWizardField = useWizardStore((state) => state.updateField);
     const requestId = useWizardStore((state) => state.requestId);
+    const setRequestId = useWizardStore((state) => state.setRequestId);
     const accessToken = useAuthStore((state) => state.accessToken);
-    const canFetchCv = Boolean(requestId && accessToken);
+    // We can still fetch/edit CVs when auth is provided via cookies (store accessToken may be empty on refresh).
+    const canFetchCv = Boolean(requestId);
     const [isTextOnlyMode, setIsTextOnlyMode] = useState(false);
     /**
      * When present, Step3 was seeded from sessionStorage (same payload used by text-only flow).
@@ -1329,95 +1446,100 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         requestImprovedText,
     ]);
 
-    const loadCvData = useCallback(async () => {
-        if (!requestId || !accessToken) return;
+    const loadCvData = useCallback(
+        async (args: { requestId?: string | null; userId?: string | null } = {}) => {
+            const requestIdToLoad = args.requestId ?? requestId;
+            const userIdToLoad = args.userId ?? accessToken;
+            if (!requestIdToLoad) return;
 
-        setIsCvLoading(true);
-        setCvError(null);
+            setIsCvLoading(true);
+            setCvError(null);
 
-        try {
-            const raw = await getCV({ requestId, userId: accessToken });
-            const record = resolveCvRecord(raw);
-            if (!record) {
-                setCvError('Resume data is empty.');
+            try {
+                const raw = await getCV({ requestId: requestIdToLoad, userId: userIdToLoad ?? undefined });
+                const record = resolveCvRecord(raw);
+                if (!record) {
+                    setCvError('Resume data is empty.');
+                    cvPayloadRef.current = null;
+                    setCvLoadedApiKey(null);
+                    setCvLoadedRunKey(null);
+                    // If we were seeded from session, don't wipe the UI.
+                    if (!isSessionSeeded) {
+                        // Keep profile from session/wizard so refresh doesn't wipe it.
+                        setSummary('');
+                        setSkills([]);
+                        setContactWays([]);
+                        setLanguages([]);
+                        setCertificates([]);
+                        setJobDescription('');
+                        setAdditionalInfo('');
+                        setExperiences([]);
+                    }
+                    return;
+                }
+
+                const payload = resolveCvPayload(record);
+                cvPayloadRef.current = payload;
+                const apiKey = `${userIdToLoad ?? 'cookie'}:${requestIdToLoad}`;
+                setCvLoadedApiKey(apiKey);
+                setCvLoadedRunKey(`${apiKey}:${Date.now()}`);
+                const rawSummary = extractSummary(payload) || extractSummary(record);
+                const detectedSummary = cleanSummaryText(rawSummary);
+                const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
+                const detectedContactWays =
+                    extractContactWays(payload).length > 0 ? extractContactWays(payload) : extractContactWays(record);
+                const detectedLanguages =
+                    extractLanguages(payload).length > 0 ? extractLanguages(payload) : extractLanguages(record);
+                const detectedCertificates =
+                    normalizeCertificates(extractCertificateEntries(payload)).length > 0
+                        ? normalizeCertificates(extractCertificateEntries(payload))
+                        : normalizeCertificates(extractCertificateEntries(record));
+                const detectedJobDescription = extractJobDescriptionText(payload) || extractJobDescriptionText(record);
+                const detectedAdditionalInfo = extractAdditionalInfoText(payload) || extractAdditionalInfoText(record);
+                const extracted = extractExperienceEntries(payload).length
+                    ? extractExperienceEntries(payload)
+                    : extractExperienceEntries(record);
+                const normalizedExperiences = ensureMinimumExperiences(normalizeExperiences(extracted));
+
+                // Profile fields should come from session/wizard (NOT get-cv) so they don't change on refresh.
+                if (isSessionSeeded) {
+                    // Seeded flow: keep session (and auto-improved) values; fill only missing fields from getCV.
+                    setSummary((prev) => (prev?.trim?.() ? prev : detectedSummary));
+                    setSkills((prev) => (Array.isArray(prev) && prev.length ? prev : detectedSkills));
+                    setContactWays((prev) => (Array.isArray(prev) && prev.length ? prev : detectedContactWays));
+                    setLanguages((prev) => (Array.isArray(prev) && prev.length ? prev : detectedLanguages));
+                    setCertificates((prev) => (Array.isArray(prev) && prev.length ? prev : detectedCertificates));
+                    setJobDescription((prev) => (prev?.trim?.() ? prev : detectedJobDescription));
+                    setAdditionalInfo((prev) => (prev?.trim?.() ? prev : detectedAdditionalInfo));
+                    setExperiences((prev) => (Array.isArray(prev) && prev.length ? prev : normalizedExperiences));
+                } else {
+                    setSummary(detectedSummary);
+                    setSkills(detectedSkills);
+                    setContactWays(detectedContactWays);
+                    setLanguages(detectedLanguages);
+                    setCertificates(detectedCertificates);
+                    setJobDescription(detectedJobDescription);
+                    setAdditionalInfo(detectedAdditionalInfo);
+                    setExperiences(normalizedExperiences);
+                }
+            } catch (error) {
+                console.error('Failed to load CV preview', error);
+                setCvError('Unable to load resume data. Please try again.');
                 cvPayloadRef.current = null;
                 setCvLoadedApiKey(null);
                 setCvLoadedRunKey(null);
-                // If we were seeded from session, don't wipe the UI.
-                if (!isSessionSeeded) {
-                    // Keep profile from session/wizard so refresh doesn't wipe it.
-                    setSummary('');
-                    setSkills([]);
-                    setContactWays([]);
-                    setLanguages([]);
-                    setCertificates([]);
-                    setJobDescription('');
-                    setAdditionalInfo('');
-                    setExperiences([]);
-                }
-                return;
+            } finally {
+                setIsCvLoading(false);
+                setHasCvLoadedOnce(true);
             }
-
-            const payload = resolveCvPayload(record);
-            cvPayloadRef.current = payload;
-            const apiKey = `${accessToken}:${requestId}`;
-            setCvLoadedApiKey(apiKey);
-            setCvLoadedRunKey(`${apiKey}:${Date.now()}`);
-            const rawSummary = extractSummary(payload) || extractSummary(record);
-            const detectedSummary = cleanSummaryText(rawSummary);
-            const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
-            const detectedContactWays =
-                extractContactWays(payload).length > 0 ? extractContactWays(payload) : extractContactWays(record);
-            const detectedLanguages =
-                extractLanguages(payload).length > 0 ? extractLanguages(payload) : extractLanguages(record);
-            const detectedCertificates =
-                normalizeCertificates(extractCertificateEntries(payload)).length > 0
-                    ? normalizeCertificates(extractCertificateEntries(payload))
-                    : normalizeCertificates(extractCertificateEntries(record));
-            const detectedJobDescription = extractJobDescriptionText(payload) || extractJobDescriptionText(record);
-            const detectedAdditionalInfo = extractAdditionalInfoText(payload) || extractAdditionalInfoText(record);
-            const extracted = extractExperienceEntries(payload).length
-                ? extractExperienceEntries(payload)
-                : extractExperienceEntries(record);
-            const normalizedExperiences = ensureMinimumExperiences(normalizeExperiences(extracted));
-
-            // Profile fields should come from session/wizard (NOT get-cv) so they don't change on refresh.
-            if (isSessionSeeded) {
-                // Seeded flow: keep session (and auto-improved) values; fill only missing fields from getCV.
-                setSummary((prev) => (prev?.trim?.() ? prev : detectedSummary));
-                setSkills((prev) => (Array.isArray(prev) && prev.length ? prev : detectedSkills));
-                setContactWays((prev) => (Array.isArray(prev) && prev.length ? prev : detectedContactWays));
-                setLanguages((prev) => (Array.isArray(prev) && prev.length ? prev : detectedLanguages));
-                setCertificates((prev) => (Array.isArray(prev) && prev.length ? prev : detectedCertificates));
-                setJobDescription((prev) => (prev?.trim?.() ? prev : detectedJobDescription));
-                setAdditionalInfo((prev) => (prev?.trim?.() ? prev : detectedAdditionalInfo));
-                setExperiences((prev) => (Array.isArray(prev) && prev.length ? prev : normalizedExperiences));
-            } else {
-                setSummary(detectedSummary);
-                setSkills(detectedSkills);
-                setContactWays(detectedContactWays);
-                setLanguages(detectedLanguages);
-                setCertificates(detectedCertificates);
-                setJobDescription(detectedJobDescription);
-                setAdditionalInfo(detectedAdditionalInfo);
-                setExperiences(normalizedExperiences);
-            }
-        } catch (error) {
-            console.error('Failed to load CV preview', error);
-            setCvError('Unable to load resume data. Please try again.');
-            cvPayloadRef.current = null;
-            setCvLoadedApiKey(null);
-            setCvLoadedRunKey(null);
-        } finally {
-            setIsCvLoading(false);
-            setHasCvLoadedOnce(true);
-        }
-    }, [requestId, accessToken, isSessionSeeded]);
+        },
+        [requestId, accessToken, isSessionSeeded],
+    );
 
     useEffect(() => {
-        if (!requestId || !accessToken) return;
+        if (!requestId) return;
 
-        const key = `${accessToken}:${requestId}`;
+        const key = `${accessToken ?? 'cookie'}:${requestId}`;
         if (lastAutoFetchKeyRef.current === key) return;
         lastAutoFetchKeyRef.current = key;
 
@@ -1426,7 +1548,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         const run = async () => {
             try {
                 const bodyOfResume = loadWizardTextOnlySession() ?? buildWizardSerializable(wizardData);
-                await pollCvAnalysisAndCreateCv(requestId, bodyOfResume, accessToken, () => {
+                await pollCvAnalysisAndCreateCv(requestId, bodyOfResume, accessToken ?? undefined, () => {
                     // Intentionally no-op: ResumeEditor currently doesn't render analysis progress,
                     // but we keep the hook for parity with the backend response.
                 });
@@ -1464,12 +1586,16 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setSaveError(null);
         if (isTextOnlyMode) {
             // In text-only mode: allow local editing after the auto-improve pipeline has revealed the UI.
-            if (shouldBlockBelowSummary) {
+            // Profile is not part of the auto-improve pipeline, so keep it editable even while Summary is pending.
+            if (shouldBlockBelowSummary && section !== 'profile') {
                 setSaveError('Please wait for auto-improve to finish.');
                 return;
             }
 
             // Backup current section state so Cancel can revert.
+            if (section === 'profile') {
+                textOnlyBackupRef.current.profile = { profile: { ...profile }, contactWays: [...contactWays] };
+            }
             if (section === 'summary') textOnlyBackupRef.current.summary = summary;
             if (section === 'skills') textOnlyBackupRef.current.skills = [...skills];
             if (section === 'languages') textOnlyBackupRef.current.languages = [...languages];
@@ -1479,6 +1605,16 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             if (section === 'experience') textOnlyBackupRef.current.experience = [...experiences];
 
             // Seed edit buffers.
+            if (section === 'profile') {
+                setProfileEditText(
+                    formatProfileEditText(profile, {
+                        visaStatus: resolvedVisaStatus,
+                        mainSkill: resolvedMainSkill,
+                        phone: resolvedPhone,
+                        email: resolvedEmail,
+                    }),
+                );
+            }
             if (section === 'skills' && skills.length === 0) setSkills(['']);
             if (section === 'languages') setLanguagesEditText(formatLanguagesEditText(languages));
             if (section === 'certificates') setCertificatesEditText(formatCertificateEditText(certificates));
@@ -1489,7 +1625,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
             return;
         }
         if (section === 'profile') {
-            setProfileEditText(formatProfileEditText(profile));
+            setProfileEditText(
+                formatProfileEditText(profile, {
+                    visaStatus: resolvedVisaStatus,
+                    mainSkill: resolvedMainSkill,
+                    phone: resolvedPhone,
+                    email: resolvedEmail,
+                }),
+            );
         }
         if (section === 'skills' && skills.length === 0) {
             setSkills(['']);
@@ -1515,7 +1658,43 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
     const handleSave = async () => {
         if (!editingSection) return;
         if (isTextOnlyMode) {
+            if (isSaving) return;
+            setIsSaving(true);
             setSaveError(null);
+
+            if (editingSection === 'profile') {
+                const parsed = applyProfileEditText(profileEditText);
+                const nextProfile = parsed.profile;
+                const nextContactWays = applyPhoneEmailToContactWays(contactWays, parsed.phone, parsed.email);
+
+                setProfile(nextProfile);
+                setContactWays(nextContactWays);
+
+                // Keep wizard store in sync (used as primary source for visa/mainSkill in UI).
+                updateWizardField('fullName', String(nextProfile.fullName ?? '').trim());
+                updateWizardField('dateOfBirth', String(nextProfile.dateOfBirth ?? '').trim());
+                updateWizardField('visaStatus', String(parsed.visaStatus ?? '').trim());
+                updateWizardField('mainSkill', String(parsed.mainSkill ?? '').trim());
+                updateWizardField('contactWay', nextContactWays);
+
+                persistTextOnlySession((draft) => {
+                    draft.fullName = String(nextProfile.fullName ?? '').trim();
+                    draft.dateOfBirth = String(nextProfile.dateOfBirth ?? '').trim();
+                    draft.visaStatus = String(parsed.visaStatus ?? '').trim();
+                    draft.mainSkill = String(parsed.mainSkill ?? '').trim();
+                    draft.contactWay = nextContactWays;
+                });
+
+                const profileSessionPayload: WizardProfileSession = {
+                    fullName: String(nextProfile.fullName ?? '').trim(),
+                    dateOfBirth: String(nextProfile.dateOfBirth ?? '').trim(),
+                    mainSkill: String(parsed.mainSkill ?? '').trim(),
+                    visaStatus: String(parsed.visaStatus ?? '').trim(),
+                };
+                if (Object.values(profileSessionPayload).some((v) => String(v ?? '').trim().length > 0)) {
+                    saveWizardProfileSession(profileSessionPayload);
+                }
+            }
 
             if (editingSection === 'summary') {
                 persistTextOnlySession((draft) => {
@@ -1576,8 +1755,74 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                 });
             }
 
+            // Build a payload snapshot that includes the "saved" values (don't rely on async setState).
+            const parsedProfile = editingSection === 'profile' ? applyProfileEditText(profileEditText) : null;
+            const nextProfile = parsedProfile ? parsedProfile.profile : profile;
+            const nextContactWays = parsedProfile
+                ? applyPhoneEmailToContactWays(contactWays, parsedProfile.phone, parsedProfile.email)
+                : contactWays;
+            const nextLanguages = editingSection === 'languages' ? applyLanguagesEditText(languagesEditText) : languages;
+            const nextCertificates =
+                editingSection === 'certificates' ? applyCertificateEditText(certificatesEditText) : certificates;
+            const nextAdditionalInfo = editingSection === 'additionalInfo' ? String(additionalInfoEditText ?? '') : additionalInfo;
+            const nextExperiences =
+                editingSection === 'experience' ? applyExperienceEditText(experiences, experienceEditText) : experiences;
+            const normalizedSkills = skills.map((s) => String(s ?? '').trim()).filter(Boolean);
+            const normalizedContactWays = nextContactWays.map((c) => String(c ?? '').trim()).filter(Boolean);
+
+            const updatedPayload = buildUpdatedCvPayload(cvPayloadRef.current, {
+                profile: nextProfile,
+                summary,
+                skills: normalizedSkills,
+                contactWays: normalizedContactWays,
+                languages: nextLanguages,
+                certificates: nextCertificates,
+                jobDescription,
+                additionalInfo: nextAdditionalInfo,
+                experiences: nextExperiences,
+            });
+
             delete textOnlyBackupRef.current[editingSection];
             setEditingSection(null);
+
+            /**
+             * Text-only mode has no requestId. To support the "Save -> edit-cv -> refresh get-cv" UX
+             * when the user is authenticated (via cookie or store), we "promote" the draft by:
+             * - generating a requestId
+             * - creating the initial CV on the server via `cv/add-cv`
+             * - setting requestId in the wizard store
+             */
+            const makeRequestId = () => {
+                try {
+                    const anyCrypto = (globalThis as any)?.crypto;
+                    if (typeof anyCrypto?.randomUUID === 'function') return anyCrypto.randomUUID();
+                } catch {
+                    // ignore
+                }
+                return `text-only-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            };
+
+            const newRequestId = makeRequestId();
+
+            try {
+                await apiClientClient.post('cv/add-cv', {
+                    userId: accessToken ?? undefined,
+                    requestId: newRequestId,
+                    bodyOfResume: updatedPayload,
+                });
+
+                setRequestId(newRequestId);
+                await loadCvData({ requestId: newRequestId, userId: accessToken ?? undefined });
+            } catch (error) {
+                console.error('Failed to create CV from text-only draft', error);
+                setSaveError(
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to save changes to the server. Please log in and try again.',
+                );
+            } finally {
+                setIsSaving(false);
+            }
             return;
         }
         if (!requestId) {
@@ -1589,9 +1834,13 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setIsSaving(true);
         setSaveError(null);
 
-        const nextProfile = editingSection === 'profile' ? applyProfileEditText(profileEditText) : profile;
-        const nextContactWays =
+        const parsedProfile = editingSection === 'profile' ? applyProfileEditText(profileEditText) : null;
+        const nextProfile = parsedProfile ? parsedProfile.profile : profile;
+        const nextContactWaysBase =
             editingSection === 'contactWays' ? applyLineListEditText(contactWaysEditText) : contactWays;
+        const nextContactWays = parsedProfile
+            ? applyPhoneEmailToContactWays(nextContactWaysBase, parsedProfile.phone, parsedProfile.email)
+            : nextContactWaysBase;
         const nextLanguages = editingSection === 'languages' ? applyLanguagesEditText(languagesEditText) : languages;
         const nextCertificates =
             editingSection === 'certificates' ? applyCertificateEditText(certificatesEditText) : certificates;
@@ -1604,10 +1853,30 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         // Apply local state updates (optimistic)
         if (editingSection === 'profile') setProfile(nextProfile);
         if (editingSection === 'contactWays') setContactWays(normalizedContactWays);
+        if (editingSection === 'profile') setContactWays(normalizedContactWays);
         if (editingSection === 'languages') setLanguages(nextLanguages);
         if (editingSection === 'certificates') setCertificates(nextCertificates);
         if (editingSection === 'additionalInfo') setAdditionalInfo(nextAdditionalInfo);
         if (editingSection === 'experience') setExperiences(nextExperiences);
+
+        if (parsedProfile) {
+            // Persist to wizard store + session so the Profile UI reads the updated values immediately.
+            updateWizardField('fullName', String(nextProfile.fullName ?? '').trim());
+            updateWizardField('dateOfBirth', String(nextProfile.dateOfBirth ?? '').trim());
+            updateWizardField('visaStatus', String(parsedProfile.visaStatus ?? '').trim());
+            updateWizardField('mainSkill', String(parsedProfile.mainSkill ?? '').trim());
+            updateWizardField('contactWay', normalizedContactWays);
+
+            const profileSessionPayload: WizardProfileSession = {
+                fullName: String(nextProfile.fullName ?? '').trim(),
+                dateOfBirth: String(nextProfile.dateOfBirth ?? '').trim(),
+                mainSkill: String(parsedProfile.mainSkill ?? '').trim(),
+                visaStatus: String(parsedProfile.visaStatus ?? '').trim(),
+            };
+            if (Object.values(profileSessionPayload).some((v) => String(v ?? '').trim().length > 0)) {
+                saveWizardProfileSession(profileSessionPayload);
+            }
+        }
 
         const updatedPayload = buildUpdatedCvPayload(cvPayloadRef.current, {
             profile: nextProfile,
@@ -1623,7 +1892,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
 
         try {
             await editCV({
-                userId: accessToken,
+                userId: accessToken ?? undefined,
                 requestId,
                 bodyOfResume: updatedPayload,
             });
@@ -1642,6 +1911,11 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
         setSaveError(null);
         if (isTextOnlyMode && editingSection) {
             const backup = textOnlyBackupRef.current[editingSection];
+            if (editingSection === 'profile' && backup && typeof backup === 'object') {
+                const anyBackup = backup as any;
+                if (anyBackup.profile) setProfile(anyBackup.profile as ResumeProfile);
+                if (Array.isArray(anyBackup.contactWays)) setContactWays(anyBackup.contactWays as string[]);
+            }
             if (editingSection === 'summary' && typeof backup === 'string') setSummary(backup);
             if (editingSection === 'skills' && Array.isArray(backup)) setSkills(backup);
             if (editingSection === 'languages' && Array.isArray(backup)) setLanguages(backup);
@@ -1868,7 +2142,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = (props) => {
                                 onCancel={isPreview ? undefined : handleCancel}
                                 editText={profileEditText}
                                 onEditTextChange={isPreview ? undefined : setProfileEditText}
-                                hideActions={isExporting || isPreview || isTextOnlyMode}
+                                hideActions={isExporting || isPreview}
                             />
                             {isCvLoading && (
                                 <Typography variant='caption' color='text.secondary' mt={1}>

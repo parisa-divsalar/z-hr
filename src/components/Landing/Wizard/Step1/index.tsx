@@ -62,7 +62,9 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
 
         if (!hasAnyFilesOrVoices) {
             saveWizardTextOnlySession(wizardData);
-            setRequestId(null);
+            // keep it so Step3 can still fetch/edit the backend CV.
+            const existingRequestId = useWizardStore.getState().requestId;
+            if (!existingRequestId) setRequestId(null);
             setActiveStep(3);
             return;
         }
