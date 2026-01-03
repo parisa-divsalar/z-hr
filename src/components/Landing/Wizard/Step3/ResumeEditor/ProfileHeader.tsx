@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Box, Button, IconButton, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, IconButton, Typography } from '@mui/material';
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
@@ -54,6 +54,7 @@ interface ProfileHeaderProps {
     onEdit?: () => void;
     onSave?: () => void;
     onCancel?: () => void;
+    isSaving?: boolean;
     editText?: string;
     onEditTextChange?: (value: string) => void;
     hideActions?: boolean;
@@ -75,6 +76,7 @@ const ProfileHeader = ({
     onEdit,
     onSave,
     onCancel,
+    isSaving,
     editText,
     onEditTextChange,
     hideActions,
@@ -102,10 +104,23 @@ const ProfileHeader = ({
             <ProfileHeaderContainer sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1 }}>
                 {!hideActions ? (
                     <ActionButtons sx={{ justifyContent: 'flex-end', width: '100%' }}>
-                        <Button size='small' variant='text' color='inherit' onClick={onCancel}>
+                        <Button
+                            size='small'
+                            variant='text'
+                            color='inherit'
+                            onClick={onCancel}
+                            disabled={Boolean(isSaving)}
+                        >
                             Cancel
                         </Button>
-                        <Button size='small' variant='contained' color='primary' onClick={onSave}>
+                        <Button
+                            size='small'
+                            variant='contained'
+                            color='primary'
+                            onClick={onSave}
+                            disabled={Boolean(isSaving) || !onSave}
+                            startIcon={isSaving ? <CircularProgress size={14} color='inherit' /> : undefined}
+                        >
                             Save
                         </Button>
                     </ActionButtons>

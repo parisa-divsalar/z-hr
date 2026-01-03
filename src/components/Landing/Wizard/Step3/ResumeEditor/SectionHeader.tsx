@@ -13,19 +13,12 @@ interface SectionHeaderProps {
     isEditing?: boolean;
     onSave?: () => void;
     onCancel?: () => void;
+    isSaving?: boolean;
     onImprove?: () => void;
     isImproving?: boolean;
     improveDisabled?: boolean;
-    /**
-     * Controls whether the "Improve" (star) icon is shown next to the edit icon.
-     * Defaults to true to keep existing behavior.
-     */
     showImproveIcon?: boolean;
     hideActions?: boolean;
-    /**
-     * When true, render skeleton placeholders for action buttons (edit/improve).
-     * Useful for auto-improve flows where actions are temporarily unavailable.
-     */
     actionsSkeleton?: boolean;
 }
 
@@ -35,6 +28,7 @@ const SectionHeader = ({
     isEditing,
     onSave,
     onCancel,
+    isSaving,
     onImprove,
     isImproving,
     improveDisabled,
@@ -51,10 +45,23 @@ const SectionHeader = ({
                 <SectionActions>
                     {isEditing ? (
                         <>
-                            <Button size='small' variant='text' color='inherit' onClick={onCancel}>
+                            <Button
+                                size='small'
+                                variant='text'
+                                color='inherit'
+                                onClick={onCancel}
+                                disabled={Boolean(isSaving)}
+                            >
                                 Cancel
                             </Button>
-                            <Button size='small' variant='contained' color='primary' onClick={onSave}>
+                            <Button
+                                size='small'
+                                variant='contained'
+                                color='primary'
+                                onClick={onSave}
+                                disabled={Boolean(isSaving) || !onSave}
+                                startIcon={isSaving ? <CircularProgress size={14} color='inherit' /> : undefined}
+                            >
                                 Save
                             </Button>
                         </>
@@ -63,9 +70,7 @@ const SectionHeader = ({
                             {actionsSkeleton ? (
                                 <>
                                     <Skeleton variant='circular' width={28} height={28} />
-                                    {showImproveIcon ? (
-                                        <Skeleton variant='circular' width={28} height={28} />
-                                    ) : null}
+                                    {showImproveIcon ? <Skeleton variant='circular' width={28} height={28} /> : null}
                                 </>
                             ) : (
                                 <>
