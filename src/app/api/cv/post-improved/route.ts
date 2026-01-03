@@ -28,16 +28,22 @@ export async function POST(request: NextRequest) {
 
         const lang = normalizeValue(payload?.lang ?? searchParams.get('lang')) ?? 'en';
 
+        const cvSection = normalizeValue(payload?.cvSection ?? searchParams.get('cvSection'));
+        if (!cvSection) {
+            return NextResponse.json({ message: 'cvSection is required' }, { status: 400 });
+        }
+
         const paragraph = normalizeValue(payload?.paragraph ?? payload?.bodyOfResume);
         if (!paragraph) {
             return NextResponse.json({ message: 'paragraph is required' }, { status: 400 });
         }
 
         const requestBody = new FormData();
+        requestBody.append('cvSection', cvSection);
         requestBody.append('paragraph', paragraph);
 
         const response = await apiClientServer.post(
-            `Apps/improve-cv-part?userId=${encodeURIComponent(userId)}&lang=${encodeURIComponent(lang)}`,
+            `Apps/improve-cv-part-cv-section?userId=${encodeURIComponent(userId)}&lang=${encodeURIComponent(lang)}`,
             requestBody,
         );
 

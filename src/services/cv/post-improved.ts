@@ -3,6 +3,7 @@ import { apiClientClient } from '@/services/api-client';
 export type PostImprovedParams = {
     userId?: string | null;
     lang?: string;
+    cvSection: string;
     paragraph: string;
     /**
      * Optional - kept for backward compatibility with the API route.
@@ -13,6 +14,7 @@ export type PostImprovedParams = {
 
 export async function postImproved(params: PostImprovedParams) {
     const payload: Record<string, unknown> = {
+        cvSection: params.cvSection,
         paragraph: params.paragraph,
         lang: params.lang ?? 'en',
     };

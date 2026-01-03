@@ -471,13 +471,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     };
 
     const requestImprovedText = useCallback(
-        async (rawText: string): Promise<string> => {
+        async (cvSection: string, rawText: string): Promise<string> => {
             const text = String(rawText ?? '').trim();
             if (!text) return '';
 
             const postResponse = await postImproved({
                 userId: accessToken ?? undefined,
                 lang: 'en',
+                cvSection,
                 paragraph: text,
             });
 
@@ -541,7 +542,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                         applyTypedSectionText(section, '');
                     }
 
-                    const improved = await requestImprovedText(raw);
+                    const improved = await requestImprovedText(section, raw);
 
                     setAutoImprovePhase('typing');
                     if (section === 'summary') {
@@ -1044,6 +1045,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 const postResponse = await postImproved({
                     userId: accessToken ?? undefined,
                     lang: 'en',
+                    cvSection: section,
                     paragraph: String(currentText),
                 });
 
