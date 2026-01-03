@@ -1,11 +1,12 @@
 'use client';
 
-import type { FunctionComponent, MutableRefObject } from 'react';
+import { type FunctionComponent, type MutableRefObject, useEffect, useState } from 'react';
 
 import { CardContent } from '@mui/material';
 
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
+import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import { useResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import AdditionalInfoSection from './ResumeEditor/sections/AdditionalInfoSection';
@@ -34,9 +35,17 @@ interface ResumeEditorProps {
 
 const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({ setStage, mode = 'editor', pdfTargetRef }) => {
     const c = useResumeEditorController({ mode, pdfTargetRef });
+    const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
+
+    useEffect(() => {
+        // Avoid opening warning dialogs in preview-only rendering contexts (e.g. PDF export/off-screen render).
+        if (mode === 'preview') return;
+        setIsRefreshWarningOpen(true);
+    }, [mode]);
 
     return (
         <ResumeContainer>
+            <RefreshDataLossDialog open={isRefreshWarningOpen} onClose={() => setIsRefreshWarningOpen(false)} />
             <MainCardContainer ref={c.pdfRef}>
                 <CardContent>
                     <ProfileHeader
