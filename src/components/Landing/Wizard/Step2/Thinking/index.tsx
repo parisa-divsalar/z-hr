@@ -60,12 +60,15 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             formData.append('bodyOfResume', cvDataJson);
 
             const res = await apiClientClient.post('Apps/SendFile', formData, {
+                params: {
+                    userId: accessToken ?? undefined,
+                    lang: 'en',
+                },
                 timeout: SEND_FILE_TIMEOUT_MS,
             });
             const requestId: string = res.data.result as string;
             setRequestId(requestId);
 
-            // Polling & CV creation happen in Step3 (ResumeEditor).
             setActiveStep(3);
         } catch (err) {
             setIsSubmitting(false);
@@ -88,7 +91,6 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
                       })();
 
             setSubmitError(message);
-            // Helps diagnose 400s from the API server
 
             console.error('Apps/SendFile failed:', errorObj?.response?.status, errorObj?.response?.data, errorObj);
         }

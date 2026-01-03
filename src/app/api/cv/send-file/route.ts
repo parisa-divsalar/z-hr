@@ -10,30 +10,43 @@ export const maxDuration = 300; // 7 minutes (seconds) - allows long processing 
 
 const SEND_FILE_TIMEOUT_MS = 7 * 60 * 1000;
 
+const parseUserIdFromToken = (tokenValue: string | undefined): string | null => {
+    if (!tokenValue) return null;
+    try {
+        const parsed = JSON.parse(tokenValue);
+        if (parsed) return String(parsed);
+        return null;
+    } catch {
+        return tokenValue;
+    }
+};
+
+const parseUserIdFromQuery = (req: NextRequest) => {
+    const param = req.nextUrl.searchParams.get('userId');
+    return param?.trim() ?? null;
+};
+
+const parseLangFromQuery = (req: NextRequest) => {
+    const param = req.nextUrl.searchParams.get('lang');
+    return param?.trim() || 'en';
+};
+
 export async function POST(req: NextRequest) {
     try {
         const formDataClient = await req.formData();
+        const userIdFromQuery = parseUserIdFromQuery(req);
+        const lang = parseLangFromQuery(req);
         const tokenValue = (await cookies()).get('accessToken')?.value;
-
-        if (!tokenValue) {
-            return NextResponse.json({ error: 'No access token' }, { status: 401 });
-        }
-
-        let userId: string | null = null;
-        try {
-            const parsed = JSON.parse(tokenValue);
-            userId = parsed ? String(parsed) : null;
-        } catch {
-            userId = tokenValue;
-        }
+        const userIdFromCookie = parseUserIdFromToken(tokenValue);
+        const userId = userIdFromQuery ?? userIdFromCookie;
 
         if (!userId) {
-            return NextResponse.json({ error: 'No access token' }, { status: 401 });
+            return NextResponse.json({ error: 'No access token or userId query provided' }, { status: 401 });
         }
 
         const sendFileUrl = new URL('Apps/SendFile', API_SERVER_BASE_URL);
         sendFileUrl.searchParams.set('userId', userId);
-        sendFileUrl.searchParams.set('lang', 'en');
+        sendFileUrl.searchParams.set('lang', lang);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), SEND_FILE_TIMEOUT_MS);

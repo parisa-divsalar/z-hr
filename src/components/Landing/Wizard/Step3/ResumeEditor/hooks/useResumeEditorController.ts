@@ -727,6 +727,30 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             return;
         }
 
+        if (!isPreview && !isSaving && requestId && cvPayloadRef.current) {
+            const normalizedSkills = skills.map((s) => String(s ?? '').trim()).filter(Boolean);
+            const normalizedContactWays = contactWays.map((c) => String(c ?? '').trim()).filter(Boolean);
+            const updatedPayload = buildUpdatedCvPayload(cvPayloadRef.current, {
+                profile,
+                summary,
+                skills: normalizedSkills,
+                contactWays: normalizedContactWays,
+                languages,
+                certificates,
+                jobDescription,
+                additionalInfo,
+                experiences,
+            });
+
+            void editCV({
+                userId: accessToken ?? undefined,
+                requestId,
+                bodyOfResume: updatedPayload,
+            }).catch((error) => {
+                console.warn('Failed to sync CV on edit click', error);
+            });
+        }
+
         if (section === 'profile') {
             setProfileEditText(
                 formatProfileEditText(profile, {
@@ -846,7 +870,6 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 });
             }
 
-            // Build a payload snapshot that includes the "saved" values (don't rely on async setState).
             const parsedProfile = editingSection === 'profile' ? applyProfileEditText(profileEditText) : null;
             const nextProfile = parsedProfile ? parsedProfile.profile : profile;
             const nextContactWays = parsedProfile
