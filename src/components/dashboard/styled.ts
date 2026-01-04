@@ -12,8 +12,8 @@ export const DASHBOARD_COLORS = {
 };
 export const DashboardRoot = styled(Stack)(({ theme }) => ({
     width: '100%',
-    height: '85vh',
-    maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
+    height: 'calc(100vh - var(--navbar-height) - 4rem)',
+    maxHeight: 'calc(100vh - var(--navbar-height) - 4rem)',
     overflowY: 'auto', // scroll only inside this content
     boxSizing: 'border-box',
     padding: 20,

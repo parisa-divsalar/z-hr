@@ -2,7 +2,7 @@ import { Box, ListItemButton, ListItemIcon } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const SidebarContainer = styled(Box)(() => ({
-    width: 282,
+    width: 280,
     backgroundColor: '#25252a',
     borderRadius: '0.5rem',
     display: 'flex',
@@ -13,11 +13,8 @@ export const SidebarContainer = styled(Box)(() => ({
     alignSelf: 'flex-start',
     position: 'sticky',
     top: 'calc(var(--navbar-height) + 1rem)',
-    height: 'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
-    maxHeight:
-        'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
+
     zIndex: 2,
-    padding: '0 0 1rem',
 
     '&::before': {
         content: '""',
