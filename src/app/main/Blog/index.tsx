@@ -13,9 +13,9 @@ const Blog = () => {
                 Blog{' '}
             </Typography>
 
-            <Typography variant='subtitle1' color='secondary.main' fontWeight={'500'} textAlign={'center'}>
+            <Typography variant='body1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
                 "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.{' '}
-                <Typography variant='subtitle1' color='secondary.main' fontWeight={'500'} textAlign={'center'}>
+                <Typography variant='body1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
                     Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
                     intelligence.{' '}
                 </Typography>
