@@ -8,6 +8,7 @@ import MuiInput from '@/components/UI/MuiInput';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
 import { apiClientClient } from '@/services/api-client';
 import { useWizardStore } from '@/store/wizard';
+import { isValidDateOfBirthDDMMYYYY, normalizeDateOfBirthInput } from '@/utils/validation';
 
 import {
     StackContent,
@@ -36,7 +37,7 @@ const selectMenuProps: SelectProps['MenuProps'] = {
 };
 
 const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
-    const { data, updateField, validate } = useWizardStore();
+    const { data, updateField } = useWizardStore();
 
     const [loadingSkills, setLoadingSkills] = useState<boolean>(true);
     const [skillOptions, setSkillOptions] = useState<SelectOption[]>([]);
@@ -59,28 +60,29 @@ const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = (
         fetchSkills();
     }, []);
 
+    const dobHasFullYear = useMemo(() => {
+        const parts = String(data.dateOfBirth ?? '').trim().split('/');
+        return parts.length === 3 && (parts[2]?.length ?? 0) === 4;
+    }, [data.dateOfBirth]);
+
+    const dobErrorText = useMemo(() => {
+        if (!dobHasFullYear) return '';
+        return isValidDateOfBirthDDMMYYYY(data.dateOfBirth) ? '' : 'Enter a valid past date (DD/MM/YYYY)';
+    }, [data.dateOfBirth, dobHasFullYear]);
+
     const isSaveDisabled = useMemo(() => {
         const hasFullName = data.fullName.trim().length > 0;
         const hasMainSkill = data.mainSkill.trim().length > 0;
+        const hasValidDob = isValidDateOfBirthDDMMYYYY(data.dateOfBirth);
 
-        const dobParts = data.dateOfBirth.trim().split('/');
-        const isDobComplete =
-            dobParts.length === 3 &&
-            dobParts[0].length >= 1 &&
-            dobParts[0].length <= 2 &&
-            dobParts[1].length >= 1 &&
-            dobParts[1].length <= 2 &&
-            dobParts[2].length === 4;
-
-        return !(hasFullName && hasMainSkill && isDobComplete);
+        return !(hasFullName && hasMainSkill && hasValidDob);
     }, [data.fullName, data.mainSkill, data.dateOfBirth]);
 
     const handleConfirm = () => {
-        const isValid = validate();
-        if (!isValid) {
-            onClose();
-            return;
-        }
+        const hasFullName = data.fullName.trim().length > 0;
+        const hasMainSkill = data.mainSkill.trim().length > 0;
+        const hasValidDob = isValidDateOfBirthDDMMYYYY(data.dateOfBirth);
+        if (!(hasFullName && hasMainSkill && hasValidDob)) return;
         onClose();
     };
 
@@ -103,7 +105,9 @@ const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = (
                         label='Your date of birth'
                         placeholder='DD/MM/YYYY'
                         value={data.dateOfBirth}
-                        onChange={(value) => updateField('dateOfBirth', value.replace(/[^\d/]/g, '').slice(0, 10))}
+                        error={!!dobErrorText}
+                        helperText={dobErrorText}
+                        onChange={(value) => updateField('dateOfBirth', normalizeDateOfBirthInput(String(value ?? '')))}
                     />
                     <MuiSelectOptions
                         label='Your main skill'

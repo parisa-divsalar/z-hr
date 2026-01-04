@@ -1,6 +1,8 @@
 // app/store/wizardSchema.ts
 import { z } from 'zod';
 
+import { isValidDateOfBirthDDMMYYYY } from '@/utils/validation';
+
 export const languageSchema = z.object({
     name: z.string().min(1, 'Language name is required'),
     level: z.string().min(1, 'Level is required'),
@@ -58,7 +60,8 @@ export const wizardSchema = z.object({
     mainSkill: z.string().min(1, 'Main skill is required'),
     dateOfBirth: z
         .string()
-        .regex(/^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/\d{4}$/, 'Date of birth must be in DD/MM/YYYY format'),
+        .regex(/^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/\d{4}$/, 'Date of birth must be in DD/MM/YYYY format')
+        .refine(isValidDateOfBirthDDMMYYYY, 'Date of birth must be a valid past date'),
     //
     visaStatus: z.string().min(1, 'Visa status required'),
     contactWay: z.array(z.string().min(1)).min(1, 'At least one contact method is required'),
