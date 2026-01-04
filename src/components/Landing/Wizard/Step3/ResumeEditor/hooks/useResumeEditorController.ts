@@ -690,7 +690,12 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
     const handleEdit = (section: string) => {
         setSaveError(null);
-        if (isTextOnlyMode) {
+        /**
+         * Important: `requestId` can be hydrated asynchronously (e.g. from URL search params).
+         * Avoid treating the editor as text-only once we already have a requestId, even if the
+         * `isTextOnlyMode` state hasn't flipped yet.
+         */
+        if (isTextOnlyMode && !requestId) {
             if (shouldBlockBelowSummary && section !== 'profile') {
                 setSaveError('Please wait for auto-improve to finish.');
                 return;
@@ -773,7 +778,11 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     const handleSave = async () => {
         if (!editingSection) return;
 
-        if (isTextOnlyMode) {
+        /**
+         * Same guard as `handleEdit`: if we already have a requestId, we should update via `edit-cv`
+         * and never create a new CV via `add-cv`.
+         */
+        if (isTextOnlyMode && !requestId) {
             if (isSaving) return;
             setIsSaving(true);
             setSaveError(null);

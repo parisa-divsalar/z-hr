@@ -7,6 +7,52 @@ import CacheError from '@/services/cache-error';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isRetryableAxiosError = (error: unknown) => {
+    const err = error as AxiosError | undefined;
+    const status = err?.response?.status;
+
+    if (!status) return true;
+
+    // Timeouts
+    if (err?.code === 'ECONNABORTED' || err?.code === 'ETIMEDOUT') return true;
+
+    if (status === 408 || status === 429) return true;
+
+    if (status >= 500 && status <= 599) return true;
+
+    return false;
+};
+
+async function withRetry<T>(
+    fn: (attempt: number) => Promise<T>,
+    {
+        maxAttempts = 3,
+        baseDelayMs = 300,
+        maxDelayMs = 2000,
+    }: { maxAttempts?: number; baseDelayMs?: number; maxDelayMs?: number } = {},
+): Promise<T> {
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await fn(attempt);
+        } catch (err) {
+            lastError = err;
+            const shouldRetry = attempt < maxAttempts && isRetryableAxiosError(err);
+
+            if (!shouldRetry) break;
+
+            const exponential = Math.min(maxDelayMs, baseDelayMs * 2 ** (attempt - 1));
+            const jitter = Math.floor(Math.random() * 150);
+            await sleep(exponential + jitter);
+        }
+    }
+
+    throw lastError;
+}
+
 const normalizeValue = (value?: string | null) => {
     if (!value) return null;
     const trimmed = value.trim();
@@ -25,13 +71,12 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
         }
 
-        const response = await apiClientServer.get(
-            `Apps/get-improved-cv-part?RequestId=${encodeURIComponent(requestId)}`,
-            {
+        const response = await withRetry(() =>
+            apiClientServer.get(`Apps/get-improved-cv-part?RequestId=${encodeURIComponent(requestId)}`, {
                 headers: {
                     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
                 },
-            },
+            }),
         );
 
         const raw = response.data as unknown;

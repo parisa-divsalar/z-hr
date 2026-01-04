@@ -16,7 +16,7 @@ const normalizeId = (value?: string | null) => {
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        const requestId = normalizeId(searchParams.get('requestId'));
+        const requestId = normalizeId(searchParams.get('requestId') ?? searchParams.get('RequestId'));
         const userIdFromQuery = normalizeId(searchParams.get('userId'));
         const userIdFromCookie = normalizeId((await cookies()).get('accessToken')?.value);
         const userId = userIdFromQuery ?? userIdFromCookie;

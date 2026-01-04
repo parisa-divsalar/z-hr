@@ -51,6 +51,34 @@ interface WizardStore {
     setRequestId: (requestId: string | null) => void;
 }
 
+const REQUEST_ID_STORAGE_KEY = 'wizardRequestId:v1';
+
+const loadStoredRequestId = (): string | null => {
+    try {
+        if (typeof window === 'undefined') return null;
+        const raw = window.sessionStorage.getItem(REQUEST_ID_STORAGE_KEY);
+        if (!raw) return null;
+        const trimmed = raw.trim();
+        if (!trimmed) return null;
+        return trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
+    } catch {
+        return null;
+    }
+};
+
+const persistRequestId = (requestId: string | null) => {
+    try {
+        if (typeof window === 'undefined') return;
+        if (!requestId) {
+            window.sessionStorage.removeItem(REQUEST_ID_STORAGE_KEY);
+            return;
+        }
+        window.sessionStorage.setItem(REQUEST_ID_STORAGE_KEY, requestId);
+    } catch {
+        // ignore storage errors
+    }
+};
+
 const initailData: WizardData = {
     fullName: '',
     mainSkill: '',
@@ -213,8 +241,11 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
         });
     },
 
-    requestId: null,
-    setRequestId: (requestId) => set({ requestId }),
+    requestId: loadStoredRequestId(),
+    setRequestId: (requestId) => {
+        persistRequestId(requestId);
+        set({ requestId });
+    },
 
     addFile: (fileName) => set((state) => ({ uploadedFiles: [...state.uploadedFiles, fileName] })),
     removeFile: (fileName) => set((state) => ({ uploadedFiles: state.uploadedFiles.filter((f) => f !== fileName) })),

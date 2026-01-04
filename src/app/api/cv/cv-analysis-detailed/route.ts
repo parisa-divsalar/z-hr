@@ -17,7 +17,7 @@ const normalizeValue = (value?: string | null) => {
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        const requestId = normalizeValue(searchParams.get('requestId'));
+        const requestId = normalizeValue(searchParams.get('requestId') ?? searchParams.get('RequestId'));
 
         if (!requestId) {
             return NextResponse.json({ message: 'requestId is required' }, { status: 400 });

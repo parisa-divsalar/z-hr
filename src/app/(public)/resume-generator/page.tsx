@@ -50,7 +50,7 @@ const ResumeGeneratorPage = () => {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     useEffect(() => {
-        const raw = searchParams.get('requestId');
+        const raw = searchParams.get('requestId') ?? searchParams.get('RequestId');
         if (!raw) return;
         const trimmed = raw.trim();
         if (!trimmed) return;
