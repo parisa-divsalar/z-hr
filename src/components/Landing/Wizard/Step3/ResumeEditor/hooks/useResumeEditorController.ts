@@ -737,7 +737,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
          * Otherwise the user can start editing while `add-cv` is still in flight, leading to confusing
          * add/edit ordering and/or dropped changes.
          */
-        if (!isTextOnlyMode && requestId && (isCvLoading || !cvPayloadRef.current)) {
+        if (!isTextOnlyMode && requestId && (isCvLoading || (!cvPayloadRef.current && !isSessionSeeded))) {
             setSaveError('Please wait for your resume to finish generating.');
             return;
         }
@@ -768,7 +768,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
          * Same guard as `handleEdit`: if we already have a requestId, we should update via `edit-cv`
          * and never create a new CV via `add-cv` (deprecated).
          */
-        if (isTextOnlyMode && !requestId) {
+        const shouldSaveLocally =
+            (isTextOnlyMode && !requestId) || (!isTextOnlyMode && !!requestId && !cvPayloadRef.current);
+
+        if (shouldSaveLocally) {
             if (isSaving) return;
             setIsSaving(true);
             setSaveError(null);

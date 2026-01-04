@@ -1,14 +1,20 @@
-import { AxiosError } from 'axios';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import axios, { AxiosError } from 'axios';
+
 import { API_SERVER_BASE_URL } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 7 minutes (seconds) - allows long processing on supported platforms
 
 const SEND_FILE_TIMEOUT_MS = 7 * 60 * 1000;
+
+const normalizeUpstreamText = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('"') && trimmed.endsWith('"')) return trimmed.slice(1, -1);
+    return trimmed;
+};
 
 const parseUserIdFromToken = (tokenValue: string | undefined): string | null => {
     if (!tokenValue) return null;
@@ -31,9 +37,10 @@ const parseLangFromQuery = (req: NextRequest) => {
     return param?.trim() || 'en';
 };
 
+const isAxiosError = (err: unknown): err is AxiosError => Boolean((err as AxiosError | undefined)?.isAxiosError);
+
 export async function POST(req: NextRequest) {
     try {
-        const formDataClient = await req.formData();
         const userIdFromQuery = parseUserIdFromQuery(req);
         const lang = parseLangFromQuery(req);
         const tokenValue = (await cookies()).get('accessToken')?.value;
@@ -48,32 +55,59 @@ export async function POST(req: NextRequest) {
         sendFileUrl.searchParams.set('userId', userId);
         sendFileUrl.searchParams.set('lang', lang);
 
+        const body = await req.arrayBuffer();
+        const headers = new Headers();
+        const contentType = req.headers.get('content-type');
+        if (contentType) headers.set('content-type', contentType);
+        headers.set('accept', req.headers.get('accept') || 'text/plain');
+        if (!headers.get('user-agent')) headers.set('user-agent', 'z-cv-nextjs/cvSendFile');
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), SEND_FILE_TIMEOUT_MS);
 
-        let response: Response;
         try {
-            response = await fetch(sendFileUrl, {
+            const upstream = await axios.request<string>({
+                url: sendFileUrl.toString(),
                 method: 'POST',
-                headers: {
-                    accept: 'text/plain',
-                },
-                body: formDataClient,
+                data: Buffer.from(body),
+                headers: Object.fromEntries(headers.entries()),
+                timeout: SEND_FILE_TIMEOUT_MS,
+                maxBodyLength: Infinity,
+                maxContentLength: Infinity,
                 signal: controller.signal,
+                responseType: 'text',
+                validateStatus: () => true,
             });
+
+            const resultText = typeof upstream.data === 'string' ? upstream.data : String(upstream.data ?? '');
+
+            if (upstream.status < 200 || upstream.status >= 300) {
+                console.log('SendFile response error', upstream.status, resultText);
+                return NextResponse.json({ error: resultText }, { status: upstream.status });
+            }
+
+            return NextResponse.json({ result: normalizeUpstreamText(resultText) });
         } finally {
             clearTimeout(timeoutId);
         }
-
-        const resultText = await response.text();
-
-        if (!response.ok) {
-            console.log('SendFile response error', response.status, resultText);
-            return NextResponse.json({ error: resultText }, { status: response.status });
-        }
-
-        return NextResponse.json({ result: resultText });
     } catch (error) {
-        return CacheError(error as AxiosError);
+        const err = error as any;
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        const cause = err?.cause;
+        const causeMessage =
+            cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : cause ? JSON.stringify(cause) : '';
+        const details = causeMessage && causeMessage !== message ? ` (${causeMessage})` : '';
+
+        const contentType = req.headers.get('content-type');
+        const contentLength = req.headers.get('content-length');
+        console.error('cv/send-file error', {
+            upstreamHost: new URL(API_SERVER_BASE_URL).host,
+            code: isAxiosError(error) ? error.code : undefined,
+            message,
+            contentType,
+            contentLength,
+        });
+
+        return NextResponse.json({ error: `Unable to forward file: ${message}${details}` }, { status: 500 });
     }
 }
