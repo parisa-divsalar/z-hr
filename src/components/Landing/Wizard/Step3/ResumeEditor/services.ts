@@ -1,4 +1,5 @@
 import { apiClientClient } from '@/services/api-client';
+import { editCV } from '@/services/cv/edit-cv';
 
 const POLL_INTERVAL = 3000;
 
@@ -128,7 +129,7 @@ export const pollCvAnalysisAndCreateCv = async (
         if (status === 2) {
             /**
              * The backend may have already created the CV record by the time analysis is "done".
-             * Avoid calling `add-cv` redundantly (users notice this on first edit).
+             * Avoid calling `add-cv` redundantly (deprecated).
              */
             try {
                 await apiClientClient.get('cv/get-cv', {
@@ -136,14 +137,10 @@ export const pollCvAnalysisAndCreateCv = async (
                 });
                 return;
             } catch {
-                // CV doesn't exist yet (or auth is missing) -> try creating it.
+                // CV doesn't exist yet (or auth is missing) -> try upserting it.
             }
 
-            await apiClientClient.post('cv/add-cv', {
-                userId: userId ?? undefined,
-                requestId,
-                bodyOfResume,
-            });
+            await editCV({ userId: userId ?? undefined, requestId, bodyOfResume });
 
             await apiClientClient.get('cv/get-cv', {
                 params: { requestId, userId: userId ?? undefined },

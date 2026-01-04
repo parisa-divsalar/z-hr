@@ -14,23 +14,26 @@ const normalizeValue = (value?: string | null) => {
 };
 
 export async function PUT(request: NextRequest) {
+    let requestId: string | null = null;
+    let userId: string | null = null;
+    let bodyOfResume: unknown = null;
     try {
         const payload = await request.json();
 
         const { searchParams } = new URL(request.url);
-        const requestId = normalizeValue(payload?.requestId ?? searchParams.get('requestId'));
+        requestId = normalizeValue(payload?.requestId ?? searchParams.get('requestId'));
 
         if (!requestId) {
             return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
         }
 
         const userIdFromCookie = normalizeValue((await cookies()).get('accessToken')?.value);
-        const userId = normalizeValue(payload?.userId ?? searchParams.get('userId')) ?? userIdFromCookie;
+        userId = normalizeValue(payload?.userId ?? searchParams.get('userId')) ?? userIdFromCookie;
         if (!userId) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
-        const bodyOfResume = payload?.bodyOfResume ?? payload;
+        bodyOfResume = payload?.bodyOfResume ?? payload;
         if (!bodyOfResume) {
             return NextResponse.json({ message: 'bodyOfResume is required' }, { status: 400 });
         }
@@ -46,6 +49,40 @@ export async function PUT(request: NextRequest) {
 
         return NextResponse.json(response.data);
     } catch (error) {
-        return CacheError(error as AxiosError);
+        const axiosError = error as AxiosError;
+
+        const raw = axiosError?.response?.data as any;
+        const message =
+            typeof raw === 'string'
+                ? raw
+                : typeof raw?.message === 'string'
+                  ? raw.message
+                  : typeof raw?.error === 'string'
+                    ? raw.error
+                    : '';
+
+        if (message.toLowerCase().includes('no cvs found matching the criteria')) {
+            try {
+                await apiClientServer.post('Apps/AddCV', {
+                    userId: userId ?? undefined,
+                    requestId: requestId ?? undefined,
+                    bodyOfResume: bodyOfResume ?? undefined,
+                });
+
+                if (userId && requestId) {
+                    const refreshedCv = await apiClientServer.get(`Apps/GetCV?userId=${userId}&requestId=${requestId}`);
+                    return NextResponse.json(refreshedCv.data);
+                }
+
+                return NextResponse.json(
+                    { message: 'CV created but missing userId/requestId for refresh' },
+                    { status: 200 },
+                );
+            } catch (fallbackError) {
+                return CacheError(fallbackError as AxiosError);
+            }
+        }
+
+        return CacheError(axiosError);
     }
 }

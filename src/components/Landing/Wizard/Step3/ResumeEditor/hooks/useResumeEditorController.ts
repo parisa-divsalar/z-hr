@@ -3,7 +3,6 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { apiClientClient } from '@/services/api-client';
 import { editCV } from '@/services/cv/edit-cv';
 import { getCV } from '@/services/cv/get-cv';
 import { getImproved } from '@/services/cv/get-improved';
@@ -11,6 +10,7 @@ import { postImproved } from '@/services/cv/post-improved';
 import { useAuthStore } from '@/store/auth';
 import { buildWizardSerializable, useWizardStore } from '@/store/wizard';
 import { exportElementToPdf } from '@/utils/exportToPdf';
+import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 import { loadWizardTextOnlySession, saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
 
 import {
@@ -732,28 +732,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             return;
         }
 
-        if (!isPreview && !isSaving && requestId && cvPayloadRef.current) {
-            const normalizedSkills = skills.map((s) => String(s ?? '').trim()).filter(Boolean);
-            const normalizedContactWays = contactWays.map((c) => String(c ?? '').trim()).filter(Boolean);
-            const updatedPayload = buildUpdatedCvPayload(cvPayloadRef.current, {
-                profile,
-                summary,
-                skills: normalizedSkills,
-                contactWays: normalizedContactWays,
-                languages,
-                certificates,
-                jobDescription,
-                additionalInfo,
-                experiences,
-            });
-
-            void editCV({
-                userId: accessToken ?? undefined,
-                requestId,
-                bodyOfResume: updatedPayload,
-            }).catch((error) => {
-                console.warn('Failed to sync CV on edit click', error);
-            });
+        /**
+         * File-flow: while CV is still being generated/created on the backend, avoid entering edit mode.
+         * Otherwise the user can start editing while `add-cv` is still in flight, leading to confusing
+         * add/edit ordering and/or dropped changes.
+         */
+        if (!isTextOnlyMode && requestId && (isCvLoading || !cvPayloadRef.current)) {
+            setSaveError('Please wait for your resume to finish generating.');
+            return;
         }
 
         if (section === 'profile') {
@@ -780,7 +766,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         /**
          * Same guard as `handleEdit`: if we already have a requestId, we should update via `edit-cv`
-         * and never create a new CV via `add-cv`.
+         * and never create a new CV via `add-cv` (deprecated).
          */
         if (isTextOnlyMode && !requestId) {
             if (isSaving) return;
@@ -919,13 +905,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 } catch {
                     // ignore
                 }
-                return `text-only-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                return generateFakeUUIDv4();
             };
 
             const newRequestId = makeRequestId();
 
             try {
-                await apiClientClient.post('cv/add-cv', {
+                // `add-cv` is deprecated. Use `edit-cv` (server should upsert).
+                await editCV({
                     userId: accessToken ?? undefined,
                     requestId: newRequestId,
                     bodyOfResume: updatedPayload,
@@ -934,7 +921,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 setRequestId(newRequestId);
                 await loadCvData({ requestId: newRequestId, userId: accessToken ?? undefined });
             } catch (error) {
-                console.error('Failed to create CV from text-only draft', error);
+                console.error('Failed to save CV from text-only draft', error);
                 setSaveError(
                     error instanceof Error
                         ? error.message
@@ -946,10 +933,17 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             return;
         }
 
-        if (!requestId) {
-            setSaveError('requestId is missing. Please refresh and try again.');
-            return;
-        }
+        const makeRequestId = () => {
+            try {
+                const anyCrypto = (globalThis as any)?.crypto;
+                if (typeof anyCrypto?.randomUUID === 'function') return anyCrypto.randomUUID();
+            } catch {
+                // ignore
+            }
+            return generateFakeUUIDv4();
+        };
+        const effectiveRequestId = requestId ?? makeRequestId();
+
         if (isSaving) return;
 
         setIsSaving(true);
@@ -1012,11 +1006,12 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         try {
             await editCV({
                 userId: accessToken ?? undefined,
-                requestId,
+                requestId: effectiveRequestId,
                 bodyOfResume: updatedPayload,
             });
 
-            await loadCvData();
+            if (!requestId) setRequestId(effectiveRequestId);
+            await loadCvData({ requestId: effectiveRequestId, userId: accessToken ?? undefined });
             setEditingSection(null);
         } catch (error) {
             console.error('Failed to edit CV', error);
