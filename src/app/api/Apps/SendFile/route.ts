@@ -4,11 +4,10 @@ import axios, { AxiosError } from 'axios';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-
 import { API_SERVER_BASE_URL } from '@/services/api-client';
 
 export const runtime = 'nodejs';
-export const maxDuration = 420; // 7 minutes (seconds) - allows long processing on supported platforms
+export const maxDuration = 200; // 7 minutes (seconds) - allows long processing on supported platforms
 
 const SEND_FILE_TIMEOUT_MS = 7 * 60 * 1000;
 const httpsAgent = new https.Agent({ keepAlive: true });
@@ -178,7 +177,13 @@ export async function POST(req: NextRequest) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         const cause = err?.cause;
         const causeMessage =
-            cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : cause ? JSON.stringify(cause) : '';
+            cause instanceof Error
+                ? cause.message
+                : typeof cause === 'string'
+                  ? cause
+                  : cause
+                    ? JSON.stringify(cause)
+                    : '';
         const details = causeMessage && causeMessage !== message ? ` (${causeMessage})` : '';
         return errorResponse(`Unable to forward file: ${message}${details}`);
     }
