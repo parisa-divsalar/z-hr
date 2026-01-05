@@ -127,10 +127,6 @@ export const pollCvAnalysisAndCreateCv = async (
         onProgress?.(subRequests);
 
         if (status === 2) {
-            /**
-             * The backend may have already created the CV record by the time analysis is "done".
-             * Avoid calling `add-cv` redundantly (deprecated).
-             */
             try {
                 await apiClientClient.get('cv/get-cv', {
                     params: { requestId, userId: userId ?? undefined },
