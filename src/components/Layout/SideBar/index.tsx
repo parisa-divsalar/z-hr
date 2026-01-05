@@ -31,7 +31,17 @@ const SideBar = () => {
     setOpenLogoutDialog(false);
   };
 
-  if (!VisibilitySideBar.includes(pathname)) return null;
+  const isSideBarVisible = VisibilitySideBar.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+
+  const isHistoryActive =
+    pathname === PrivateRoutes.history ||
+    pathname === PrivateRoutes.historyEdite ||
+    pathname.startsWith(`${PrivateRoutes.history}/`) ||
+    pathname.startsWith(`${PrivateRoutes.historyEdite}/`);
+
+  if (!isSideBarVisible) return null;
 
   return (
     <SidebarContainer>
@@ -64,12 +74,12 @@ const SideBar = () => {
             {pathname === PrivateRoutes.resumeBuilder && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
-          <ItemButton active={pathname === PrivateRoutes.history} onClick={() => router.push(PrivateRoutes.history)}>
+          <ItemButton active={isHistoryActive} onClick={() => router.push(PrivateRoutes.history)}>
             <ItemIcon>
               <HistoryRoundedIcon fontSize='small' />
             </ItemIcon>
             <ListItemText primary='History' />
-            {pathname === PrivateRoutes.history && <KeyboardArrowRightRoundedIcon />}
+            {isHistoryActive && <KeyboardArrowRightRoundedIcon />}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.payment} onClick={() => router.push(PrivateRoutes.payment)}>
