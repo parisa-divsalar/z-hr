@@ -11,7 +11,7 @@ import SkillGapTabs from './SkillGapTabs';
 import { SkillGapContainer, SectionCard } from '../styled';
 
 const GapSection = () => {
-    const [activeTab, setActiveTab] = useState('skill-gap');
+    const [activeTab, setActiveTab] = useState('interview-questions');
 
     const handleTabChange = (tab: string) => {
         setActiveTab(tab);
@@ -19,7 +19,7 @@ const GapSection = () => {
 
     return (
         <>
-            <SkillGapTabs onChange={handleTabChange} />
+            <SkillGapTabs value={activeTab} onChange={handleTabChange} />
 
             <SectionCard>
                 <SkillGapContainer>
