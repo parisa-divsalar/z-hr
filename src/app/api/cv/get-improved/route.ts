@@ -62,6 +62,37 @@ const normalizeValue = (value?: string | null) => {
     return trimmed;
 };
 
+const toUiContent = (processedContent: unknown) => {
+    if (processedContent && typeof processedContent === 'object') {
+        const maybeResult = (processedContent as Record<string, unknown>)?.result;
+        if (typeof maybeResult === 'string') return maybeResult;
+        return null;
+    }
+
+    if (typeof processedContent !== 'string') return null;
+
+    const trimmed = processedContent.trim();
+    if (!trimmed) return null;
+
+    try {
+        const parsed = JSON.parse(trimmed) as unknown;
+        if (parsed && typeof parsed === 'object') {
+            const maybeResult = (parsed as Record<string, unknown>)?.result;
+            if (typeof maybeResult === 'string') return maybeResult;
+        }
+    } catch {
+        // ignore
+    }
+
+    const startsLikeWrapper = /^\s*\{\s*"result"\s*:\s*"/.test(trimmed);
+    const endsLikeWrapper = /"\s*\}\s*$/.test(trimmed);
+    if (!startsLikeWrapper || !endsLikeWrapper) return null;
+
+    return trimmed
+        .replace(/^\s*\{\s*"result"\s*:\s*"/, '') // حذف ابتدای رشته
+        .replace(/"\s*\}\s*$/, ''); // حذف انتهای رشته
+};
+
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
@@ -109,6 +140,16 @@ export async function GET(request: NextRequest) {
                         raw: parsed,
                     }
                   : parsed;
+
+        if (normalizedBody && typeof normalizedBody === 'object') {
+            const body = normalizedBody as Record<string, unknown>;
+            const source = body.processedContent ?? body.raw;
+            const uiContent = toUiContent(source);
+            if (uiContent !== null) {
+                body.uiContent = uiContent;
+                if ('processedContent' in body) body.processedContent = uiContent;
+            }
+        }
 
         return NextResponse.json(normalizedBody, {
             headers: {
