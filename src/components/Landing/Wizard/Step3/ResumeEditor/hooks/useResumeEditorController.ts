@@ -158,6 +158,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     const [autoImproved, setAutoImproved] = useState<Record<string, boolean>>({});
     const autoImproveRunKeyRef = useRef<string | null>(null);
 
+    /**
+     * Once the user manually saves edits to the CV (i.e. we call `edit-cv` from the editor),
+     * we should NOT auto-run the improve pipeline again. Improve should be manual from then on.
+     *
+     * This is intentionally per-requestId: if the request context changes, auto-improve can run again.
+     */
+    const manualEditSavedRequestIdRef = useRef<string | null>(null);
+
     const textOnlyBackupRef = useRef<Record<string, any>>({});
 
     const internalPdfRef = useRef<HTMLDivElement | null>(null);
@@ -505,6 +513,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
     // Auto-improve pipeline (file-flow + text-only).
     useEffect(() => {
+        if (
+            !isTextOnlyMode &&
+            manualEditSavedRequestIdRef.current &&
+            manualEditSavedRequestIdRef.current === requestId
+        ) {
+            return;
+        }
+
         const apiKey = canFetchCv ? `${accessToken ?? ''}:${requestId ?? ''}` : null;
         const runKey = sessionSeededRunKey
             ? `session:${sessionSeededRunKey}`
@@ -914,7 +930,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             const newRequestId = makeRequestId();
 
             try {
-                // `add-cv` is deprecated. Use `edit-cv` (server should upsert).
+                if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = newRequestId;
                 await editCV({
                     userId: accessToken ?? undefined,
                     requestId: newRequestId,
@@ -1007,6 +1023,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         });
 
         try {
+            if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = effectiveRequestId;
             await editCV({
                 userId: accessToken ?? undefined,
                 requestId: effectiveRequestId,
