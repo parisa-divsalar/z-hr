@@ -1,7 +1,7 @@
 'use client';
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 
-import { Divider, SelectProps, Typography } from '@mui/material';
+import { Divider, SelectProps, Stack, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
@@ -36,7 +36,20 @@ const selectMenuProps: SelectProps['MenuProps'] = {
     },
 };
 
-const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+type IntroDialogProps = {
+    open: boolean;
+    onClose: () => void;
+
+    showBackToDashboard?: boolean;
+    backToDashboardHref?: string;
+};
+
+const IntroDialog: FunctionComponent<IntroDialogProps> = ({
+    open,
+    onClose,
+    showBackToDashboard = false,
+    backToDashboardHref = '/dashboard',
+}) => {
     const { data, updateField } = useWizardStore();
 
     const [loadingSkills, setLoadingSkills] = useState<boolean>(true);
@@ -61,7 +74,9 @@ const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = (
     }, []);
 
     const dobHasFullYear = useMemo(() => {
-        const parts = String(data.dateOfBirth ?? '').trim().split('/');
+        const parts = String(data.dateOfBirth ?? '')
+            .trim()
+            .split('/');
         return parts.length === 3 && (parts[2]?.length ?? 0) === 4;
     }, [data.dateOfBirth]);
 
@@ -130,16 +145,40 @@ const IntroDialog: FunctionComponent<{ open: boolean; onClose: () => void }> = (
                 <Divider />
 
                 <ActionContainer>
-                    <MuiButton
-                        fullWidth
-                        variant='contained'
-                        color='secondary'
-                        sx={{ width: '258px' }}
-                        onClick={handleConfirm}
-                        disabled={isSaveDisabled}
-                    >
-                        Save
-                    </MuiButton>
+                    {showBackToDashboard ? (
+                        <Stack direction='row' gap={1} sx={{ width: '258px' }}>
+                            <MuiButton
+                                fullWidth
+                                variant='outlined'
+                                color='secondary'
+                                sx={{ flex: 1, minWidth: 0 }}
+                                href={backToDashboardHref}
+                            >
+                                Back
+                            </MuiButton>
+                            <MuiButton
+                                fullWidth
+                                variant='contained'
+                                color='secondary'
+                                sx={{ flex: 1, minWidth: 0 }}
+                                onClick={handleConfirm}
+                                disabled={isSaveDisabled}
+                            >
+                                Save
+                            </MuiButton>
+                        </Stack>
+                    ) : (
+                        <MuiButton
+                            fullWidth
+                            variant='contained'
+                            color='secondary'
+                            sx={{ width: '258px' }}
+                            onClick={handleConfirm}
+                            disabled={isSaveDisabled}
+                        >
+                            Save
+                        </MuiButton>
+                    )}
                 </ActionContainer>
             </StackContainer>
         </DialogContainer>

@@ -51,7 +51,12 @@ export default function ResumeBuilderPage() {
             }}
         >
             <Stack width='100%' height='100%'>
-                <IntroDialog open={isIntroOpen} onClose={() => setIsIntroOpen(false)} />
+                <IntroDialog
+                    open={isIntroOpen}
+                    onClose={() => setIsIntroOpen(false)}
+                    showBackToDashboard
+                    backToDashboardHref='/dashboard'
+                />
                 <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
             </Stack>
         </ResumeBuilderRoot>
