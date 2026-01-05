@@ -8,13 +8,17 @@ import { TabsContainer, StyledTabs } from '../styled';
 
 interface SkillGapTabsProps {
   onChange?: (tab: string) => void;
+  value?: string;
 }
 
-const SkillGapTabs = ({ onChange }: SkillGapTabsProps) => {
-  const [activeTab, setActiveTab] = useState('skill-gap');
+const DEFAULT_TAB = 'interview-questions';
+
+const SkillGapTabs = ({ onChange, value }: SkillGapTabsProps) => {
+  const [uncontrolledTab, setUncontrolledTab] = useState(DEFAULT_TAB);
+  const activeTab = value ?? uncontrolledTab;
 
   const handleChange = (_: React.SyntheticEvent, newValue: string) => {
-    setActiveTab(newValue);
+    if (value === undefined) setUncontrolledTab(newValue);
     onChange?.(newValue);
   };
 
