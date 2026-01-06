@@ -87,9 +87,15 @@ export async function POST(req: NextRequest) {
             positionTitle: positionTitle!,
         };
 
+        const formData = new FormData();
+        formData.append('jobDescription', requestBody.jobDescription);
+        formData.append('cvContent', requestBody.cvContent);
+        formData.append('companyName', requestBody.companyName);
+        formData.append('positionTitle', requestBody.positionTitle);
+
         const response = await apiClientServer.post(
             `Apps/create-cover-letter?userId=${encodeURIComponent(userId)}&lang=${encodeURIComponent(lang)}`,
-            requestBody,
+            formData,
             {
                 headers: {
                     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
@@ -101,4 +107,27 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         return CacheError(error as AxiosError);
     }
+}
+
+export async function GET(req: NextRequest) {
+    const userId = normalizeValue(req.nextUrl.searchParams.get('userId'));
+    const lang = parseLang(req);
+
+    return NextResponse.json(
+        {
+            message: 'Method Not Allowed. Use POST with a JSON body.',
+            example: {
+                url: `/api/cv/add-cover-letter?userId=${userId ?? '<userId>'}&lang=${lang}`,
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: {
+                    companyName: 'Example Company',
+                    positionTitle: 'Example Position',
+                    cvContent: 'Paste CV content here...',
+                    jobDescription: 'Paste job description here...',
+                },
+            },
+        },
+        { status: 405 },
+    );
 }
