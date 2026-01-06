@@ -10,6 +10,7 @@ import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import { addCoverLetter } from '@/services/cv/add-cover-letter';
+import { getCoverLetter } from '@/services/cv/get-cover-letter';
 import { useAuthStore } from '@/store/auth';
 
 import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
@@ -30,6 +31,8 @@ type Props = {
 
 const normalizeText = (text: string) => text.replace(/\r\n/g, '\n').trim();
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
@@ -42,6 +45,7 @@ const extractCoverLetterText = (payload: unknown): string | null => {
     if (!payload) return null;
 
     const directKeys = [
+        'uiContent',
         'coverLetter',
         'cover_letter',
         'coverletter',
@@ -100,6 +104,105 @@ const extractCoverLetterText = (payload: unknown): string | null => {
     }
 
     return best ? best : null;
+};
+
+const extractCoverLetterRequestId = (payload: unknown): string | null => {
+    const normalizeValue = (value: unknown): string | null => {
+        if (value === null || value === undefined) return null;
+        const str = String(value).trim();
+        if (!str) return null;
+        if (str.startsWith('"') && str.endsWith('"')) return str.slice(1, -1);
+        return str;
+    };
+
+    const tryParseJsonString = (value: unknown) => {
+        if (typeof value !== 'string') return null;
+        const trimmed = value.trim();
+        if (!trimmed) return null;
+        try {
+            return JSON.parse(trimmed) as unknown;
+        } catch {
+            return null;
+        }
+    };
+
+    if (!payload) return null;
+
+    // Common places: result.id, result.RequestId, id, RequestId, etc.
+    const direct =
+        (payload as any)?.RequestId ??
+        (payload as any)?.requestId ??
+        (payload as any)?.result?.RequestId ??
+        (payload as any)?.result?.requestId ??
+        (payload as any)?.id ??
+        (payload as any)?.Id ??
+        (payload as any)?.result?.id ??
+        (payload as any)?.result?.Id ??
+        (payload as any)?.data?.RequestId ??
+        (payload as any)?.data?.requestId ??
+        (payload as any)?.data?.id ??
+        (payload as any)?.data?.Id ??
+        null;
+
+    const normalizedDirect = normalizeValue(direct);
+    if (normalizedDirect) return normalizedDirect;
+
+    const resultContainer = (payload as any)?.result ?? (payload as any)?.data?.result ?? null;
+
+    // `result` can be:
+    // - GUID string
+    // - JSON string of a wrapper like { value: "<guid>", ... }
+    // - object wrapper like { value: "<guid>", ... }
+    if (typeof resultContainer === 'string') {
+        const normalizedResultString = normalizeValue(resultContainer);
+        if (!normalizedResultString) return null;
+
+        const parsed = tryParseJsonString(normalizedResultString);
+        if (parsed && typeof parsed === 'object') {
+            const parsedValue =
+                (parsed as any).value ??
+                (parsed as any).Value ??
+                (parsed as any).id ??
+                (parsed as any).Id ??
+                (parsed as any).RequestId ??
+                (parsed as any).requestId ??
+                null;
+            const normalizedParsedValue = normalizeValue(parsedValue);
+            if (normalizedParsedValue) return normalizedParsedValue;
+        }
+
+        // not JSON -> treat as plain requestId
+        return normalizedResultString;
+    }
+
+    if (resultContainer && typeof resultContainer === 'object') {
+        const normalizedWrappedValue = normalizeValue(
+            (resultContainer as any)?.value ??
+                (resultContainer as any)?.Value ??
+                (resultContainer as any)?.id ??
+                (resultContainer as any)?.Id ??
+                (resultContainer as any)?.RequestId ??
+                (resultContainer as any)?.requestId ??
+                null,
+        );
+        if (normalizedWrappedValue) return normalizedWrappedValue;
+    }
+
+    const parsedResult = tryParseJsonString(resultContainer);
+    if (parsedResult && typeof parsedResult === 'object') {
+        const parsedValue =
+            (parsedResult as any).id ??
+            (parsedResult as any).Id ??
+            (parsedResult as any).RequestId ??
+            (parsedResult as any).requestId ??
+            (parsedResult as any).value ??
+            (parsedResult as any).Value ??
+            null;
+        const normalizedParsedValue = normalizeValue(parsedValue);
+        if (normalizedParsedValue) return normalizedParsedValue;
+    }
+
+    return null;
 };
 
 const getErrorMessage = (error: any): string => {
@@ -173,10 +276,44 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                 jobDescription: values.jobDescription.trim(),
             });
 
-            const coverLetterText = extractCoverLetterText(raw);
-            if (!coverLetterText) {
-                throw new Error('Unexpected response from server. Please try again.');
+            const requestId = extractCoverLetterRequestId(raw);
+
+            const pollGetCoverLetter = async (requestIdToPoll: string) => {
+                const maxAttempts = 18; // ~45-60s worst case with backoff
+                let lastResponse: unknown = null;
+                let lastError: unknown = null;
+
+                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                    try {
+                        const res = await getCoverLetter({ requestId: requestIdToPoll });
+                        lastResponse = res;
+                        const text = extractCoverLetterText(res);
+                        if (text) return { text, raw: res };
+                    } catch (e) {
+                        lastError = e;
+                    }
+
+                    // simple backoff: 1.5s, 2s, 2.5s ... capped at 4s
+                    const delay = Math.min(4000, 1000 + attempt * 250);
+                    await sleep(delay);
+                }
+
+                if (lastError) throw lastError;
+                return { text: null as string | null, raw: lastResponse };
+            };
+
+            let coverLetterText: string | null = null;
+            let outputRaw: unknown = raw;
+
+            if (requestId) {
+                const polled = await pollGetCoverLetter(requestId);
+                coverLetterText = polled.text;
+                if (polled.raw !== null && polled.raw !== undefined) outputRaw = polled.raw;
+            } else {
+                coverLetterText = extractCoverLetterText(raw);
             }
+
+            if (!coverLetterText) throw new Error('Cover letter is not ready yet. Please try again in a moment.');
 
             onCreated({
                 values: {
@@ -186,7 +323,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                     jobDescription: values.jobDescription.trim(),
                 },
                 coverLetterText,
-                rawResponse: raw,
+                rawResponse: outputRaw,
             });
             onClose();
         } catch (e: any) {
