@@ -237,13 +237,11 @@ const CoverLetter = () => {
     const handleCreated = (args: { values: CreateCoverLetterValues; coverLetterText: string; requestId: string | null }) => {
         const { coverLetterText, requestId: createdRequestId } = args;
 
-        // Prefer loading from API via getCoverLetter (requestId-driven) instead of showing any local/mock item.
         if (createdRequestId) {
             setItems((prev) => prev.map((it) => ({ ...it, isEditing: false })));
             setStoredRequestId(createdRequestId);
 
-            // If the page was opened with a query-string requestId, it has priority in `requestId` memo.
-            // Sync the URL so refresh / deep links keep showing the newly created cover letter.
+     
             try {
                 const nextParams = new URLSearchParams(searchParams.toString());
                 nextParams.set('requestId', createdRequestId);
@@ -255,7 +253,6 @@ const CoverLetter = () => {
             return;
         }
 
-        // Fallback: if backend didn't return a requestId, at least show the text returned from the API call.
         const body = normalizeCoverLetter(coverLetterText);
         setItems((prev) => {
             const rest = prev.map((it) => ({ ...it, isEditing: false })).filter((it) => it.id !== 'cl:generated');
@@ -284,6 +281,17 @@ const CoverLetter = () => {
                     hideDismissButton
                 />
             )}
+
+            <Stack direction='row' justifyContent='flex-end'>
+                <MuiButton
+                    onClick={handleAddNew}
+                    text='Add New'
+                    variant='outlined'
+                    color='secondary'
+                    size='small'
+                    startIcon={<AddIcon fontSize='small' />}
+                />
+            </Stack>
 
             {isFetching && items.length === 0 && (
                 <Stack direction='row' alignItems='center' gap={1}>
@@ -390,17 +398,6 @@ const CoverLetter = () => {
                     </Stack>
                 </Stack>
             ))}
-
-            <Stack alignItems='flex-start'>
-                <MuiButton
-                    onClick={handleAddNew}
-                    text='Add New'
-                    variant='outlined'
-                    color='secondary'
-                    size='small'
-                    startIcon={<AddIcon fontSize='small' />}
-                />
-            </Stack>
 
             <CreateCoverLetterDialog
                 open={isCreateOpen}
