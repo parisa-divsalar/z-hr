@@ -25,7 +25,12 @@ export type CreateCoverLetterValues = {
 type Props = {
     open: boolean;
     onClose: () => void;
-    onCreated: (args: { values: CreateCoverLetterValues; coverLetterText: string; rawResponse: unknown }) => void;
+    onCreated: (args: {
+        values: CreateCoverLetterValues;
+        coverLetterText: string;
+        rawResponse: unknown;
+        requestId: string | null;
+    }) => void;
     defaultValues?: Partial<CreateCoverLetterValues>;
 };
 
@@ -128,7 +133,6 @@ const extractCoverLetterRequestId = (payload: unknown): string | null => {
 
     if (!payload) return null;
 
-    // Common places: result.id, result.RequestId, id, RequestId, etc.
     const direct =
         (payload as any)?.RequestId ??
         (payload as any)?.requestId ??
@@ -149,10 +153,6 @@ const extractCoverLetterRequestId = (payload: unknown): string | null => {
 
     const resultContainer = (payload as any)?.result ?? (payload as any)?.data?.result ?? null;
 
-    // `result` can be:
-    // - GUID string
-    // - JSON string of a wrapper like { value: "<guid>", ... }
-    // - object wrapper like { value: "<guid>", ... }
     if (typeof resultContainer === 'string') {
         const normalizedResultString = normalizeValue(resultContainer);
         if (!normalizedResultString) return null;
@@ -171,7 +171,6 @@ const extractCoverLetterRequestId = (payload: unknown): string | null => {
             if (normalizedParsedValue) return normalizedParsedValue;
         }
 
-        // not JSON -> treat as plain requestId
         return normalizedResultString;
     }
 
@@ -327,6 +326,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                 },
                 coverLetterText,
                 rawResponse: outputRaw,
+                requestId: requestId ?? null,
             });
             onClose();
         } catch (e: any) {

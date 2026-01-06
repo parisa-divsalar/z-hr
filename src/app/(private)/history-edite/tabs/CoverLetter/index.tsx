@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Check, Close } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import { IconButton, Stack, TextField, Typography } from '@mui/material';
+import { CircularProgress, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import CopyIcon from '@/assets/images/icons/copy.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
+import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { getCoverLetter } from '@/services/cv/get-cover-letter';
+import { useWizardStore } from '@/store/wizard/useWizardStore';
 
 import CreateCoverLetterDialog, { CreateCoverLetterValues } from './CreateCoverLetterDialog';
 
@@ -23,15 +27,69 @@ type CoverLetterItem = {
 
 const normalizeCoverLetter = (text: string) => text.replace(/\r\n/g, '\n').trim();
 
-const DEFAULT_COVER_LETTER = `Dear Hiring Manager,
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
-I am excited to apply for the Motion Design position at your company. With a strong background in front-end development, I have honed my skills in creating engaging and user-friendly interfaces. My experience collaborating with designers has equipped me with a keen eye for aesthetics and a deep understanding of how motion can enhance user experience.
+const extractCoverLetterText = (payload: unknown): string | null => {
+    if (typeof payload === 'string') {
+        const v = normalizeCoverLetter(payload);
+        return v ? v : null;
+    }
 
-I am passionate about bringing ideas to life through dynamic visuals and innovative design solutions. I look forward to the opportunity to contribute my skills to your team and help elevate your projects to new heights.
+    if (!payload) return null;
 
-Best regards,
+    const directKeys = [
+        'uiContent',
+        'coverLetter',
+        'cover_letter',
+        'coverletter',
+        'letter',
+        'body',
+        'content',
+        'text',
+        'result',
+        'message',
+    ] as const;
 
-Zayd Al-Mansoori’s`;
+    if (isRecord(payload)) {
+        for (const k of directKeys) {
+            const v = payload[k];
+            if (typeof v === 'string') {
+                const normalized = normalizeCoverLetter(v);
+                if (normalized) return normalized;
+            }
+        }
+
+        const nestedData = payload.data;
+        if (typeof nestedData === 'string') {
+            const normalized = normalizeCoverLetter(nestedData);
+            if (normalized) return normalized;
+        }
+        if (isRecord(nestedData)) {
+            for (const k of directKeys) {
+                const v = nestedData[k];
+                if (typeof v === 'string') {
+                    const normalized = normalizeCoverLetter(v);
+                    if (normalized) return normalized;
+                }
+            }
+        }
+    }
+
+    return null;
+};
+
+const getErrorMessage = (error: any): string => {
+    const maybe =
+        error?.response?.data?.error?.message ??
+        error?.response?.data?.error ??
+        error?.response?.data?.message ??
+        error?.message ??
+        error?.toString?.();
+
+    if (typeof maybe === 'string' && maybe.trim()) return maybe.trim();
+    return 'Failed to load cover letter';
+};
 
 const iconButtonSx = {
     width: 40,
@@ -59,14 +117,60 @@ const iconButtonSx = {
 } as const;
 
 const CoverLetter = () => {
-    const [items, setItems] = useState<CoverLetterItem[]>(() => {
-        const body = normalizeCoverLetter(DEFAULT_COVER_LETTER);
-        return [
-            { id: 'cl-1', title: 'Cover letter', body, draftBody: body, isEditing: false },
-            { id: 'cl-2', title: 'Cover letter', body, draftBody: body, isEditing: false },
-        ];
-    });
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const storedRequestId = useWizardStore((s) => s.requestId);
+    const setStoredRequestId = useWizardStore((s) => s.setRequestId);
+
+    const requestId = useMemo(() => {
+        const fromQuery = searchParams.get('requestId') ?? searchParams.get('RequestId');
+        const normalizedQuery = fromQuery?.trim();
+        return normalizedQuery ? normalizedQuery : storedRequestId;
+    }, [searchParams, storedRequestId]);
+
+    const [items, setItems] = useState<CoverLetterItem[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isFetching, setIsFetching] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+    const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+
+    const fetchCoverLetter = async (requestIdToFetch: string) => {
+        setIsFetching(true);
+        setFetchError(null);
+        try {
+            const raw = await getCoverLetter({ requestId: requestIdToFetch });
+            const text = extractCoverLetterText(raw);
+
+            const apiId = `cl:${requestIdToFetch}`;
+            setItems((prev) => {
+                const rest = prev.filter((it) => it.id !== apiId).map((it) => ({ ...it, isEditing: false }));
+                if (!text) return rest;
+                return [
+                    {
+                        id: apiId,
+                        title: 'Cover letter',
+                        body: text,
+                        draftBody: text,
+                        isEditing: false,
+                    },
+                    ...rest,
+                ];
+            });
+        } catch (e: any) {
+            setFetchError(getErrorMessage(e));
+        } finally {
+            setIsFetching(false);
+            setHasFetchedOnce(true);
+        }
+    };
+
+    useEffect(() => {
+        if (!requestId) return;
+        setHasFetchedOnce(false);
+        void fetchCoverLetter(requestId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [requestId]);
 
     const startEdit = (id: string) => {
         setItems((prev) =>
@@ -130,29 +234,72 @@ const CoverLetter = () => {
         setIsCreateOpen(true);
     };
 
-    const handleCreated = (args: { values: CreateCoverLetterValues; coverLetterText: string }) => {
-        const { values, coverLetterText } = args;
+    const handleCreated = (args: { values: CreateCoverLetterValues; coverLetterText: string; requestId: string | null }) => {
+        const { coverLetterText, requestId: createdRequestId } = args;
 
-        const company = values.companyName.trim();
-        const position = values.positionTitle.trim();
-        const titleBase = position || 'Cover letter';
-        const title = company ? `${titleBase} - ${company}` : titleBase;
+        // Prefer loading from API via getCoverLetter (requestId-driven) instead of showing any local/mock item.
+        if (createdRequestId) {
+            setItems((prev) => prev.map((it) => ({ ...it, isEditing: false })));
+            setStoredRequestId(createdRequestId);
+
+            // If the page was opened with a query-string requestId, it has priority in `requestId` memo.
+            // Sync the URL so refresh / deep links keep showing the newly created cover letter.
+            try {
+                const nextParams = new URLSearchParams(searchParams.toString());
+                nextParams.set('requestId', createdRequestId);
+                nextParams.delete('RequestId');
+                router.replace(`${pathname}?${nextParams.toString()}`);
+            } catch {
+                // ignore URL update issues
+            }
+            return;
+        }
+
+        // Fallback: if backend didn't return a requestId, at least show the text returned from the API call.
         const body = normalizeCoverLetter(coverLetterText);
-
-        setItems((prev) => [
-            ...prev.map((it) => ({ ...it, isEditing: false })),
-            {
-                id: `cl-${Date.now()}`,
-                title,
-                body,
-                draftBody: body,
-                isEditing: false,
-            },
-        ]);
+        setItems((prev) => {
+            const rest = prev.map((it) => ({ ...it, isEditing: false })).filter((it) => it.id !== 'cl:generated');
+            if (!body) return rest;
+            return [
+                {
+                    id: 'cl:generated',
+                    title: 'Cover letter',
+                    body,
+                    draftBody: body,
+                    isEditing: false,
+                },
+                ...rest,
+            ];
+        });
     };
 
     return (
         <Stack gap={2}>
+            {fetchError && <MuiAlert severity='error' message={fetchError} hideDismissButton />}
+
+            {!requestId && (
+                <MuiAlert
+                    severity='info'
+                    message='RequestId not found. Open this page with ?requestId=... to load a saved cover letter.'
+                    hideDismissButton
+                />
+            )}
+
+            {isFetching && items.length === 0 && (
+                <Stack direction='row' alignItems='center' gap={1}>
+                    <CircularProgress size={18} />
+                    <Typography variant='body2' color='text.secondary'>
+                        Loading cover letter...
+                    </Typography>
+                </Stack>
+            )}
+
+            {!isFetching && requestId && hasFetchedOnce && items.length === 0 && !fetchError && (
+                <Typography variant='body2' color='text.secondary'>
+                    No cover letter found for this request.
+                </Typography>
+            )}
+
             {items.map((item) => (
                 <Stack
                     key={item.id}
@@ -232,7 +379,12 @@ const CoverLetter = () => {
                         <IconButton sx={iconButtonSx} onClick={() => handleCopy(item.id)} aria-label='Copy'>
                             <CopyIcon />
                         </IconButton>
-                        <IconButton sx={iconButtonSx} aria-label='Refresh'>
+                        <IconButton
+                            sx={iconButtonSx}
+                            aria-label='Refresh'
+                            disabled={!requestId || isFetching}
+                            onClick={() => requestId && fetchCoverLetter(requestId)}
+                        >
                             <RefreshIcon />
                         </IconButton>
                     </Stack>
@@ -253,7 +405,7 @@ const CoverLetter = () => {
             <CreateCoverLetterDialog
                 open={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
-                onCreated={({ values, coverLetterText }) => handleCreated({ values, coverLetterText })}
+                onCreated={({ values, coverLetterText, requestId }) => handleCreated({ values, coverLetterText, requestId })}
             />
         </Stack>
     );
