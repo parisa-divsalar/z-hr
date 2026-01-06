@@ -233,14 +233,6 @@ const CoverLetter = () => {
                     color='secondary'
                     size='small'
                     startIcon={<AddIcon fontSize='small' />}
-                    sx={{
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: 'grey.100',
-                        backgroundColor: 'common.white',
-                        gap: 1,
-                        '&:hover': { backgroundColor: 'grey.50' },
-                    }}
                 />
             </Stack>
         </Stack>
