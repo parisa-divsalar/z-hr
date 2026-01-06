@@ -287,13 +287,16 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                     try {
                         const res = await getCoverLetter({ requestId: requestIdToPoll });
                         lastResponse = res;
-                        const text = extractCoverLetterText(res);
-                        if (text) return { text, raw: res };
+
+                        const status = (res as any)?.status ?? (res as any)?.Status ?? null;
+                        if (status === 2) {
+                            const text = extractCoverLetterText(res);
+                            if (text) return { text, raw: res };
+                        }
                     } catch (e) {
                         lastError = e;
                     }
 
-                    // simple backoff: 1.5s, 2s, 2.5s ... capped at 4s
                     const delay = Math.min(4000, 1000 + attempt * 250);
                     await sleep(delay);
                 }

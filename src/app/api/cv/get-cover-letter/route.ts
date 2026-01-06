@@ -98,6 +98,54 @@ const toText = (value: unknown): string | null => {
     return null;
 };
 
+const tryParseJson = (value: unknown) => {
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    if (!trimmed) return value;
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return value;
+    try {
+        return JSON.parse(trimmed) as unknown;
+    } catch {
+        return value;
+    }
+};
+
+const extractStatus = (payload: unknown): number | null => {
+    const asNumber = (v: unknown): number | null => {
+        if (typeof v === 'number' && Number.isFinite(v)) return v;
+        if (typeof v === 'string') {
+            const trimmed = v.trim();
+            if (!trimmed) return null;
+            const n = Number(trimmed);
+            if (Number.isFinite(n)) return n;
+        }
+        return null;
+    };
+
+    const parsed = tryParseJson(payload);
+    if (!parsed || typeof parsed !== 'object') return null;
+
+    const obj = parsed as Record<string, unknown>;
+
+    const direct =
+        obj.status ??
+        obj.Status ??
+        obj.main_request_status ??
+        obj.mainRequestStatus ??
+        (obj.result as any)?.status ??
+        (obj.result as any)?.Status ??
+        (obj.data as any)?.status ??
+        (obj.data as any)?.Status ??
+        (obj.data as any)?.main_request_status ??
+        null;
+
+    const normalized = asNumber(direct);
+    if (normalized !== null) return normalized;
+
+    // Wrapper like { result: { value: ..., statusCode: 200 } } - not "status:2" but keep here for future.
+    return null;
+};
+
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
@@ -107,44 +155,55 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
         }
 
-        const response = await withRetry(() =>
-            apiClientServer.get(`Apps/get-cover-letter?RequestId=${encodeURIComponent(requestId)}`, {
-                headers: {
-                    Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
-                },
-            }),
-        );
+        // Poll until upstream reports status === 2 (Done) or we time out.
+        // Important: do NOT stop early just because some text exists; caller expects status-driven readiness.
+        const start = Date.now();
+        const maxTotalMs = 55_000;
+        const maxAttempts = 30;
 
-        const raw = response.data as unknown;
+        let lastPayload: unknown = null;
+        let lastParsed: unknown = null;
+        let lastStatus: number | null = null;
 
-        const tryParseJson = (value: unknown) => {
-            if (typeof value !== 'string') return value;
-            const trimmed = value.trim();
-            if (!trimmed) return value;
-            if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return value;
-            try {
-                return JSON.parse(trimmed);
-            } catch {
-                return value;
-            }
-        };
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            const response = await withRetry(() =>
+                apiClientServer.get(`Apps/get-cover-letter?RequestId=${encodeURIComponent(requestId)}`, {
+                    headers: {
+                        Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
+                    },
+                }),
+            );
 
-        const parsed = tryParseJson(raw);
+            lastPayload = response.data as unknown;
+            lastParsed = tryParseJson(lastPayload);
+            lastStatus = extractStatus(lastParsed);
+
+            if (lastStatus === 2) break;
+
+            if (Date.now() - start > maxTotalMs) break;
+
+            const delay = Math.min(4000, 1200 + attempt * 200);
+            await sleep(delay);
+        }
+
+        const parsed = lastParsed;
 
         const normalizedBody =
             parsed === null || parsed === undefined
-                ? { success: false, uiContent: null, message: 'Empty response from upstream' }
+                ? { success: false, uiContent: null, message: 'Empty response from upstream', status: lastStatus }
                 : typeof parsed === 'string'
-                  ? { success: true, uiContent: parsed.trim() || null, raw: parsed }
+                  ? { success: true, uiContent: parsed.trim() || null, raw: parsed, status: lastStatus }
                   : parsed;
 
         if (normalizedBody && typeof normalizedBody === 'object') {
             const body = normalizedBody as Record<string, unknown>;
             const uiContent = toText(body) ?? toText(body.processedContent ?? body.raw ?? body.result ?? body.data);
             if (uiContent !== null) body.uiContent = uiContent;
+            if (typeof body.status !== 'number' && lastStatus !== null) body.status = lastStatus;
         }
 
         return NextResponse.json(normalizedBody, {
+            status: 200,
             headers: {
                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
                 Pragma: 'no-cache',
