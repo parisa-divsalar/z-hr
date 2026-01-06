@@ -11,6 +11,8 @@ import EditIcon from '@/assets/images/icons/edit.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
+import CreateCoverLetterDialog, { CreateCoverLetterValues } from './CreateCoverLetterDialog';
+
 type CoverLetterItem = {
     id: string;
     title: string;
@@ -51,7 +53,6 @@ const iconButtonSx = {
         flexShrink: 0,
         display: 'block',
     },
-    // These icon svgs include an outer border rect; hide it in this tab.
     '& svg > rect': {
         display: 'none',
     },
@@ -65,6 +66,7 @@ const CoverLetter = () => {
             { id: 'cl-2', title: 'Cover letter', body, draftBody: body, isEditing: false },
         ];
     });
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     const startEdit = (id: string) => {
         setItems((prev) =>
@@ -124,15 +126,27 @@ const CoverLetter = () => {
     };
 
     const handleAddNew = () => {
-        const body = normalizeCoverLetter(DEFAULT_COVER_LETTER);
+        setItems((prev) => prev.map((it) => ({ ...it, isEditing: false })));
+        setIsCreateOpen(true);
+    };
+
+    const handleCreated = (args: { values: CreateCoverLetterValues; coverLetterText: string }) => {
+        const { values, coverLetterText } = args;
+
+        const company = values.companyName.trim();
+        const position = values.positionTitle.trim();
+        const titleBase = position || 'Cover letter';
+        const title = company ? `${titleBase} - ${company}` : titleBase;
+        const body = normalizeCoverLetter(coverLetterText);
+
         setItems((prev) => [
             ...prev.map((it) => ({ ...it, isEditing: false })),
             {
                 id: `cl-${Date.now()}`,
-                title: 'Cover letter',
+                title,
                 body,
                 draftBody: body,
-                isEditing: true,
+                isEditing: false,
             },
         ]);
     };
@@ -235,6 +249,12 @@ const CoverLetter = () => {
                     startIcon={<AddIcon fontSize='small' />}
                 />
             </Stack>
+
+            <CreateCoverLetterDialog
+                open={isCreateOpen}
+                onClose={() => setIsCreateOpen(false)}
+                onCreated={({ values, coverLetterText }) => handleCreated({ values, coverLetterText })}
+            />
         </Stack>
     );
 };
