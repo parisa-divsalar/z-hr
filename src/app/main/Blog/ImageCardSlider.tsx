@@ -25,25 +25,25 @@ const rectangleGallerySrc: string =
 const CARDS: CardItem[] = [
     {
         title: 'Crafting Your Perfect Resume in Minutes',
-        description: 'Craft your perfect resume in just ha...',
+        description: 'Craft your perfect resume in just ...',
         image: rectangleGallerySrc,
         showButton: true,
     },
     {
-        title: 'Build a Standout Resume Quickly',
-        description: 'Create a modern, ATS-friendly resume fast...',
+        title: 'Build a Standout Resume Quickly Resume',
+        description: 'Create a polished resume in only... ',
         image: rectangleGallerySrc,
         showButton: false,
     },
     {
-        title: 'Unlock More Job Opportunities',
-        description: 'Tailor your resume to roles you want...',
+        title: 'Fast and Easy Resume Creation Guide',
+        description: 'Get a complete resume ready in...',
         image: rectangleGallerySrc,
         showButton: false,
     },
     {
-        title: 'AI-Powered Cover Letter in Seconds',
-        description: 'Generate a strong cover letter instantly...',
+        title: 'Swift Resume Builder: Your Path to Success',
+        description: 'Finish your resume in a quick ...',
         image: rectangleGallerySrc,
         showButton: false,
     },
@@ -51,34 +51,18 @@ const CARDS: CardItem[] = [
 
 function ImageCard({ title, description, image, showButton, onClick }: ImageCardProps) {
     return (
-        <Card
-            elevation={2}
-            onClick={onClick}
-            sx={imageCardSliderSx.card}
-        >
+        <Card elevation={2} onClick={onClick} sx={imageCardSliderSx.card}>
             <Box sx={imageCardSliderSx.cardInner}>
-                <Box
-                    component='img'
-                    alt=''
-                    src={image}
-                    sx={imageCardSliderSx.cardImage}
-                />
+                <Box component='img' alt='' src={image} sx={imageCardSliderSx.cardImage} />
 
-                {/* Gradient overlay: above image, below text */}
                 <Box sx={imageCardSliderSx.gradientOverlay} />
 
                 <Box sx={imageCardSliderSx.content}>
-                    <Typography
-                        variant='subtitle1'
-                        sx={imageCardSliderSx.title}
-                    >
+                    <Typography variant='subtitle1' sx={imageCardSliderSx.title}>
                         {title}
                     </Typography>
 
-                    <Typography
-                        variant='body2'
-                        sx={imageCardSliderSx.description}
-                    >
+                    <Typography variant='body2' sx={imageCardSliderSx.description}>
                         {description}
                     </Typography>
 
@@ -87,7 +71,6 @@ function ImageCard({ title, description, image, showButton, onClick }: ImageCard
                             size='small'
                             variant='outlined'
                             onClick={(e) => {
-                                // Keep the CTA from triggering the card click if the parent wires it.
                                 e.stopPropagation();
                             }}
                             sx={imageCardSliderSx.ctaButton}
@@ -103,9 +86,7 @@ function ImageCard({ title, description, image, showButton, onClick }: ImageCard
 
 export default function ImageCardSlider() {
     return (
-        <Box
-            sx={imageCardSliderSx.root}
-        >
+        <Box sx={imageCardSliderSx.root}>
             <Box sx={imageCardSliderSx.list}>
                 {CARDS.map((card) => (
                     <ImageCard
