@@ -11,6 +11,7 @@ const HeroSection: FC = () => {
                 <Typography
                     color='text.primary'
                     variant='h2'
+                    mt={6}
                     sx={{
                         whiteSpace: 'nowrap',
                         fontSize: 'clamp(1.05rem, 5vw, 3.2rem)',
@@ -22,6 +23,7 @@ const HeroSection: FC = () => {
                 </Typography>
 
                 <Typography
+                    mt={4}
                     variant='h5'
                     sx={{ color: 'secondary.main', fontSize: { xs: '1.05rem', sm: '1.15rem', md: '1.25rem' } }}
                     fontWeight={492}
