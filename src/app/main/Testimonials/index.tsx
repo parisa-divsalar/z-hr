@@ -86,13 +86,17 @@ const Testimonials: FC = () => {
                 sx={{
                     display: 'grid',
                     gridTemplateColumns: {
-                        xs: 'minmax(0, 360px)',
-                        sm: 'repeat(2, minmax(0, 360px))',
-                        md: 'repeat(3, minmax(0, 360px))',
+                        xs: 'minmax(0, 1fr)',
+                        sm: 'repeat(2, minmax(0, 1fr))',
+                        md: '588px 262px 262px',
                     },
                     justifyContent: 'center',
                     gap: '1.5rem',
                     mt: '3rem',
+                    px: { xs: 1, sm: 0 },
+                    '& > :nth-of-type(1)': {
+                        gridColumn: { xs: 'auto', sm: '1 / -1', md: 'auto' },
+                    },
                 }}
             >
                 {TESTIMONIALS.map((t) => (
@@ -110,7 +114,8 @@ const Testimonials: FC = () => {
                             justifyContent: 'center',
                             textAlign: 'center',
                             gap: '0.75rem',
-                            minHeight: 220,
+                            width: '100%',
+                            minHeight: { xs: 240, sm: 240, md: 260 },
                         }}
                     >
                         <Box
