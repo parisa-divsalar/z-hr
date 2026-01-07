@@ -9,10 +9,11 @@ const HeroSection: FC = () => {
         <HeroWrapper>
             <Container maxWidth='md'>
                 <Typography
+                    color='text.primary'
                     variant='h2'
                     sx={{
-                        color: 'secondary.main',
-                        fontSize: { xs: '2.1rem', sm: '2.6rem', md: '3.2rem' },
+                        whiteSpace: 'nowrap',
+                        fontSize: 'clamp(1.05rem, 5vw, 3.2rem)',
                     }}
                     fontWeight={700}
                     mb='1rem'
@@ -23,7 +24,7 @@ const HeroSection: FC = () => {
                 <Typography
                     variant='h5'
                     sx={{ color: 'secondary.main', fontSize: { xs: '1.05rem', sm: '1.15rem', md: '1.25rem' } }}
-                    fontWeight={600}
+                    fontWeight={492}
                 >
                     Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
                 </Typography>
@@ -36,11 +37,13 @@ const HeroSection: FC = () => {
                         maxWidth: 780,
                         marginLeft: 'auto',
                         marginRight: 'auto',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                     }}
-                    fontWeight={600}
+                    fontWeight={492}
                 >
-                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                    intelligence.
+                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.
                 </Typography>
 
                 <Button
