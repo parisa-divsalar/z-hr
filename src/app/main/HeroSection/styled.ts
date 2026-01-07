@@ -27,8 +27,8 @@ export const HeroWrapper = styled(Box)(({ theme }) => ({
 export const StepsRow = styled(Box)(({ theme }) => ({
     position: 'relative',
     marginTop: theme.spacing(6),
+    backgroundColor: 'red',
     width: '100%',
-    maxWidth: 980,
     marginLeft: 'auto',
     marginRight: 'auto',
     height: 210,
@@ -39,27 +39,6 @@ export const StepsRow = styled(Box)(({ theme }) => ({
         display: 'flex',
         flexDirection: 'column',
         gap: theme.spacing(1.5),
-    },
-}));
-
-export const StepsGlow = styled(Box)(({ theme }) => ({
-    position: 'absolute',
-    left: '50%',
-    top: -120,
-    transform: 'translateX(-50%)',
-    width: 480,
-    height: 480,
-    borderRadius: '999px',
-    background:
-        'radial-gradient(circle at 40% 35%, rgba(255, 120, 196, 0.55), rgba(143, 111, 255, 0.35) 40%, rgba(255,255,255,0) 70%)',
-    filter: 'blur(2px)',
-    opacity: 0.95,
-    pointerEvents: 'none',
-    [theme.breakpoints.down('sm')]: {
-        width: 360,
-        height: 360,
-        top: -140,
-        opacity: 0.85,
     },
 }));
 

@@ -13,9 +13,8 @@ const HeroSection: FC = () => {
                     sx={{
                         color: 'secondary.main',
                         fontSize: { xs: '2.1rem', sm: '2.6rem', md: '3.2rem' },
-                        lineHeight: 1.1,
                     }}
-                    fontWeight={800}
+                    fontWeight={700}
                     mb='1rem'
                 >
                     Professional & ATS-friendly Resume
@@ -100,8 +99,7 @@ const HeroSection: FC = () => {
                             top: { sm: 50, md: 56 },
                             transform: 'translateX(-50%)',
                             zIndex: 3,
-                            boxShadow:
-                                '0 22px 54px rgba(34, 28, 85, 0.14), inset 0 1px 0 rgba(255,255,255,0.75)',
+                            boxShadow: '0 22px 54px rgba(34, 28, 85, 0.14), inset 0 1px 0 rgba(255,255,255,0.75)',
                             [theme.breakpoints.down('sm')]: {
                                 left: 'auto',
                                 top: 'auto',
@@ -137,7 +135,9 @@ const HeroSection: FC = () => {
                             },
                         })}
                     >
-                        <StepBadge sx={{ backgroundColor: '#EEF0F5', border: '1px solid #EEF0F5', color: 'text.primary' }}>
+                        <StepBadge
+                            sx={{ backgroundColor: '#EEF0F5', border: '1px solid #EEF0F5', color: 'text.primary' }}
+                        >
                             <Typography component='span' fontWeight={900}>
                                 3
                             </Typography>
