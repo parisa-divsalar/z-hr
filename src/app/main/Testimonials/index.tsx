@@ -3,6 +3,7 @@
 import { FC } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import Image from 'next/image';
 
 import AvatarImage from '@/assets/images/bg/avatar.png';
@@ -50,6 +51,33 @@ Tailored for the markets of Iran and Dubai, featuring modern templates and advan
 ];
 
 const Testimonials: FC = () => {
+    const shouldReduceMotion = useReducedMotion();
+
+    const containerVariants: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: 0.12,
+            },
+        },
+    };
+
+    const itemVariants: Variants = shouldReduceMotion
+        ? {
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { duration: 0.25 } },
+          }
+        : {
+              hidden: { opacity: 0, filter: 'blur(8px)' },
+              show: {
+                  opacity: 1,
+                  filter: 'blur(0px)',
+                  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+              },
+          };
+
+    const MotionBox = motion(Box);
+
     return (
         <Container sx={{ mt: '5rem' }}>
             <Box
@@ -77,7 +105,7 @@ const Testimonials: FC = () => {
                 </Button>
             </Box>
 
-            <Box
+            <MotionBox
                 sx={{
                     display: 'grid',
                     gridTemplateColumns: {
@@ -93,9 +121,13 @@ const Testimonials: FC = () => {
                         gridColumn: { xs: 'auto', sm: '1 / -1', md: 'auto' },
                     },
                 }}
+                variants={containerVariants}
+                initial='hidden'
+                whileInView='show'
+                viewport={{ once: true, amount: 0.25 }}
             >
                 {TESTIMONIALS.map((t) => (
-                    <Box
+                    <MotionBox
                         key={t.id}
                         sx={{
                             background: 'white',
@@ -112,6 +144,7 @@ const Testimonials: FC = () => {
                             width: '100%',
                             minHeight: { xs: 240, sm: 240, md: 260 },
                         }}
+                        variants={itemVariants}
                     >
                         <Box
                             sx={{
@@ -141,9 +174,9 @@ const Testimonials: FC = () => {
                         >
                             {t.quote}
                         </Typography>
-                    </Box>
+                    </MotionBox>
                 ))}
-            </Box>
+            </MotionBox>
         </Container>
     );
 };

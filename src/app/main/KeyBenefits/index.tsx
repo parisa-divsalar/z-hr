@@ -3,6 +3,7 @@
 import { FC } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import Image, { StaticImageData } from 'next/image';
 
 import AITextImage from '@/assets/images/main/ai-text.png';
@@ -17,6 +18,33 @@ interface Benefit {
     image: StaticImageData;
 }
 const KeyBenefits: FC = () => {
+    const shouldReduceMotion = useReducedMotion();
+
+    const containerVariants: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: 0.12,
+            },
+        },
+    };
+
+    const itemVariants: Variants = shouldReduceMotion
+        ? {
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { duration: 0.25 } },
+          }
+        : {
+              hidden: { opacity: 0, filter: 'blur(8px)' },
+              show: {
+                  opacity: 1,
+                  filter: 'blur(0px)',
+                  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+              },
+          };
+
+    const MotionBox = motion(Box);
+
     const rotateImageOnHoverSx = {
         display: 'inline-flex',
         cursor: 'pointer',
@@ -79,7 +107,11 @@ const KeyBenefits: FC = () => {
                     </Button>
                 </div>
 
-                <div
+                <motion.div
+                    variants={itemVariants}
+                    initial='hidden'
+                    whileInView='show'
+                    viewport={{ once: true, amount: 0.4 }}
                     style={{
                         gap: '2rem',
                         width: 588,
@@ -112,10 +144,10 @@ const KeyBenefits: FC = () => {
                     <Box sx={rotateImageOnHoverSx}>
                         <Image alt='ats' width={200} height={157} src={ATSImage} />
                     </Box>
-                </div>
+                </motion.div>
             </div>
 
-            <Box
+            <MotionBox
                 sx={{
                     display: 'grid',
                     gridTemplateColumns: {
@@ -127,9 +159,13 @@ const KeyBenefits: FC = () => {
                     gap: '1rem',
                     mt: '5rem',
                 }}
+                variants={containerVariants}
+                initial='hidden'
+                whileInView='show'
+                viewport={{ once: true, amount: 0.25 }}
             >
                 {benefits.map((benefit, index) => (
-                    <div
+                    <motion.div
                         key={index}
                         style={{
                             gap: '1.5rem',
@@ -144,6 +180,7 @@ const KeyBenefits: FC = () => {
                             justifyContent: 'center',
                             border: '2px solid #F0F0F2',
                         }}
+                        variants={itemVariants}
                     >
                         <Typography variant='h5' color='secondary.main' fontWeight={'584'} textAlign={'center'}>
                             {benefit.title}
@@ -156,9 +193,9 @@ const KeyBenefits: FC = () => {
                         <Box sx={rotateImageOnHoverSx}>
                             <Image alt={benefit.title} width={182} height={157} src={benefit.image} />
                         </Box>
-                    </div>
+                    </motion.div>
                 ))}
-            </Box>
+            </MotionBox>
         </Container>
     );
 };
