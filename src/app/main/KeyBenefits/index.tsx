@@ -17,6 +17,23 @@ interface Benefit {
     image: StaticImageData;
 }
 const KeyBenefits: FC = () => {
+    const rotateImageOnHoverSx = {
+        display: 'inline-flex',
+        cursor: 'pointer',
+        '& img': {
+            transform: 'rotate(0deg)',
+            transition: 'transform 5000ms cubic-bezier(0.45, 0, 0.55, 1)',
+            willChange: 'transform',
+        },
+        '&:hover img': {
+            transform: 'rotate(360deg)',
+        },
+        '@media (prefers-reduced-motion: reduce)': {
+            '& img': { transition: 'none' },
+            '&:hover img': { transform: 'none' },
+        },
+    } as const;
+
     const benefits: Benefit[] = [
         {
             title: 'ATS-Friendly Resume That Gets Past Filters',
@@ -92,7 +109,9 @@ const KeyBenefits: FC = () => {
                         recruiter-friendly
                     </Typography>
 
-                    <Image alt='ats' width={200} height={157} src={ATSImage} />
+                    <Box sx={rotateImageOnHoverSx}>
+                        <Image alt='ats' width={200} height={157} src={ATSImage} />
+                    </Box>
                 </div>
             </div>
 
@@ -134,7 +153,9 @@ const KeyBenefits: FC = () => {
                             {benefit.description}
                         </Typography>
 
-                        <Image alt='ats' width={182} height={157} src={benefit.image} />
+                        <Box sx={rotateImageOnHoverSx}>
+                            <Image alt={benefit.title} width={182} height={157} src={benefit.image} />
+                        </Box>
                     </div>
                 ))}
             </Box>
