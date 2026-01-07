@@ -1,6 +1,6 @@
 import { FC } from 'react';
 
-import { Button, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import Image, { StaticImageData } from 'next/image';
 
 import AIBulletImage from '@/assets/images/main/ai-bullet.png';
@@ -17,33 +17,39 @@ interface Feature {
 const ProductFeatures: FC = () => {
     const features: Feature[] = [
         {
-            title: 'AI Bullet Points Generator',
-            description: 'Effortlessly create bullet points with our AI tool for quick writing.',
+            title: 'One-Click Job Description Import',
+            description:
+                'Paste or import a Job Description and instantly tailor your resume content to match role requirements',
             image: AIBulletImage,
         },
         {
-            title: 'ATS Score Checker',
-            description: "Check your resume's ATS compatibility with our score checker for better applications.",
+            title: 'AI Bullet Points Generator',
+            description:
+                'Turn tasks into impact-driven achievements with an AI bullet points generator (clear, concise, recruiter-ready)',
             image: ATSScoreImage,
         },
         {
-            title: 'Keyword Gap Analyzer',
-            description: 'Uncover keyword opportunities with our tool that spots gaps in your content strategy.',
+            title: 'ATS Score Checker / Profile',
+            description:
+                'Check resume structure and content with an ATS score checker style review to improve compatibility and clarity',
             image: KeywordImage,
         },
         {
-            title: 'Modern ATS-Friendly Templates',
-            description: 'Explore stylish templates that pass ATS checks and make your resume shine.',
+            title: 'Keyword Gap Analyzer',
+            description:
+                'Identify missing keywords from the JD and improve matching with a built-in keyword gap analyzer',
             image: ModernATSImage,
         },
         {
-            title: 'AI Cover Letter Writer',
-            description: 'Easily craft personalized cover letters with our AI creator for job applications.',
+            title: 'Modern ATS-Friendly Templates',
+            description:
+                'Pick from ATS-friendly resume templates optimized for a clean Dubai CV format look and faster scanning',
             image: ATSScoreImage,
         },
         {
-            title: 'One-Click Job Description Import',
-            description: 'Seamlessly import job descriptions to streamline your hiring process.',
+            title: 'AI Cover Letter Builder',
+            description:
+                'Generate a tailored cover letter aligned to the same job description, so your application stays consistent',
             image: OneClickImage,
         },
     ];
@@ -55,37 +61,46 @@ const ProductFeatures: FC = () => {
                     Product Features
                 </Typography>
 
-                <Typography variant='subtitle1' color='secondary.main' fontWeight={'500'} textAlign={'center'}>
+                <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
                     Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-                    <Typography variant='subtitle1' color='secondary.main' fontWeight={'500'} textAlign={'center'}>
+                    <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
                         Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
                         intelligence.
                     </Typography>
                 </Typography>
             </div>
-            <div
-                style={{
-                    gap: '0',
+            <Box
+                sx={{
                     display: 'grid',
-                    marginTop: '3rem',
+                    gap: 0,
+                    mt: '3rem',
                     borderRadius: '24px',
-                    gridTemplateColumns: '1fr 1fr 1fr',
+                    justifyContent: 'center',
                     overflow: 'hidden',
                     boxShadow: '0 0 10px 2px #F0F0F2',
+                    gridTemplateColumns: {
+                        xs: 'minmax(0, 400px)',
+                        sm: 'repeat(2, minmax(0, 400px))',
+                        md: 'repeat(3, 400px)', // 3 cards per row on desktop
+                    },
                 }}
             >
                 {features.map((feature, index) => (
                     <div
                         key={index}
                         style={{
-                            gap: '1rem',
-                            height: '354',
+                            gap: '12px',
+                            width: '100%',
+                            maxWidth: 400,
+                            height: 313,
+                            boxSizing: 'border-box',
                             display: 'flex',
                             background: 'white',
-                            padding: '40px 24px',
+                            padding: '24px',
                             alignItems: 'center',
                             flexDirection: 'column',
                             justifyContent: 'center',
+                            overflow: 'hidden',
                             border: '0.5px solid #F0F0F2',
                         }}
                     >
@@ -100,9 +115,9 @@ const ProductFeatures: FC = () => {
                         </Typography>
                     </div>
                 ))}
-            </div>
+            </Box>
 
-            <Stack direction='row' justifyContent='center' mt={3}>
+            <Stack direction='row' justifyContent='center' mt={6}>
                 <Button variant='contained' color='secondary' size='medium'>
                     Get Started Free
                 </Button>
