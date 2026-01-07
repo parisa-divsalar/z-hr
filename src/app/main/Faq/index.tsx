@@ -15,6 +15,7 @@ import {
     Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 
 import { faqSx } from './Faq.styles';
 
@@ -86,6 +87,30 @@ const Sparkle = (props: { size?: number }) => {
 
 const Faq = () => {
     const [expanded, setExpanded] = React.useState<string | false>(FAQ_ITEMS[0]?.id ?? false);
+    const shouldReduceMotion = useReducedMotion();
+
+    const containerVariants: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: 0.12,
+            },
+        },
+    };
+
+    const itemVariants: Variants = shouldReduceMotion
+        ? {
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { duration: 0.25 } },
+          }
+        : {
+              hidden: { opacity: 0, y: -18 },
+              show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+              },
+          };
 
     return (
         <Box component='section' sx={faqSx.section}>
@@ -116,43 +141,51 @@ const Faq = () => {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 8 }}>
-                        <Stack spacing={2} useFlexGap>
-                            {FAQ_ITEMS.map((item) => {
-                                const isExpanded = expanded === item.id;
-                                return (
-                                    <Accordion
-                                        key={item.id}
-                                        disableGutters
-                                        elevation={0}
-                                        expanded={isExpanded}
-                                        onChange={(_, next) => setExpanded(next ? item.id : false)}
-                                        sx={faqSx.accordion}
-                                    >
-                                        <AccordionSummary
-                                            disableRipple
-                                            expandIcon={
-                                                isExpanded ? (
-                                                    <CloseIcon sx={faqSx.expandIcon} />
-                                                ) : (
-                                                    <AddIcon sx={faqSx.expandIcon} />
-                                                )
-                                            }
-                                            sx={faqSx.summary}
-                                        >
-                                            <Typography fontWeight='584' variant='h5' sx={faqSx.question}>
-                                                {item.question}
-                                            </Typography>
-                                        </AccordionSummary>
+                        <motion.div
+                            variants={containerVariants}
+                            initial='hidden'
+                            whileInView='show'
+                            viewport={{ once: true, amount: 0.35 }}
+                        >
+                            <Stack spacing={2} useFlexGap>
+                                {FAQ_ITEMS.map((item) => {
+                                    const isExpanded = expanded === item.id;
+                                    return (
+                                        <motion.div key={item.id} variants={itemVariants}>
+                                            <Accordion
+                                                disableGutters
+                                                elevation={0}
+                                                expanded={isExpanded}
+                                                onChange={(_, next) => setExpanded(next ? item.id : false)}
+                                                sx={faqSx.accordion}
+                                            >
+                                                <AccordionSummary
+                                                    disableRipple
+                                                    expandIcon={
+                                                        isExpanded ? (
+                                                            <CloseIcon sx={faqSx.expandIcon} />
+                                                        ) : (
+                                                            <AddIcon sx={faqSx.expandIcon} />
+                                                        )
+                                                    }
+                                                    sx={faqSx.summary}
+                                                >
+                                                    <Typography fontWeight='584' variant='h5' sx={faqSx.question}>
+                                                        {item.question}
+                                                    </Typography>
+                                                </AccordionSummary>
 
-                                        <AccordionDetails sx={faqSx.details}>
-                                            <Typography variant='subtitle1' fontWeight='492' color='text.secondry'>
-                                                {item.answer}
-                                            </Typography>
-                                        </AccordionDetails>
-                                    </Accordion>
-                                );
-                            })}
-                        </Stack>
+                                                <AccordionDetails sx={faqSx.details}>
+                                                    <Typography variant='subtitle1' fontWeight='492' color='text.secondry'>
+                                                        {item.answer}
+                                                    </Typography>
+                                                </AccordionDetails>
+                                            </Accordion>
+                                        </motion.div>
+                                    );
+                                })}
+                            </Stack>
+                        </motion.div>
                     </Grid>
                 </Grid>
             </Container>

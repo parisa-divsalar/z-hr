@@ -1,7 +1,8 @@
+'use client';
+
 import { FC } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
-
 import { motion, useReducedMotion } from 'framer-motion';
 
 import { HeroWrapper, StepBadge, StepCard, StepsRow } from './styled';

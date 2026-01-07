@@ -1,7 +1,9 @@
 'use client';
 
 import type { FC } from 'react';
+import { useState } from 'react';
 
+import { motion } from 'framer-motion';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -20,27 +22,60 @@ const HeroWrapper = styled(Box)(({ theme }) => ({
     marginTop: '5rem',
 }));
 
+const containerVariants = {
+    hidden: { opacity: 1 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.18,
+            delayChildren: 0.1,
+        },
+    },
+};
+
+const easeOutBezier: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.55, ease: easeOutBezier },
+    },
+};
+
 const CraftResume: FC = () => {
+    const [isHoveredOnce, setIsHoveredOnce] = useState(false);
 
     return (
-        <HeroWrapper>
+        <HeroWrapper onMouseEnter={() => setIsHoveredOnce(true)}>
             <Container
                 maxWidth='md'
                 sx={{ gap: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                component={motion.div}
+                variants={containerVariants}
+                initial='hidden'
+                animate={isHoveredOnce ? 'show' : 'hidden'}
             >
-                <Typography variant='h2' color='secondary.main' fontWeight={'700'} fontSize={'2.25rem'}>
-                    Craft Your Dream Resume Today!
-                </Typography>
+                <motion.div variants={itemVariants}>
+                    <Typography variant='h2' color='secondary.main' fontWeight={'700'} fontSize={'2.25rem'}>
+                        Craft Your Dream Resume Today!
+                    </Typography>
+                </motion.div>
 
-                <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'}>
-                    Z-CV has helped create over 10,000 resumes from all around the world Our platform is here for job
-                    seekers everywhere, making it easy to build the perfect resume. Join the thousands who’ve already
-                    taken advantage of our cool resume-building tools!
-                </Typography>
+                <motion.div variants={itemVariants}>
+                    <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'}>
+                        Z-CV has helped create over 10,000 resumes from all around the world Our platform is here for
+                        job seekers everywhere, making it easy to build the perfect resume. Join the thousands who’ve
+                        already taken advantage of our cool resume-building tools!
+                    </Typography>
+                </motion.div>
 
-                <Button variant='contained' color='secondary' size='large' sx={{ marginTop: '3rem' }}>
-                    Get Started Free
-                </Button>
+                <motion.div variants={itemVariants}>
+                    <Button variant='contained' color='secondary' size='large' sx={{ marginTop: '3rem' }}>
+                        Get Started Free
+                    </Button>
+                </motion.div>
             </Container>
         </HeroWrapper>
     );
