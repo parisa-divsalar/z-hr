@@ -64,6 +64,7 @@ export const imageCardSliderSx: SxMap = {
         bottom: 0,
         zIndex: 2,
         p: 2,
+        pb: 4,
         display: 'flex',
         flexDirection: 'column',
         gap: 1,

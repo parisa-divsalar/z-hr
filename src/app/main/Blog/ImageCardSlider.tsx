@@ -58,11 +58,11 @@ function ImageCard({ title, description, image, showButton, onClick }: ImageCard
                 <Box sx={imageCardSliderSx.gradientOverlay} />
 
                 <Box sx={imageCardSliderSx.content}>
-                    <Typography variant='subtitle1' sx={imageCardSliderSx.title}>
+                    <Typography variant='subtitle1' fontWeight='584' sx={imageCardSliderSx.title}>
                         {title}
                     </Typography>
 
-                    <Typography variant='body2' sx={imageCardSliderSx.description}>
+                    <Typography variant='body2' fontWeight='492' sx={imageCardSliderSx.description}>
                         {description}
                     </Typography>
 
