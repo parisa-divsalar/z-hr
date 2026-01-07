@@ -93,11 +93,10 @@ const Testimonials: FC = () => {
                     Testimonials
                 </Typography>
 
-                <Typography variant='subtitle1' color='secondary.main' fontWeight='492' sx={{ maxWidth: 760 }}>
+                <Typography variant='subtitle1' color='secondary.main' fontWeight='492' mb={3}>
                     "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
                     <br />
-                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                    intelligence."
+                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial ."
                 </Typography>
 
                 <Button variant='contained' color='secondary' size='medium' disableElevation>
@@ -158,16 +157,23 @@ const Testimonials: FC = () => {
                             <Image alt='avatar' src={AvatarImage} width={52} height={52} />
                         </Box>
 
-                        <Typography variant='h6' color='secondary.main' fontWeight='700'>
+                        <Typography variant='h5' color='secondary.main' fontWeight='584'>
                             {t.role}
                         </Typography>
 
-                        <Typography variant='body2' color='text.secondary' fontWeight='492' sx={{ mt: '-0.25rem' }}>
+                        <Typography
+                            variant='subtitle1'
+                            color='text.secondary'
+                            fontWeight='492
+
+'
+                            sx={{ mt: '-0.25rem' }}
+                        >
                             {t.name}
                         </Typography>
 
                         <Typography
-                            variant='body2'
+                            variant='body1'
                             color='secondary.main'
                             fontWeight='492'
                             sx={{ maxWidth: 320, opacity: 0.92, whiteSpace: 'pre-line' }}

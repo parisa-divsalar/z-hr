@@ -44,7 +44,7 @@ const FooterMain: FC = () => {
                             Z-CV
                         </Typography>
 
-                        <Typography variant='subtitle2' sx={{ color: 'rgba(255,255,255,0.55)' }}>
+                        <Typography variant='subtitle2' fontWeight='400' sx={{ color: 'rgba(255,255,255,0.55)' }}>
                             AI Resume Maker
                         </Typography>
                     </Stack>
@@ -53,9 +53,15 @@ const FooterMain: FC = () => {
                         <Link href='/' style={{ textDecoration: 'none' }}>
                             <TopNavItem variant='subtitle2'>Home</TopNavItem>
                         </Link>
-                        <TopNavItem variant='subtitle2'>About Us</TopNavItem>
-                        <TopNavItem variant='subtitle2'>Our Plans</TopNavItem>
-                        <TopNavItem variant='subtitle2'>Contact Us</TopNavItem>
+                        <TopNavItem fontWeight='400' variant='subtitle2'>
+                            About Us
+                        </TopNavItem>
+                        <TopNavItem fontWeight='400' variant='subtitle2'>
+                            Our Plans
+                        </TopNavItem>
+                        <TopNavItem fontWeight='400' variant='subtitle2'>
+                            Contact Us
+                        </TopNavItem>
                     </TopNav>
                 </TopRow>
 
@@ -63,9 +69,15 @@ const FooterMain: FC = () => {
                     <LinksGrid>
                         {COLUMNS.map((col, colIdx) => (
                             <Box key={`${col.title}-${colIdx}`}>
-                                <ColumnTitle variant='subtitle2'>{col.title}</ColumnTitle>
+                                <ColumnTitle variant='h5' fontWeight='584'>
+                                    {col.title}
+                                </ColumnTitle>
                                 {col.items.map((item, idx) => (
-                                    <ColumnItem key={`${col.title}-${colIdx}-${idx}`} variant='caption'>
+                                    <ColumnItem
+                                        key={`${col.title}-${colIdx}-${idx}`}
+                                        variant='subtitle1'
+                                        fontWeight='492'
+                                    >
                                         {item}
                                     </ColumnItem>
                                 ))}
@@ -80,7 +92,7 @@ const FooterMain: FC = () => {
                                     <InstagramIcon fontSize='small' />
                                 </SocialIconBox>
                                 <Stack>
-                                    <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.55)' }}>
+                                    <Typography variant='body2' fontWeight='400' color='text.secondary'>
                                         Instagram
                                     </Typography>
                                     <Typography variant='subtitle2' fontWeight='700' color='common.white'>
@@ -94,7 +106,7 @@ const FooterMain: FC = () => {
                                     <TelegramIcon fontSize='small' />
                                 </SocialIconBox>
                                 <Stack>
-                                    <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.55)' }}>
+                                    <Typography variant='body2' fontWeight='400' color='text.secondary'>
                                         Telegram
                                     </Typography>
                                     <Typography variant='subtitle2' fontWeight='700' color='common.white'>
@@ -108,7 +120,7 @@ const FooterMain: FC = () => {
                                     <YouTubeIcon fontSize='small' />
                                 </SocialIconBox>
                                 <Stack>
-                                    <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.55)' }}>
+                                    <Typography variant='body2' fontWeight='400' color='text.secondary'>
                                         YouTube
                                     </Typography>
                                     <Typography variant='subtitle2' fontWeight='700' color='common.white'>

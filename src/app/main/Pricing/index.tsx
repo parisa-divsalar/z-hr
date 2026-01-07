@@ -24,10 +24,10 @@ const Pricing = () => {
 
             <Typography variant='body1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
                 Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-                <Typography variant='body1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
-                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                    intelligence.
-                </Typography>
+            </Typography>
+            <Typography variant='body1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
+                Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
+                intelligence.
             </Typography>
 
             <PricingComparison />

@@ -43,7 +43,7 @@ function HoverRevealSection({ children }: { children: ReactNode }) {
                 opacity: 1,
                 y: 0,
                 filter: 'blur(0px)',
-                transition: { duration: 0.6, ease: easeOutBezier },
+                transition: { duration: 0.2, ease: easeOutBezier },
             },
         };
     }, [shouldReduceMotion]);
@@ -64,14 +64,20 @@ function HoverRevealSection({ children }: { children: ReactNode }) {
 
 export default function MinaComponent() {
     return (
-        <div>
+        <div
+            style={{
+                minHeight: 'var(--app-height)',
+                display: 'flex',
+                flexDirection: 'column',
+            }}
+        >
             <Navbar />
             <main
                 style={{
                     width: '100dvw',
+                    flex: 1,
                     height: 'fit-content',
                     background: '#fcfbff',
-                    paddingBottom: '5rem',
                 }}
             >
                 <HeroSection />
@@ -99,10 +105,9 @@ export default function MinaComponent() {
                 <HoverRevealSection>
                     <Testimonials />
                 </HoverRevealSection>
-                <HoverRevealSection>
-                    <FooterMain />
-                </HoverRevealSection>
             </main>
+
+            <FooterMain />
         </div>
     );
 }
