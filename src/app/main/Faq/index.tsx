@@ -140,13 +140,13 @@ const Faq = () => {
                                             }
                                             sx={faqSx.summary}
                                         >
-                                            <Typography variant='h6' sx={faqSx.question}>
+                                            <Typography fontWeight='584' variant='h5' sx={faqSx.question}>
                                                 {item.question}
                                             </Typography>
                                         </AccordionSummary>
 
                                         <AccordionDetails sx={faqSx.details}>
-                                            <Typography variant='body2' sx={faqSx.answer}>
+                                            <Typography variant='subtitle1' fontWeight='492' color='text.secondry'>
                                                 {item.answer}
                                             </Typography>
                                         </AccordionDetails>
