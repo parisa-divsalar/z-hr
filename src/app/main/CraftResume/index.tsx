@@ -1,11 +1,13 @@
 'use client';
 
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { motion } from 'framer-motion';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
+
+import TypewriterText from '@/components/UI/TypewriterText';
 
 const HeroWrapper = styled(Box)(({ theme }) => ({
     textAlign: 'center',
@@ -45,17 +47,26 @@ const itemVariants = {
 };
 
 const CraftResume: FC = () => {
-    const [isHoveredOnce, setIsHoveredOnce] = useState(false);
+    const [isActiveOnce, setIsActiveOnce] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const mq = window.matchMedia?.('(hover: none), (pointer: coarse)');
+        if (mq?.matches) setIsActiveOnce(true);
+    }, []);
+
+    const subtitleText =
+        'Z-CV has helped create over 10,000 resumes from all around the world Our platform is here for job seekers everywhere, making it easy to build the perfect resume. Join the thousands who’ve already taken advantage of our cool resume-building tools!';
 
     return (
-        <HeroWrapper onMouseEnter={() => setIsHoveredOnce(true)}>
+        <HeroWrapper onMouseEnter={() => setIsActiveOnce(true)} onFocusCapture={() => setIsActiveOnce(true)}>
             <Container
                 maxWidth='md'
                 sx={{ gap: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 component={motion.div}
                 variants={containerVariants}
                 initial='hidden'
-                animate={isHoveredOnce ? 'show' : 'hidden'}
+                animate={isActiveOnce ? 'show' : 'hidden'}
             >
                 <motion.div variants={itemVariants}>
                     <Typography variant='h2' color='secondary.main' fontWeight={'700'} fontSize={'2.25rem'}>
@@ -65,9 +76,7 @@ const CraftResume: FC = () => {
 
                 <motion.div variants={itemVariants}>
                     <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'}>
-                        Z-CV has helped create over 10,000 resumes from all around the world Our platform is here for
-                        job seekers everywhere, making it easy to build the perfect resume. Join the thousands who’ve
-                        already taken advantage of our cool resume-building tools!
+                        <TypewriterText text={subtitleText} active={isActiveOnce} once tokenDelayMs={32} spaceDelayMs={12} />
                     </Typography>
                 </motion.div>
 
