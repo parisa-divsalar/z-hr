@@ -39,6 +39,44 @@ export const imageCardSliderSx: SxMap = {
         maxWidth: 282,
         flex: '0 0 282px',
         cursor: 'pointer',
+        '@media (hover: none)': {
+            '& .imageCardContent': {
+                top: 0,
+                bottom: 0,
+                justifyContent: 'center',
+                textAlign: 'center',
+                alignItems: 'center',
+                pb: 2,
+            },
+            '& .imageCardOverlay': {
+                opacity: 0.82,
+            },
+            '& .imageCardButton': {
+                opacity: 1,
+                transform: 'translateY(0)',
+                pointerEvents: 'auto',
+            },
+        },
+        '&:hover .imageCardContent, &:focus-within .imageCardContent': {
+            top: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            textAlign: 'center',
+            alignItems: 'center',
+            pb: 2,
+        },
+        '&:hover .imageCardOverlay, &:focus-within .imageCardOverlay': {
+            opacity: 0.82,
+        },
+        '&:hover .imageCardButton, &:focus-within .imageCardButton': {
+            opacity: 1,
+            transform: 'translateY(0)',
+            pointerEvents: 'auto',
+        },
+        '&:focus-visible': {
+            outline: '2px solid rgba(255,255,255,0.9)',
+            outlineOffset: 3,
+        },
     },
     cardInner: {
         position: 'relative',
@@ -56,6 +94,8 @@ export const imageCardSliderSx: SxMap = {
         zIndex: 1,
         pointerEvents: 'none',
         background: 'linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.72) 100%)',
+        opacity: 0.6,
+        transition: 'opacity 220ms ease',
     },
     content: {
         position: 'absolute',
@@ -69,6 +109,8 @@ export const imageCardSliderSx: SxMap = {
         flexDirection: 'column',
         gap: 1,
         color: '#fff',
+        justifyContent: 'flex-end',
+        transition: 'all 220ms ease',
     },
     title: {
         fontWeight: 600,
@@ -84,10 +126,18 @@ export const imageCardSliderSx: SxMap = {
         WebkitLineClamp: 2,
     },
     ctaButton: {
-        alignSelf: 'flex-start',
+        alignSelf: 'center',
         mt: 1,
         color: '#fff',
         borderColor: 'rgba(255,255,255,0.7)',
+        borderRadius: 2,
+        px: 3,
+        py: 0.75,
+        textTransform: 'none',
+        opacity: 0,
+        pointerEvents: 'none',
+        transform: 'translateY(10px)',
+        transition: 'opacity 220ms ease, transform 220ms ease, background-color 220ms ease, border-color 220ms ease',
         '&:hover': {
             borderColor: '#fff',
             backgroundColor: 'rgba(255,255,255,0.08)',

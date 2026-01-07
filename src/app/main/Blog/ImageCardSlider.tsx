@@ -33,31 +33,43 @@ const CARDS: CardItem[] = [
         title: 'Build a Standout Resume Quickly Resume',
         description: 'Create a polished resume in only... ',
         image: rectangleGallerySrc,
-        showButton: false,
+        showButton: true,
     },
     {
         title: 'Fast and Easy Resume Creation Guide',
         description: 'Get a complete resume ready in...',
         image: rectangleGallerySrc,
-        showButton: false,
+        showButton: true,
     },
     {
         title: 'Swift Resume Builder: Your Path to Success',
         description: 'Finish your resume in a quick ...',
         image: rectangleGallerySrc,
-        showButton: false,
+        showButton: true,
     },
 ];
 
 function ImageCard({ title, description, image, showButton, onClick }: ImageCardProps) {
     return (
-        <Card elevation={2} onClick={onClick} sx={imageCardSliderSx.card}>
+        <Card
+            elevation={2}
+            role='button'
+            tabIndex={0}
+            onClick={onClick}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onClick?.();
+                }
+            }}
+            sx={imageCardSliderSx.card}
+        >
             <Box sx={imageCardSliderSx.cardInner}>
                 <Box component='img' alt='' src={image} sx={imageCardSliderSx.cardImage} />
 
-                <Box sx={imageCardSliderSx.gradientOverlay} />
+                <Box className='imageCardOverlay' sx={imageCardSliderSx.gradientOverlay} />
 
-                <Box sx={imageCardSliderSx.content}>
+                <Box className='imageCardContent' sx={imageCardSliderSx.content}>
                     <Typography variant='subtitle1' fontWeight='584' sx={imageCardSliderSx.title}>
                         {title}
                     </Typography>
@@ -68,6 +80,7 @@ function ImageCard({ title, description, image, showButton, onClick }: ImageCard
 
                     {showButton ? (
                         <Button
+                            className='imageCardButton'
                             size='small'
                             variant='outlined'
                             onClick={(e) => {
