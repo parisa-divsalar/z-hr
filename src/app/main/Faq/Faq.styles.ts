@@ -110,16 +110,25 @@ export const faqSx: SxMap = {
     expandIcon: { fontSize: 20, color: 'text.primary' },
 
     summary: {
-        px: { xs: 2, sm: 3 },
+        position: 'relative',
+        pl: { xs: 2, sm: 3 },
+        pr: { xs: 7, sm: 8 },
         py: { xs: 1.5, sm: 1.75 },
         minHeight: 'unset',
-        flexDirection: 'row-reverse',
         '& .MuiAccordionSummary-content': {
             my: 0,
-            ml: 2,
+            mx: 0,
         },
         '& .MuiAccordionSummary-expandIconWrapper': {
-            transform: 'none',
+            position: 'absolute',
+            right: { xs: 16, sm: 24 },
+            left: 'auto',
+            top: '50%',
+            margin: 0,
+            transform: 'translateY(-50%)',
+            '&.Mui-expanded': {
+                transform: 'translateY(-50%)',
+            },
         },
     },
     question: {
@@ -140,5 +149,3 @@ export const faqSx: SxMap = {
         maxWidth: 760,
     },
 };
-
-
