@@ -18,7 +18,7 @@ export const imageCardSliderSx: SxMap = {
         overflowX: 'auto',
         pb: 1,
         scrollSnapType: 'x mandatory',
-        scrollPaddingInline: 'calc(50% - 141px)',
+        scrollPaddingInline: 'calc(50% - 131px)',
         WebkitOverflowScrolling: 'touch',
         justifyContent: 'center',
         px: 2,
@@ -37,10 +37,10 @@ export const imageCardSliderSx: SxMap = {
         position: 'relative',
         overflow: 'hidden',
         borderRadius: 3,
-        width: 282,
-        minWidth: 282,
-        maxWidth: 282,
-        flex: '0 0 282px',
+        width: 262,
+        minWidth: 262,
+        maxWidth: 262,
+        flex: '0 0 262px',
         cursor: 'pointer',
         '@media (hover: none)': {
             '& .imageCardContent': {
