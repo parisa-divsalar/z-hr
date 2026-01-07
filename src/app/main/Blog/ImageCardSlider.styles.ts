@@ -3,6 +3,9 @@ import { styled } from '@mui/material/styles';
 
 import type { SxProps, Theme } from '@mui/material';
 
+const HOVER_ANIM_MS = 550;
+const HOVER_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'; // smooth ease-out
+
 type SxMap = Record<string, SxProps<Theme>>;
 export const imageCardSliderSx: SxMap = {
     root: {
@@ -41,12 +44,7 @@ export const imageCardSliderSx: SxMap = {
         cursor: 'pointer',
         '@media (hover: none)': {
             '& .imageCardContent': {
-                top: 0,
-                bottom: 0,
-                justifyContent: 'center',
-                textAlign: 'center',
-                alignItems: 'center',
-                pb: 2,
+                transform: 'translateY(0)',
             },
             '& .imageCardOverlay': {
                 opacity: 0.82,
@@ -58,12 +56,7 @@ export const imageCardSliderSx: SxMap = {
             },
         },
         '&:hover .imageCardContent, &:focus-within .imageCardContent': {
-            top: 0,
-            bottom: 0,
-            justifyContent: 'center',
-            textAlign: 'center',
-            alignItems: 'center',
-            pb: 2,
+            transform: 'translateY(-28px)',
         },
         '&:hover .imageCardOverlay, &:focus-within .imageCardOverlay': {
             opacity: 0.82,
@@ -95,7 +88,7 @@ export const imageCardSliderSx: SxMap = {
         pointerEvents: 'none',
         background: 'linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.72) 100%)',
         opacity: 0.6,
-        transition: 'opacity 220ms ease',
+        transition: `opacity ${HOVER_ANIM_MS}ms ${HOVER_EASING}`,
     },
     content: {
         position: 'absolute',
@@ -110,7 +103,12 @@ export const imageCardSliderSx: SxMap = {
         gap: 1,
         color: '#fff',
         justifyContent: 'flex-end',
-        transition: 'all 220ms ease',
+        transform: 'translateY(0)',
+        willChange: 'transform',
+        transition: `transform ${HOVER_ANIM_MS}ms ${HOVER_EASING}`,
+        '@media (prefers-reduced-motion: reduce)': {
+            transition: 'none',
+        },
     },
     title: {
         fontWeight: 600,
@@ -137,7 +135,10 @@ export const imageCardSliderSx: SxMap = {
         opacity: 0,
         pointerEvents: 'none',
         transform: 'translateY(10px)',
-        transition: 'opacity 220ms ease, transform 220ms ease, background-color 220ms ease, border-color 220ms ease',
+        transition: `opacity ${HOVER_ANIM_MS}ms ${HOVER_EASING}, transform ${HOVER_ANIM_MS}ms ${HOVER_EASING}, background-color 180ms ease, border-color 180ms ease`,
+        '@media (prefers-reduced-motion: reduce)': {
+            transition: 'none',
+        },
         '&:hover': {
             borderColor: '#fff',
             backgroundColor: 'rgba(255,255,255,0.08)',
