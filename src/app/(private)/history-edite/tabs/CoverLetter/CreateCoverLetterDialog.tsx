@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { Divider, IconButton, Stack, Typography } from '@mui/material';
@@ -13,7 +13,15 @@ import { addCoverLetter } from '@/services/cv/add-cover-letter';
 import { getCoverLetter } from '@/services/cv/get-cover-letter';
 import { useAuthStore } from '@/store/auth';
 
-import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
+import {
+    ActionContainer,
+    ContainerSkill,
+    DialogContainer,
+    HeaderContainer,
+    InputContent,
+    StackContainer,
+    StackContent,
+} from './styled';
 
 export type CreateCoverLetterValues = {
     jobDescription: string;
@@ -415,16 +423,23 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                             >
                                 CV content
                             </Typography>
-                            <TextField
-                                value={values.cvContent}
-                                onChange={(e) => setValues((prev) => ({ ...prev, cvContent: e.target.value }))}
-                                placeholder='Paste your CV content...'
-                                fullWidth
-                                error={Boolean(fieldErrors.cvContent)}
-                                helperText={fieldErrors.cvContent ?? ''}
-                                inputProps={{ maxLength: 20000 }}
-                            />
                         </Stack>
+                        <ContainerSkill direction='row' active={Boolean(values.cvContent.trim())}>
+                            <InputContent
+                                placeholder='Paste your CV content...'
+                                value={values.cvContent}
+                                wrap='soft'
+                                maxLength={20000}
+                                onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                                    setValues((prev) => ({ ...prev, cvContent: event.target.value }))
+                                }
+                            />
+                        </ContainerSkill>
+                        {fieldErrors.cvContent && (
+                            <Typography variant='caption' color='error.main'>
+                                {fieldErrors.cvContent}
+                            </Typography>
+                        )}
 
                         <Stack sx={{ minWidth: 0 }}>
                             <Typography
