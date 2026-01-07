@@ -92,24 +92,30 @@ const Faq = () => {
     const containerVariants: Variants = {
         hidden: {},
         show: {
-            transition: {
-                staggerChildren: 0.12,
-            },
+            transition: {},
         },
     };
 
     const itemVariants: Variants = shouldReduceMotion
         ? {
               hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { duration: 0.25 } },
+              show: (idx: number) => ({
+                  opacity: 1,
+                  transition: { duration: 0.2, delay: idx * 0.06 },
+              }),
           }
         : {
-              hidden: { opacity: 0, y: -18 },
-              show: {
+              hidden: { opacity: 0, y: 18, filter: 'blur(8px)' },
+              show: (idx: number) => ({
                   opacity: 1,
                   y: 0,
-                  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-              },
+                  filter: 'blur(0px)',
+                  transition: {
+                      duration: 0.6,
+                      delay: idx * 0.12,
+                      ease: [0.22, 1, 0.36, 1],
+                  },
+              }),
           };
 
     return (
@@ -148,10 +154,10 @@ const Faq = () => {
                             viewport={{ once: true, amount: 0.35 }}
                         >
                             <Stack spacing={2} useFlexGap>
-                                {FAQ_ITEMS.map((item) => {
+                                {FAQ_ITEMS.map((item, idx) => {
                                     const isExpanded = expanded === item.id;
                                     return (
-                                        <motion.div key={item.id} variants={itemVariants}>
+                                        <motion.div key={item.id} variants={itemVariants} custom={idx}>
                                             <Accordion
                                                 disableGutters
                                                 elevation={0}

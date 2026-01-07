@@ -74,9 +74,7 @@ export default function MinaComponent() {
                     paddingBottom: '5rem',
                 }}
             >
-                <HoverRevealSection>
-                    <HeroSection />
-                </HoverRevealSection>
+                <HeroSection />
 
                 <HoverRevealSection>
                     <KeyBenefits />
