@@ -65,12 +65,7 @@ const Testimonials: FC = () => {
                     Testimonials
                 </Typography>
 
-                <Typography
-                    variant='subtitle1'
-                    color='secondary.main'
-                    fontWeight='492'
-                    sx={{ maxWidth: 760 }}
-                >
+                <Typography variant='subtitle1' color='secondary.main' fontWeight='492' sx={{ maxWidth: 760 }}>
                     "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
                     <br />
                     Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial

@@ -9,7 +9,6 @@ import KeyBenefits from '@/app/main/KeyBenefits';
 import Pricing from '@/app/main/Pricing';
 import ProductFeatures from '@/app/main/ProductFeatures';
 import Testimonials from '@/app/main/Testimonials';
-import Footer from '@/components/Layout/Footer';
 import Navbar from '@/components/Layout/Navbar';
 
 export default function MinaComponent() {
@@ -37,7 +36,6 @@ export default function MinaComponent() {
                 <Testimonials />
                 <FooterMain />
             </main>
-            <Footer />
         </div>
     );
 }
