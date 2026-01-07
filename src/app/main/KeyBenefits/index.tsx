@@ -49,6 +49,8 @@ const KeyBenefits: FC = () => {
         display: 'inline-flex',
         cursor: 'pointer',
         '& img': {
+            maxWidth: '100%',
+            height: 'auto',
             transform: 'rotate(0deg)',
             transition: 'transform 5000ms cubic-bezier(0.45, 0, 0.55, 1)',
             willChange: 'transform',
@@ -91,8 +93,16 @@ const KeyBenefits: FC = () => {
 
     return (
         <Container>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '5rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'start' }}>
+            <Box
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                    gap: { xs: 3, md: 2 },
+                    mt: { xs: 4, md: 10 },
+                    alignItems: { xs: 'stretch', md: 'start' },
+                }}
+            >
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 4 }, alignItems: 'flex-start' }}>
                     <Typography variant='h2' color='secondary.main' fontWeight={'700'}>
                         Key Benefits
                     </Typography>
@@ -105,25 +115,27 @@ const KeyBenefits: FC = () => {
                     <Button variant='contained' color='secondary' size='medium'>
                         Get Started Free
                     </Button>
-                </div>
+                </Box>
 
-                <motion.div
+                <MotionBox
                     variants={itemVariants}
                     initial='hidden'
                     whileInView='show'
                     viewport={{ once: true, amount: 0.4 }}
-                    style={{
-                        gap: '2rem',
-                        width: 588,
-                        height: 374,
+                    sx={{
                         display: 'flex',
-                        padding: '40px',
-                        background: 'white',
-                        alignItems: 'center',
-                        borderRadius: '24px',
                         flexDirection: 'column',
                         justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: { xs: 2, md: 4 },
+                        width: { xs: '100%', md: 588 },
+                        maxWidth: '100%',
+                        minHeight: { xs: 'auto', md: 374 },
+                        p: { xs: 3, md: 5 },
+                        background: 'white',
+                        borderRadius: '24px',
                         border: '2px solid #F0F0F2',
+                        boxSizing: 'border-box',
                     }}
                 >
                     <Typography variant='h5' color='secondary.main' fontWeight={'584'}>
@@ -144,18 +156,19 @@ const KeyBenefits: FC = () => {
                     <Box sx={rotateImageOnHoverSx}>
                         <Image alt='ats' width={200} height={157} src={ATSImage} />
                     </Box>
-                </motion.div>
-            </div>
+                </MotionBox>
+            </Box>
 
             <MotionBox
                 sx={{
                     display: 'grid',
                     gridTemplateColumns: {
-                        xs: 'repeat(1, 282px)',
-                        sm: 'repeat(2, 282px)',
-                        md: 'repeat(4, 282px)', // show all 4 cards in a single row on desktop
+                        xs: '1fr',
+                        sm: 'repeat(2, minmax(0, 1fr))',
+                        md: 'repeat(4, minmax(0, 1fr))', // show all 4 cards in a single row on desktop
                     },
                     justifyContent: 'center',
+                    justifyItems: 'center',
                     gap: '1rem',
                     mt: '5rem',
                 }}
@@ -169,8 +182,10 @@ const KeyBenefits: FC = () => {
                         key={index}
                         style={{
                             gap: '1.5rem',
-                            width: 282,
-                            height: 439,
+                            width: '100%',
+                            maxWidth: 282,
+                            height: 'auto',
+                            minHeight: 439,
                             display: 'flex',
                             background: 'white',
                             padding: '40px 24px',
@@ -179,6 +194,7 @@ const KeyBenefits: FC = () => {
                             flexDirection: 'column',
                             justifyContent: 'center',
                             border: '2px solid #F0F0F2',
+                            boxSizing: 'border-box',
                         }}
                         variants={itemVariants}
                     >
