@@ -2,7 +2,60 @@ import { FC } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
 
+import { motion, useReducedMotion } from 'framer-motion';
+
 import { HeroWrapper, StepBadge, StepCard, StepsRow } from './styled';
+
+const AnimatedWords: FC<{
+    text: string;
+    stagger?: number;
+    delay?: number;
+}> = ({ text, stagger = 0.18, delay = 0.45 }) => {
+    const shouldReduceMotion = useReducedMotion();
+
+    if (shouldReduceMotion) return <>{text}</>;
+
+    const words = text.split(' ').filter(Boolean);
+
+    return (
+        <motion.span
+            aria-label={text}
+            role='text'
+            initial='hidden'
+            animate='visible'
+            variants={{
+                hidden: {},
+                visible: {
+                    transition: {
+                        delayChildren: delay,
+                        staggerChildren: stagger,
+                    },
+                },
+            }}
+            style={{ display: 'inline-block' }}
+        >
+            {words.map((word, idx) => (
+                <motion.span
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={`${word}-${idx}`}
+                    aria-hidden='true'
+                    variants={{
+                        hidden: { opacity: 0, y: 2 },
+                        visible: {
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 1.25, ease: [0.22, 1, 0.36, 1] },
+                        },
+                    }}
+                    style={{ display: 'inline-block' }}
+                >
+                    {word}
+                    {idx !== words.length - 1 ? '\u00A0' : ''}
+                </motion.span>
+            ))}
+        </motion.span>
+    );
+};
 
 const HeroSection: FC = () => {
     return (
@@ -19,7 +72,7 @@ const HeroSection: FC = () => {
                     fontWeight={700}
                     mb='1rem'
                 >
-                    Professional & ATS-friendly Resume
+                    <AnimatedWords text='Professional & ATS-friendly Resume' />
                 </Typography>
 
                 <Typography

@@ -57,17 +57,22 @@ export const StepCard = styled(Box)(({ theme }) => ({
     height: 88,
     maxWidth: '100%',
     position: 'absolute',
-    willChange: 'transform',
+    willChange: 'translate, opacity',
     translate: '0 0',
     transition: 'box-shadow 220ms ease',
-    animation: 'stepFloat 4.8s ease-in-out infinite',
+    animation: 'stepFloat 4.8s ease-in-out infinite, stepEnter 520ms cubic-bezier(0.2, 0.9, 0.2, 1) both',
+    animationDelay: '520ms, 0ms',
     '@keyframes stepFloat': {
         '0%, 100%': { translate: '0 0' },
         '50%': { translate: '0 -4px' },
     },
-    '&:nth-of-type(1)': { animationDelay: '0s' },
-    '&:nth-of-type(2)': { animationDelay: '0.22s' },
-    '&:nth-of-type(3)': { animationDelay: '0.44s' },
+    '@keyframes stepEnter': {
+        from: { opacity: 0, translate: '0 28px' },
+        to: { opacity: 1, translate: '0 0' },
+    },
+    '&:nth-of-type(1)': { animationDelay: '520ms, 0ms' },
+    '&:nth-of-type(2)': { animationDelay: '740ms, 220ms' },
+    '&:nth-of-type(3)': { animationDelay: '960ms, 440ms' },
     '&:hover': {
         boxShadow: '0 18px 46px rgba(34, 28, 85, 0.16), inset 0 1px 0 rgba(255,255,255,0.75)',
     },
@@ -83,7 +88,8 @@ export const StepCard = styled(Box)(({ theme }) => ({
         padding: theme.spacing(1.75, 2),
         borderRadius: 18,
         position: 'relative',
-        animation: 'none',
+        animation: 'stepEnter 520ms cubic-bezier(0.2, 0.9, 0.2, 1) both',
+        animationDelay: '0ms',
     },
 }));
 
