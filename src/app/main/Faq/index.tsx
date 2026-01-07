@@ -116,7 +116,7 @@ const Faq = () => {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 8 }}>
-                        <Stack spacing={2}>
+                        <Stack spacing={2} useFlexGap>
                             {FAQ_ITEMS.map((item) => {
                                 const isExpanded = expanded === item.id;
                                 return (

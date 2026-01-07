@@ -82,7 +82,7 @@ export const faqSx: SxMap = {
     },
 
     accordion: {
-        borderRadius: 4,
+        borderRadius: '24px',
         bgcolor: 'common.white',
         border: '1px solid',
         borderColor: 'rgba(16, 24, 40, 0.08)',
@@ -90,6 +90,10 @@ export const faqSx: SxMap = {
         overflow: 'hidden',
         transition: 'box-shadow 220ms ease, border-color 220ms ease',
         '&:before': { display: 'none' },
+        '&.MuiAccordion-root': { borderRadius: '24px' },
+        '&.MuiAccordion-root:first-of-type': { borderRadius: '24px' },
+        '&.MuiAccordion-root:last-of-type': { borderRadius: '24px' },
+        '&.MuiAccordion-root.Mui-expanded': { margin: 0 },
         '&:hover': {
             borderColor: 'rgba(16, 24, 40, 0.12)',
             boxShadow: '0px 14px 40px rgba(16, 24, 40, 0.08)',
@@ -113,11 +117,22 @@ export const faqSx: SxMap = {
         position: 'relative',
         pl: { xs: 2, sm: 3 },
         pr: { xs: 7, sm: 8 },
-        py: { xs: 1.5, sm: 1.75 },
-        minHeight: 'unset',
+        py: 0,
+        minHeight: 104,
+        height: 104,
+        alignItems: 'center',
+        '&.Mui-expanded': {
+            minHeight: 104,
+            height: 104,
+        },
         '& .MuiAccordionSummary-content': {
             my: 0,
             mx: 0,
+            height: '100%',
+            alignItems: 'center',
+            '&.Mui-expanded': {
+                my: 0,
+            },
         },
         '& .MuiAccordionSummary-expandIconWrapper': {
             position: 'absolute',
