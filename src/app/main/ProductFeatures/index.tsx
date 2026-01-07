@@ -1,3 +1,5 @@
+'use client';
+
 import { FC } from 'react';
 
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
@@ -15,6 +17,73 @@ interface Feature {
     image: StaticImageData;
 }
 const ProductFeatures: FC = () => {
+    const featureCardSx = {
+        position: 'relative',
+        gap: '12px',
+        width: '100%',
+        maxWidth: 400,
+        height: 313,
+        boxSizing: 'border-box',
+        display: 'flex',
+        background: 'white',
+        p: '24px',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        border: '0.5px solid #F0F0F2',
+        cursor: 'pointer',
+
+        transform: 'translateY(0px)',
+        transition:
+            'transform 520ms cubic-bezier(0.16, 1, 0.3, 1), border-color 520ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 520ms cubic-bezier(0.16, 1, 0.3, 1)',
+        willChange: 'transform',
+
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            background:
+                'linear-gradient(110deg, transparent 0%, rgba(89, 74, 255, 0.06) 45%, rgba(89, 74, 255, 0.10) 55%, transparent 100%)',
+            transform: 'translateX(-120%)',
+            transition: 'transform 720ms cubic-bezier(0.16, 1, 0.3, 1)',
+            pointerEvents: 'none',
+        },
+
+        '& .featureCardInner': {
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            transform: 'translateY(0px)',
+            transition: 'transform 520ms cubic-bezier(0.16, 1, 0.3, 1)',
+            willChange: 'transform',
+        },
+
+        '&:hover': {
+            transform: 'translateY(-2px)',
+            borderColor: '#E6E6EA',
+            boxShadow: '0 10px 22px rgba(16, 24, 40, 0.08)',
+        },
+        '&:hover::before': {
+            transform: 'translateX(0%)',
+        },
+        '&:hover .featureCardInner': {
+            transform: 'translateY(-3px)',
+        },
+
+        '@media (prefers-reduced-motion: reduce)': {
+            transition: 'none',
+            '&::before': { transition: 'none', transform: 'none' },
+            '& .featureCardInner': { transition: 'none', transform: 'none' },
+            '&:hover .featureCardInner': { transform: 'none' },
+            '&:hover': { transform: 'none', boxShadow: 'none' },
+        },
+    } as const;
+
     const features: Feature[] = [
         {
             title: 'One-Click Job Description Import',
@@ -86,34 +155,24 @@ const ProductFeatures: FC = () => {
                 }}
             >
                 {features.map((feature, index) => (
-                    <div
-                        key={index}
-                        style={{
-                            gap: '12px',
-                            width: '100%',
-                            maxWidth: 400,
-                            height: 313,
-                            boxSizing: 'border-box',
-                            display: 'flex',
-                            background: 'white',
-                            padding: '24px',
-                            alignItems: 'center',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            overflow: 'hidden',
-                            border: '0.5px solid #F0F0F2',
-                        }}
-                    >
-                        <Image alt='ats' width={100} height={100} src={feature.image} />
+                    <Box key={index} sx={featureCardSx}>
+                        <Box className='featureCardInner'>
+                            <Image alt={feature.title} width={100} height={100} src={feature.image} />
 
-                        <Typography variant='h5' color='secondary.main' fontWeight={'584'} textAlign={'center'}>
-                            {feature.title}
-                        </Typography>
+                            <Typography variant='h5' color='secondary.main' fontWeight={'584'} textAlign={'center'}>
+                                {feature.title}
+                            </Typography>
 
-                        <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
-                            {feature.description}
-                        </Typography>
-                    </div>
+                            <Typography
+                                variant='subtitle1'
+                                color='secondary.main'
+                                fontWeight={'492'}
+                                textAlign={'center'}
+                            >
+                                {feature.description}
+                            </Typography>
+                        </Box>
+                    </Box>
                 ))}
             </Box>
 
