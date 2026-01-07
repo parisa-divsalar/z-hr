@@ -31,6 +31,7 @@ const HeroSection: FC = () => {
 
                 <Typography
                     variant='h5'
+                    mb={5}
                     sx={{
                         color: 'secondary.main',
                         fontSize: { xs: '1.05rem', sm: '1.15rem', md: '1.25rem' },
@@ -43,7 +44,8 @@ const HeroSection: FC = () => {
                     }}
                     fontWeight={492}
                 >
-                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.
+                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
+                    intelligence.
                 </Typography>
 
                 <Button
@@ -51,7 +53,7 @@ const HeroSection: FC = () => {
                     color='secondary'
                     size='large'
                     sx={{
-                        marginTop: { xs: '2rem', sm: '3rem' },
+                        marginTop: { xs: '2rem', sm: '3rem', lg: '2rem' },
                         px: { xs: 3, sm: 4 },
                         width: { xs: '100%', sm: 'auto' },
                         borderRadius: 2.5,
@@ -82,15 +84,19 @@ const HeroSection: FC = () => {
                                 boxShadow: '0 10px 22px rgba(77, 73, 252, 0.28)',
                             })}
                         >
-                            <Typography component='span' fontWeight={900} sx={{ lineHeight: 1 }}>
+                            <Typography component='span' sx={{ lineHeight: 1 }}>
                                 ✔
                             </Typography>
                         </StepBadge>
                         <Box textAlign='left'>
-                            <Typography fontWeight={800} sx={{ color: 'primary.main', lineHeight: 1.15 }}>
+                            <Typography
+                                variant='subtitle1'
+                                fontWeight='492'
+                                sx={{ color: 'primary.main', lineHeight: 1.15 }}
+                            >
                                 First Step
                             </Typography>
-                            <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                            <Typography fontWeight='400' variant='subtitle2' sx={{ color: 'text.secondary' }}>
                                 Answer questions
                             </Typography>
                         </Box>
@@ -111,15 +117,19 @@ const HeroSection: FC = () => {
                         })}
                     >
                         <StepBadge>
-                            <Typography component='span' fontWeight={900}>
+                            <Typography component='span' variant='subtitle1' fontWeight='492'>
                                 2
                             </Typography>
                         </StepBadge>
                         <Box textAlign='left'>
-                            <Typography fontWeight={800} sx={{ color: 'text.primary', lineHeight: 1.15 }}>
+                            <Typography
+                                variant='subtitle1'
+                                fontWeight='492'
+                                sx={{ color: 'text.primary', lineHeight: 1.15 }}
+                            >
                                 Second Step
                             </Typography>
-                            <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                            <Typography fontWeight='400' variant='subtitle2' sx={{ color: 'text.secondary' }}>
                                 Review and Submit
                             </Typography>
                         </Box>
@@ -141,15 +151,19 @@ const HeroSection: FC = () => {
                         <StepBadge
                             sx={{ backgroundColor: '#EEF0F5', border: '1px solid #EEF0F5', color: 'text.primary' }}
                         >
-                            <Typography component='span' fontWeight={900}>
+                            <Typography variant='subtitle1' fontWeight='492' component='span'>
                                 3
                             </Typography>
                         </StepBadge>
                         <Box textAlign='left'>
-                            <Typography fontWeight={800} sx={{ color: 'text.primary', lineHeight: 1.15 }}>
+                            <Typography
+                                variant='subtitle1'
+                                fontWeight='492'
+                                sx={{ color: 'text.primary', lineHeight: 1.15 }}
+                            >
                                 Final Step
                             </Typography>
-                            <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                            <Typography fontWeight='400' variant='subtitle2' sx={{ color: 'text.secondary' }}>
                                 Download a resume
                             </Typography>
                         </Box>
