@@ -88,50 +88,34 @@ const Faq = () => {
     const [expanded, setExpanded] = React.useState<string | false>(FAQ_ITEMS[0]?.id ?? false);
 
     return (
-        <Box
-            component='section'
-            sx={faqSx.section}
-        >
+        <Box component='section' sx={faqSx.section}>
             <Container maxWidth='lg' sx={faqSx.container}>
                 <Grid container spacing={{ xs: 4, md: 6 }} alignItems='flex-start'>
-                    <Grid size={{ xs: 12, md: 3 }}>
-                        <Box
-                            sx={faqSx.stickyCol}
-                        >
-                            <Typography
-                                variant='h3'
-                                sx={faqSx.heading}
-                            >
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <Box sx={faqSx.stickyCol}>
+                            <Typography variant='h2' fontWeight='700' sx={faqSx.heading}>
                                 FAQ
                             </Typography>
 
-                            <Typography
-                                variant='body1'
-                                sx={faqSx.lead}
-                            >
-                                Find quick answers to common questions. If you don’t see what you’re looking for, ask
-                                away.
+                            <Typography variant='subtitle1' fontWeight='492' color='text.primary' mt={4}>
+                                "Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for
+                                the markets of Iran and Dubai, featuring modern templates and advanced artificial
+                                intelligence.
                             </Typography>
 
-                            <Box sx={faqSx.ctaWrap}>
-                                <Button
-                                    variant='contained'
-                                    disableElevation
-                                    sx={faqSx.ctaButton}
-                                >
+                            <Box sx={faqSx.ctaWrap} mt={4}>
+                                <Button variant='contained' disableElevation sx={faqSx.ctaButton}>
                                     Ask Your Question
                                 </Button>
 
-                                <Box
-                                    sx={faqSx.sparkleCtaFloat}
-                                >
+                                <Box sx={faqSx.sparkleCtaFloat}>
                                     <Sparkle size={22} />
                                 </Box>
                             </Box>
                         </Box>
                     </Grid>
 
-                    <Grid size={{ xs: 12, md: 9 }}>
+                    <Grid size={{ xs: 12, md: 8 }}>
                         <Stack spacing={2}>
                             {FAQ_ITEMS.map((item) => {
                                 const isExpanded = expanded === item.id;
@@ -146,9 +130,7 @@ const Faq = () => {
                                     >
                                         <AccordionSummary
                                             expandIcon={
-                                                <Box
-                                                    sx={faqSx.expandIconWrap}
-                                                >
+                                                <Box sx={faqSx.expandIconWrap}>
                                                     {isExpanded ? (
                                                         <CloseIcon sx={faqSx.expandIcon} />
                                                     ) : (
@@ -158,21 +140,13 @@ const Faq = () => {
                                             }
                                             sx={faqSx.summary}
                                         >
-                                            <Typography
-                                                variant='h6'
-                                                sx={faqSx.question}
-                                            >
+                                            <Typography variant='h6' sx={faqSx.question}>
                                                 {item.question}
                                             </Typography>
                                         </AccordionSummary>
 
-                                        <AccordionDetails
-                                            sx={faqSx.details}
-                                        >
-                                            <Typography
-                                                variant='body2'
-                                                sx={faqSx.answer}
-                                            >
+                                        <AccordionDetails sx={faqSx.details}>
+                                            <Typography variant='body2' sx={faqSx.answer}>
                                                 {item.answer}
                                             </Typography>
                                         </AccordionDetails>
@@ -184,15 +158,11 @@ const Faq = () => {
                 </Grid>
             </Container>
 
-            <Box
-                sx={faqSx.sparkleTopLeftFloat}
-            >
+            <Box sx={faqSx.sparkleTopLeftFloat}>
                 <Sparkle size={22} />
             </Box>
 
-            <Box
-                sx={faqSx.sparkleCenterFloat}
-            >
+            <Box sx={faqSx.sparkleCenterFloat}>
                 <Sparkle size={22} />
             </Box>
         </Box>
