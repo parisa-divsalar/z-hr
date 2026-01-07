@@ -44,11 +44,11 @@ const KeyBenefits: FC = () => {
         <Container>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '5rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'start' }}>
-                    <Typography variant='h5' color='secondary.main' fontWeight={'700'}>
+                    <Typography variant='h2' color='secondary.main' fontWeight={'700'}>
                         Key Benefits
                     </Typography>
 
-                    <Typography variant='subtitle1' color='secondary.main' fontWeight={'500'}>
+                    <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'}>
                         Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for the
                         markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.
                     </Typography>
@@ -73,11 +73,18 @@ const KeyBenefits: FC = () => {
                     }}
                 >
                     <Typography variant='h5' color='secondary.main' fontWeight={'584'}>
-                        ATS-Friendly Resume
+                        Dubai & UAE CV Format, Ready to Submit{' '}
                     </Typography>
 
-                    <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'}>
-                        Your resume won't be rejected by ATS
+                    <Typography
+                        justifyContent='center'
+                        textAlign='center'
+                        variant='subtitle1'
+                        color='secondary.main'
+                        fontWeight={'492'}
+                    >
+                        Build a Dubai-ready CV that matches UAE resume format expectations, from layout to
+                        recruiter-friendly
                     </Typography>
 
                     <Image alt='ats' width={200} height={157} src={ATSImage} />
