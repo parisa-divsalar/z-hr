@@ -1,5 +1,5 @@
 import { Stack } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 
 export const MainNavbarContainer = styled(Stack)(({ theme }) => ({
   width: '100%',
@@ -10,9 +10,10 @@ export const MainNavbarContainer = styled(Stack)(({ theme }) => ({
   zIndex: Math.max(theme.zIndex.appBar, theme.zIndex.drawer) + 1,
   backdropFilter: 'blur(12px)',
   WebkitBackdropFilter: 'blur(12px)',
+  backgroundColor: alpha(theme.palette.background.paper, 0.78),
 }));
 
-export const MainNavbarContent = styled(Stack)(() => ({
+export const MainNavbarContent = styled(Stack)(({ theme }) => ({
   width: '100%',
   maxWidth: '75rem',
   display: 'flex',
@@ -21,4 +22,9 @@ export const MainNavbarContent = styled(Stack)(() => ({
   zIndex: 99,
   height: '76px',
   margin: '0 auto',
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    height: '64px',
+  },
 }));

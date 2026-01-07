@@ -74,10 +74,11 @@ export default function MinaComponent() {
             <Navbar />
             <main
                 style={{
-                    width: '100dvw',
+                    width: '100%',
                     flex: 1,
                     height: 'fit-content',
                     background: '#fcfbff',
+                    overflowX: 'hidden',
                 }}
             >
                 <HeroSection />

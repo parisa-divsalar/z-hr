@@ -1,6 +1,22 @@
-import { Divider, IconButton, Stack, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
+import {
+  Box,
+  Divider,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
 
 import CoinIcon from '@/assets/images/design/coin.svg';
 import MoonIcon from '@/assets/images/icons/moon.svg';
@@ -22,102 +38,252 @@ const Navbar = () => {
   const { accessToken } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isHomeActive = pathname === '/' || pathname === '/(public)';
 
   if (!isLayoutVisible(pathname)) return null;
 
+  const navItems = useMemo(
+    () => [
+      { label: 'Home', href: '/' },
+      // TODO: Wire these up to real routes/anchors when available.
+      { label: 'About Us', href: '/#about' },
+      { label: 'Our Plans', href: '/#plans' },
+      { label: 'Contact Us', href: '/#contact' },
+    ],
+    [],
+  );
+
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  const openMenu = useCallback(() => setIsMenuOpen(true), []);
+
   return (
     <MainNavbarContainer>
       <MainNavbarContent direction='row'>
-        <Stack direction='row' alignItems='center' gap={2}>
+        <Stack direction='row' alignItems='center' gap={{ xs: 1.25, sm: 2 }}>
           <AppImage src={logo} width={24} height={34} />
 
           <Typography variant='h4' fontWeight='700' color='text.primary'>
             Z-CV
           </Typography>
 
-          <Typography variant='subtitle2' color='text.secondary'>
+          <Typography
+            variant='subtitle2'
+            color='text.secondary'
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+          >
             AI Resume Maker
           </Typography>
         </Stack>
 
-        <Stack direction='row' gap={2}>
-          <Link href='/' style={{ textDecoration: 'none' }}>
-            <Typography
-              variant='subtitle1'
-              fontWeight={isHomeActive ? '600' : '400'}
-              color={isHomeActive ? 'text.primary' : 'grey.500'}
-            >
-              Home
+        {isMobile ? (
+          <IconButton
+            aria-label='Open menu'
+            onClick={openMenu}
+            sx={{
+              width: 44,
+              height: 44,
+              border: '1px solid #F0F0F2',
+              borderRadius: 2,
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+        ) : (
+          <>
+            <Stack direction='row' gap={2}>
+              <Link href='/' style={{ textDecoration: 'none' }}>
+                <Typography
+                  variant='subtitle1'
+                  fontWeight={isHomeActive ? '600' : '400'}
+                  color={isHomeActive ? 'text.primary' : 'grey.500'}
+                >
+                  Home
+                </Typography>
+              </Link>
+
+              <Typography variant='subtitle1' color='grey.500'>
+                About Us
+              </Typography>
+
+              <Typography variant='subtitle1' color='grey.500'>
+                Our Plans
+              </Typography>
+
+              <Typography variant='subtitle1' color='grey.500'>
+                Contact Us
+              </Typography>
+            </Stack>
+
+            {accessToken ? (
+              <Stack direction='row' gap={3}>
+                <Stack direction='row' gap={0.5} alignItems='center'>
+                  <CoinIcon />
+                  <Typography color='secondary.main' variant='subtitle2'>
+                    85 Credit
+                  </Typography>
+                </Stack>
+                <MuiButton color='secondary'>Create New</MuiButton>
+
+                <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
+
+                <Stack className={classes.themeContainer}>
+                  <NotifyIcon />
+                </Stack>
+
+                <Stack className={classes.themeContainer}>
+                  <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
+                    {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                  </IconButton>
+                </Stack>
+
+                <MuiAvatar size='medium' color='primary'>
+                  <Typography variant='subtitle2' fontWeight='bold'>
+                    ZA
+                  </Typography>
+                </MuiAvatar>
+              </Stack>
+            ) : (
+              <Stack direction='row' gap={3}>
+                <MuiButton color='secondary' variant='outlined' onClick={() => router.push(PublicRoutes.login)}>
+                  Login
+                </MuiButton>
+
+                <MuiButton
+                  color='secondary'
+                  startIcon={<UserPlusIcon />}
+                  onClick={() => router.push(PublicRoutes.register)}
+                >
+                  Sign Up
+                </MuiButton>
+
+                <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
+
+                <Stack className={classes.themeContainer}>
+                  <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
+                    {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                  </IconButton>
+                </Stack>
+              </Stack>
+            )}
+          </>
+        )}
+      </MainNavbarContent>
+
+      <Drawer
+        anchor='right'
+        open={isMenuOpen}
+        onClose={closeMenu}
+        PaperProps={{
+          sx: {
+            width: 'min(92vw, 360px)',
+            p: 2,
+          },
+        }}
+      >
+        <Stack direction='row' alignItems='center' justifyContent='space-between' mb={1}>
+          <Stack direction='row' alignItems='center' gap={1.25}>
+            <AppImage src={logo} width={22} height={30} />
+            <Typography variant='subtitle1' fontWeight={700}>
+              Z-CV
             </Typography>
-          </Link>
-
-          <Typography variant='subtitle1' color='grey.500'>
-            About Us
-          </Typography>
-
-          <Typography variant='subtitle1' color='grey.500'>
-            Our Plans
-          </Typography>
-
-          <Typography variant='subtitle1' color='grey.500'>
-            Contact Us
-          </Typography>
+          </Stack>
+          <IconButton aria-label='Close menu' onClick={closeMenu}>
+            <CloseIcon />
+          </IconButton>
         </Stack>
 
+        <Divider sx={{ mb: 1.5 }} />
+
+        <List disablePadding>
+          {navItems.map((item) => (
+            <ListItem key={item.label} disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  router.push(item.href);
+                  closeMenu();
+                }}
+                sx={{ borderRadius: 2 }}
+              >
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
+                    fontWeight: item.href === '/' && isHomeActive ? 700 : 500,
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+
+        <Divider sx={{ my: 1.5 }} />
+
         {accessToken ? (
-          <Stack direction='row' gap={3}>
-            <Stack direction='row' gap={0.5} alignItems='center'>
+          <Stack gap={1.25}>
+            <Stack direction='row' gap={0.75} alignItems='center' sx={{ px: 1 }}>
               <CoinIcon />
               <Typography color='secondary.main' variant='subtitle2'>
                 85 Credit
               </Typography>
             </Stack>
-            <MuiButton color='secondary'>Create New</MuiButton>
 
-            <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
+            <MuiButton color='secondary' fullWidth>
+              Create New
+            </MuiButton>
 
-            <Stack className={classes.themeContainer}>
-              <NotifyIcon />
+            <Stack direction='row' gap={1}>
+              <Box className={classes.themeContainer} sx={{ flex: '0 0 auto' }}>
+                <NotifyIcon />
+              </Box>
+              <Box className={classes.themeContainer} sx={{ flex: '0 0 auto' }}>
+                <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
+                  {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                </IconButton>
+              </Box>
+              <MuiAvatar size='medium' color='primary'>
+                <Typography variant='subtitle2' fontWeight='bold'>
+                  ZA
+                </Typography>
+              </MuiAvatar>
             </Stack>
-
-            <Stack className={classes.themeContainer}>
-              <IconButton disabled color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
-                {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
-              </IconButton>
-            </Stack>
-
-            <MuiAvatar size='medium' color='primary'>
-              <Typography variant='subtitle2' fontWeight='bold'>
-                ZA
-              </Typography>
-            </MuiAvatar>
           </Stack>
         ) : (
-          <Stack direction='row' gap={3}>
-            <MuiButton color='secondary' variant='outlined' onClick={() => router.push(PublicRoutes.login)}>
+          <Stack gap={1.25}>
+            <MuiButton
+              color='secondary'
+              variant='outlined'
+              fullWidth
+              onClick={() => {
+                router.push(PublicRoutes.login);
+                closeMenu();
+              }}
+            >
               Login
             </MuiButton>
 
             <MuiButton
               color='secondary'
               startIcon={<UserPlusIcon />}
-              onClick={() => router.push(PublicRoutes.register)}
+              fullWidth
+              onClick={() => {
+                router.push(PublicRoutes.register);
+                closeMenu();
+              }}
             >
               Sign Up
             </MuiButton>
 
-            <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
-
-            <Stack className={classes.themeContainer}>
-              <IconButton disabled color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
+            <Box className={classes.themeContainer} sx={{ width: '100%' }}>
+              <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
                 {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
               </IconButton>
-            </Stack>
+            </Box>
           </Stack>
         )}
-      </MainNavbarContent>
+      </Drawer>
     </MainNavbarContainer>
   );
 };
