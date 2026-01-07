@@ -129,14 +129,13 @@ const Faq = () => {
                                         sx={faqSx.accordion}
                                     >
                                         <AccordionSummary
+                                            disableRipple
                                             expandIcon={
-                                                <Box sx={faqSx.expandIconWrap}>
-                                                    {isExpanded ? (
-                                                        <CloseIcon sx={faqSx.expandIcon} />
-                                                    ) : (
-                                                        <AddIcon sx={faqSx.expandIcon} />
-                                                    )}
-                                                </Box>
+                                                isExpanded ? (
+                                                    <CloseIcon sx={faqSx.expandIcon} />
+                                                ) : (
+                                                    <AddIcon sx={faqSx.expandIcon} />
+                                                )
                                             }
                                             sx={faqSx.summary}
                                         >

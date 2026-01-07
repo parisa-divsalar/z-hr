@@ -104,8 +104,8 @@ export const faqSx: SxMap = {
         placeItems: 'center',
         border: '1px solid',
         borderColor: 'rgba(16, 24, 40, 0.12)',
-        bgcolor: 'rgba(16, 24, 40, 0.02)',
-        transition: 'transform 200ms ease, background-color 200ms ease',
+        bgcolor: 'transparent',
+        transition: 'transform 200ms ease',
     },
     expandIcon: { fontSize: 20, color: 'text.primary' },
 
@@ -125,6 +125,7 @@ export const faqSx: SxMap = {
             left: 'auto',
             top: '50%',
             margin: 0,
+            bgcolor: 'transparent',
             transform: 'translateY(-50%)',
             '&.Mui-expanded': {
                 transform: 'translateY(-50%)',
