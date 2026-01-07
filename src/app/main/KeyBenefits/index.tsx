@@ -2,7 +2,7 @@
 
 import { FC } from 'react';
 
-import { Button, Container, Typography } from '@mui/material';
+import { Box, Button, Container, Typography } from '@mui/material';
 import Image, { StaticImageData } from 'next/image';
 
 import AITextImage from '@/assets/images/main/ai-text.png';
@@ -19,23 +19,27 @@ interface Benefit {
 const KeyBenefits: FC = () => {
     const benefits: Benefit[] = [
         {
-            title: 'Quick Resume Builder',
-            description: 'In 30 seconds, you have a complete resume.',
+            title: 'ATS-Friendly Resume That Gets Past Filters',
+            description:
+                'Create an ATS-friendly resume designed to pass automated screening and stay readable for real hiring managers',
             image: QuickResumeImage,
         },
         {
-            title: 'Job Opportunity Boost',
-            description: 'Enhance your chances for better job prospects.',
+            title: 'Tailor Your Resume to Any Job Description',
+            description:
+                'Tailor your resume to match the Job Description (JD) to highlight your relevant skills and experience.',
             image: JobOpportunityImage,
         },
         {
-            title: 'AI Text Generation',
-            description: 'No need to write from scratch, AI generates the text.',
+            title: 'AI Resume Builder, Done in Minutes',
+            description:
+                'Use an AI Resume Builder to generate a polished, professional resume without starting from scratch',
             image: AITextImage,
         },
         {
-            title: 'Middle East Focus',
-            description: 'Tailored for the Iranian and Dubai markets (Localization).',
+            title: 'Keyword Optimization for Higher Visibility',
+            description:
+                'Find missing keywords with a Keyword Gap approach so your resume matches UAE job posts more accurately',
             image: MiddleEastImage,
         },
     ];
@@ -61,7 +65,8 @@ const KeyBenefits: FC = () => {
                 <div
                     style={{
                         gap: '2rem',
-                        height: 354,
+                        width: 588,
+                        height: 374,
                         display: 'flex',
                         padding: '40px',
                         background: 'white',
@@ -91,13 +96,26 @@ const KeyBenefits: FC = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginTop: '5rem' }}>
+            <Box
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                        xs: 'repeat(1, 282px)',
+                        sm: 'repeat(2, 282px)',
+                        md: 'repeat(4, 282px)', // show all 4 cards in a single row on desktop
+                    },
+                    justifyContent: 'center',
+                    gap: '1rem',
+                    mt: '5rem',
+                }}
+            >
                 {benefits.map((benefit, index) => (
                     <div
                         key={index}
                         style={{
-                            gap: '2rem',
-                            height: 354,
+                            gap: '1.5rem',
+                            width: 282,
+                            height: 439,
                             display: 'flex',
                             background: 'white',
                             padding: '40px 24px',
@@ -119,7 +137,7 @@ const KeyBenefits: FC = () => {
                         <Image alt='ats' width={182} height={157} src={benefit.image} />
                     </div>
                 ))}
-            </div>
+            </Box>
         </Container>
     );
 };
