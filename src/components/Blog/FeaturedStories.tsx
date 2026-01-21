@@ -1,28 +1,49 @@
-import styles from './BlogPage.module.css';
-import { featuredStories } from './data';
+'use client';
+
+import { Button, Stack, Typography } from '@mui/material';
+
+import ImageCardSlider from '@/components/Blog/ImageCardSlider';
+import { BlogSection } from '@/components/Blog/ImageCardSlider.styles';
 
 export default function FeaturedStories() {
-  return (
-    <section className={styles.featuredSection}>
-      <div className={styles.featuredGrid}>
-        {featuredStories.map((story) => (
-          <article
-            key={story.title}
-            className={styles.featuredCard}
-            style={{
-              backgroundImage: story.image ? `url(${story.image})` : undefined,
-            }}
-          >
-            <div className={styles.featuredOverlay} />
-            <div className={styles.featuredCardContent}>
-              <span className={styles.featuredTag}>{story.tag}</span>
-              <h3 className={styles.featuredTitle}>{story.title}</h3>
-              <p className={styles.featuredMeta}>{story.meta}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
+    return (
+        <BlogSection
+            justifyContent='center'
+            alignItems='center'
+            width='100%'
+            textAlign='center'
+            gap={2}
+        >
+            <Typography variant='h2' color='secondary.main' fontWeight='700' pt={12}>
+                Blog{' '}
+            </Typography>
 
+            <Typography
+                variant='body1'
+                color='secondary.main'
+                fontWeight='492'
+                textAlign='center'
+            >
+                "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.{' '}
+            </Typography>
+
+            <Typography
+                variant='body1'
+                color='secondary.main'
+                fontWeight='492'
+                textAlign='center'
+            >
+                Tailored for the markets of Iran and Dubai, featuring modern templates and
+                advanced artificial intelligence.{' '}
+            </Typography>
+
+            <ImageCardSlider />
+
+            <Stack direction='row' justifyContent='center' mt={5} mb={15}>
+                <Button variant='contained' color='secondary' size='medium'>
+                    View Archive{' '}
+                </Button>
+            </Stack>
+        </BlogSection>
+    );
+}

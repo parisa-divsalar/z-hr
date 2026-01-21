@@ -11,17 +11,17 @@ export default function HeroSection() {
                 Zenonwork Learning Hub
             </Typography>
 
-            <Typography variant='h3' fontWeight='400' color='text.primary' textAlign='center' py={3}>
+            <Typography variant='h3' fontWeight='400' color='text.primary' textAlign='center' py={5}>
                 Dubai-ready CV, ATS tips,
             </Typography>
             <div className={styles.heroHighlights}>
                 {heroHighlights.map((card) => (
                     <article key={card.title} className={styles.heroCard}>
+                        <h3 className={styles.heroCardTitle}>{card.title}</h3>
+                        <p className={styles.heroCardDesc}>{card.description}</p>
                         <div className={styles.heroCardAccent} style={{ background: card.accent }}>
                             {card.icon}
                         </div>
-                        <h3 className={styles.heroCardTitle}>{card.title}</h3>
-                        <p className={styles.heroCardDesc}>{card.description}</p>
                     </article>
                 ))}
             </div>

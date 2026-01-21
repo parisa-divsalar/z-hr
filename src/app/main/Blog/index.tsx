@@ -2,9 +2,8 @@
 
 import { Button, Stack, Typography } from '@mui/material';
 
-import ImageCardSlider from '@/app/main/Blog/ImageCardSlider';
-
-import { BlogSection } from './ImageCardSlider.styles';
+import ImageCardSlider from '@/components/Blog/ImageCardSlider';
+import { BlogSection } from '@/components/Blog/ImageCardSlider.styles';
 
 const Blog = () => {
     return (

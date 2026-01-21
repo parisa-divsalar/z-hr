@@ -145,6 +145,7 @@ export const imageCardSliderSx: SxMap = {
         },
     },
 };
+
 export const BlogSection = styled(Stack)(({ theme }) => ({
     paddingTop: theme.spacing(4),
     backgroundColor: theme.palette.secondary.contrastText,
@@ -152,3 +153,4 @@ export const BlogSection = styled(Stack)(({ theme }) => ({
         paddingTop: theme.spacing(6),
     },
 }));
+
