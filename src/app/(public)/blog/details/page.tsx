@@ -75,7 +75,26 @@ export default function BlogDetailPage() {
         <div className={styles.pageShell}>
             <p className={styles.breadcrumb}>Home / Blog</p>
             <section className={styles.heroCard}>
-                <div className={styles.coverImage} role='presentation' />
+                <div className={styles.heroMediaRow}>
+                    <div className={styles.coverImage} role='presentation' />
+                    <aside className={styles.sidebar}>
+                        <div className={styles.sidebarCard}>
+                            <Typography variant='h5' color='text.primary' fontWeight='500'>
+                                Trending in UAE
+                            </Typography>
+                            <nav className={styles.sidebarLinks}>
+                                {sidebarTopics.map((topic) => (
+                                    <a href='#' key={topic} className={styles.sidebarLink}>
+                                        {topic}
+                                    </a>
+                                ))}
+                            </nav>
+                            <MuiButton size='small' startIcon={<AddIcon />}>
+                                Build a Dubai-ready CV
+                            </MuiButton>
+                        </div>
+                    </aside>
+                </div>
                 <div className={styles.heroContent}>
                     <div className={styles.metadataRow}>
                         <span>Dubai</span>
@@ -143,22 +162,6 @@ export default function BlogDetailPage() {
                         </MuiButton>
                     </div>
                 </div>
-
-                <aside className={styles.sidebar}>
-                    <div className={styles.sidebarCard}>
-                        <h3>Trending in UAE/Dubai</h3>
-                        <nav className={styles.sidebarLinks}>
-                            {sidebarTopics.map((topic) => (
-                                <a href='#' key={topic} className={styles.sidebarLink}>
-                                    {topic}
-                                </a>
-                            ))}
-                        </nav>
-                        <button type='button' className={styles.sidebarButton}>
-                            Explore Trends
-                        </button>
-                    </div>
-                </aside>
             </div>
 
             <section className={styles.keyTakeaways}>
