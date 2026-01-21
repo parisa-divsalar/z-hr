@@ -752,3 +752,5 @@ export const applyExperienceEditText = (current: ResumeExperience[], text: strin
         [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
     );
 };
+
+

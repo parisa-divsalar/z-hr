@@ -36,6 +36,7 @@ interface MuiInputProps {
   onBlur?: () => void;
   // allow passing MUI `sx` and other TextField props through
   sx?: any;
+  className?: string;
 }
 
 const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
@@ -64,6 +65,7 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
       autoFocus = false,
       onChange,
       onBlur,
+      className,
       ...rest
     },
     ref: ForwardedRef<HTMLInputElement>,
@@ -90,7 +92,7 @@ const MuiInput = forwardRef<HTMLInputElement, MuiInputProps>(
     };
 
     return (
-      <Stack>
+      <Stack className={className}>
         <Typography
           variant='caption'
           color={disabled ? 'grey.100' : error ? 'error.main' : focused ? 'primary.main' : 'text.secondary'}

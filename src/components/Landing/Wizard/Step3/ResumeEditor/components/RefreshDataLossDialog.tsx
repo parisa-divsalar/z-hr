@@ -52,3 +52,5 @@ const RefreshDataLossDialog: FunctionComponent<RefreshDataLossDialogProps> = ({ 
 };
 
 export default RefreshDataLossDialog;
+
+

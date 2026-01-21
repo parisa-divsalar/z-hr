@@ -67,3 +67,5 @@ export const extractFromHeadline = (headline?: string) => {
         visaStatus: String(visaMatch?.[1] ?? '').trim(),
     };
 };
+
+
