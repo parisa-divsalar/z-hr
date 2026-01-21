@@ -8,6 +8,7 @@ export const PublicRoutes = {
     moreFeatures: '/more-features',
     resumeGenerator: '/resume-generator',
     main: '/main',
+    blog: '/blog',
 };
 
 export const PrivateRoutes = {
@@ -26,6 +27,7 @@ export const PrivateRoutes = {
 
 export const VisibilityLayout: string[] = [
     PublicRoutes.landing,
+    PublicRoutes.blog,
     PrivateRoutes.dashboard,
     PrivateRoutes.history,
     PrivateRoutes.support,
