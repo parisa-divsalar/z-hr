@@ -32,7 +32,7 @@ export const PageTitle = styled(Box)(({ theme }) => ({
     gap: theme.spacing(0.5),
     marginBottom: theme.spacing(1),
 
-    '& h1': {
+    '& h1, & h5': {
         fontSize: '24px',
         fontWeight: 700,
         color: theme.palette.text.primary,

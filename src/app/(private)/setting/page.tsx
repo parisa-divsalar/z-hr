@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 
-import { SettingRoot } from '@/app/(private)/setting/styled';
+import { SectionCard, SettingRoot } from '@/app/(private)/setting/styled';
 import NewPasswordForm, { NewPasswordFormValues } from '@/components/Auth/NewPasswordForm';
 import MuiRadioButton from '@/components/UI/MuiRadioButton';
 import MuiSwichButton from '@/components/UI/MuiSwichButton';
@@ -31,35 +31,62 @@ const Setting = () => {
 
     const radioOptions = [
         { value: 'option1', label: 'English' },
-        { value: 'option2', label: ' Arabic' },
-        { value: 'option3', label: 'Spanish ' },
-        { value: 'option4', label: 'Chinese ' },
-        { value: 'option5', label: ' Hindi' },
+        { value: 'option2', label: 'Arabic' },
+        { value: 'option3', label: 'Spanish' },
+        { value: 'option4', label: 'Chinese' },
+        { value: 'option5', label: 'Hindi' },
     ];
+
+    const notificationLabels = ['Notification', 'Alert', 'Message', 'Reminder'];
 
     return (
         <SettingRoot>
-            <Stack spacing={2} className='settings-stack' px={3}>
-                <Typography variant='h5' fontWeight='500' color='text.primary' py={2}>
+            <Stack spacing={0.5}>
+                <Typography variant='h5' fontWeight='500' color='text.primary'>
                     Setting
                 </Typography>
-                <Typography variant='subtitle1' fontWeight='492' color='text.primary'>
-                    Asset
+                <Typography variant='body2' color='text.secondary'>
+                    Configure notifications, language preferences, and update your password from one place.
                 </Typography>
-                <MuiSwichButton
-                    label='Notification'
-                    checked={isEnabled}
-                    onChange={(_, checked) => setIsEnabled(checked)}
-                />
-                <MuiSwichButton label='Alert' checked={isEnabled} onChange={(_, checked) => setIsEnabled(checked)} />
-                <MuiSwichButton label='Message' checked={isEnabled} onChange={(_, checked) => setIsEnabled(checked)} />
-                <MuiSwichButton label='Reminder' checked={isEnabled} onChange={(_, checked) => setIsEnabled(checked)} />
             </Stack>
-            <Stack gap={1} className='settings-stack' p={3} mt={3}>
-                <Typography variant='h5' fontWeight='492' color='text.primary' mt={2}>
-                    Language{' '}
-                </Typography>
-                <Stack direction='row' gap={6} flexWrap='wrap' mt={3} pb={3}>
+
+            <SectionCard>
+                <Stack spacing={0.5}>
+                    <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+                        Assets
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                        Toggle the notifications you receive from the platform.
+                    </Typography>
+                </Stack>
+                <Stack spacing={1.25} pt={1}>
+                    {notificationLabels.map((label) => (
+                        <MuiSwichButton
+                            key={label}
+                            label={label}
+                            checked={isEnabled}
+                            onChange={(_, checked) => setIsEnabled(checked)}
+                        />
+                    ))}
+                </Stack>
+            </SectionCard>
+
+            <SectionCard>
+                <Stack spacing={0.5}>
+                    <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+                        Language
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                        Select the dashboard language you prefer. This applies to the entire experience.
+                    </Typography>
+                </Stack>
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    flexWrap='wrap'
+                    gap={2}
+                    pt={1}
+                    alignItems='flex-start'
+                >
                     {radioOptions.map((radio) => (
                         <MuiRadioButton
                             key={radio.value}
@@ -72,24 +99,31 @@ const Setting = () => {
                         />
                     ))}
                 </Stack>
-            </Stack>
+            </SectionCard>
 
-            <Stack gap={1} className='settings-stack' p={3} mt={3}>
-                <Typography variant='h5' fontWeight='492' color='text.primary' mt={3}>
-                    Password
-                </Typography>
+            <SectionCard>
+                <Stack spacing={0.5}>
+                    <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
+                        Password
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                        Keep your account protected by regularly refreshing your password.
+                    </Typography>
+                </Stack>
 
-                <NewPasswordForm
-                    showCodeField={false}
-                    showCurrentPassword
-                    fieldGridSize={6}
-                    showResetButton
-                    buttonLabel='Save'
-                    primaryButtonWidth={68}
-                    successMessage='Password updated successfully'
-                    onSubmit={handlePasswordSubmit}
-                />
-            </Stack>
+                <Box sx={{ width: '100%', maxWidth: 700 }}>
+                    <NewPasswordForm
+                        showCodeField={false}
+                        showCurrentPassword
+                        fieldGridSize={6}
+                        showResetButton
+                        buttonLabel='Save'
+                        primaryButtonWidth={68}
+                        successMessage='Password updated successfully'
+                        onSubmit={handlePasswordSubmit}
+                    />
+                </Box>
+            </SectionCard>
         </SettingRoot>
     );
 };

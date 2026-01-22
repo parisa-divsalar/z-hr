@@ -2,71 +2,48 @@ import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const SupportRoot = styled(Box)(({ theme }) => ({
-    width: '100%',
-    height: '85vh',
-    maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
-    overflowY: 'auto', // scroll only inside this content
-    boxSizing: 'border-box',
-    padding: 20,
-    border: `1px solid ${theme.palette.grey[100]}`,
+    width: 'min(1120px, 100%)',
+    padding: theme.spacing(3),
     borderRadius: '8px',
-    gap: 24,
-
-    [theme.breakpoints.down('lg')]: {
-        padding: theme.spacing(2.5),
-        height: 'calc(100vh - 150px)',
-    },
-
+    border: `1px solid ${theme.palette.grey[100]}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(3),
     [theme.breakpoints.down('md')]: {
-        padding: theme.spacing(2),
-        height: 'calc(100vh - 120px)',
-        borderRadius: '6px',
+        padding: theme.spacing(2.5),
     },
-
     [theme.breakpoints.down('sm')]: {
-        padding: theme.spacing(1.5),
-        height: 'calc(100vh - 80px)',
-        borderRadius: '4px',
-        marginTop: '8px',
+        padding: theme.spacing(2),
+        margin: `${theme.spacing(1)} auto ${theme.spacing(2)}`,
+        borderRadius: theme.spacing(1.5),
     },
 }));
 
 export const GridContainer = styled(Box)(({ theme }) => ({
     display: 'grid',
-    gridTemplateColumns: 'repeat(12, 1fr)',
-    gap: 0,
-    maxWidth: '1200px',
-    margin: '0 auto',
-
-    [theme.breakpoints.down('lg')]: {
-        maxWidth: '1000px',
-    },
-
-    [theme.breakpoints.down('md')]: {
-        maxWidth: '100%',
-        gridTemplateColumns: 'repeat(12, 1fr)',
-    },
-
-    [theme.breakpoints.down('sm')]: {
-        maxWidth: '100%',
-        gridTemplateColumns: 'repeat(12, 1fr)',
-        gap: 0,
-    },
+    gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
+    gap: theme.spacing(3),
+    width: '100%',
 }));
 
 export const ContentWrapper = styled(Box)(({ theme }) => ({
-    gridColumn: '1 / 13', // span all 12 columns
+    gridColumn: '1 / -1',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2.5),
+}));
 
-    [theme.breakpoints.down('lg')]: {
-        gridColumn: '1 / 13', // span all 12 columns
-    },
-
-    [theme.breakpoints.down('md')]: {
-        gridColumn: '1 / 13', // span all 12 columns
-    },
-
+export const SupportInfoCard = styled(Box)(({ theme }) => ({
+    borderRadius: theme.spacing(1.5),
+    border: `1px solid ${theme.palette.grey[200]}`,
+    backgroundColor: theme.palette.background.default,
+    padding: theme.spacing(2.5),
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    boxShadow: theme.shadows[0],
     [theme.breakpoints.down('sm')]: {
-        gridColumn: '1 / 13', // span all 12 columns
+        padding: theme.spacing(2),
     },
 }));
 
