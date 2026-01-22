@@ -49,6 +49,13 @@ export const ContainerSkill = styled(Stack, {
     gap: '0.25rem',
     // Keep the auto-growing textarea visually contained within rounded corners.
     overflow: 'hidden',
+    [theme.breakpoints.down('lg')]: {
+        width: '100%',
+        maxWidth: '100%',
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(0, 1),
+    },
 }));
 export const ContainerSkillAttach = styled(Stack, {
     shouldForwardProp: (prop) => prop !== 'active',
@@ -70,13 +77,14 @@ export const ContainerSkillAttachItem = styled(Stack, {
     shouldForwardProp: (prop) => prop !== 'active',
 })<{ active?: boolean }>(() => ({
     backgroundColor: 'white',
-    width: '550px',
+    width: '100%',
     maxWidth: '550px',
     paddingTop: '5px',
     height: 'auto',
     marginTop: '0.5rem',
     display: 'flex',
     gap: '1rem',
+    boxSizing: 'border-box',
 }));
 
 export const ContainerSkillAttachVoice = styled(Stack, {
@@ -120,11 +128,20 @@ export const ActionIconButton = styled(IconButton)(() => ({
     },
 }));
 
-export const SummaryTextContainer = styled(Stack)(() => ({
-    width: '498px',
+export const SummaryTextContainer = styled(Stack)(({ theme }) => ({
+    width: '100%',
+    maxWidth: '498px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: theme.spacing(0, 2),
+    boxSizing: 'border-box',
+    [theme.breakpoints.down('md')]: {
+        padding: theme.spacing(0, 1.5),
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(0, 1),
+    },
 }));
 
 export const ActionButtonsGroup = styled(Stack)(() => ({
@@ -172,20 +189,23 @@ export const TransparentRemoveFileButton = styled(BaseRemoveFileButton)(() => ({
 }));
 
 export const EntriesDivider = styled(Divider)(({ theme }) => ({
-    width: '550px',
+    width: '100%',
+    maxWidth: '550px',
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
     borderColor: theme.palette.grey[100],
 }));
 
 export const EntriesListContainer = styled(Stack)(() => ({
+    width: '100%',
     maxWidth: '550px',
-    width: '550px',
+    gap: '0.75rem',
 }));
 
 export const EntryItemContainer = styled(ContainerSkillAttachItem)(() => ({
     alignItems: 'stretch',
     justifyContent: 'space-between',
+    boxSizing: 'border-box',
 }));
 
 export const EntryBodyRow = styled(Stack)(() => ({

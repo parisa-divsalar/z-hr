@@ -5,8 +5,12 @@ export const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-
   gap: theme.spacing(4),
+  flexWrap: 'wrap',
+  padding: theme.spacing(1, 2),
+  [theme.breakpoints.down('sm')]: {
+    gap: theme.spacing(2),
+  },
 }));
 
 export const StepItem = styled(Box, {
@@ -16,6 +20,11 @@ export const StepItem = styled(Box, {
   alignItems: 'center',
   gap: theme.spacing(1.5),
   transition: '0.2s ease',
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    justifyContent: 'center',
+    gap: theme.spacing(1),
+  },
 }));
 
 export const StepCircle = styled(Box, {
@@ -31,13 +40,17 @@ export const StepCircle = styled(Box, {
   background: active ? theme.palette.primary.main : current ? theme.palette.primary.light : theme.palette.primary.light,
   color: active ? theme.palette.primary.contrastText : current ? theme.palette.primary.main : theme.palette.grey[500],
   fontWeight: 500,
-  // Firefox-only: prevent flexbox shrinking/odd font-metrics shifting the digit inside the circle.
   '@supports (-moz-appearance: none)': {
     minWidth: 40,
     flexShrink: 0,
     display: 'grid',
     placeItems: 'center',
     lineHeight: 1,
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: 34,
+    height: 34,
+    fontSize: '0.85rem',
   },
 }));
 
@@ -47,4 +60,7 @@ export const Divider = styled('div', {
   flex: '0 0 50px',
   height: 2,
   background: active ? theme.palette.primary.main : theme.palette.divider,
+  [theme.breakpoints.down('sm')]: {
+    flex: '0 0 30px',
+  },
 }));

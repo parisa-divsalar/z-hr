@@ -39,16 +39,22 @@ export default function ResumeBuilderPage() {
         if (normalized) setRequestId(normalized);
     }, [searchParams, setRequestId]);
 
+    const layoutHeight =
+        'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))';
+
     return (
         <ResumeBuilderRoot
             id='resume-builder-root'
-            sx={{
-                height: 'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
-                maxHeight:
-                    'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))',
-
+            sx={(theme) => ({
+                height: layoutHeight,
+                maxHeight: layoutHeight,
                 minHeight: 0,
-            }}
+                [theme.breakpoints.down('md')]: {
+                    height: 'auto',
+                    maxHeight: 'none',
+                    minHeight: 0,
+                },
+            })}
         >
             <Stack width='100%' height='100%'>
                 <IntroDialog

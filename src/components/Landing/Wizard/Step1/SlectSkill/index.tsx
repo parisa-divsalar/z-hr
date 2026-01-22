@@ -293,7 +293,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     if (typeof item === 'string') {
                         label = item;
                     } else if (typeof item === 'object' && item !== null) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const obj = item as any;
                         label = obj.label ?? obj.name ?? obj.title ?? String(obj.id ?? '');
                     } else {
@@ -680,6 +679,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             <SummaryTextContainer>
                 <Typography
                     fontWeight='400'
+                    mx={5}
                     variant='body1'
                     color='text.secondary'
                     justifyContent='center'
@@ -750,7 +750,6 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                             <VoiceItem key={item.id}>
                                 <VoiceRecord
                                     recordingState='idle'
-                                    // eslint-disable-next-line @typescript-eslint/no-empty-function
                                     setRecordingState={() => {}}
                                     initialAudioUrl={item.url}
                                     initialAudioBlob={item.blob}
