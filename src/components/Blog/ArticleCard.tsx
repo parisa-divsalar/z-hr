@@ -5,11 +5,12 @@ import { BlogArticle } from '@shared/blog/repository';
 
 type ArticleCardProps = {
     article: BlogArticle;
+    index: number;
 };
 
-export default function ArticleCard({ article }: ArticleCardProps) {
+export default function ArticleCard({ article, index }: ArticleCardProps) {
     return (
-        <Link href='/blog/details' className={styles.articleCardLink}>
+        <Link href={`/blog/details?index=${index}`} className={styles.articleCardLink}>
             <article className={styles.articleCard}>
                 <div
                     className={styles.articleImage}
@@ -22,7 +23,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
                         <span className={styles.articleMeta}>{article.meta}</span>
                     </div>
                     <h3 className={styles.articleTitle}>{article.title}</h3>
-                    <p className={styles.articleExcerpt}>{article.description}</p>
+                    <p className={styles.articleExcerpt}>{article.shortTitle || article.description}</p>
                     <div className={styles.articleFooter}>
                         <span className={styles.readMore}>Read More →</span>
                     </div>

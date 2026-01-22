@@ -10,8 +10,12 @@ export default function ArticleGrid({ articles }: ArticleGridProps) {
     return (
         <section className={styles.articlesSection}>
             <div className={styles.articleGrid}>
-                {articles.map((article) => (
-                    <ArticleCard article={article} key={`${article.title}-${article.category}`} />
+                {articles.map((article, index) => (
+                    <ArticleCard
+                        article={article}
+                        index={index}
+                        key={`${article.title}-${article.category}`}
+                    />
                 ))}
             </div>
         </section>

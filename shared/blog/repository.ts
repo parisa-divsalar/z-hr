@@ -9,10 +9,12 @@ const articlesFilePath = resolveArticlesFilePath();
 
 export type BlogArticle = {
   title: string;
+  shortTitle?: string;
   description: string;
-  meta: string;
   category: string;
+  meta: string;
   image: string;
+  banner?: string;
 };
 
 async function readRepository(): Promise<BlogArticle[]> {

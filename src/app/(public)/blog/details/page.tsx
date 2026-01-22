@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { Stack, Typography } from '@mui/material';
 
@@ -9,14 +10,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 
 import styles from './page.module.css';
-
-const resumeTips = [
-    'Lead with a Dubai-ready summary that mirrors the role.',
-    'Mirror the job description keywords to pass ATS scans.',
-    'Highlight measurable impact to build instant trust.',
-    'Organize experience in reverse chronological order with clear dates.',
-    'Keep formatting crisp with consistent spacing and section headers.',
-];
+import { BlogArticle } from '@shared/blog/repository';
 
 const sidebarTopics = ['Resume Tips', 'ATS Insights', 'Format Choices', 'Collaboration Tools', 'Trial Options'];
 
@@ -62,34 +56,119 @@ const faqItems = [
 ];
 
 export default function BlogDetailPage() {
+    const searchParams = useSearchParams();
+    const indexParam = searchParams.get('index') ?? '';
+    const [article, setArticle] = useState<BlogArticle | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
     const [commentName, setCommentName] = useState('');
     const [commentEmail, setCommentEmail] = useState('');
     const [commentText, setCommentText] = useState('');
 
+    useEffect(() => {
+        let mounted = true;
+
+        const fetchArticle = async () => {
+            setIsLoading(true);
+
+            try {
+                const response = await fetch('/api/blog/articles');
+                if (!response.ok) {
+                    throw new Error('Unable to load the requested article.');
+                }
+                const data = (await response.json()) as BlogArticle[];
+                const requestedIndex = Number(indexParam);
+                const hasIndex =
+                    Number.isInteger(requestedIndex) && requestedIndex >= 0 && requestedIndex < data.length;
+                const selectedArticle = data[hasIndex ? requestedIndex : 0] ?? null;
+                if (!mounted) {
+                    return;
+                }
+                setArticle(selectedArticle);
+                setErrorMessage(selectedArticle ? null : 'No articles have been published yet.');
+            } catch (error) {
+                if (!mounted) {
+                    return;
+                }
+                setArticle(null);
+                setErrorMessage((error as Error).message || 'Unable to load the article.');
+            } finally {
+                if (mounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        fetchArticle();
+
+        return () => {
+            mounted = false;
+        };
+    }, [indexParam]);
+
+    const articleParagraphs = useMemo(() => {
+        if (!article?.description) {
+            return [];
+        }
+        return article.description
+            .split(/\n+/)
+            .map((paragraph) => paragraph.trim())
+            .filter(Boolean);
+    }, [article?.description]);
+
+    const keyTakeaways = useMemo(() => articleParagraphs.slice(0, 3), [articleParagraphs]);
+    const heroImage = article?.banner || article?.image || '/images/Maskgroup.jpg';
+
     const toggleFaqItem = (index: number) => {
         setOpenFaqIndex((prev) => (prev === index ? null : index));
     };
+
+    if (isLoading) {
+        return (
+            <div className={styles.pageShell}>
+                <p className={styles.breadcrumb}>Home / Blog</p>
+                <p className="text-sm text-gray-500">در حال بارگذاری مقاله...</p>
+            </div>
+        );
+    }
+
+    if (errorMessage || !article) {
+        return (
+            <div className={styles.pageShell}>
+                <p className={styles.breadcrumb}>Home / Blog</p>
+                <p className="text-sm text-gray-500" role="alert">
+                    {errorMessage || 'No article available yet.'}
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.pageShell}>
             <p className={styles.breadcrumb}>Home / Blog</p>
             <section className={styles.heroCard}>
                 <div className={styles.heroMediaRow}>
-                    <div className={styles.coverImage} role='presentation' />
+                    <div
+                        className={styles.coverImage}
+                        style={{
+                            backgroundImage: `linear-gradient(120deg, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.1)), url('${heroImage}')`,
+                        }}
+                        role="presentation"
+                    />
                     <aside className={styles.sidebar}>
                         <div className={styles.sidebarCard}>
-                            <Typography variant='h5' color='text.primary' fontWeight='500'>
+                            <Typography variant="h5" color="text.primary" fontWeight="500">
                                 Trending in UAE
                             </Typography>
                             <nav className={styles.sidebarLinks}>
                                 {sidebarTopics.map((topic) => (
-                                    <a href='#' key={topic} className={styles.sidebarLink}>
+                                    <a href="#" key={topic} className={styles.sidebarLink}>
                                         {topic}
                                     </a>
                                 ))}
                             </nav>
-                            <MuiButton size='small' startIcon={<AddIcon />}>
+                            <MuiButton size="small" startIcon={<AddIcon />}>
                                 Build a Dubai-ready CV
                             </MuiButton>
                         </div>
@@ -97,67 +176,45 @@ export default function BlogDetailPage() {
                 </div>
                 <div className={styles.heroContent}>
                     <div className={styles.metadataRow}>
-                        <span>Dubai</span>
+                        <span>{article.category}</span>
                         <span>5 min read</span>
-                        <span>Published Jan 21, 2026</span>
+                        <span>{article.meta}</span>
                     </div>
 
-                    <Typography variant='h4' color='text.primary' fontWeight='500' pt={3}>
-                        Build a Dubai-ready resume that clears every filter
+                    <Typography variant="h4" color="text.primary" fontWeight="500" pt={3}>
+                        {article.title}
                     </Typography>
+                    {article.shortTitle && (
+                        <Typography variant="subtitle1" color="text.primary" fontWeight="500" className={styles.heroIntro}>
+                            {article.shortTitle}
+                        </Typography>
+                    )}
                 </div>
             </section>
 
             <div className={styles.mainLayout}>
                 <div className={styles.blogContent}>
-                    <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
-                        Dubai recruiters move fast. A clean visual hierarchy, measurable results, and locally preferred
-                        keywords can make your credentials impossible to skip.
+                    <Typography variant="subtitle1" color="text.primary" fontWeight="500">
+                        {article.shortTitle || `Why ${article.title} matters`}
                     </Typography>
-                    <Typography variant='h5' color='text.primary' fontWeight='500'>
-                        Resume Tips
-                    </Typography>
-                    <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
-                        A clean visual hierarchy, measurable results, and locally preferred keywords can make your
-                        credentials impossible to skip.
-                    </Typography>
-                    <ol className={styles.tipList}>
-                        {resumeTips.map((tip) => (
-                            <li key={tip}>{tip}</li>
-                        ))}
-                    </ol>
-
+                    {articleParagraphs.length ? (
+                        articleParagraphs.map((paragraph, index) => (
+                            <Typography key={`${paragraph}-${index}`} variant="body1" className={styles.introParagraph}>
+                                {paragraph}
+                            </Typography>
+                        ))
+                    ) : (
+                        <Typography className={styles.introParagraph} variant="body1">
+                            The full article text will appear once it is published.
+                        </Typography>
+                    )}
                     <div className={styles.ctaBlock}>
                         <div>
-                            <h3>Upload your resume</h3>
-                            <p>We rebuild your resume with ATS-friendly structure,</p>
+                            <h3>{article.meta || 'Apply these insights'}</h3>
+                            <p>{`Use these ${article.category.toLowerCase()} insights when you build your Dubai-ready CV.`}</p>
                         </div>
 
-                        <MuiButton size='large' startIcon={<AddIcon />}>
-                            Build a Dubai-ready CV
-                        </MuiButton>
-                    </div>
-
-                    <Typography variant='h5' color='text.primary' fontWeight='500'>
-                        Resume Tips
-                    </Typography>
-                    <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
-                        A clean visual hierarchy, measurable results, and locally preferred keywords can make your
-                        credentials impossible to skip.
-                    </Typography>
-                    <ol className={styles.tipList}>
-                        {resumeTips.map((tip) => (
-                            <li key={tip}>{tip}</li>
-                        ))}
-                    </ol>
-
-                    <div className={styles.ctaBlock}>
-                        <div>
-                            <h3>Upload your resume</h3>
-                            <p>We rebuild your resume with ATS-friendly structure,</p>
-                        </div>
-
-                        <MuiButton size='large' startIcon={<AddIcon />}>
+                        <MuiButton size="large" startIcon={<AddIcon />}>
                             Build a Dubai-ready CV
                         </MuiButton>
                     </div>
@@ -166,13 +223,15 @@ export default function BlogDetailPage() {
 
             <section className={styles.keyTakeaways}>
                 <div>
-                    <Typography variant='h5' color='text.primary' fontWeight='500' mb={3}>
+                    <Typography variant="h5" color="text.primary" fontWeight="500" mb={3}>
                         Key Takeaways
                     </Typography>
                     <ul>
-                        <li>Keep the resume concise but data-rich for Dubai hiring managers.</li>
-                        <li>Keep the resume concise but data-rich for Dubai hiring managers.</li>
-                        <li>Keep the resume concise but data-rich for Dubai hiring managers.</li>
+                        {keyTakeaways.length ? (
+                            keyTakeaways.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)
+                        ) : (
+                            <li>More insights will appear here after the article is published.</li>
+                        )}
                     </ul>
                 </div>
             </section>
@@ -181,25 +240,25 @@ export default function BlogDetailPage() {
                 <div className={styles.commentForm}>
                     <h3>Leave a comment</h3>
                     <div className={styles.formFields}>
-                        <MuiInput label='Name' placeholder='Your name' value={commentName} onChange={setCommentName} />
+                        <MuiInput label="Name" placeholder="Your name" value={commentName} onChange={setCommentName} />
                         <MuiInput
-                            label='Email'
-                            placeholder='you@email.com'
+                            label="Email"
+                            placeholder="you@email.com"
                             value={commentEmail}
                             onChange={setCommentEmail}
-                            type='email'
+                            type="email"
                         />
                         <MuiInput
                             className={styles.commentTextarea}
-                            label='Comment'
-                            placeholder='Share your thoughts'
+                            label="Comment"
+                            placeholder="Share your thoughts"
                             rows={4}
                             value={commentText}
                             onChange={setCommentText}
                         />
                     </div>
-                    <Stack direction='row' justifyContent='flex-end' mt={3}>
-                        <MuiButton type='button' size='medium' color='secondary' variant='contained'>
+                    <Stack direction="row" justifyContent="flex-end" mt={3}>
+                        <MuiButton type="button" size="medium" color="secondary" variant="contained">
                             Submit
                         </MuiButton>
                     </Stack>
@@ -208,7 +267,7 @@ export default function BlogDetailPage() {
                     <h3>Comments</h3>
                     {comments.map((item) => (
                         <div key={item.name} className={styles.commentItem}>
-                            <div className={styles.avatar} aria-hidden='true'>
+                            <div className={styles.avatar} aria-hidden="true">
                                 {item.name.charAt(0)}
                             </div>
                             <div>
@@ -218,8 +277,8 @@ export default function BlogDetailPage() {
                                 </div>
                                 <p>{item.text}</p>
                                 <div className={styles.commentActions}>
-                                    <button type='button'>Like</button>
-                                    <button type='button'>Reply</button>
+                                    <button type="button">Like</button>
+                                    <button type="button">Reply</button>
                                 </div>
                             </div>
                         </div>
@@ -233,7 +292,7 @@ export default function BlogDetailPage() {
                     {faqItems.map((faq, index) => (
                         <article key={faq.question} className={styles.accordionItem}>
                             <button
-                                type='button'
+                                type="button"
                                 className={styles.accordionHeader}
                                 aria-expanded={openFaqIndex === index}
                                 onClick={() => toggleFaqItem(index)}
