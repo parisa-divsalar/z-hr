@@ -92,8 +92,12 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
     return (
         <PreviewEditeRoot ref={pdfRef}>
             <Grid container spacing={2} alignItems='stretch'>
-                <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-                    <Stack direction='row' alignItems='center' gap={2}>
+                <Grid item size={{ xs: 12, sm: 12, md: 12 }}>
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                        gap={1.5}
+                    >
                         <BackIcon onClick={handleBackClick} style={{ cursor: 'pointer' }} />
                         <Typography variant='h5' color='text.primary' fontWeight='500'>
                             Zayd Al-Mansoori's Resume
@@ -101,13 +105,26 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                     </Stack>
                     {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mt: 1 }} />}
                 </Grid>
-                <Grid size={{ xs: 12, sm: 12, md: 2 }} pt={2}>
+                <Grid
+                    item
+                    size={{ xs: 12, sm: 12, md: 2 }}
+                    pt={2}
+                    sx={{ display: 'flex', justifyContent: 'center' }}
+                >
                     <HistoryImage p={2}>
                         <Image src={ResumeIcon} alt='Resume preview' fill />
                     </HistoryImage>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={4}>
+                <Grid
+                    item
+                    size={{ xs: 12, sm: 5, md: 7 }}
+                    p={2}
+                    sx={{
+                        px: { xs: 2, sm: 2, md: 4 },
+                        pt: { xs: 1, md: 0 },
+                    }}
+                >
                     <Stack direction='row' gap={1}>
                         <Typography variant='h6' fontWeight='500' color='text.primary'>
                             Resume Name
@@ -116,7 +133,13 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                         <TagPill sx={{ marginTop: '5px' }}> 85%</TagPill>
                     </Stack>
 
-                    <Stack direction='row' gap={2} alignItems='center'>
+                    <Stack
+                        direction='row'
+                        gap={2}
+                        alignItems='center'
+                        flexWrap='wrap'
+                        sx={{ mt: 0.5 }}
+                    >
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
                             Nov 26, 2024
                         </Typography>
@@ -134,7 +157,13 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' gap={4} alignItems='center' mt={2}>
+                    <Stack
+                        direction='row'
+                        gap={2}
+                        alignItems='center'
+                        mt={2}
+                        flexWrap='wrap'
+                    >
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VoiceIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
@@ -163,21 +192,46 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' gap={1} mt={3} alignItems='center'>
+                    <Stack
+                        direction='row'
+                        gap={1}
+                        mt={3}
+                        alignItems='center'
+                        flexWrap='wrap'
+                    >
                         <FrameFaw />
                         <Divider orientation='vertical' flexItem sx={{ bgcolor: 'grey.100' }} />
                         <TrashIcon />
                     </Stack>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 3, md: 3 }} display='flex' alignItems='flex-end' justifyContent='flex-end'>
-                    <Stack direction='row' gap={1}>
+                <Grid
+                    item
+                    size={{ xs: 12, sm: 3, md: 3 }}
+                    display='flex'
+                    alignItems='flex-end'
+                    justifyContent='flex-end'
+                    sx={{
+                        pt: { xs: 1, sm: 2 },
+                    }}
+                >
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        gap={1}
+                        width='100%'
+                        justifyContent={{ xs: 'stretch', sm: 'flex-end' }}
+                        alignItems='center'
+                    >
                         <MuiButton
                             variant='outlined'
                             size='medium'
                             color='secondary'
                             onClick={handleEditResume}
-                            sx={{ width: 160 }}
+                            fullWidth
+                            sx={{
+                                width: { xs: '100%', sm: 160 },
+                                textTransform: 'none',
+                            }}
                         >
                             Edit In Preview
                         </MuiButton>
@@ -187,6 +241,11 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                             color='secondary'
                             loading={isDownloading}
                             onClick={handleDownload}
+                            fullWidth
+                            sx={{
+                                width: { xs: '100%', sm: 'auto' },
+                                textTransform: 'none',
+                            }}
                         >
                             {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download'}
                         </MuiButton>

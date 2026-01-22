@@ -1,24 +1,46 @@
-import { Box, Stack, Typography, Tabs } from '@mui/material';
+import { alpha, Box, Stack, Typography, Tabs } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const HistoryEditeRoot = styled(Box)(() => ({
+export const HistoryEditeRoot = styled(Box)(({ theme }) => ({
     width: '100%',
-    height: 'calc(100vh - 140px)',
-    margin: '1 auto',
-    borderRadius: '8px',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    paddingBottom: '5px',
+    maxWidth: 1280,
+    margin: '0 auto',
+    padding: theme.spacing(2),
+    paddingBottom: theme.spacing(3),
+    borderRadius: theme.spacing(2),
+    overflow: 'visible',
+    [theme.breakpoints.down('md')]: {
+        padding: theme.spacing(1.5),
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1),
+        paddingBottom: theme.spacing(2),
+    },
 }));
 
 export const PreviewEditeRoot = styled(Stack)(({ theme }) => ({
-    padding: theme.spacing(3),
-    borderRadius: '8px',
+    width: '100%',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    borderRadius: theme.spacing(1.75),
+    padding: theme.spacing(3.5),
+    gap: theme.spacing(3),
     transition: 'all 0.3s ease',
-    border: `1px solid ${theme.palette.grey[100]}`,
+    border: `1px solid ${alpha(theme.palette.grey[300], 0.6)}`,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: '0 25px 60px rgba(15, 23, 42, 0.15)',
 
     '&:hover': {
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.08)',
+        boxShadow: '0 30px 70px rgba(15, 23, 42, 0.25)',
+    },
+
+    [theme.breakpoints.down('md')]: {
+        padding: theme.spacing(2.5),
+        gap: theme.spacing(2),
+    },
+
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(2),
     },
 }));
 
