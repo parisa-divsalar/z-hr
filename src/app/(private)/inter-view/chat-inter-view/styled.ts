@@ -56,11 +56,23 @@ export const ChatInterViewRoot = styled(Box)(({ theme }) => ({
     border: `1px solid ${theme.palette.grey[100]}`,
     overflowY: 'auto',
     overflowX: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(3),
+
+    [theme.breakpoints.down('lg')]: {
+        padding: theme.spacing(2.5),
+    },
+
+    [theme.breakpoints.down('md')]: {
+        height: 'auto',
+        maxHeight: 'none',
+        padding: theme.spacing(2),
+        gap: theme.spacing(2),
+    },
 
     [theme.breakpoints.down('sm')]: {
-        padding: theme.spacing(2),
-        height: '85vh',
-        maxHeight: 'calc(100vh - var(--navbar-height) - 2rem)',
+        padding: theme.spacing(1.5),
     },
 }));
 
@@ -68,6 +80,7 @@ export const ChatInterViewGrid = styled(Grid)(() => ({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
+    gap: '16px',
 }));
 
 interface CenterGrayBoxProps {
@@ -84,18 +97,39 @@ export const CenterGrayBox = styled(Stack, {
     justifyContent: 'center',
     backgroundColor: isIntro ? theme.palette.grey[50] : 'transparent',
     borderRadius: '8px',
+    padding: theme.spacing(3),
+    boxSizing: 'border-box',
+
+    [theme.breakpoints.down('md')]: {
+        maxWidth: '100%',
+        padding: theme.spacing(2),
+    },
+
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1.5),
+    },
 }));
 
-export const ChatInterViewContent = styled(Stack)(() => ({
+export const ChatInterViewContent = styled(Stack)(({ theme }) => ({
     flex: 1,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    [theme.breakpoints.down('md')]: {
+        alignItems: 'stretch',
+    },
 }));
 
-export const ChatInputContainer = styled(BaseContainerSkill)(() => ({
+export const ChatInputContainer = styled(BaseContainerSkill)(({ theme }) => ({
     width: '528px',
-    maxWidth: '528px',
+    maxWidth: '100%',
+    boxSizing: 'border-box',
+    [theme.breakpoints.down('md')]: {
+        width: '100%',
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1.5),
+    },
 }));
 
 export const ChatInputContent = styled(BaseInputContent)(() => ({}));
@@ -116,4 +150,9 @@ export const ScoreSards = styled(Stack, {
     alignItems: 'center',
     justifyContent: 'flex-start',
     flexWrap: 'wrap',
+    [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        height: 'auto',
+    },
 }));

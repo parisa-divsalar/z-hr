@@ -1,7 +1,6 @@
 'use client';
 
 import { Stack, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid';
 
 import HeadInterviewIcon from '@/assets/images/dashboard/headIterview.svg';
 import InterIcon from '@/assets/images/icons/interv.svg';
@@ -19,28 +18,48 @@ const Interview = () => {
                     Interview
                 </Typography>
 
-                <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                    <InterviewStats />
-                </Stack>
+                <Stack spacing={3} sx={{ width: '100%' }}>
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        alignItems='center'
+                        justifyContent='space-between'
+                        gap={2}
+                    >
+                        <InterviewStats />
+                    </Stack>
 
-                <Grid size={{ xs: 12, md: 12 }}>
-                    <Stack direction='row' alignItems='center' gap={2} mt={3}>
-                        <InterIcon />
-                        <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
-                            Your Interviews{' '}
-                        </Typography>
-                    </Stack>{' '}
-                    <RecentInterviews />
-                    <UpcomingInterview />
-                    <Stack direction='row' alignItems='center' gap={2} mt={3}>
-                        <HeadInterviewIcon />
-                        <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
-                            Interview History
-                        </Typography>
-                    </Stack>{' '}
-                    <RecentInterviews />
-                    <RecentInterviews />
-                </Grid>
+                    <Stack direction='column' gap={2}>
+                        <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            alignItems='center'
+                            gap={2}
+                            mt={1}
+                        >
+                            <InterIcon />
+                            <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
+                                Your Interviews
+                            </Typography>
+                        </Stack>
+                        <RecentInterviews />
+                        <UpcomingInterview />
+                    </Stack>
+
+                    <Stack direction='column' gap={2}>
+                        <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            alignItems='center'
+                            gap={2}
+                            mt={1}
+                        >
+                            <HeadInterviewIcon />
+                            <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
+                                Interview History
+                            </Typography>
+                        </Stack>
+                        <RecentInterviews />
+                        <RecentInterviews />
+                    </Stack>
+                </Stack>
             </InterviewRoot>
         </InterviewDialogProvider>
     );

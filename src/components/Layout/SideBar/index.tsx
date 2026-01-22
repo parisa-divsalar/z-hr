@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import { List, ListItemText, Stack, Typography } from '@mui/material';
+import { List, Stack, Typography } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 
 import DashboardRoundedIcon from '@/assets/images/menu/Icon1.svg';
@@ -15,7 +15,7 @@ import SettingsRoundedIcon from '@/assets/images/menu/Icon6.svg';
 import HeadphonesRoundedIcon from '@/assets/images/menu/Icon7.svg';
 import MicRoundedIcon from '@/assets/images/menu/Icon8.svg';
 import LogoutDialog from '@/components/Layout/SideBar/LogoutDialog';
-import { ItemButton, SidebarContainer, ItemIcon } from '@/components/Layout/SideBar/styled';
+import { ItemButton, SidebarContainer, ItemIcon, SidebarItemText } from '@/components/Layout/SideBar/styled';
 import { PrivateRoutes, VisibilitySideBar } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 
@@ -46,7 +46,13 @@ const SideBar = () => {
   return (
     <SidebarContainer>
       <Stack>
-        <Typography color='grey.300' variant='caption' px={3} pt={3}>
+        <Typography
+          color='grey.300'
+          variant='caption'
+          px={3}
+          pt={3}
+          sx={{ display: { xs: 'none', md: 'block' } }}
+        >
           Menu
         </Typography>
         <List>
@@ -57,9 +63,11 @@ const SideBar = () => {
             <ItemIcon>
               <DashboardRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='Dashboard' />
+            <SidebarItemText primary='Dashboard' />
 
-            {pathname === PrivateRoutes.dashboard && <KeyboardArrowRightRoundedIcon />}
+            {pathname === PrivateRoutes.dashboard && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
 
           <ItemButton
@@ -69,25 +77,31 @@ const SideBar = () => {
             <ItemIcon>
               <ArticleRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='Resume Builder' />
+            <SidebarItemText primary='Resume Builder' />
 
-            {pathname === PrivateRoutes.resumeBuilder && <KeyboardArrowRightRoundedIcon />}
+            {pathname === PrivateRoutes.resumeBuilder && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
 
           <ItemButton active={isHistoryActive} onClick={() => router.push(PrivateRoutes.history)}>
             <ItemIcon>
               <HistoryRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='History' />
-            {isHistoryActive && <KeyboardArrowRightRoundedIcon />}
+            <SidebarItemText primary='History' />
+            {isHistoryActive && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.payment} onClick={() => router.push(PrivateRoutes.payment)}>
             <ItemIcon>
               <CreditCardRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='Payment' />
-            {pathname === PrivateRoutes.payment && <KeyboardArrowRightRoundedIcon />}
+            <SidebarItemText primary='Payment' />
+            {pathname === PrivateRoutes.payment && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
 
           <ItemButton
@@ -97,9 +111,11 @@ const SideBar = () => {
             <ItemIcon>
               <SchoolRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='Learning Hub' />
+            <SidebarItemText primary='Learning Hub' />
 
-            {pathname === PrivateRoutes.learningHub && <KeyboardArrowRightRoundedIcon />}
+            {pathname === PrivateRoutes.learningHub && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
 
           <ItemButton
@@ -109,36 +125,48 @@ const SideBar = () => {
             <ItemIcon>
               <MicRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='Interview' />
-            {pathname === PrivateRoutes.interView && <KeyboardArrowRightRoundedIcon />}
+            <SidebarItemText primary='Interview' />
+            {pathname === PrivateRoutes.interView && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.setting} onClick={() => router.push(PrivateRoutes.setting)}>
             <ItemIcon>
               <SettingsRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='Setting' />
-            {pathname === PrivateRoutes.setting && <KeyboardArrowRightRoundedIcon />}
+            <SidebarItemText primary='Setting' />
+            {pathname === PrivateRoutes.setting && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
 
           <ItemButton active={pathname === PrivateRoutes.support} onClick={() => router.push(PrivateRoutes.support)}>
             <ItemIcon>
               <HeadphonesRoundedIcon fontSize='small' />
             </ItemIcon>
-            <ListItemText primary='Support' />
-            {pathname === PrivateRoutes.support && <KeyboardArrowRightRoundedIcon />}
+            <SidebarItemText primary='Support' />
+            {pathname === PrivateRoutes.support && (
+              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
+            )}
           </ItemButton>
         </List>
       </Stack>
 
       <Stack>
         <ItemButton onClick={() => setOpenLogoutDialog(true)}>
-          <ListItemText primary='Log out' sx={{ color: '#F77A79' }} />
+          <SidebarItemText primary='Log out' sx={{ color: '#F77A79' }} />
 
           <LogoutRoundedIcon sx={{ color: '#F77A79' }} fontSize='small' />
         </ItemButton>
 
-        <Typography color='grey.300' variant='caption' px={3} pb={3}>
+        <Typography
+          color='grey.300'
+          variant='caption'
+          px={3}
+          pb={3}
+          sx={{ display: { xs: 'none', md: 'block' } }}
+        >
           Version 1.3.23
         </Typography>
       </Stack>

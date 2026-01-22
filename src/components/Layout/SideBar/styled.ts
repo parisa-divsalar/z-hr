@@ -1,4 +1,4 @@
-import { Box, ListItemButton, ListItemIcon } from '@mui/material';
+import { Box, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const SidebarContainer = styled(Box)(({ theme }) => ({
@@ -30,23 +30,25 @@ export const SidebarContainer = styled(Box)(({ theme }) => ({
     },
 
     [theme.breakpoints.down('md')]: {
-        width: '100%',
+        width: 'auto',
+        maxWidth: '100%',
         height: 'auto',
         maxHeight: 'none',
         position: 'static',
         top: 'auto',
-        borderRadius: '1rem',
-        padding: theme.spacing(2),
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)',
+        borderRadius: '999px',
+        padding: theme.spacing(0.75),
+        boxShadow: 'none',
         backgroundColor: theme.palette.background.paper,
+        alignSelf: 'flex-start',
+        minWidth: 0,
         '&::before': {
             display: 'none',
         },
     },
 
     [theme.breakpoints.down('sm')]: {
-        padding: theme.spacing(1.5),
-        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08)',
+        padding: theme.spacing(0.5),
     },
 }));
 
@@ -68,9 +70,29 @@ export const ItemButton = styled(ListItemButton, {
     '&:hover': {
         backgroundColor: active ? theme.palette.primary.main : theme.palette.grey.A700,
     },
+    [theme.breakpoints.down('md')]: {
+        justifyContent: 'center',
+        padding: '8px',
+        borderRadius: 999,
+        minWidth: 44,
+        width: 44,
+        '& .MuiTypography-root': {
+            display: 'none',
+        },
+    },
 }));
 
 export const ItemIcon = styled(ListItemIcon)(() => ({
     minWidth: 36,
     color: '#8c8c8c',
+}));
+
+export const SidebarItemText = styled(ListItemText)(({ theme }) => ({
+    flex: 1,
+    '& .MuiTypography-root': {
+        fontSize: '0.85rem',
+    },
+    [theme.breakpoints.down('md')]: {
+        display: 'none',
+    },
 }));

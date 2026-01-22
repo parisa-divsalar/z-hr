@@ -5,14 +5,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Checkbox, Stack, Typography } from '@mui/material';
 
-import { SectionHeader } from '@/components/dashboard/styled';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import LearningHubContent, { mockLearningHubData } from './LearningHubContent';
 import {
   HeaderDivider,
+  LearningHubControls,
+  LearningHubHeader,
   LearningHubRoot,
   LearningHubTabButton,
+  LearningHubTabGroup,
   MenuItemStack,
   PopupMenu,
   RelativeStack,
@@ -63,15 +65,15 @@ const LearningHubPage = () => {
   return (
     <LearningHubRoot>
       <Stack gap={2} mt={1}>
-        <SectionHeader>
+        <LearningHubHeader>
           <Typography variant='h5' fontWeight='500' color='text.primary'>
-            Learning Hub{' '}
+            Learning Hub
           </Typography>
-          <Stack direction='row' alignItems='center'>
+          <LearningHubControls>
             <MuiCheckbox
               label={
                 <Typography variant='body2' fontWeight='400' color='text.primary'>
-                  Bookmarks{' '}
+                  Bookmarks
                 </Typography>
               }
             />
@@ -124,10 +126,10 @@ const LearningHubPage = () => {
                 </SortMenuContentStack>
               </PopupMenu>
             </RelativeStack>
-          </Stack>
-        </SectionHeader>
+          </LearningHubControls>
+        </LearningHubHeader>
 
-        <Stack direction='row' gap={1}>
+        <LearningHubTabGroup direction='row' sx={{ flexWrap: 'nowrap' }}>
           <LearningHubTabButton
             text='All'
             variant={activeTab === 'all' ? 'contained' : 'outlined'}
@@ -146,7 +148,7 @@ const LearningHubPage = () => {
             color='primary'
             onClick={() => setActiveTab('paid')}
           />
-        </Stack>
+        </LearningHubTabGroup>
 
         {activeTab === 'all' && <AllLearningHubSection />}
         {activeTab === 'free' && <FreeLearningHubSection />}

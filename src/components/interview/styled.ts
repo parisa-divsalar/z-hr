@@ -11,6 +11,19 @@ export const InterviewRoot = styled(Stack)(({ theme }) => ({
     border: `1px solid ${theme.palette.grey[100]}`,
     borderRadius: '8px',
     gap: 24,
+    [theme.breakpoints.down('lg')]: {
+        gap: theme.spacing(3),
+    },
+    [theme.breakpoints.down('md')]: {
+        height: 'auto',
+        maxHeight: 'none',
+        padding: theme.spacing(2),
+        gap: theme.spacing(2.5),
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1.5),
+        gap: theme.spacing(2),
+    },
 }));
 
 export const SectionHeader = styled(Stack)(() => ({
