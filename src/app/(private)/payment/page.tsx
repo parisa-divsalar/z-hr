@@ -1,13 +1,13 @@
 'use client';
 
-import { Typography } from '@mui/material';
+import { Stack, Typography, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import MuiBadge from '@/components/UI/MuiBadge';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiTable from '@/components/UI/MuiTable';
 
-import { PaymentRoot, PageTitle } from './styled';
+import { MobilePaymentList, MobilePaymentRow, PaymentRoot, PageTitle, TableWrapper } from './styled';
 
 interface PaymentData {
   amount: string;
@@ -44,6 +44,7 @@ const paymentData = [
 
 const PaymentPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleViewClick = (paymentCode: string) => {
     console.log('View payment:', paymentCode);
@@ -113,13 +114,69 @@ const PaymentPage = () => {
         </Typography>
       </PageTitle>
 
-      <MuiTable
-        columns={columns}
-        data={paymentData}
-        pagination={true}
-        defaultRowsPerPage={5}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
+      {isMobile ? (
+        <MobilePaymentList>
+          {paymentData.map((row) => (
+            <MobilePaymentRow key={row.paymentCode}>
+              <Stack direction='row' justifyContent='space-between'>
+                <Typography variant='body2' color='text.secondary'>
+                  Amount
+                </Typography>
+                <Typography variant='subtitle1'>{row.amount}</Typography>
+              </Stack>
+              <Stack direction='row' justifyContent='space-between'>
+                <Typography variant='body2' color='text.secondary'>
+                  Date
+                </Typography>
+                <Typography variant='subtitle1'>{row.date}</Typography>
+              </Stack>
+              <Stack direction='row' justifyContent='space-between'>
+                <Typography variant='body2' color='text.secondary'>
+                  Plan
+                </Typography>
+                <Typography variant='subtitle1'>{row.plan}</Typography>
+              </Stack>
+              <Stack direction='row' justifyContent='space-between'>
+                <Typography variant='body2' color='text.secondary'>
+                  Payment Code
+                </Typography>
+                <Typography variant='subtitle1'>{row.paymentCode}</Typography>
+              </Stack>
+              <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                <Typography variant='body2' color='text.secondary'>
+                  Status
+                </Typography>
+                <MuiBadge
+                  label={row.status}
+                  color={row.status}
+                  border={`1px solid ${theme.palette[row.status === 'success' ? 'success' : row.status === 'pending' ? 'warning' : 'error'].main}`}
+                  backgroundColor={
+                    row.status === 'success'
+                      ? theme.palette.success.light
+                      : theme.palette[row.status === 'pending' ? 'warning' : 'error'].light
+                  }
+                  textColor={theme.palette[row.status === 'success' ? 'success' : row.status === 'pending' ? 'warning' : 'error'].main}
+                />
+              </Stack>
+              <Stack direction='row' justifyContent='flex-end'>
+                <MuiButton color='secondary' variant='outlined' size='small' onClick={() => handleViewClick(row.paymentCode)}>
+                  View
+                </MuiButton>
+              </Stack>
+            </MobilePaymentRow>
+          ))}
+        </MobilePaymentList>
+      ) : (
+        <TableWrapper>
+          <MuiTable
+            columns={columns}
+            data={paymentData}
+            pagination={true}
+            defaultRowsPerPage={5}
+            rowsPerPageOptions={[5, 10, 25]}
+          />
+        </TableWrapper>
+      )}
     </PaymentRoot>
   );
 };
