@@ -1,6 +1,6 @@
 import ArticleCard from './ArticleCard';
 import styles from './BlogPage.module.css';
-import { BlogArticle } from './data';
+import { BlogArticle } from '@shared/blog/repository';
 
 type ArticleGridProps = {
     articles: BlogArticle[];

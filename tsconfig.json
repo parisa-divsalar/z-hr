@@ -10,6 +10,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@shared/*": [
+        "shared/*"
       ]
     },
     "allowJs": true,
