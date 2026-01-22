@@ -10,17 +10,33 @@ export const DASHBOARD_COLORS = {
     lightText: '#A1A1A1',
     darkText: '#1C1C1C',
 };
-export const DashboardRoot = styled(Stack)(({ theme }) => ({
-    width: '100%',
-    height: 'calc(100vh - var(--navbar-height) - 4rem)',
-    maxHeight: 'calc(100vh - var(--navbar-height) - 4rem)',
-    overflowY: 'auto', // scroll only inside this content
-    boxSizing: 'border-box',
-    padding: 20,
-    border: `1px solid ${theme.palette.grey[100]}`,
-    borderRadius: '8px',
-    gap: 24,
-}));
+export const DashboardRoot = styled(Stack)(({ theme }) => {
+    const desktopContentHeight = 'calc(100vh - var(--navbar-height) - 4rem)';
+
+    return {
+        width: '100%',
+        minHeight: desktopContentHeight,
+        maxHeight: desktopContentHeight,
+        height: desktopContentHeight,
+        overflowY: 'auto',
+        boxSizing: 'border-box',
+        padding: theme.spacing(3),
+        border: `1px solid ${theme.palette.grey[100]}`,
+        borderRadius: '8px',
+        gap: theme.spacing(3),
+        [theme.breakpoints.down('md')]: {
+            height: 'auto',
+            maxHeight: 'none',
+            minHeight: 'auto',
+            padding: theme.spacing(2),
+            gap: theme.spacing(2),
+        },
+        [theme.breakpoints.down('sm')]: {
+            padding: theme.spacing(1.5),
+            gap: theme.spacing(1.5),
+        },
+    };
+});
 
 export const SectionHeader = styled(Stack)(() => ({
     direction: 'ltr',
