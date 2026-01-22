@@ -48,6 +48,16 @@ export async function appendBlogArticle(article: BlogArticle): Promise<BlogArtic
   return updated;
 }
 
+export async function removeBlogArticle(index: number): Promise<BlogArticle[]> {
+  const current = await readRepository();
+  if (index < 0 || index >= current.length) {
+    throw new Error('Invalid article index.');
+  }
+  const updated = current.filter((_, idx) => idx !== index);
+  await writeRepository(updated);
+  return updated;
+}
+
 function resolveArticlesFilePath(): string {
   const candidates = [
     path.resolve(process.cwd(), 'shared', 'blog', 'articles.json'),
