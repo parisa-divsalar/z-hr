@@ -14,14 +14,14 @@ export const imageCardSliderSx: SxMap = {
     },
     list: {
         display: 'flex',
-        gap: 2,
+        gap: 5,
         overflowX: 'auto',
         pb: 1,
         scrollSnapType: 'x mandatory',
         scrollPaddingInline: 'calc(50% - 141px)',
         WebkitOverflowScrolling: 'touch',
         justifyContent: 'center',
-        px: 2,
+
         '& > *': {
             scrollSnapAlign: 'center',
         },
@@ -153,4 +153,3 @@ export const BlogSection = styled(Stack)(({ theme }) => ({
         paddingTop: theme.spacing(6),
     },
 }));
-
