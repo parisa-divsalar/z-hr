@@ -1,7 +1,7 @@
 import { Box, ListItemButton, ListItemIcon } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const SidebarContainer = styled(Box)(() => ({
+export const SidebarContainer = styled(Box)(({ theme }) => ({
     width: 280,
     backgroundColor: '#25252a',
     borderRadius: '0.5rem',
@@ -27,6 +27,26 @@ export const SidebarContainer = styled(Box)(() => ({
         height: 150,
         pointerEvents: 'none',
         background: 'radial-gradient(circle at top right, rgba(255,255,255,0.25), rgba(255,255,255,0) 70%)',
+    },
+
+    [theme.breakpoints.down('md')]: {
+        width: '100%',
+        height: 'auto',
+        maxHeight: 'none',
+        position: 'static',
+        top: 'auto',
+        borderRadius: '1rem',
+        padding: theme.spacing(2),
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)',
+        backgroundColor: theme.palette.background.paper,
+        '&::before': {
+            display: 'none',
+        },
+    },
+
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1.5),
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08)',
     },
 }));
 

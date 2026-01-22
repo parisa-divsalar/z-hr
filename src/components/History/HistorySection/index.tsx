@@ -100,14 +100,34 @@ const HistoryCard = ({
     return (
         <HistoryCommunityCardRoot ref={cardRef}>
             {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mx: 2, mt: 2, mb: 0 }} />}
-            <Grid container spacing={2} alignItems='center'>
+            <Grid
+                container
+                spacing={2}
+                alignItems='center'
+                sx={(theme) => ({
+                    [theme.breakpoints.down('sm')]: {
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
+                    },
+                })}
+            >
                 <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                     <HistoryImage m={1}>
                         <Image src={ResumeIcon} alt='Resume preview' fill />
                     </HistoryImage>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2} pl={5}>
+                <Grid
+                    size={{ xs: 12, sm: 5, md: 7 }}
+                    p={2}
+                    pl={5}
+                    sx={(theme) => ({
+                        [theme.breakpoints.down('sm')]: {
+                            pl: theme.spacing(2),
+                            pr: theme.spacing(2),
+                        },
+                    })}
+                >
                     <Stack direction='row' gap={2}>
                         <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
                             {name}
@@ -137,7 +157,18 @@ const HistoryCard = ({
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' gap={3} alignItems='center' mt={2}>
+                    <Stack
+                        direction='row'
+                        gap={3}
+                        alignItems='center'
+                        mt={2}
+                        sx={(theme) => ({
+                            flexWrap: 'wrap',
+                            [theme.breakpoints.down('sm')]: {
+                                gap: theme.spacing(1.5),
+                            },
+                        })}
+                    >
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VoiceIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
@@ -158,7 +189,17 @@ const HistoryCard = ({
                         </Stack>
                     </Stack>
 
-                    <Stack direction='row' gap={1} mt={4}>
+                    <Stack
+                        direction='row'
+                        gap={1}
+                        mt={4}
+                        sx={(theme) => ({
+                            flexWrap: 'wrap',
+                            [theme.breakpoints.down('sm')]: {
+                                gap: theme.spacing(1),
+                            },
+                        })}
+                    >
                         <Position />
 
                         <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
@@ -167,8 +208,26 @@ const HistoryCard = ({
                     </Stack>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-                    <Stack gap={11} alignItems='flex-end'>
+                <Grid
+                    size={{ xs: 12, sm: 3, md: 3 }}
+                    sx={(theme) => ({
+                        [theme.breakpoints.down('sm')]: {
+                            width: '100%',
+                        },
+                    })}
+                >
+                    <Stack
+                        gap={11}
+                        alignItems='flex-end'
+                        sx={(theme) => ({
+                            [theme.breakpoints.down('sm')]: {
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: theme.spacing(1.5),
+                            },
+                        })}
+                    >
                         <RelativeStack direction='row' gap={3}>
                             <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label='More options'>
                                 <Dotsvertical />
@@ -191,7 +250,17 @@ const HistoryCard = ({
                                 </MenuContentStack>
                             </PopupMenu>
                         </RelativeStack>
-                        <Stack direction='row' gap={2}>
+                        <Stack
+                            direction='row'
+                            gap={2}
+                            sx={(theme) => ({
+                                [theme.breakpoints.down('sm')]: {
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'flex-start',
+                                    width: 'auto',
+                                },
+                            })}
+                        >
                             <MuiButton variant='outlined' color='secondary' onClick={handleEditClick}>
                                 More
                             </MuiButton>

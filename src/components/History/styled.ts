@@ -11,27 +11,55 @@ export const HistoryRoot = styled(Stack)(({ theme }) => ({
     border: `1px solid ${theme.palette.grey[100]}`,
     borderRadius: '8px',
     gap: 24,
+    [theme.breakpoints.down('md')]: {
+        height: 'auto',
+        maxHeight: 'none',
+        padding: theme.spacing(2),
+    },
+    [theme.breakpoints.down('sm')]: {
+        height: 'auto',
+        borderWidth: 0,
+        padding: theme.spacing(1.5),
+        gap: theme.spacing(2),
+    },
 }));
 
-export const SectionHeader = styled(Stack)(() => ({
+export const SectionHeader = styled(Stack)(({ theme }) => ({
     direction: 'ltr',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: theme.spacing(1),
+    },
 }));
 
 export const HistoryCommunityCardRoot = styled(Stack)(({ theme }) => ({
     borderBottom: `1px solid ${theme.palette.grey[100]}`,
-    paddingTop: '10px',
-    paddingBottom: '10px',
+    paddingTop: theme.spacing(1.25),
+    paddingBottom: theme.spacing(1.25),
+    width: '100%',
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1.5),
+        borderRadius: 8,
+        border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.background.paper,
+    },
 }));
 
-export const HistoryImage = styled(Box)(() => ({
+export const HistoryImage = styled(Box)(({ theme }) => ({
     width: 152,
     height: 182,
     position: 'relative',
     borderRadius: 8,
     overflow: 'hidden',
+    [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        height: 160,
+        marginBottom: theme.spacing(1),
+    },
 }));
 
 export const MoreButton = styled('button')(({ theme }) => ({
