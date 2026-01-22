@@ -1,16 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 import { Stack, Typography } from '@mui/material';
+import { useSearchParams } from 'next/navigation';
+
+import { BlogArticle } from '@shared/blog/repository';
 
 import AddIcon from '@/assets/images/icons/add.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 
 import styles from './page.module.css';
-import { BlogArticle } from '@shared/blog/repository';
 
 const sidebarTopics = ['Resume Tips', 'ATS Insights', 'Format Choices', 'Collaboration Tools', 'Trial Options'];
 
@@ -117,7 +118,12 @@ export default function BlogDetailPage() {
             .filter(Boolean);
     }, [article?.description]);
 
-    const keyTakeaways = useMemo(() => articleParagraphs.slice(0, 3), [articleParagraphs]);
+    const keyTakeaways = useMemo(() => {
+        if (article?.keyTakeaways && article.keyTakeaways.length) {
+            return article.keyTakeaways;
+        }
+        return articleParagraphs.slice(0, 3);
+    }, [article?.keyTakeaways, articleParagraphs]);
     const heroImage = article?.banner || article?.image || '/images/Maskgroup.jpg';
 
     const toggleFaqItem = (index: number) => {
@@ -128,7 +134,7 @@ export default function BlogDetailPage() {
         return (
             <div className={styles.pageShell}>
                 <p className={styles.breadcrumb}>Home / Blog</p>
-                <p className="text-sm text-gray-500">در حال بارگذاری مقاله...</p>
+                <p className='text-sm text-gray-500'>در حال بارگذاری مقاله...</p>
             </div>
         );
     }
@@ -137,7 +143,7 @@ export default function BlogDetailPage() {
         return (
             <div className={styles.pageShell}>
                 <p className={styles.breadcrumb}>Home / Blog</p>
-                <p className="text-sm text-gray-500" role="alert">
+                <p className='text-sm text-gray-500' role='alert'>
                     {errorMessage || 'No article available yet.'}
                 </p>
             </div>
@@ -154,21 +160,21 @@ export default function BlogDetailPage() {
                         style={{
                             backgroundImage: `linear-gradient(120deg, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.1)), url('${heroImage}')`,
                         }}
-                        role="presentation"
+                        role='presentation'
                     />
                     <aside className={styles.sidebar}>
                         <div className={styles.sidebarCard}>
-                            <Typography variant="h5" color="text.primary" fontWeight="500">
+                            <Typography variant='h5' color='text.primary' fontWeight='500'>
                                 Trending in UAE
                             </Typography>
                             <nav className={styles.sidebarLinks}>
                                 {sidebarTopics.map((topic) => (
-                                    <a href="#" key={topic} className={styles.sidebarLink}>
+                                    <a href='#' key={topic} className={styles.sidebarLink}>
                                         {topic}
                                     </a>
                                 ))}
                             </nav>
-                            <MuiButton size="small" startIcon={<AddIcon />}>
+                            <MuiButton size='small' startIcon={<AddIcon />}>
                                 Build a Dubai-ready CV
                             </MuiButton>
                         </div>
@@ -181,30 +187,25 @@ export default function BlogDetailPage() {
                         <span>{article.meta}</span>
                     </div>
 
-                    <Typography variant="h4" color="text.primary" fontWeight="500" pt={3}>
+                    <Typography variant='h4' color='text.primary' fontWeight='500' pt={3}>
                         {article.title}
                     </Typography>
-                    {article.shortTitle && (
-                        <Typography variant="subtitle1" color="text.primary" fontWeight="500" className={styles.heroIntro}>
-                            {article.shortTitle}
-                        </Typography>
-                    )}
                 </div>
             </section>
 
             <div className={styles.mainLayout}>
                 <div className={styles.blogContent}>
-                    <Typography variant="subtitle1" color="text.primary" fontWeight="500">
+                    <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
                         {article.shortTitle || `Why ${article.title} matters`}
                     </Typography>
                     {articleParagraphs.length ? (
                         articleParagraphs.map((paragraph, index) => (
-                            <Typography key={`${paragraph}-${index}`} variant="body1" className={styles.introParagraph}>
+                            <Typography key={`${paragraph}-${index}`} variant='body1' className={styles.introParagraph}>
                                 {paragraph}
                             </Typography>
                         ))
                     ) : (
-                        <Typography className={styles.introParagraph} variant="body1">
+                        <Typography className={styles.introParagraph} variant='body1'>
                             The full article text will appear once it is published.
                         </Typography>
                     )}
@@ -214,7 +215,7 @@ export default function BlogDetailPage() {
                             <p>{`Use these ${article.category.toLowerCase()} insights when you build your Dubai-ready CV.`}</p>
                         </div>
 
-                        <MuiButton size="large" startIcon={<AddIcon />}>
+                        <MuiButton size='large' startIcon={<AddIcon />}>
                             Build a Dubai-ready CV
                         </MuiButton>
                     </div>
@@ -223,7 +224,7 @@ export default function BlogDetailPage() {
 
             <section className={styles.keyTakeaways}>
                 <div>
-                    <Typography variant="h5" color="text.primary" fontWeight="500" mb={3}>
+                    <Typography variant='h5' color='text.primary' fontWeight='500' mb={3}>
                         Key Takeaways
                     </Typography>
                     <ul>
@@ -240,25 +241,25 @@ export default function BlogDetailPage() {
                 <div className={styles.commentForm}>
                     <h3>Leave a comment</h3>
                     <div className={styles.formFields}>
-                        <MuiInput label="Name" placeholder="Your name" value={commentName} onChange={setCommentName} />
+                        <MuiInput label='Name' placeholder='Your name' value={commentName} onChange={setCommentName} />
                         <MuiInput
-                            label="Email"
-                            placeholder="you@email.com"
+                            label='Email'
+                            placeholder='you@email.com'
                             value={commentEmail}
                             onChange={setCommentEmail}
-                            type="email"
+                            type='email'
                         />
                         <MuiInput
                             className={styles.commentTextarea}
-                            label="Comment"
-                            placeholder="Share your thoughts"
+                            label='Comment'
+                            placeholder='Share your thoughts'
                             rows={4}
                             value={commentText}
                             onChange={setCommentText}
                         />
                     </div>
-                    <Stack direction="row" justifyContent="flex-end" mt={3}>
-                        <MuiButton type="button" size="medium" color="secondary" variant="contained">
+                    <Stack direction='row' justifyContent='flex-end' mt={3}>
+                        <MuiButton type='button' size='medium' color='secondary' variant='contained'>
                             Submit
                         </MuiButton>
                     </Stack>
@@ -267,7 +268,7 @@ export default function BlogDetailPage() {
                     <h3>Comments</h3>
                     {comments.map((item) => (
                         <div key={item.name} className={styles.commentItem}>
-                            <div className={styles.avatar} aria-hidden="true">
+                            <div className={styles.avatar} aria-hidden='true'>
                                 {item.name.charAt(0)}
                             </div>
                             <div>
@@ -277,8 +278,8 @@ export default function BlogDetailPage() {
                                 </div>
                                 <p>{item.text}</p>
                                 <div className={styles.commentActions}>
-                                    <button type="button">Like</button>
-                                    <button type="button">Reply</button>
+                                    <button type='button'>Like</button>
+                                    <button type='button'>Reply</button>
                                 </div>
                             </div>
                         </div>
@@ -292,7 +293,7 @@ export default function BlogDetailPage() {
                     {faqItems.map((faq, index) => (
                         <article key={faq.question} className={styles.accordionItem}>
                             <button
-                                type="button"
+                                type='button'
                                 className={styles.accordionHeader}
                                 aria-expanded={openFaqIndex === index}
                                 onClick={() => toggleFaqItem(index)}

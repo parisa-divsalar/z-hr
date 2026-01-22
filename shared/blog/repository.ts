@@ -15,6 +15,7 @@ export type BlogArticle = {
   meta: string;
   image: string;
   banner?: string;
+  keyTakeaways?: string[];
 };
 
 async function readRepository(): Promise<BlogArticle[]> {
