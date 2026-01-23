@@ -47,7 +47,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({ setStage, mode = '
         <ResumeContainer>
             <RefreshDataLossDialog open={isRefreshWarningOpen} onClose={() => setIsRefreshWarningOpen(false)} />
             <MainCardContainer ref={c.pdfRef}>
-                <CardContent>
+                <CardContent
+                    sx={{
+                        px: { xs: 2, sm: 3 },
+                        py: { xs: 2.5, sm: 3 },
+                    }}
+                >
                     <ProfileHeader
                         fullName={c.profile.fullName}
                         dateOfBirth={c.profile.dateOfBirth}

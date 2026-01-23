@@ -7,9 +7,14 @@ export const Container = styled(Stack)(({ theme }) => ({
   margin: '0 auto',
   minHeight: '100vh',
   gap: theme.spacing(3),
+  boxSizing: 'border-box',
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(3),
     gap: theme.spacing(4),
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2, 1.5),
+    gap: theme.spacing(2),
   },
 }));
 
@@ -69,6 +74,8 @@ export const InfoRow = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: theme.spacing(1, 0),
+  gap: theme.spacing(1),
+  flexWrap: 'wrap',
 }));
 
 export const FitScoreBadge = styled(Box)(({ theme }) => ({
@@ -117,6 +124,10 @@ export const FeatureCard = styled(Paper)(({ theme }) => ({
   position: 'relative',
   [theme.breakpoints.up('sm')]: {
     height: 135,
+  },
+  [theme.breakpoints.down('sm')]: {
+    minHeight: 'auto',
+    padding: theme.spacing(2),
   },
 }));
 

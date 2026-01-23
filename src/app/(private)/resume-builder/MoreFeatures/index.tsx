@@ -36,7 +36,7 @@ const learningHubTemplates = [
 const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }) => {
     return (
         <>
-            <Stack textAlign='center' mt={2} mb={2}>
+            <Stack textAlign='center' mt={2} mb={2} sx={{ px: { xs: 2, md: 0 } }}>
                 <Typography variant='h5' color='text.primary' fontWeight='500' mt={0.5}>
                     More Features
                 </Typography>
@@ -135,7 +135,14 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                 />
             </Stack>
 
-            <Stack direction='row' gap={3} justifyContent='center' p={5}>
+            <Stack
+                direction={{ xs: 'column', md: 'row' }}
+                gap={{ xs: 2, md: 3 }}
+                justifyContent='center'
+                alignItems={{ xs: 'stretch', md: 'center' }}
+                p={{ xs: 3, md: 5 }}
+                sx={{ width: '100%' }}
+            >
                 <MuiButton
                     text='Back'
                     variant='outlined'
@@ -143,8 +150,16 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                     size='large'
                     startIcon={<ArrowBackIcon style={{ color: '#111113' }} />}
                     onClick={onBack}
+                    sx={{ width: { xs: '100%', md: 'auto' } }}
                 />
-                <MuiButton text='Submit' variant='contained' color='secondary' size='large' onClick={onSubmit} />
+                <MuiButton
+                    text='Submit'
+                    variant='contained'
+                    color='secondary'
+                    size='large'
+                    onClick={onSubmit}
+                    sx={{ width: { xs: '100%', md: 'auto' } }}
+                />
             </Stack>
         </>
     );

@@ -149,7 +149,16 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
         : '';
 
     return isSubmitting ? (
-        <Stack alignItems='center' justifyContent='center'>
+        <Stack
+            alignItems='center'
+            justifyContent='center'
+            sx={{
+                width: '100%',
+                px: { xs: 3, sm: 0 },
+                py: { xs: 3, sm: 0 },
+                textAlign: 'center',
+            }}
+        >
             <ThinkingIcon />
 
             <Typography variant='h6' mt={4}>
@@ -168,7 +177,13 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
                 It might take a few minutes!
             </Typography>
 
-            <Stack mt={10} width='10rem'>
+            <Stack
+                mt={10}
+                sx={{
+                    width: { xs: '100%', sm: '10rem' },
+                    maxWidth: 260,
+                }}
+            >
                 <MuiButton variant='outlined' fullWidth onClick={onCancel}>
                     Cancel
                 </MuiButton>

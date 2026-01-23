@@ -11,6 +11,11 @@ export const Container = styled(Box)(({ theme }) => ({
   width: '100%',
   boxSizing: 'border-box',
   maxWidth: 820,
+  padding: theme.spacing(0, 1),
+  [theme.breakpoints.down('sm')]: {
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(0, 2),
+  },
 }));
 export const ContentCard = styled(Stack)(({ theme }) => ({
   width: '100%',
@@ -29,7 +34,8 @@ export const TopSection = styled(Stack)(({ theme }) => ({
 export const MediaRow = styled(Stack)(({ theme }) => ({
   width: '96%',
   flexDirection: 'row',
-  [theme.breakpoints.down('sm')]: {},
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
   alignItems: 'center',
   justifyContent: 'center',
 }));
@@ -38,9 +44,9 @@ export const MediaItem = styled(Stack)(({ theme }) => ({
   flex: 1,
   flexDirection: 'row',
   justifyContent: 'center important',
-
   alignItems: 'center',
   gap: theme.spacing(1.5),
+  minWidth: 120,
 }));
 
 export const MediaIconBox = styled(Box)(() => ({
@@ -56,8 +62,6 @@ export const MediaIconBox = styled(Box)(() => ({
 export const MiddleSection = styled(Stack)(() => ({
   width: '100%',
   alignItems: 'center',
- 
-
 }));
 
 export const QuestionList = styled(Stack)(({ theme }) => ({
@@ -71,6 +75,13 @@ export const QuestionCard = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(2),
   padding: theme.spacing(1, 2),
   borderRadius: 16,
+  width: '100%',
+  backgroundColor: '#fff',
+  border: `1px solid ${theme.palette.grey[200]}`,
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    padding: theme.spacing(1.5),
+  },
 }));
 
 export const QuestionBadge = styled(Box)(({ theme }) => ({

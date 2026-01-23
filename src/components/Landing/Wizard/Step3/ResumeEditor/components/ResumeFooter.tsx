@@ -32,7 +32,11 @@ export default function ResumeFooter({ isPreview, isDownloading, downloadProgres
                     e.stopPropagation();
                     onDownloadPdf();
                 }}
-                sx={{ width: '188px' }}
+                sx={{
+                    minWidth: 0,
+                    flex: { xs: '1 1 220px', sm: '0 1 auto' },
+                    width: { xs: '100%', sm: 'auto' },
+                }}
             />
 
             <MuiButton
@@ -41,7 +45,11 @@ export default function ResumeFooter({ isPreview, isDownloading, downloadProgres
                 variant='contained'
                 text='Submit'
                 onClick={onSubmit}
-                sx={{ width: '188px' }}
+                sx={{
+                    minWidth: 0,
+                    flex: { xs: '1 1 220px', sm: '0 1 auto' },
+                    width: { xs: '100%', sm: 'auto' },
+                }}
             />
         </FooterContainer>
     );

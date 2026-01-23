@@ -696,18 +696,32 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
             </MiddleSection>
 
             <BottomSection>
-                <Stack direction='row' gap={5} justifyContent='center' m={4}>
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    gap={{ xs: 2, sm: 5 }}
+                    justifyContent='center'
+                    m={{ xs: 2, sm: 4 }}
+                    width='100%'
+                    sx={{ alignItems: { xs: 'stretch', sm: 'center' } }}
+                >
                     <MuiButton
                         color='secondary'
                         variant='outlined'
                         size='large'
                         startIcon={<AddIcon />}
                         onClick={() => setStage('SKILL_INPUT')}
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
                     >
                         Add more
                     </MuiButton>
 
-                    <MuiButton color='secondary' size='large' onClick={onNext} endIcon={<ArrowRightIcon />}>
+                    <MuiButton
+                        color='secondary'
+                        size='large'
+                        onClick={onNext}
+                        endIcon={<ArrowRightIcon />}
+                        sx={{ width: { xs: '100%', sm: 'auto' } }}
+                    >
                         Submit
                     </MuiButton>
                 </Stack>
