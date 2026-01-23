@@ -504,7 +504,15 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
     };
 
     return (
-        <Stack alignItems='center' justifyContent='center'>
+        <Stack
+            alignItems='center'
+            justifyContent='center'
+            sx={{
+                width: '100%',
+                px: { xs: 2, sm: 4, md: 6 },
+                boxSizing: 'border-box',
+            }}
+        >
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
                 8. Could you share the job description?{' '}
             </Typography>

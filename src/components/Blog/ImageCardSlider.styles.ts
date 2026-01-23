@@ -153,3 +153,4 @@ export const BlogSection = styled(Stack)(({ theme }) => ({
         paddingTop: theme.spacing(6),
     },
 }));
+
