@@ -1,3 +1,9 @@
+export const normalizeRoute = (value?: string | null) => {
+    if (!value) return '/';
+    if (value === '/') return '/';
+    return value.replace(/\/+$/, '');
+};
+
 export const PublicRoutes = {
     landing: '/landing',
     login: '/auth/login',
@@ -59,10 +65,18 @@ export const VisibilitySideBar: string[] = [
     PrivateRoutes.learningHub,
 ];
 
-const normalizeRoute = (value?: string | null) => {
-    if (!value) return '/';
-    if (value === '/') return '/';
-    return value.replace(/\/+$/, '');
+export const isSidebarVisible = (pathname?: string | null) => {
+    const normalizedPathname = normalizeRoute(pathname);
+    return VisibilitySideBar.some((route) => {
+        const normalizedRoute = normalizeRoute(route);
+        if (normalizedRoute === '/') {
+            return normalizedPathname === '/';
+        }
+        if (normalizedPathname === normalizedRoute) {
+            return true;
+        }
+        return normalizedPathname.startsWith(`${normalizedRoute}/`);
+    });
 };
 
 export const isLayoutVisible = (pathname?: string | null) => {

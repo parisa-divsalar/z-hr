@@ -3,26 +3,21 @@ import { useState } from 'react';
 
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import { List, Stack, Typography } from '@mui/material';
+import { List, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 
-import DashboardRoundedIcon from '@/assets/images/menu/Icon1.svg';
-import ArticleRoundedIcon from '@/assets/images/menu/Icon2.svg';
-import HistoryRoundedIcon from '@/assets/images/menu/Icon3.svg';
-import CreditCardRoundedIcon from '@/assets/images/menu/Icon4.svg';
-import SchoolRoundedIcon from '@/assets/images/menu/Icon5.svg';
-import SettingsRoundedIcon from '@/assets/images/menu/Icon6.svg';
-import HeadphonesRoundedIcon from '@/assets/images/menu/Icon7.svg';
-import MicRoundedIcon from '@/assets/images/menu/Icon8.svg';
 import LogoutDialog from '@/components/Layout/SideBar/LogoutDialog';
+import { sidebarMenuItems, isSidebarMenuItemActive } from '@/components/Layout/SideBar/menu';
 import { ItemButton, SidebarContainer, ItemIcon, SidebarItemText } from '@/components/Layout/SideBar/styled';
-import { PrivateRoutes, VisibilitySideBar } from '@/config/routes';
+import { isSidebarVisible } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 
 const SideBar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuthStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
 
@@ -31,17 +26,9 @@ const SideBar = () => {
     setOpenLogoutDialog(false);
   };
 
-  const isSideBarVisible = VisibilitySideBar.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
+  const isSideBarVisible = isSidebarVisible(pathname);
 
-  const isHistoryActive =
-    pathname === PrivateRoutes.history ||
-    pathname === PrivateRoutes.historyEdite ||
-    pathname.startsWith(`${PrivateRoutes.history}/`) ||
-    pathname.startsWith(`${PrivateRoutes.historyEdite}/`);
-
-  if (!isSideBarVisible) return null;
+  if (!isSideBarVisible || isMobile) return null;
 
   return (
     <SidebarContainer>
@@ -56,100 +43,29 @@ const SideBar = () => {
           Menu
         </Typography>
         <List>
-          <ItemButton
-            active={pathname === PrivateRoutes.dashboard}
-            onClick={() => router.push(PrivateRoutes.dashboard)}
-          >
-            <ItemIcon>
-              <DashboardRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='Dashboard' />
+          {sidebarMenuItems.map((item) => {
+            const isActive = isSidebarMenuItemActive(item, pathname);
+            const MenuIcon = item.icon;
 
-            {pathname === PrivateRoutes.dashboard && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
+            return (
+              <ItemButton
+                key={item.route}
+                active={isActive}
+                onClick={() => router.push(item.route)}
+              >
+                <ItemIcon>
+                  <MenuIcon />
+                </ItemIcon>
+                <SidebarItemText primary={item.label} />
 
-          <ItemButton
-            active={pathname === PrivateRoutes.resumeBuilder}
-            onClick={() => router.push(PrivateRoutes.resumeBuilder)}
-          >
-            <ItemIcon>
-              <ArticleRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='Resume Builder' />
-
-            {pathname === PrivateRoutes.resumeBuilder && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
-
-          <ItemButton active={isHistoryActive} onClick={() => router.push(PrivateRoutes.history)}>
-            <ItemIcon>
-              <HistoryRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='History' />
-            {isHistoryActive && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
-
-          <ItemButton active={pathname === PrivateRoutes.payment} onClick={() => router.push(PrivateRoutes.payment)}>
-            <ItemIcon>
-              <CreditCardRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='Payment' />
-            {pathname === PrivateRoutes.payment && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
-
-          <ItemButton
-            active={pathname === PrivateRoutes.learningHub}
-            onClick={() => router.push(PrivateRoutes.learningHub)}
-          >
-            <ItemIcon>
-              <SchoolRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='Learning Hub' />
-
-            {pathname === PrivateRoutes.learningHub && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
-
-          <ItemButton
-            active={pathname === PrivateRoutes.interView}
-            onClick={() => router.push(PrivateRoutes.interView)}
-          >
-            <ItemIcon>
-              <MicRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='Interview' />
-            {pathname === PrivateRoutes.interView && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
-
-          <ItemButton active={pathname === PrivateRoutes.setting} onClick={() => router.push(PrivateRoutes.setting)}>
-            <ItemIcon>
-              <SettingsRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='Setting' />
-            {pathname === PrivateRoutes.setting && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
-
-          <ItemButton active={pathname === PrivateRoutes.support} onClick={() => router.push(PrivateRoutes.support)}>
-            <ItemIcon>
-              <HeadphonesRoundedIcon fontSize='small' />
-            </ItemIcon>
-            <SidebarItemText primary='Support' />
-            {pathname === PrivateRoutes.support && (
-              <KeyboardArrowRightRoundedIcon sx={{ display: { xs: 'none', md: 'inline-flex' } }} />
-            )}
-          </ItemButton>
+                {isActive && (
+                  <KeyboardArrowRightRoundedIcon
+                    sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+                  />
+                )}
+              </ItemButton>
+            );
+          })}
         </List>
       </Stack>
 

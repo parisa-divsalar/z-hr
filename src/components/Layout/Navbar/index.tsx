@@ -8,6 +8,7 @@ import {
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
   Stack,
   Typography,
@@ -29,9 +30,17 @@ import classes from '@/components/Layout/layout.module.css';
 import { MainNavbarContainer, MainNavbarContent } from '@/components/Layout/Navbar/styled';
 import MuiAvatar from '@/components/UI/MuiAvatar';
 import MuiButton from '@/components/UI/MuiButton';
-import { PublicRoutes, isLayoutVisible } from '@/config/routes';
+import {
+  isLayoutVisible,
+  isSidebarVisible,
+  PublicRoutes,
+} from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 import { useThemeStore } from '@/store/common';
+import {
+  sidebarMenuItems,
+  isSidebarMenuItemActive,
+} from '@/components/Layout/SideBar/menu';
 
 const Navbar = () => {
   const { mode, setMode } = useThemeStore();
@@ -43,6 +52,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isHomeActive = pathname === '/' || pathname === '/(public)';
+  const showSidebarItems = isSidebarVisible(pathname);
 
   if (!isLayoutVisible(pathname)) return null;
 
@@ -218,6 +228,50 @@ const Navbar = () => {
             </ListItem>
           ))}
         </List>
+
+        {showSidebarItems && (
+          <>
+            <Divider sx={{ my: 1.5 }} />
+            <Stack gap={1}>
+              <Typography variant='subtitle2' color='text.secondary'>
+                Dashboard
+              </Typography>
+              <List disablePadding>
+                {sidebarMenuItems.map((item) => {
+                  const isActiveItem = isSidebarMenuItemActive(item, pathname);
+                  const MenuIconComponent = item.icon;
+
+                  return (
+                    <ListItem key={item.route} disablePadding>
+                      <ListItemButton
+                        onClick={() => {
+                          router.push(item.route);
+                          closeMenu();
+                        }}
+                        sx={{
+                          borderRadius: 2,
+                          px: 1.5,
+                          bgcolor: isActiveItem ? 'action.selected' : 'transparent',
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 36 }}>
+                          <MenuIconComponent />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={item.label}
+                          primaryTypographyProps={{
+                            fontWeight: isActiveItem ? 700 : 500,
+                            color: isActiveItem ? 'text.primary' : 'text.secondary',
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </Stack>
+          </>
+        )}
 
         <Divider sx={{ my: 1.5 }} />
 
