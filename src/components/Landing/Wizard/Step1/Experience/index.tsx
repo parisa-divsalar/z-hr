@@ -438,7 +438,16 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 fileInputRef={fileInputRef as RefObject<HTMLInputElement>}
             />
 
-            <Stack mt={4} mb={6} direction='row' gap={3}>
+            <Stack
+                mt={4}
+                mb={6}
+                direction='row'
+                gap={3}
+                sx={{
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                }}
+            >
                 <MuiButton
                     color='secondary'
                     variant='outlined'

@@ -5,69 +5,81 @@ import { FilesStack as BaseFilesStack } from '@/components/Landing/Wizard/Step1/
 import { RemoveFileButton as BaseRemoveFileButton } from '@/components/Landing/Wizard/Step1/AI/Text/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
-export const MainContainer = styled(Stack)(() => ({
+const FIELD_MAX_WIDTH = 588;
+const ATTACHMENT_MAX_WIDTH = 650;
+
+export const MainContainer = styled(Stack)(({ theme }) => ({
     width: '100%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    padding: '1rem',
+    padding: theme.spacing(2),
     boxSizing: 'border-box',
+    margin: '0 auto',
+    [theme.breakpoints.down('md')]: {
+        padding: theme.spacing(1.5),
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1),
+    },
 }));
 
-export const SkillContainer = styled(Stack)(() => ({
+export const SkillContainer = styled(Stack)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '0.5rem',
-    marginTop: '1rem',
+    marginTop: theme.spacing(2),
+    marginInline: 'auto',
     flexWrap: 'wrap',
     // Prevent the whole page from growing when many skills exist; scroll inside this box instead.
-    width: '350px',
-    maxWidth: '100%',
+    width: '100%',
+    maxWidth: FIELD_MAX_WIDTH,
     maxHeight: '35vh',
     overflowY: 'auto',
     overflowX: 'hidden',
     // Keep layout stable when the scrollbar appears (supported in modern browsers).
     scrollbarGutter: 'stable',
+    [theme.breakpoints.down('sm')]: {
+        maxHeight: '40vh',
+    },
 }));
 
 export const ContainerSkill = styled(Stack, {
     shouldForwardProp: (prop) => prop !== 'active',
 })<{ active?: boolean }>(({ theme, active }) => ({
     backgroundColor: 'white',
-    width: '350px',
+    width: '100%',
+    maxWidth: FIELD_MAX_WIDTH,
     borderRadius: '1rem',
     border: `1px solid ${active ? theme.palette.primary.main : theme.palette.grey[100]}`,
-    padding: '0 16px',
-    maxWidth: '588px',
+    padding: theme.spacing(0, 2),
     height: 'auto',
     minHeight: '52px',
-    marginTop: '1rem',
+    marginTop: theme.spacing(2),
+    marginInline: 'auto',
     display: 'flex',
     alignItems: 'stretch',
     justifyContent: 'flex-start',
     gap: '0.25rem',
     // Keep the auto-growing textarea visually contained within rounded corners.
     overflow: 'hidden',
-    [theme.breakpoints.down('lg')]: {
-        width: '100%',
-        maxWidth: '100%',
-    },
     [theme.breakpoints.down('sm')]: {
-        padding: theme.spacing(0, 1),
+        padding: theme.spacing(0, 1.5),
     },
 }));
 export const ContainerSkillAttach = styled(Stack, {
     shouldForwardProp: (prop) => prop !== 'active',
 })<{ active?: boolean }>(({ theme }) => ({
     backgroundColor: 'white',
-    width: '350px',
+    width: '100%',
+    maxWidth: ATTACHMENT_MAX_WIDTH,
     borderRadius: '8px',
     border: `1px solid ${theme.palette.grey[100]}`,
-    padding: '1px 15px',
-    maxWidth: '350px',
+    padding: theme.spacing(0.5, 2),
     height: 'auto',
-    marginTop: '0.5rem',
+    marginTop: theme.spacing(1),
+    marginInline: 'auto',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -91,13 +103,14 @@ export const ContainerSkillAttachVoice = styled(Stack, {
     shouldForwardProp: (prop) => prop !== 'active',
 })<{ active?: boolean }>(({ theme }) => ({
     backgroundColor: 'white',
-    width: '350px',
-    maxWidth: '350px',
+    width: '100%',
+    maxWidth: ATTACHMENT_MAX_WIDTH,
     height: 'auto',
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
     marginTop: theme.spacing(2),
+    marginInline: 'auto',
 }));
 
 export const VoiceItem = styled(Stack)(({ theme }) => ({
@@ -107,13 +120,19 @@ export const VoiceItem = styled(Stack)(({ theme }) => ({
     display: 'flex',
 }));
 
-export const ActionRow = styled(Stack)(() => ({
+export const ActionRow = styled(Stack)(({ theme }) => ({
     width: '100%',
-    maxWidth: '350px',
-    marginTop: '1.25rem',
+    maxWidth: FIELD_MAX_WIDTH,
+    marginTop: theme.spacing(2),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: theme.spacing(1),
+    flexWrap: 'wrap',
+    [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'stretch',
+    },
 }));
 
 export const ActionIconButton = styled(IconButton)(() => ({
@@ -161,8 +180,9 @@ export const RecordActionIconButton = styled(ActionIconButton, {
 
 export const ToastContainer = styled(Stack)(({ theme }) => ({
     width: '100%',
-    maxWidth: '350px',
+    maxWidth: FIELD_MAX_WIDTH,
     marginTop: theme.spacing(2),
+    marginInline: 'auto',
 }));
 
 export const WrapRow = styled(Stack)(() => ({

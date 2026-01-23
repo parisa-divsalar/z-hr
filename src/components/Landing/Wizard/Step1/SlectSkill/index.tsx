@@ -623,7 +623,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
 
     return (
         <MainContainer>
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' gap={1} sx={{ flexWrap: 'wrap' }}>
                 <Typography variant='h5' color='text.primary' fontWeight='584'>
                     4. Briefly tell us about your background{' '}
                 </Typography>
@@ -673,7 +673,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                 </Tooltip>
             </Stack>
 
-            <Stack direction='row' alignItems='center' gap={1} mt={1}>
+            <Stack direction='row' alignItems='center' gap={1} mt={1} sx={{ flexWrap: 'wrap' }}>
                 <AtsFriendlyChip color='warning' label='ATS Friendly' />
             </Stack>
             <SummaryTextContainer>
@@ -811,8 +811,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={5}>
                 5. Your skills?
             </Typography>
-            <Stack direction='row' gap={2} mt={3}>
-                <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' gap={2} mt={3} sx={{ flexWrap: 'wrap', alignItems: 'baseline' }}>
+                <Stack direction='row' alignItems='center' gap={1} sx={{ flexWrap: 'wrap' }}>
                     <Typography variant='subtitle2' color='text.primary' fontWeight='400'>
                         Main skill
                     </Typography>
@@ -853,7 +853,16 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     />
                 </ContainerSkill>
             </Stack>
-            <Stack mt={4} mb={6} direction='row' gap={3}>
+            <Stack
+                mt={4}
+                mb={6}
+                direction='row'
+                gap={3}
+                sx={{
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                }}
+            >
                 <MuiButton
                     color='secondary'
                     variant='outlined'

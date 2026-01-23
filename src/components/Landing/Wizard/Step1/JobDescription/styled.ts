@@ -10,15 +10,22 @@ export const AtsFriendlyChip = styled(MuiChips)(({ theme }) => ({
     height: '26px',
 }));
 
-export const SummaryTextContainer = styled(Stack)(() => ({
-    width: '498px',
+export const SummaryTextContainer = styled(Stack)(({ theme }) => ({
+    width: '100%',
+    maxWidth: 498,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: theme.spacing(0, 2),
+    boxSizing: 'border-box',
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(0, 1),
+    },
 }));
 
 export const ToastContainer = styled(Stack)(({ theme }) => ({
     width: '100%',
-    maxWidth: '350px',
+    maxWidth: '588px',
     marginTop: theme.spacing(2),
+    marginInline: 'auto',
 }));
