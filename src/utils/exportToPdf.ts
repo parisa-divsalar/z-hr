@@ -1,4 +1,4 @@
-type html2canvasType = typeof import('html2canvas')['default'];
+type html2canvasType = (typeof import('html2canvas'))['default'];
 type JsPDFCtor = typeof import('jspdf').jsPDF;
 
 type PdfOrientation = 'p' | 'l';
@@ -105,7 +105,7 @@ const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number): Promise<T
 
 const waitForDocumentFonts = async (timeoutMs: number) => {
     // Not supported in all environments; keep it best-effort.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const fonts = (document as any).fonts as FontFaceSet | undefined;
     if (!fonts?.ready) return;
     await withTimeout(fonts.ready, timeoutMs);
@@ -263,7 +263,7 @@ const isNearlyWhite = (r: number, g: number, b: number, a: number) => {
 };
 
 /**
- * Try to find a horizontal "blank" row (mostly white pixels) close to the target break.
+ * Try to find a horizontal "blog" row (mostly white pixels) close to the target break.
  * This helps avoid cutting text lines in half when we slice the canvas into pages.
  */
 const findWhitespaceBreakY = (
@@ -387,11 +387,13 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
     const contentHeightPt = Math.max(1, pageHeight - marginPt * 2);
 
     // We render each page at the same width, then slice the canvas by the height that fits per page.
-    // To prevent cutting text lines across pages, we try to shift each cut to a nearby blank row.
+    // To prevent cutting text lines across pages, we try to shift each cut to a nearby blog row.
     const sliceHeightPx = Math.floor((contentHeightPt * canvas.width) / contentWidthPt);
     const estimatedTotalSlices = Math.max(1, Math.ceil(canvas.height / Math.max(1, sliceHeightPx)));
 
-    const fullCtx = canvas.getContext('2d', { willReadFrequently: true } as CanvasRenderingContext2DSettings | undefined);
+    const fullCtx = canvas.getContext('2d', { willReadFrequently: true } as
+        | CanvasRenderingContext2DSettings
+        | undefined);
 
     const slices: Array<{ sy: number; sHeight: number }> = [];
     let sy = 0;
@@ -420,7 +422,7 @@ export async function exportElementToPdf(element: HTMLElement, options: ExportEl
             }
         }
 
-        // Tiny overlap reduces visible seams if the break isn't perfectly blank.
+        // Tiny overlap reduces visible seams if the break isn't perfectly blog.
         const overlapPx = 2;
         sHeight = Math.min(remaining, Math.max(1, sHeight + overlapPx));
         slices.push({ sy, sHeight });
