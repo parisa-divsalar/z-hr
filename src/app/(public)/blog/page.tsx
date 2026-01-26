@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { BlogArticle } from '@shared/blog/repository';
+
 import ArticleGrid from '@/components/Blog/ArticleGrid';
 import BlogFilters from '@/components/Blog/BlogFilters';
 import styles from '@/components/Blog/BlogPage.module.css';
@@ -9,7 +11,6 @@ import { trendingTopics } from '@/components/Blog/data';
 import FeaturedStories from '@/components/Blog/FeaturedStories';
 import HeroSection from '@/components/Blog/HeroSection';
 import TrendingSidebar from '@/components/Blog/TrendingSidebar';
-import { BlogArticle } from '@shared/blog/repository';
 
 export default function BlogPage() {
     const [articles, setArticles] = useState<BlogArticle[]>([]);
