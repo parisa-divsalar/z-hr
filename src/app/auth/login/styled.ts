@@ -24,11 +24,15 @@ export const MainContent = styled(Stack)(({ theme }) => ({
     boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
     flexDirection: 'row',
     overflow: 'hidden',
+    '@media (max-height: 900px)': {
+        overflowY: 'auto',
+    },
     [theme.breakpoints.down('md')]: {
         flexDirection: 'column',
         minHeight: 'auto',
         borderRadius: '1rem',
         boxShadow: 'rgba(0, 0, 0, 0.08) 0px 1px 6px',
+        overflowY: 'auto',
     },
 }));
 
@@ -37,11 +41,16 @@ export const FirstChild = styled(Stack)(({ theme }) => ({
     padding: '5rem',
     justifyContent: 'space-between',
     gap: '1rem',
+    minHeight: 0,
     [theme.breakpoints.down('lg')]: {
         padding: '3rem',
     },
     [theme.breakpoints.down('md')]: {
         padding: '2rem',
+        justifyContent: 'flex-start',
+    },
+    '@media (max-height: 900px)': {
+        padding: '2.5rem',
         justifyContent: 'flex-start',
     },
 }));

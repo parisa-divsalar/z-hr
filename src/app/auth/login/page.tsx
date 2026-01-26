@@ -227,7 +227,17 @@ const LoginPage = () => {
                         </Stack>
                     </Stack>
 
-                    <Stack direction='row' justifyContent='space-between' alignItems='center' mt={4}>
+                    <Stack
+                        direction='row'
+                        justifyContent='space-between'
+                        alignItems='center'
+                        mt={4}
+                        sx={{
+                            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                            rowGap: { xs: 1, sm: 0 },
+                            columnGap: { xs: 2, sm: 0 },
+                        }}
+                    >
                         <Typography color='grey.300' variant='subtitle1'>
                             Already have an account?
                         </Typography>
