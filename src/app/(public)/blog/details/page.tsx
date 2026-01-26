@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import { BlogArticle } from '@shared/blog/repository';
@@ -133,7 +134,9 @@ export default function BlogDetailPage() {
     if (isLoading) {
         return (
             <div className={styles.pageShell}>
-                <p className={styles.breadcrumb}>Home / Blog</p>
+                <p className={styles.breadcrumb}>
+                    Home / <Link href='/blog'>Blog</Link>
+                </p>
                 <p className='text-sm text-gray-500'>در حال بارگذاری مقاله...</p>
             </div>
         );
@@ -142,7 +145,9 @@ export default function BlogDetailPage() {
     if (errorMessage || !article) {
         return (
             <div className={styles.pageShell}>
-                <p className={styles.breadcrumb}>Home / Blog</p>
+                <p className={styles.breadcrumb}>
+                    <Link href='/blog'>Blog</Link> / details
+                </p>
                 <p className='text-sm text-gray-500' role='alert'>
                     {errorMessage || 'No article available yet.'}
                 </p>
@@ -152,7 +157,9 @@ export default function BlogDetailPage() {
 
     return (
         <div className={styles.pageShell}>
-            <p className={styles.breadcrumb}>Home / Blog</p>
+            <p className={styles.breadcrumb}>
+                <Link href='/blog'>Blog</Link> / details
+            </p>
             <section className={styles.heroCard}>
                 <div className={styles.heroMediaRow}>
                     <div
