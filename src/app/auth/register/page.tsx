@@ -248,7 +248,15 @@ const RegisterPage = () => {
                             </OrDivider>
                         </Stack>
 
-                        <Stack direction='row' justifyContent='center' gap={2}>
+                        <Stack
+                            direction='row'
+                            justifyContent='center'
+                            gap={2}
+                            sx={{
+                                flexWrap: 'wrap',
+                                rowGap: 1.5,
+                            }}
+                        >
                             <LogoCard>
                                 <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />
                             </LogoCard>
@@ -270,7 +278,12 @@ const RegisterPage = () => {
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        justifyContent='space-between'
+                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                        gap={{ xs: 1, sm: 0 }}
+                    >
                         <Typography color='grey.300' variant='subtitle1'>
                             Already have an account?
                         </Typography>

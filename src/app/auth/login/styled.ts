@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const MainContainer = styled(Stack)(() => ({
+export const MainContainer = styled(Stack)(({ theme }) => ({
     width: '100%',
     flex: 1,
     height: 'calc(var(--app-height) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding) + 2rem)',
@@ -12,6 +12,12 @@ export const MainContainer = styled(Stack)(() => ({
     justifyContent: 'center',
     // `Layout` uses `align-items: flex-start` for the row container, so make sure this page can still stretch
     alignSelf: 'stretch',
+    [theme.breakpoints.down('md')]: {
+        height: 'auto',
+        minHeight: 'auto',
+        padding: '0.75rem 0.5rem',
+        alignItems: 'stretch',
+    },
 }));
 
 export const MainContent = styled(Stack)(({ theme }) => ({
@@ -34,6 +40,10 @@ export const MainContent = styled(Stack)(({ theme }) => ({
         boxShadow: 'rgba(0, 0, 0, 0.08) 0px 1px 6px',
         overflowY: 'auto',
     },
+    [theme.breakpoints.down('sm')]: {
+        borderRadius: '0.75rem',
+        boxShadow: 'rgba(0, 0, 0, 0.06) 0px 1px 4px',
+    },
 }));
 
 export const FirstChild = styled(Stack)(({ theme }) => ({
@@ -49,9 +59,16 @@ export const FirstChild = styled(Stack)(({ theme }) => ({
         padding: '2rem',
         justifyContent: 'flex-start',
     },
+    [theme.breakpoints.down('sm')]: {
+        padding: '1.5rem',
+        gap: '0.75rem',
+    },
     '@media (max-height: 900px)': {
         padding: '2.5rem',
         justifyContent: 'flex-start',
+    },
+    '@media (max-height: 740px)': {
+        padding: '1.5rem',
     },
 }));
 
