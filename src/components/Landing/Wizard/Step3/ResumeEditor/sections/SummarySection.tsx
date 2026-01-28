@@ -11,15 +11,23 @@ type Props = {
 };
 
 export default function SummarySection({ c }: Props) {
+    const hasContent = c.summary.trim().length > 0;
+    const isEditing = !c.isPreview && c.editingSection === 'summary';
+    const shouldRender = hasContent || isEditing || c.isPreCvLoading || c.shouldBlockBelowSummary;
+
+    if (!shouldRender) return null;
+
     return (
         <SectionContainer>
             <SectionHeader
                 title='Summary'
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('summary')}
+                onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('summary')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('summary')}
-                isEditing={!c.isPreview && c.editingSection === 'summary'}
+                isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'summary'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'summary'}
+                deleteDisabled={c.isSaving || c.isDeletingSection}
                 isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}

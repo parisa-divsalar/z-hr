@@ -22,10 +22,12 @@ export default function AdditionalInfoSection({ c }: Props) {
             <SectionHeader
                 title='Additional Information'
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('additionalInfo')}
+                onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('additionalInfo')}
                 isEditing={!c.isPreview && c.editingSection === 'additionalInfo'}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('additionalInfo')}
                 isImproving={!c.isPreview && c.improvingSection === 'additionalInfo'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'additionalInfo'}
+                deleteDisabled={c.isSaving || c.isDeletingSection}
                 isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}

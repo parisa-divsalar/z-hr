@@ -14,10 +14,12 @@ export default function JobDescriptionSection({ c }: Props) {
             <SectionHeader
                 title='Job Description'
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('jobDescription')}
+                onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('jobDescription')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('jobDescription')}
                 isEditing={!c.isPreview && c.editingSection === 'jobDescription'}
                 isImproving={!c.isPreview && c.improvingSection === 'jobDescription'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'jobDescription'}
+                deleteDisabled={c.isSaving || c.isDeletingSection}
                 isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}

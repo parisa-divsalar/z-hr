@@ -4,6 +4,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { editCV } from '@/services/cv/edit-cv';
+import { deleteResumeSection } from '@/services/cv/delete-section';
 import { getCV } from '@/services/cv/get-cv';
 import { getImproved } from '@/services/cv/get-improved';
 import { postImproved } from '@/services/cv/post-improved';
@@ -128,6 +129,11 @@ export type ResumeEditorController = {
     handleImprove: (section: string) => Promise<void>;
     handleDownloadPdf: () => Promise<void>;
     handleSkillsChange: (index: number, value: string) => void;
+    requestDeleteSection: (section: SectionKey) => void;
+    confirmDeleteSection: () => Promise<void>;
+    cancelDeleteSection: () => void;
+    pendingDeleteSection: SectionKey | null;
+    isDeletingSection: boolean;
 
     autoImproved: Record<string, boolean>;
 };
@@ -208,6 +214,8 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
     const [improvingSection, setImprovingSection] = useState<string | null>(null);
     const [improveError, setImproveError] = useState<string | null>(null);
+    const [pendingDeleteSection, setPendingDeleteSection] = useState<SectionKey | null>(null);
+    const [isDeletingSection, setIsDeletingSection] = useState(false);
 
     const isFileFlowMode = canFetchCv && !isTextOnlyMode;
     const isAutoPipelineMode = isTextOnlyMode || isFileFlowMode;
@@ -1083,6 +1091,113 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         setSkills(newSkills);
     };
 
+    const requestDeleteSection = (section: SectionKey) => {
+        if (isPreview || isExporting) return;
+        if (isDeletingSection) return;
+        setSaveError(null);
+        setPendingDeleteSection(section);
+    };
+
+    const cancelDeleteSection = () => {
+        if (isDeletingSection) return;
+        setPendingDeleteSection(null);
+    };
+
+    const confirmDeleteSection = async () => {
+        if (!pendingDeleteSection || isDeletingSection) return;
+
+        setIsDeletingSection(true);
+        setSaveError(null);
+        setImproveError(null);
+        setEditingSection(null);
+
+        const nextValues = {
+            profile,
+            summary: pendingDeleteSection === 'summary' ? '' : summary,
+            skills: pendingDeleteSection === 'skills' ? [] : skills,
+            contactWays: pendingDeleteSection === 'contactWays' ? [] : contactWays,
+            languages: pendingDeleteSection === 'languages' ? [] : languages,
+            certificates: pendingDeleteSection === 'certificates' ? [] : certificates,
+            jobDescription: pendingDeleteSection === 'jobDescription' ? '' : jobDescription,
+            additionalInfo: pendingDeleteSection === 'additionalInfo' ? '' : additionalInfo,
+            experiences: pendingDeleteSection === 'experience' ? [] : experiences,
+        };
+
+        setSummary(nextValues.summary);
+        setSkills(nextValues.skills);
+        setContactWays(nextValues.contactWays);
+        setLanguages(nextValues.languages);
+        setCertificates(nextValues.certificates);
+        setJobDescription(nextValues.jobDescription);
+        setAdditionalInfo(nextValues.additionalInfo);
+        setExperiences(nextValues.experiences);
+
+        persistTextOnlySession((draft) => {
+            if (pendingDeleteSection === 'summary') {
+                draft.background = { ...(draft.background ?? {}), text: '' };
+            }
+            if (pendingDeleteSection === 'skills') {
+                draft.skills = [];
+            }
+            if (pendingDeleteSection === 'contactWays') {
+                draft.contactWay = [];
+                draft.contactWays = [];
+            }
+            if (pendingDeleteSection === 'languages') {
+                draft.languages = [];
+            }
+            if (pendingDeleteSection === 'certificates') {
+                draft.certificates = [];
+            }
+            if (pendingDeleteSection === 'jobDescription') {
+                draft.jobDescription = { ...(draft.jobDescription ?? {}), text: '' };
+            }
+            if (pendingDeleteSection === 'additionalInfo') {
+                draft.additionalInfo = { ...(draft.additionalInfo ?? {}), text: '' };
+            }
+            if (pendingDeleteSection === 'experience') {
+                draft.experiences = [];
+            }
+        });
+
+        const updatedPayload = buildUpdatedCvPayload(cvPayloadRef.current, nextValues);
+        const resumeForDelete = (cvPayloadRef.current ?? updatedPayload) as unknown;
+
+        const makeRequestId = () => {
+            try {
+                const anyCrypto = (globalThis as any)?.crypto;
+                if (typeof anyCrypto?.randomUUID === 'function') return anyCrypto.randomUUID();
+            } catch {
+                // ignore
+            }
+            return generateFakeUUIDv4();
+        };
+        const effectiveRequestId = requestId ?? makeRequestId();
+
+        try {
+            const deleteResponse = await deleteResumeSection({
+                section: pendingDeleteSection,
+                resume: resumeForDelete,
+            });
+            const resumeToSave = deleteResponse?.updatedResume ?? updatedPayload;
+
+            if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = effectiveRequestId;
+            await editCV({
+                userId: accessToken ?? undefined,
+                requestId: effectiveRequestId,
+                bodyOfResume: resumeToSave,
+            });
+            if (!requestId) setRequestId(effectiveRequestId);
+            await loadCvData({ requestId: effectiveRequestId, userId: accessToken ?? undefined });
+        } catch (error) {
+            console.error('Failed to delete section', error);
+            setSaveError(error instanceof Error ? error.message : 'Failed to delete section. Please try again.');
+        } finally {
+            setIsDeletingSection(false);
+            setPendingDeleteSection(null);
+        }
+    };
+
     const handleImprove = useCallback(
         async (section: string) => {
             if (improvingSection) return;
@@ -1240,6 +1355,11 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         handleImprove,
         handleDownloadPdf,
         handleSkillsChange,
+        requestDeleteSection,
+        confirmDeleteSection,
+        cancelDeleteSection,
+        pendingDeleteSection,
+        isDeletingSection,
 
         autoImproved,
 

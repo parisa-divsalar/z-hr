@@ -22,10 +22,12 @@ export default function ExperienceSection({ c }: Props) {
             <SectionHeader
                 title='Professional Experience'
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('experience')}
+                onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('experience')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('experience')}
                 isEditing={!c.isPreview && c.editingSection === 'experience'}
                 isImproving={!c.isPreview && c.improvingSection === 'experience'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'experience'}
+                deleteDisabled={c.isSaving || c.isDeletingSection}
                 isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}

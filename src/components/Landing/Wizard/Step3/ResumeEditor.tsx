@@ -5,6 +5,7 @@ import { type FunctionComponent, type MutableRefObject, useEffect, useState } fr
 import { CardContent } from '@mui/material';
 
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
+import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import { useResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
@@ -17,6 +18,7 @@ import LanguagesSection from './ResumeEditor/sections/LanguagesSection';
 import SkillsSection from './ResumeEditor/sections/SkillsSection';
 import SummarySection from './ResumeEditor/sections/SummarySection';
 import { MainCardContainer, ResumeContainer } from './ResumeEditor/styled';
+import type { SectionKey } from './ResumeEditor/types';
 
 interface ResumeEditorProps {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
@@ -36,6 +38,20 @@ interface ResumeEditorProps {
 const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({ setStage, mode = 'editor', pdfTargetRef }) => {
     const c = useResumeEditorController({ mode, pdfTargetRef });
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
+    const sectionLabels: Record<SectionKey, string> = {
+        summary: 'Summary',
+        skills: 'Technical Skills',
+        contactWays: 'Contact Ways',
+        languages: 'Languages',
+        certificates: 'Certificates',
+        jobDescription: 'Job Description',
+        experience: 'Professional Experience',
+        additionalInfo: 'Additional Information',
+    };
+
+    const pendingDeleteLabel = c.pendingDeleteSection
+        ? sectionLabels[c.pendingDeleteSection]
+        : 'this section';
 
     useEffect(() => {
         // Avoid opening warning dialogs in preview-only rendering contexts (e.g. PDF export/off-screen render).
@@ -46,6 +62,13 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({ setStage, mode = '
     return (
         <ResumeContainer>
             <RefreshDataLossDialog open={isRefreshWarningOpen} onClose={() => setIsRefreshWarningOpen(false)} />
+            <DeleteSectionDialog
+                open={Boolean(c.pendingDeleteSection)}
+                sectionLabel={pendingDeleteLabel}
+                isDeleting={c.isDeletingSection}
+                onCancel={c.cancelDeleteSection}
+                onConfirm={() => void c.confirmDeleteSection()}
+            />
             <MainCardContainer ref={c.pdfRef}>
                 <CardContent
                     sx={{

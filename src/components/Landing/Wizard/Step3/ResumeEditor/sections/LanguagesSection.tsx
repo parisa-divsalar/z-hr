@@ -14,10 +14,12 @@ export default function LanguagesSection({ c }: Props) {
             <SectionHeader
                 title='Languages'
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('languages')}
+                onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('languages')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('languages')}
                 isEditing={!c.isPreview && c.editingSection === 'languages'}
                 isImproving={!c.isPreview && c.improvingSection === 'languages'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'languages'}
+                deleteDisabled={c.isSaving || c.isDeletingSection}
                 isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}

@@ -373,5 +373,29 @@ IMPORTANT:
 - Match percentage should be calculated based on required vs. present skills
 - Consider both explicit skills and implied skills from experience
 `,
+    deleteResumeSection: (params: { resume: unknown; section: string }) => `
+You are an expert ATS resume editor.
+Your task is to remove the "${params.section}" section from the resume JSON provided below.
+
+CRITICAL REQUIREMENTS:
+- Return valid JSON only (no markdown, no explanations).
+- Preserve all other sections exactly as they are.
+- If the section does not exist, return the resume unchanged.
+- Keep arrays as arrays and objects as objects. Do NOT convert data types.
+- Do not invent or add new content.
+
+SECTION REMOVAL RULES:
+- summary: set "summary" and "profile.summary" to empty string if they exist.
+- skills: set "skills" and "skillList" to empty arrays if they exist.
+- contactWays: set "contactWays" and "contactWay" to empty arrays if they exist.
+- languages: set "languages" to empty arrays if they exist.
+- certificates: set "certificates" and "certifications" to empty arrays if they exist.
+- jobDescription: set "jobDescription" (or its "text") and "jobDescriptionText" to empty string if they exist.
+- experience: set "experiences" and "experience" to empty arrays if they exist.
+- additionalInfo: set "additionalInfo" (or its "text") and "additionalInfoText" to empty string if they exist.
+
+RESUME JSON:
+${JSON.stringify(params.resume)}
+`,
 };
 

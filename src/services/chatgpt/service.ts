@@ -74,6 +74,64 @@ export interface SkillGapAnalysis {
 export type ResumeImproveMode = 'analysis' | 'sections_text' | 'auto';
 
 export class ChatGPTService {
+    private static applyResumeSectionDeletion(resume: unknown, section: string): unknown {
+        if (!resume || typeof resume !== 'object' || Array.isArray(resume)) {
+            return resume ?? {};
+        }
+
+        const next: any = { ...(resume as any) };
+        const asObject = (value: any) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
+
+        switch (section) {
+            case 'summary': {
+                next.summary = '';
+                const profile = asObject(next.profile);
+                if (profile) next.profile = { ...profile, summary: '' };
+                break;
+            }
+            case 'skills': {
+                next.skills = [];
+                next.skillList = [];
+                break;
+            }
+            case 'contactWays': {
+                next.contactWays = [];
+                next.contactWay = [];
+                break;
+            }
+            case 'languages': {
+                next.languages = [];
+                break;
+            }
+            case 'certificates': {
+                next.certificates = [];
+                next.certifications = [];
+                break;
+            }
+            case 'jobDescription': {
+                const jobDescription = asObject(next.jobDescription);
+                next.jobDescription = jobDescription ? { ...jobDescription, text: '' } : '';
+                next.jobDescriptionText = '';
+                break;
+            }
+            case 'experience': {
+                next.experiences = [];
+                next.experience = [];
+                break;
+            }
+            case 'additionalInfo': {
+                const additionalInfo = asObject(next.additionalInfo);
+                next.additionalInfo = additionalInfo ? { ...additionalInfo, text: '' } : '';
+                next.additionalInfoText = '';
+                break;
+            }
+            default:
+                break;
+        }
+
+        return next;
+    }
+
     private static fallbackAnalyzeCV(cvText: string): CVAnalysisResult {
         const text = (cvText ?? '').toString();
 
@@ -161,6 +219,50 @@ export class ChatGPTService {
             // If OpenAI call fails (quota/network/etc), fall back instead of throwing 500.
             console.warn('OpenAI analyzeCV failed, using fallback CV analysis:', error);
             return ChatGPTService.fallbackAnalyzeCV(cvText);
+        }
+    }
+
+    /**
+     * Delete a resume section from a structured resume JSON.
+     */
+    static async deleteResumeSection(resume: unknown, section: string): Promise<unknown> {
+        let openai: ReturnType<typeof getOpenAIClient> | null = null;
+        try {
+            openai = getOpenAIClient();
+        } catch (e) {
+            console.warn('OpenAI client unavailable, deleting section locally:', e);
+            return ChatGPTService.applyResumeSectionDeletion(resume, section);
+        }
+
+        try {
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are an expert ATS resume editor. Always respond with valid JSON only.',
+                    },
+                    {
+                        role: 'user',
+                        content: PROMPTS.deleteResumeSection({ resume, section }),
+                    },
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.1,
+            });
+
+            const content = response.choices[0]?.message?.content;
+            if (!content) throw new Error('No response from ChatGPT');
+
+            try {
+                return JSON.parse(content) as unknown;
+            } catch (parseError) {
+                const msg = parseError instanceof Error ? parseError.message : String(parseError);
+                throw new Error(`ChatGPT returned invalid JSON: ${msg}`);
+            }
+        } catch (error) {
+            console.warn('OpenAI deleteResumeSection failed, deleting section locally:', error);
+            return ChatGPTService.applyResumeSectionDeletion(resume, section);
         }
     }
 

@@ -14,10 +14,12 @@ export default function CertificatesSection({ c }: Props) {
             <SectionHeader
                 title='Certificates'
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('certificates')}
+                onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('certificates')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('certificates')}
                 isEditing={!c.isPreview && c.editingSection === 'certificates'}
                 isImproving={!c.isPreview && c.improvingSection === 'certificates'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'certificates'}
+                deleteDisabled={c.isSaving || c.isDeletingSection}
                 isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}

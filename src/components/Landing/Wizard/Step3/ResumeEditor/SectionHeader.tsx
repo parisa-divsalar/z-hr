@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Button, CircularProgress, IconButton, Skeleton } from '@mui/material';
 
+import DeleteIcon from '@/assets/images/icons/clean.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 
@@ -10,6 +11,7 @@ import { SectionHeaderContainer, SectionTitle, SectionActions } from './styled';
 interface SectionHeaderProps {
     title: string;
     onEdit?: () => void;
+    onDelete?: () => void;
     isEditing?: boolean;
     onSave?: () => void;
     onCancel?: () => void;
@@ -17,6 +19,7 @@ interface SectionHeaderProps {
     onImprove?: () => void;
     isImproving?: boolean;
     improveDisabled?: boolean;
+    deleteDisabled?: boolean;
     showImproveIcon?: boolean;
     hideActions?: boolean;
     actionsSkeleton?: boolean;
@@ -25,6 +28,7 @@ interface SectionHeaderProps {
 const SectionHeader = ({
     title,
     onEdit,
+    onDelete,
     isEditing,
     onSave,
     onCancel,
@@ -32,6 +36,7 @@ const SectionHeader = ({
     onImprove,
     isImproving,
     improveDisabled,
+    deleteDisabled,
     showImproveIcon = true,
     hideActions,
     actionsSkeleton,
@@ -76,6 +81,13 @@ const SectionHeader = ({
                                 <>
                                     <IconButton size='small' onClick={onEdit} disabled={Boolean(isImproving)}>
                                         <EditIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        size='small'
+                                        onClick={onDelete}
+                                        disabled={Boolean(isImproving) || Boolean(deleteDisabled) || !onDelete}
+                                    >
+                                        <DeleteIcon />
                                     </IconButton>
                                     {showImproveIcon ? (
                                         <IconButton
