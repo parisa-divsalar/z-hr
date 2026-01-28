@@ -1,0 +1,342 @@
+import fs from 'fs';
+import path from 'path';
+
+// Simple file-based database using JSON files (shared with repo-root /data by default)
+
+const repoRootDataDir = path.resolve(process.cwd(), '..', '..', 'data');
+const dataDir = process.env.DATABASE_PATH ? path.dirname(process.env.DATABASE_PATH) : repoRootDataDir;
+
+const usersFile = path.join(dataDir, 'users.json');
+const cvsFile = path.join(dataDir, 'cvs.json');
+const interviewSessionsFile = path.join(dataDir, 'interview_sessions.json');
+const skillsFile = path.join(dataDir, 'skills.json');
+const userSkillsFile = path.join(dataDir, 'user_skills.json');
+const wizardDataFile = path.join(dataDir, 'wizard_data.json');
+const resumeDraftsFile = path.join(dataDir, 'resume_drafts.json');
+const resumeSectionOutputsFile = path.join(dataDir, 'resume_section_outputs.json');
+const coverLettersFile = path.join(dataDir, 'cover_letters.json');
+
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+
+const readFile = <T>(filePath: string, defaultValue: T[]): T[] => {
+    try {
+        if (fs.existsSync(filePath)) {
+            const content = fs.readFileSync(filePath, 'utf-8');
+            return JSON.parse(content);
+        }
+    } catch (error) {
+        console.error(`Error reading ${filePath}:`, error);
+    }
+    return defaultValue;
+};
+
+const writeFile = <T>(filePath: string, data: T[]): void => {
+    try {
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (error) {
+        console.error(`Error writing ${filePath}:`, error);
+        throw error;
+    }
+};
+
+export const db = {
+    users: {
+        findAll: () => readFile(usersFile, []),
+        findById: (id: number) => {
+            const users = readFile(usersFile, []);
+            return users.find((u: any) => u.id === id);
+        },
+        findByEmail: (email: string) => {
+            const users = readFile(usersFile, []);
+            return users.find((u: any) => u.email === email);
+        },
+        create: (data: any) => {
+            const users = readFile(usersFile, []);
+            const newId = users.length > 0 ? Math.max(...users.map((u: any) => u.id || 0)) + 1 : 1;
+            const newUser = {
+                id: newId,
+                ...data,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+            users.push(newUser);
+            writeFile(usersFile, users);
+            return newUser;
+        },
+        update: (id: number, data: Partial<any>) => {
+            const users = readFile(usersFile, []);
+            const index = users.findIndex((u: any) => u.id === id);
+            if (index !== -1) {
+                users[index] = { ...users[index], ...data, updated_at: new Date().toISOString() };
+                writeFile(usersFile, users);
+                return users[index];
+            }
+            return null;
+        },
+    },
+
+    cvs: {
+        findAll: () => readFile(cvsFile, []),
+        findById: (id: number) => {
+            const cvs = readFile(cvsFile, []);
+            return cvs.find((c: any) => c.id === id);
+        },
+        findByRequestId: (requestId: string) => {
+            const cvs = readFile(cvsFile, []);
+            return cvs.find((c: any) => c.request_id === requestId);
+        },
+        findByUserId: (userId: number) => {
+            const cvs = readFile(cvsFile, []);
+            return cvs.filter((c: any) => c.user_id === userId);
+        },
+        create: (data: any) => {
+            const cvs = readFile(cvsFile, []);
+            const newId = cvs.length > 0 ? Math.max(...cvs.map((c: any) => c.id || 0)) + 1 : 1;
+            const newCv = {
+                id: newId,
+                ...data,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+            cvs.push(newCv);
+            writeFile(cvsFile, cvs);
+            return newCv;
+        },
+        update: (requestId: string, data: Partial<any>) => {
+            const cvs = readFile(cvsFile, []);
+            const index = cvs.findIndex((c: any) => c.request_id === requestId);
+            if (index !== -1) {
+                cvs[index] = { ...cvs[index], ...data, updated_at: new Date().toISOString() };
+                writeFile(cvsFile, cvs);
+                return cvs[index];
+            }
+            return null;
+        },
+    },
+
+    coverLetters: {
+        findAll: () => readFile(coverLettersFile, []),
+        findByRequestId: (requestId: string) => {
+            const items = readFile(coverLettersFile, []);
+            return items.find((c: any) => c.request_id === requestId);
+        },
+        upsert: (data: any) => {
+            const items = readFile(coverLettersFile, []);
+            const existingIndex = items.findIndex((c: any) => c.request_id === data.request_id);
+            const now = new Date().toISOString();
+            if (existingIndex !== -1) {
+                items[existingIndex] = { ...items[existingIndex], ...data, updated_at: now };
+                writeFile(coverLettersFile, items);
+                return items[existingIndex];
+            }
+            const newRow = { ...data, created_at: now, updated_at: now };
+            items.push(newRow);
+            writeFile(coverLettersFile, items);
+            return newRow;
+        },
+    },
+
+    interviewSessions: {
+        findAll: () => readFile(interviewSessionsFile, []),
+        findById: (id: number) => {
+            const sessions = readFile(interviewSessionsFile, []);
+            return sessions.find((s: any) => s.id === id);
+        },
+        create: (data: any) => {
+            const sessions = readFile(interviewSessionsFile, []);
+            const newId = sessions.length > 0 ? Math.max(...sessions.map((s: any) => s.id || 0)) + 1 : 1;
+            const newSession = {
+                id: newId,
+                ...data,
+                status: data.status || 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+            sessions.push(newSession);
+            writeFile(interviewSessionsFile, sessions);
+            return newSession;
+        },
+    },
+
+    skills: {
+        findAll: () => readFile(skillsFile, []),
+        findByName: (name: string) => {
+            const skills = readFile(skillsFile, []);
+            return skills.find((s: any) => s.name === name);
+        },
+        findByCategory: (category: string) => {
+            const skills = readFile(skillsFile, []);
+            return skills.filter((s: any) => s.category === category);
+        },
+        createMany: (items: any[]) => {
+            const skills = readFile(skillsFile, []);
+            let maxId = skills.length > 0 ? Math.max(...skills.map((s: any) => s.id || 0)) : 0;
+
+            items.forEach((item) => {
+                const existing = skills.find((s: any) => s.name === item.name && s.category === item.category);
+                if (!existing) {
+                    maxId += 1;
+                    skills.push({
+                        id: maxId,
+                        ...item,
+                        created_at: new Date().toISOString(),
+                    });
+                }
+            });
+
+            writeFile(skillsFile, skills);
+            return skills;
+        },
+    },
+
+    userSkills: {
+        findAll: () => readFile(userSkillsFile, []),
+        findByUserId: (userId: number) => {
+            const userSkills = readFile(userSkillsFile, []);
+            return userSkills.filter((us: any) => us.user_id === userId);
+        },
+    },
+
+    wizardData: {
+        findAll: () => readFile(wizardDataFile, []),
+        findByUserIdAndRequestId: (userId: number, requestId: string) => {
+            const wizardData = readFile(wizardDataFile, []);
+            return wizardData.find((w: any) => w.user_id === userId && w.request_id === requestId);
+        },
+        upsert: (data: any) => {
+            const wizardData = readFile(wizardDataFile, []);
+            const existing = wizardData.find((w: any) => w.user_id === data.user_id && w.request_id === data.request_id);
+            if (existing) {
+                const index = wizardData.indexOf(existing);
+                wizardData[index] = { ...existing, ...data, updated_at: new Date().toISOString() };
+                writeFile(wizardDataFile, wizardData);
+                return wizardData[index];
+            }
+            const newId = wizardData.length > 0 ? Math.max(...wizardData.map((w: any) => w.id || 0)) + 1 : 1;
+            const newWizard = {
+                id: newId,
+                ...data,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+            wizardData.push(newWizard);
+            writeFile(wizardDataFile, wizardData);
+            return newWizard;
+        },
+    },
+
+    resumeDrafts: {
+        findAll: () => readFile(resumeDraftsFile, []),
+        findById: (id: number) => {
+            const drafts = readFile(resumeDraftsFile, []);
+            return drafts.find((d: any) => d.id === id);
+        },
+        findByRequestId: (requestId: string) => {
+            const drafts = readFile(resumeDraftsFile, []);
+            return drafts.find((d: any) => d.request_id === requestId);
+        },
+        create: (data: any) => {
+            const drafts = readFile(resumeDraftsFile, []);
+            const newId = drafts.length > 0 ? Math.max(...drafts.map((d: any) => d.id || 0)) + 1 : 1;
+            const newDraft = {
+                id: newId,
+                ...data,
+                status: data.status || 'generating',
+                resume_dirty: data.resume_dirty ?? false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+            drafts.push(newDraft);
+            writeFile(resumeDraftsFile, drafts);
+            return newDraft;
+        },
+        update: (id: number, data: Partial<any>) => {
+            const drafts = readFile(resumeDraftsFile, []);
+            const index = drafts.findIndex((d: any) => d.id === id);
+            if (index !== -1) {
+                drafts[index] = { ...drafts[index], ...data, updated_at: new Date().toISOString() };
+                writeFile(resumeDraftsFile, drafts);
+                return drafts[index];
+            }
+            return null;
+        },
+    },
+
+    resumeSectionOutputs: {
+        findAll: () => readFile(resumeSectionOutputsFile, []),
+        findByDraftId: (draftId: number) => {
+            const outputs = readFile(resumeSectionOutputsFile, []);
+            return outputs.filter((o: any) => o.draft_id === draftId);
+        },
+        findByDraftIdAndSection: (draftId: number, sectionKey: string) => {
+            const outputs = readFile(resumeSectionOutputsFile, []);
+            return outputs.find((o: any) => o.draft_id === draftId && o.section_key === sectionKey);
+        },
+        findByInputHash: (inputHash: string) => {
+            const outputs = readFile(resumeSectionOutputsFile, []);
+            return outputs.filter((o: any) => o.input_hash === inputHash);
+        },
+        create: (data: any) => {
+            const outputs = readFile(resumeSectionOutputsFile, []);
+            const newId = outputs.length > 0 ? Math.max(...outputs.map((o: any) => o.id || 0)) + 1 : 1;
+            const newOutput = {
+                id: newId,
+                draft_id: data.draft_id,
+                section_key: data.section_key,
+                ai_output_json: data.ai_output_json ?? data.output_json ?? null,
+                user_override_json: data.user_override_json ?? null,
+                user_override_text: data.user_override_text ?? null,
+                effective_output_json: data.effective_output_json ?? data.ai_output_json ?? data.output_json ?? null,
+                model: data.model ?? 'gpt-4o',
+                input_hash: data.input_hash ?? '',
+                generation_mode: data.generation_mode ?? 'default',
+                ...data,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+            outputs.push(newOutput);
+            writeFile(resumeSectionOutputsFile, outputs);
+            return newOutput;
+        },
+        update: (id: number, data: Partial<any>) => {
+            const outputs = readFile(resumeSectionOutputsFile, []);
+            const index = outputs.findIndex((o: any) => o.id === id);
+            if (index !== -1) {
+                outputs[index] = { ...outputs[index], ...data, updated_at: new Date().toISOString() };
+                writeFile(resumeSectionOutputsFile, outputs);
+                return outputs[index];
+            }
+            return null;
+        },
+    },
+};
+
+export function initDatabase() {
+    if (!fs.existsSync(usersFile)) writeFile(usersFile, []);
+    if (!fs.existsSync(cvsFile)) writeFile(cvsFile, []);
+    if (!fs.existsSync(interviewSessionsFile)) writeFile(interviewSessionsFile, []);
+    if (!fs.existsSync(skillsFile)) writeFile(skillsFile, []);
+    if (!fs.existsSync(userSkillsFile)) writeFile(userSkillsFile, []);
+    if (!fs.existsSync(wizardDataFile)) writeFile(wizardDataFile, []);
+    if (!fs.existsSync(resumeDraftsFile)) writeFile(resumeDraftsFile, []);
+    if (!fs.existsSync(resumeSectionOutputsFile)) writeFile(resumeSectionOutputsFile, []);
+    if (!fs.existsSync(coverLettersFile)) writeFile(coverLettersFile, []);
+}
+
+initDatabase();
+
+if (typeof window === 'undefined') {
+    const skills = readFile(skillsFile, []);
+    if (skills.length === 0) {
+        import('./seed-skills')
+            .then(({ seedSkills }) => {
+                seedSkills();
+            })
+            .catch(() => {
+                // ignore
+            });
+    }
+}
+
