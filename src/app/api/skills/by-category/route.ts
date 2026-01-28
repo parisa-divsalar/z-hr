@@ -6,15 +6,10 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams;
         const category = searchParams.get('category');
 
-        if (!category) {
-            return NextResponse.json({ error: 'Category is required' }, { status: 400 });
-        }
+        // اگر category ارسال نشده باشد، همه skills را از database برمی‌گردانیم
+        const skills = category ? db.skills.findByCategory(category) : db.skills.findAll();
+        const skillNames = skills.map((s: any) => s.name);
 
-        // دریافت skills از database محلی بر اساس category
-        const categorySkills = db.skills.findByCategory(category);
-        const skillNames = categorySkills.map((s: any) => s.name);
-
-        // اگر skill پیدا نشد، لیست خالی برمی‌گردانیم
         return NextResponse.json({
             data: skillNames,
         });

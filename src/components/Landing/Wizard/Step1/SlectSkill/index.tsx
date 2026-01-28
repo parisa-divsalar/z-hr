@@ -263,8 +263,23 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             setIsSkillsLoading(true);
             try {
                 const category = wizardData.mainSkill?.trim();
-                const endpoint = category
-                    ? `skills/by-category?category=${encodeURIComponent(category)}`
+                let resolvedCategory = category;
+
+                if (category) {
+                    const numericIndex = Number(category);
+                    if (!Number.isNaN(numericIndex)) {
+                        try {
+                            const { data } = await apiClientClient.get('skills/categories');
+                            const list: string[] = data?.data ?? [];
+                            resolvedCategory = list[numericIndex] ?? category;
+                        } catch {
+                            resolvedCategory = category;
+                        }
+                    }
+                }
+
+                const endpoint = resolvedCategory
+                    ? `skills/by-category?category=${encodeURIComponent(resolvedCategory)}`
                     : 'skills/by-category';
 
                 const { data } = await apiClientClient.get(endpoint);
