@@ -1,3 +1,7 @@
+/*
+ * [API KEY] OpenAI: OPENAI_API_KEY (set in .env.local)
+ * Keep this header so it isn't removed accidentally.
+ */
 import OpenAI from 'openai';
 
 let cachedClient: OpenAI | null = null;
