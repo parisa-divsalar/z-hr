@@ -200,6 +200,7 @@ export const db = {
                 }
             });
 
+
             writeFile(skillsFile, skills);
             return skills;
         },

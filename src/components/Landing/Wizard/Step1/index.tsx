@@ -7,7 +7,10 @@ import JobDescription from '@/components/Landing/Wizard/Step1/JobDescription';
 import Questions from '@/components/Landing/Wizard/Step1/Questions';
 import SKillInput from '@/components/Landing/Wizard/Step1/SKillInput';
 import SelectSkill from '@/components/Landing/Wizard/Step1/SlectSkill';
-import { useWizardStore } from '@/store/wizard';
+import { buildWizardSerializable, useWizardStore } from '@/store/wizard';
+import { apiClientClient } from '@/services/api-client';
+import { improveResume } from '@/services/cv/improve-resume';
+import { useAuthStore } from '@/store/auth';
 import { clearWizardTextOnlySession, saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
 
 interface Step1Props {
@@ -20,6 +23,7 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
     const recomputeAllFiles = useWizardStore((s) => s.recomputeAllFiles);
     const validate = useWizardStore((s) => s.validate);
     const setRequestId = useWizardStore((s) => s.setRequestId);
+    const accessToken = useAuthStore((s) => s.accessToken);
 
     useEffect(() => {
         const container = document.getElementById('resume-builder-scroll');
@@ -47,7 +51,7 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
         return <JobDescription setStage={setStage} />;
     }
 
-    const handleFinalSubmit = () => {
+    const handleFinalSubmit = async () => {
         recomputeAllFiles();
 
         const state = useWizardStore.getState();
@@ -58,13 +62,61 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
         }
 
         const wizardData = state.data;
+        const serializableWizard = buildWizardSerializable(wizardData);
+        const existingRequestId = useWizardStore.getState().requestId;
+        const isAuthenticated = Boolean(accessToken);
+        const fallbackRequestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        let finalRequestId = existingRequestId || fallbackRequestId;
+        let analysisResult: unknown = null;
+
+        if (isAuthenticated) {
+            try {
+                const saveRes = await apiClientClient.post('wizard/save', {
+                    requestId: finalRequestId,
+                    wizardData: serializableWizard,
+                });
+                const savedRequestId = saveRes?.data?.data?.requestId;
+                if (typeof savedRequestId === 'string' && savedRequestId.trim()) {
+                    finalRequestId = savedRequestId.trim();
+                }
+            } catch (error) {
+                console.error('Failed to save wizard data:', error);
+            }
+        }
+
+        try {
+            const analyzeRes = await apiClientClient.post('cv/analyze', {
+                cvText: JSON.stringify(serializableWizard),
+                requestId: finalRequestId,
+            });
+            analysisResult = analyzeRes?.data?.analysis ?? analyzeRes?.data?.data?.analysis ?? null;
+        } catch (error) {
+            console.error('Failed to analyze CV:', error);
+        }
+
+        if (analysisResult) {
+            try {
+                await improveResume({
+                    resume: analysisResult,
+                    mode: 'analysis',
+                    isFinalStep: true,
+                });
+            } catch (error) {
+                console.error('Failed to improve CV:', error);
+            }
+        }
+
+        if (isAuthenticated && (!existingRequestId || existingRequestId !== finalRequestId)) {
+            setRequestId(finalRequestId);
+        }
         const hasAnyFilesOrVoices = (wizardData.allFiles?.length ?? 0) > 0;
 
         if (!hasAnyFilesOrVoices) {
             saveWizardTextOnlySession(wizardData);
             // keep it so Step3 can still fetch/edit the backend CV.
-            const existingRequestId = useWizardStore.getState().requestId;
-            if (!existingRequestId) setRequestId(null);
+            if (!isAuthenticated && !existingRequestId) {
+                setRequestId(null);
+            }
             setActiveStep(3);
             return;
         }
