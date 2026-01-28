@@ -29,16 +29,28 @@ export async function POST(request: NextRequest) {
             fullName = lastName;
         }
 
+        const fakeUserId = `fake_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
         // Create user
         const newUser = db.users.create({
             email,
             password_hash: passwordHash,
             name: fullName || null,
+            fake_user_id: fakeUserId,
+        });
+
+        db.registrationLogs.append({
+            user_id: newUser.id,
+            fake_user_id: fakeUserId,
+            email,
+            username: username || email,
+            password_hash: passwordHash,
         });
 
         return NextResponse.json({
             data: {
                 userId: newUser.id,
+                fakeUserId,
                 email: newUser.email,
                 name: newUser.name,
             },

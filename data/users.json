@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1,
+    "email": "saleh@gmail.com",
+    "password_hash": "$2a$10$wljL6TuWQq/0HzvK7nwN4uxpBBU8d5IjoKF7MIw7EJ9RstgJxw/6O",
+    "name": null,
+    "created_at": "2026-01-06T11:34:34.823Z",
+    "updated_at": "2026-01-06T11:34:34.823Z"
+  }
+]

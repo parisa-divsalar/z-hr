@@ -7,6 +7,7 @@ const repoRootDataDir = path.resolve(process.cwd(), '..', '..', 'data');
 const dataDir = process.env.DATABASE_PATH ? path.dirname(process.env.DATABASE_PATH) : repoRootDataDir;
 
 const usersFile = path.join(dataDir, 'users.json');
+const registeredUsersLogFile = path.join(dataDir, 'registered_users_log.json');
 const cvsFile = path.join(dataDir, 'cvs.json');
 const interviewSessionsFile = path.join(dataDir, 'interview_sessions.json');
 const skillsFile = path.join(dataDir, 'skills.json');
@@ -74,6 +75,19 @@ export const db = {
                 return users[index];
             }
             return null;
+        },
+    },
+    registrationLogs: {
+        findAll: () => readFile(registeredUsersLogFile, []),
+        append: (data: any) => {
+            const logs = readFile(registeredUsersLogFile, []);
+            const newRow = {
+                ...data,
+                created_at: new Date().toISOString(),
+            };
+            logs.push(newRow);
+            writeFile(registeredUsersLogFile, logs);
+            return newRow;
         },
     },
 
@@ -315,6 +329,7 @@ export const db = {
 
 export function initDatabase() {
     if (!fs.existsSync(usersFile)) writeFile(usersFile, []);
+    if (!fs.existsSync(registeredUsersLogFile)) writeFile(registeredUsersLogFile, []);
     if (!fs.existsSync(cvsFile)) writeFile(cvsFile, []);
     if (!fs.existsSync(interviewSessionsFile)) writeFile(interviewSessionsFile, []);
     if (!fs.existsSync(skillsFile)) writeFile(skillsFile, []);
