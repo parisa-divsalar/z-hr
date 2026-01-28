@@ -7,27 +7,23 @@ export type AddCoverLetterParams = {
     cvContent: string;
     companyName: string;
     positionTitle: string;
+    requestId?: string | null;
 };
 
 export async function addCoverLetter(params: AddCoverLetterParams) {
-    const { data } = await apiClientClient.post(
-        'cv/add-cover-letter',
-        {
-            jobDescription: params.jobDescription,
-            cvContent: params.cvContent,
-            companyName: params.companyName,
-            positionTitle: params.positionTitle,
-        },
-        {
-            params: {
-                userId: params.userId ?? undefined,
-                lang: params.lang ?? 'en',
-            },
-        },
-    );
+    const { data } = await apiClientClient.post('cv/cover-letter', {
+        requestId: params.requestId ?? undefined,
+        isFinalStep: true,
+        jobDescription: params.jobDescription,
+        cvContent: params.cvContent,
+        companyName: params.companyName,
+        positionTitle: params.positionTitle,
+    });
 
     return data;
 }
+
+
 
 
 

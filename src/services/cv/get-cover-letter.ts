@@ -5,9 +5,9 @@ export type GetCoverLetterParams = {
 };
 
 export async function getCoverLetter(params: GetCoverLetterParams) {
-    const { data } = await apiClientClient.get('cv/get-cover-letter', {
+    const { data } = await apiClientClient.get('cv/cover-letter', {
         params: {
-            RequestId: String(params.requestId),
+            requestId: String(params.requestId),
         },
     });
 

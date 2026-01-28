@@ -10,19 +10,26 @@ export type PostImprovedParams = {
      * (Some backends accept correlating a request to an existing requestId.)
      */
     requestId?: string | null;
+    isFinalStep?: boolean;
+    context?: string;
 };
 
 export async function postImproved(params: PostImprovedParams) {
     const payload: Record<string, unknown> = {
-        cvSection: params.cvSection,
-        paragraph: params.paragraph,
-        lang: params.lang ?? 'en',
+        section: params.paragraph || params.cvSection,
+        context: params.context || '',
+        isFinalStep: params.isFinalStep ?? true,
     };
 
     if (params.userId) payload.userId = params.userId;
     if (params.requestId) payload.requestId = params.requestId;
 
-    const { data } = await apiClientClient.post('cv/post-improved', payload);
-    return data;
+    const { data } = await apiClientClient.post('cv/improve', payload);
+    return {
+        result: {
+            improved: data.improved || data.original || params.paragraph,
+            original: data.original || params.paragraph,
+        },
+    };
 }
 

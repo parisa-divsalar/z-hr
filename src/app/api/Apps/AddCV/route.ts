@@ -1,40 +1,13 @@
-import { AxiosError } from 'axios';
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { apiClientServer } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
-
-const normalizeRequestId = (value?: string | null) => {
-    if (!value) return null;
-    if (value.startsWith('"') && value.endsWith('"')) {
-        return value.slice(1, -1);
-    }
-    return value;
-};
-
-export async function POST(request: NextRequest) {
-    try {
-        const requestId = normalizeRequestId(request.nextUrl.searchParams.get('requestId'));
-        if (!requestId) {
-            return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
-        }
-
-        const userId = (await cookies()).get('accessToken')?.value;
-        const bodyOfResume = await request.json();
-
-        const body = {
-            userId,
-            requestId,
-            bodyOfResume,
-        };
-
-        const response = await apiClientServer.post('Apps/AddCV', body);
-
-        return NextResponse.json(response.data);
-    } catch (error) {
-        return CacheError(error as AxiosError);
-    }
+/**
+ * Deprecated legacy endpoint (old upstream proxy).
+ * Use `/api/cv/add-cv` or `/api/cv/edit-cv` instead.
+ */
+export async function POST() {
+    return NextResponse.json(
+        { error: 'Deprecated. Use /api/cv/add-cv or /api/cv/edit-cv instead.' },
+        { status: 410 },
+    );
 }
-
 

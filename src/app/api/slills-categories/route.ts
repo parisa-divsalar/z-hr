@@ -1,16 +1,9 @@
-import { AxiosError } from 'axios';
 import { NextResponse } from 'next/server';
 
-import { apiClientServer } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
-
+/**
+ * Deprecated endpoint (old upstream-based skills categories).
+ * Use `/api/skills/categories` instead.
+ */
 export async function GET() {
-    try {
-        const response = await apiClientServer.get('Apps/SlillsCategories');
-        const data = await response.data;
-
-        return NextResponse.json({ data });
-    } catch (error) {
-        return CacheError(error as AxiosError);
-    }
+    return NextResponse.json({ error: 'Deprecated. Use /api/skills/categories instead.' }, { status: 410 });
 }

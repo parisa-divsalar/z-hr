@@ -1,17 +1,50 @@
-import { AxiosError } from 'axios';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import bcrypt from 'bcryptjs';
 
-import { apiClientServer } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        const input = await request.json();
-        const response = await apiClientServer.post(`Apps/RegisterByUserAndPassword`, input);
-        const data = await response.data;
+        const { email, password, name, firstName, lastName, username } = await request.json();
 
-        return NextResponse.json({ data });
-    } catch (error) {
-        return CacheError(error as AxiosError);
+        if (!email || !password) {
+            return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+        }
+
+        // Check if user already exists
+        const existingUser = db.users.findByEmail(email);
+        if (existingUser) {
+            return NextResponse.json({ error: 'User already exists' }, { status: 409 });
+        }
+
+        // Hash password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Create full name from firstName and lastName if available
+        let fullName = name;
+        if (!fullName && firstName && lastName) {
+            fullName = `${firstName} ${lastName}`.trim();
+        } else if (!fullName && firstName) {
+            fullName = firstName;
+        } else if (!fullName && lastName) {
+            fullName = lastName;
+        }
+
+        // Create user
+        const newUser = db.users.create({
+            email,
+            password_hash: passwordHash,
+            name: fullName || null,
+        });
+
+        return NextResponse.json({
+            data: {
+                userId: newUser.id,
+                email: newUser.email,
+                name: newUser.name,
+            },
+        });
+    } catch (error: any) {
+        console.error('Registration error:', error);
+        return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
     }
 }

@@ -1,20 +1,48 @@
-import { AxiosError } from 'axios';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { apiClientServer } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
+import { db } from '@/lib/db';
+import { ChatGPTService } from '@/services/chatgpt/service';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        const input = await request.json();
-        const response = await apiClientServer.post('Apps/ForgotPassword', input);
-        const data = await response.data;
+        const { email } = await request.json();
 
-        return NextResponse.json({ data });
-    } catch (error) {
-        return CacheError(error as AxiosError);
+        if (!email) {
+            return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+        }
+
+        const user = db.users.findByEmail(email);
+
+        if (!user) {
+            return NextResponse.json({
+                message: 'If an account with that email exists, a password reset link has been sent.',
+            });
+        }
+
+        const resetToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+
+        await ChatGPTService.chat([
+            {
+                role: 'system',
+                content: 'You are a helpful assistant. Generate a friendly password reset message.',
+            },
+            {
+                role: 'user',
+                content: `Generate a password reset message for user ${user.email}. The reset token is ${resetToken}.`,
+            },
+        ]);
+
+        return NextResponse.json({
+            message: 'If an account with that email exists, a password reset link has been sent.',
+            ...(process.env.NODE_ENV === 'development' && { resetToken }),
+        });
+    } catch (error: any) {
+        console.error('Error in forgot password:', error);
+        return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
     }
 }
+
+
 
 
 

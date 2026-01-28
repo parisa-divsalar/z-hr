@@ -1,88 +1,76 @@
-import { AxiosError } from 'axios';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { db } from '@/lib/db';
 
-import { apiClientServer } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-const normalizeValue = (value?: string | null) => {
-    if (!value) return null;
-    if (value.startsWith('"') && value.endsWith('"')) {
-        return value.slice(1, -1);
+async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
+    try {
+        const cookieStore = await cookies();
+        const cookieToken = cookieStore.get('accessToken')?.value;
+        const authHeader = request.headers.get('authorization');
+        const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+        const token = cookieToken || headerToken;
+        if (!token) return null;
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        return decoded.userId?.toString() || null;
+    } catch {
+        return null;
     }
-    return value;
-};
+}
 
 export async function PUT(request: NextRequest) {
-    let requestId: string | null = null;
-    let userId: string | null = null;
-    let bodyOfResume: unknown = null;
     try {
-        const payload = await request.json();
-
-        const { searchParams } = new URL(request.url);
-        requestId = normalizeValue(payload?.requestId ?? searchParams.get('requestId'));
+        const { userId, requestId, bodyOfResume, title } = await request.json();
+        const authedUserId = await getUserIdFromAuth(request);
 
         if (!requestId) {
-            return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
+            return NextResponse.json({ error: 'requestId is required' }, { status: 400 });
         }
 
-        const userIdFromCookie = normalizeValue((await cookies()).get('accessToken')?.value);
-        userId = normalizeValue(payload?.userId ?? searchParams.get('userId')) ?? userIdFromCookie;
-        if (!userId) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-        }
+        // Check if CV exists
+        let cv = db.cvs.findByRequestId(requestId);
 
-        bodyOfResume = payload?.bodyOfResume ?? payload;
-        if (!bodyOfResume) {
-            return NextResponse.json({ message: 'bodyOfResume is required' }, { status: 400 });
-        }
-
-        const response = await apiClientServer.put(`Apps/EditCV?userId=${userId}&requestId=${requestId}`, {
-            bodyOfResume,
-        });
-
-        if (response.status === 200) {
-            const refreshedCv = await apiClientServer.get(`Apps/GetCV?userId=${userId}&requestId=${requestId}`);
-            return NextResponse.json(refreshedCv.data);
-        }
-
-        return NextResponse.json(response.data);
-    } catch (error) {
-        const axiosError = error as AxiosError;
-
-        const raw = axiosError?.response?.data as any;
-        const message =
-            typeof raw === 'string'
-                ? raw
-                : typeof raw?.message === 'string'
-                  ? raw.message
-                  : typeof raw?.error === 'string'
-                    ? raw.error
-                    : '';
-
-        if (message.toLowerCase().includes('no cvs found matching the criteria')) {
-            try {
-                await apiClientServer.post('Apps/AddCV', {
-                    userId: userId ?? undefined,
-                    requestId: requestId ?? undefined,
-                    bodyOfResume: bodyOfResume ?? undefined,
-                });
-
-                if (userId && requestId) {
-                    const refreshedCv = await apiClientServer.get(`Apps/GetCV?userId=${userId}&requestId=${requestId}`);
-                    return NextResponse.json(refreshedCv.data);
-                }
-
-                return NextResponse.json(
-                    { message: 'CV created but missing userId/requestId for refresh' },
-                    { status: 200 },
-                );
-            } catch (fallbackError) {
-                return CacheError(fallbackError as AxiosError);
+        if (cv) {
+            // Update existing CV
+            const updateData: any = {};
+            if (bodyOfResume !== undefined) {
+                updateData.content = JSON.stringify(bodyOfResume);
             }
+            if (title !== undefined) {
+                updateData.title = title;
+            }
+            
+            cv = db.cvs.update(requestId, updateData);
+        } else {
+            // Create new CV if doesn't exist
+            const finalUserId = authedUserId || (userId ? String(userId) : null);
+            if (!finalUserId) {
+                return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+            }
+
+            cv = db.cvs.create({
+                user_id: parseInt(finalUserId),
+                request_id: requestId,
+                content: bodyOfResume ? JSON.stringify(bodyOfResume) : null,
+                title: title || null,
+            });
         }
 
-        return CacheError(axiosError);
+        const content = cv.content ? (typeof cv.content === 'string' ? JSON.parse(cv.content) : cv.content) : null;
+
+        return NextResponse.json({
+            data: {
+                requestId: cv.request_id,
+                content,
+                title: cv.title,
+                createdAt: cv.created_at,
+                updatedAt: cv.updated_at,
+            },
+        });
+    } catch (error: any) {
+        console.error('Error editing CV:', error);
+        return NextResponse.json({ error: 'Failed to edit CV' }, { status: 500 });
     }
 }

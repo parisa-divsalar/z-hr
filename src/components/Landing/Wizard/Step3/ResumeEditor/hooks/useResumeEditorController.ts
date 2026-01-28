@@ -7,6 +7,7 @@ import { editCV } from '@/services/cv/edit-cv';
 import { getCV } from '@/services/cv/get-cv';
 import { getImproved } from '@/services/cv/get-improved';
 import { postImproved } from '@/services/cv/post-improved';
+import { improveResume } from '@/services/cv/improve-resume';
 import { useAuthStore } from '@/store/auth';
 import { buildWizardSerializable, useWizardStore } from '@/store/wizard';
 import { exportElementToPdf } from '@/utils/exportToPdf';
@@ -489,24 +490,8 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 cvSection,
                 paragraph: text,
             });
-
-            const pollingRequestId = extractPollingRequestId(postResponse);
-            if (!pollingRequestId) {
-                throw new Error('Missing requestId from improve response. Please try again.');
-            }
-
-            const start = Date.now();
-            const timeoutMs = 45_000;
-            const pollIntervalMs = 1_000;
-
-            while (Date.now() - start < timeoutMs) {
-                const res = await getImproved({ requestId: pollingRequestId });
-                const improved = extractImprovedText(res);
-                if (improved) return improved;
-                await sleep(pollIntervalMs);
-            }
-
-            throw new Error('Improvement is taking too long. Please try again.');
+            const improved = (postResponse as any)?.result?.improved;
+            return typeof improved === 'string' && improved.trim() ? improved : text;
         },
         [accessToken],
     );
@@ -542,14 +527,47 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             try {
                 setImproveError(null);
                 setAutoImprovePhase('request');
+                /**
+                 * Single-call improve:
+                 * Send all sections once, then apply improved outputs section-by-section (typing effect preserved).
+                 */
+                const rawPayload = {
+                    summary: getSectionTextForImprove('summary'),
+                    experience: getSectionTextForImprove('experience'),
+                    certifications: getSectionTextForImprove('certificates'),
+                    jobDescription: getSectionTextForImprove('jobDescription'),
+                    additionalInfo: getSectionTextForImprove('additionalInfo'),
+                };
+
+                const improveRes = await improveResume({
+                    userId: accessToken ?? undefined,
+                    mode: 'sections_text',
+                    resume: rawPayload,
+                    isFinalStep: true,
+                });
+
+                const improvedResume = (improveRes as any)?.result?.improvedResume ?? {};
+
+                const improvedBySection: Record<string, string> = {
+                    summary: String((improvedResume as any)?.summary ?? rawPayload.summary ?? ''),
+                    experience: String((improvedResume as any)?.experience ?? rawPayload.experience ?? ''),
+                    certificates: String(
+                        (improvedResume as any)?.certifications ??
+                            (improvedResume as any)?.certificates ??
+                            rawPayload.certifications ??
+                            '',
+                    ),
+                    jobDescription: String((improvedResume as any)?.jobDescription ?? rawPayload.jobDescription ?? ''),
+                    additionalInfo: String((improvedResume as any)?.additionalInfo ?? rawPayload.additionalInfo ?? ''),
+                };
 
                 for (let i = 0; i < AUTO_IMPROVE_ORDER.length; i++) {
                     const section = AUTO_IMPROVE_ORDER[i];
                     setAutoImproveIndex(i);
                     setAutoImprovePhase('request');
 
-                    const raw = getSectionTextForImprove(section);
-                    if (!String(raw ?? '').trim()) {
+                    const improved = String(improvedBySection[section] ?? '').trim();
+                    if (!improved) {
                         setAutoImproved((prev) => ({ ...prev, [section]: true }));
                         continue;
                     }
@@ -558,14 +576,11 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                         applyTypedSectionText(section, '');
                     }
 
-                    const improved = await requestImprovedText(section, raw);
-
                     setAutoImprovePhase('typing');
                     if (section === 'summary') {
                         applyTypedSectionText(section, '');
                     }
                     await typewriterWords(improved, (partial) => applyTypedSectionText(section, partial));
-
                     setAutoImproved((prev) => ({ ...prev, [section]: true }));
                 }
 
@@ -1095,26 +1110,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                     cvSection: section,
                     paragraph: String(currentText),
                 });
-
-                const pollingRequestId = extractPollingRequestId(postResponse) ?? requestId;
-                if (!pollingRequestId) {
-                    throw new Error('Missing requestId from improve response. Please try again.');
-                }
-
-                const start = Date.now();
-                const timeoutMs = 30_000;
-                const pollIntervalMs = 1_000;
-
-                let improved: string | null = null;
-                while (Date.now() - start < timeoutMs) {
-                    const res = await getImproved({ requestId: pollingRequestId });
-                    improved = extractImprovedText(res);
-                    if (improved) break;
-                    await sleep(pollIntervalMs);
-                }
-
-                if (!improved) {
-                    throw new Error('Improvement is taking too long. Please try again.');
+                const improved = (postResponse as any)?.result?.improved;
+                if (!improved || !String(improved).trim()) {
+                    throw new Error('Failed to improve text. Please try again.');
                 }
 
                 applyTypedSectionText(section, improved);

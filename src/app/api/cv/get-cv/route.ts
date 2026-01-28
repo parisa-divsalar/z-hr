@@ -1,38 +1,64 @@
-import { AxiosError } from 'axios';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { db } from '@/lib/db';
 
-import { apiClientServer } from '@/services/api-client';
-import CacheError from '@/services/cache-error';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-const normalizeId = (value?: string | null) => {
-    if (!value) return null;
-    if (value.startsWith('"') && value.endsWith('"')) {
-        return value.slice(1, -1);
+async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
+    try {
+        const cookieStore = await cookies();
+        const cookieToken = cookieStore.get('accessToken')?.value;
+        const authHeader = request.headers.get('authorization');
+        const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+        const token = cookieToken || headerToken;
+        if (!token) return null;
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        return decoded.userId?.toString() || null;
+    } catch {
+        return null;
     }
-    return value;
-};
+}
 
 export async function GET(request: NextRequest) {
     try {
-        const { searchParams } = new URL(request.url);
-        const requestId = normalizeId(searchParams.get('requestId') ?? searchParams.get('RequestId'));
-        const userIdFromQuery = normalizeId(searchParams.get('userId'));
-        const userIdFromCookie = normalizeId((await cookies()).get('accessToken')?.value);
-        const userId = userIdFromQuery ?? userIdFromCookie;
+        const searchParams = request.nextUrl.searchParams;
+        const requestId = searchParams.get('requestId');
+        const userId = searchParams.get('userId');
 
         if (!requestId) {
-            return NextResponse.json({ message: 'requestId is required' }, { status: 400 });
+            return NextResponse.json({ error: 'requestId is required' }, { status: 400 });
         }
 
-        if (!userId) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+        // Get CV from database
+        let cv = db.cvs.findByRequestId(requestId);
+
+        if (!cv) {
+            return NextResponse.json({ error: 'CV not found' }, { status: 404 });
         }
 
-        const response = await apiClientServer.get(`Apps/GetCV?userId=${userId}&requestId=${requestId}`);
+        // Check user access: prefer authenticated user
+        const authedUserId = await getUserIdFromAuth(request);
+        const finalUserId = authedUserId || userId;
+        if (finalUserId && cv.user_id && cv.user_id.toString() !== finalUserId) {
+            return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+        }
 
-        return NextResponse.json(response.data);
-    } catch (error) {
-        return CacheError(error as AxiosError);
+        const analysisResult = cv.analysis_result ? JSON.parse(cv.analysis_result) : null;
+        const content = cv.content ? (typeof cv.content === 'string' ? JSON.parse(cv.content) : cv.content) : null;
+
+        return NextResponse.json({
+            data: {
+                requestId: cv.request_id,
+                content,
+                title: cv.title,
+                analysis: analysisResult,
+                createdAt: cv.created_at,
+                updatedAt: cv.updated_at,
+            },
+        });
+    } catch (error: any) {
+        console.error('Error getting CV:', error);
+        return NextResponse.json({ error: 'Failed to get CV' }, { status: 500 });
     }
 }

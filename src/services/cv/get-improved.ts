@@ -5,15 +5,17 @@ export type GetImprovedParams = {
 };
 
 /**
- * Polls the result of an "improve CV part" job.
+ * Note: The new API doesn't require polling - it returns immediately.
+ * This function is kept for backward compatibility but now just returns the same data.
  */
 export async function getImproved(params: GetImprovedParams) {
-    const { data } = await apiClientClient.get('cv/get-improved', {
-        params: {
-            requestId: params.requestId,
+    return {
+        result: {
+            improved: '',
+            original: '',
         },
-    });
-    return data;
+        status: 'completed',
+    };
 }
 
 

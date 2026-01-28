@@ -49,25 +49,19 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
              */
             saveWizardTextOnlySession(bodyOfResume as any);
 
-            const formData = new FormData();
-            const zipFile = new File([zipBlob], 'info.zip', { type: 'application/zip' });
-            // common backend field names
-            formData.append('inputFile', zipFile);
-            formData.append('file', zipFile);
-
             const cvDataJson = JSON.stringify(bodyOfResume);
-            formData.append('cvData', cvDataJson);
-            formData.append('bodyOfResume', cvDataJson);
+            const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-            const res = await apiClientClient.post('Apps/SendFile', formData, {
-                params: {
-                    userId: accessToken ?? undefined,
-                    lang: 'en',
-                },
+            const res = await apiClientClient.post('cv/analyze', {
+                cvText: cvDataJson,
+                userId: accessToken ?? undefined,
+                requestId: requestId,
+            }, {
                 timeout: SEND_FILE_TIMEOUT_MS,
             });
-            const requestId: string = res.data.result as string;
-            setRequestId(requestId);
+            
+            const finalRequestId: string = res.data.requestId || requestId;
+            setRequestId(finalRequestId);
 
             setActiveStep(3);
         } catch (err) {
@@ -92,7 +86,7 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
 
             setSubmitError(message);
 
-            console.error('Apps/SendFile failed:', errorObj?.response?.status, errorObj?.response?.data, errorObj);
+            console.error('cv/analyze failed:', errorObj?.response?.status, errorObj?.response?.data, errorObj);
         }
     };
 

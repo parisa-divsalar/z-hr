@@ -39,7 +39,7 @@ const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
         const fetchSkills = async () => {
             try {
                 setLoading(true);
-                const { data } = await apiClientClient.get('slills-categories');
+                const { data } = await apiClientClient.get('skills/categories');
 
                 const list: string[] = data?.data ?? [];
                 const options: SelectOption[] = list.map((skill) => ({

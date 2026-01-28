@@ -264,8 +264,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             try {
                 const category = wizardData.mainSkill?.trim();
                 const endpoint = category
-                    ? `categories-name?category=${encodeURIComponent(category)}`
-                    : 'categories-name';
+                    ? `skills/by-category?category=${encodeURIComponent(category)}`
+                    : 'skills/by-category';
 
                 const { data } = await apiClientClient.get(endpoint);
 
@@ -564,7 +564,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
 
         const fetchMainSkillLabel = async () => {
             try {
-                const { data } = await apiClientClient.get('slills-categories');
+                const { data } = await apiClientClient.get('skills/categories');
                 const list: string[] = data?.data ?? [];
                 const labelFromList = list[numericIndex];
 

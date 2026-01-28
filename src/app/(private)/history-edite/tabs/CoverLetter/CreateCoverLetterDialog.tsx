@@ -44,8 +44,6 @@ type Props = {
 
 const normalizeText = (text: string) => text.replace(/\r\n/g, '\n').trim();
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
@@ -277,6 +275,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
             const raw = await addCoverLetter({
                 userId: userId ?? undefined,
                 lang: 'en',
+                requestId: null,
                 companyName: values.companyName.trim(),
                 positionTitle: values.positionTitle.trim(),
                 cvContent: values.cvContent.trim(),
@@ -284,43 +283,14 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
             });
 
             const requestId = extractCoverLetterRequestId(raw);
-
-            const pollGetCoverLetter = async (requestIdToPoll: string) => {
-                const maxAttempts = 18; // ~45-60s worst case with backoff
-                let lastResponse: unknown = null;
-                let lastError: unknown = null;
-
-                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                    try {
-                        const res = await getCoverLetter({ requestId: requestIdToPoll });
-                        lastResponse = res;
-
-                        const status = (res as any)?.status ?? (res as any)?.Status ?? null;
-                        if (status === 2) {
-                            const text = extractCoverLetterText(res);
-                            if (text) return { text, raw: res };
-                        }
-                    } catch (e) {
-                        lastError = e;
-                    }
-
-                    const delay = Math.min(4000, 1000 + attempt * 250);
-                    await sleep(delay);
-                }
-
-                if (lastError) throw lastError;
-                return { text: null as string | null, raw: lastResponse };
-            };
-
-            let coverLetterText: string | null = null;
             let outputRaw: unknown = raw;
+            let coverLetterText: string | null = extractCoverLetterText(raw);
 
-            if (requestId) {
-                const polled = await pollGetCoverLetter(requestId);
-                coverLetterText = polled.text;
-                if (polled.raw !== null && polled.raw !== undefined) outputRaw = polled.raw;
-            } else {
-                coverLetterText = extractCoverLetterText(raw);
+            // Fallback: if API returned only requestId, fetch the stored cover letter once.
+            if (!coverLetterText && requestId) {
+                const res = await getCoverLetter({ requestId });
+                outputRaw = res;
+                coverLetterText = extractCoverLetterText(res);
             }
 
             if (!coverLetterText) throw new Error('Cover letter is not ready yet. Please try again in a moment.');

@@ -59,7 +59,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
         const fetchSkills = async () => {
             try {
                 setLoadingSkills(true);
-                const { data } = await apiClientClient.get('slills-categories');
+                const { data } = await apiClientClient.get('skills/categories');
 
                 const options = data.data.map((skill: string) => ({ value: skill, label: skill }));
                 setSkillOptions(options);
