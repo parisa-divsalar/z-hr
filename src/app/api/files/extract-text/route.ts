@@ -1,5 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 import { ChatGPTService } from '@/services/chatgpt/service';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+async function getUserId(request: NextRequest): Promise<string | null> {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('accessToken')?.value ?? request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+        if (!token) return null;
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        return decoded.userId?.toString() ?? null;
+    } catch {
+        return null;
+    }
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -10,8 +26,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'File is required' }, { status: 400 });
         }
 
-        // Extract text from file using ChatGPT
-        const extractedText = await ChatGPTService.extractTextFromFile(file);
+        const userId = await getUserId(request);
+        const logContext = userId ? { userId, endpoint: '/api/files/extract-text', action: 'extractTextFromFile' } : undefined;
+        const extractedText = await ChatGPTService.extractTextFromFile(file, logContext);
 
         return NextResponse.json({
             text: extractedText,

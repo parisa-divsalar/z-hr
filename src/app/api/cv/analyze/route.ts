@@ -60,8 +60,10 @@ export async function POST(request: NextRequest) {
         const finalCvText =
             typeof rawCv === 'string' ? rawCv : JSON.stringify(rawCv);
 
-        // Analyze CV using ChatGPT (فقط در مرحله نهایی)
-        const analysis = await ChatGPTService.analyzeCV(finalCvText);
+        const logContext = finalUserId
+            ? { userId: finalUserId, endpoint: '/api/cv/analyze', action: 'analyzeCV' }
+            : undefined;
+        const analysis = await ChatGPTService.analyzeCV(finalCvText, undefined, logContext);
 
         // Save to database if authenticated
         if (finalUserId) {

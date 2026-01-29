@@ -51,6 +51,24 @@ export async function POST(request: NextRequest) {
             maxAge: 60 * 60 * 24 * 7, // 7 days
         });
 
+        // Log login with summary of user data saved so far (for admin panel)
+        const userId = user.id as number;
+        const cvsCount = db.cvs.findByUserId(userId).length;
+        const wizardDataCount = db.wizardData.findByUserId(userId).length;
+        const userSkillsCount = db.userSkills.findByUserId(userId).length;
+        db.loginLogs.append({
+            event: 'login',
+            user_id: userId,
+            email: user.email,
+            name: user.name ?? null,
+            fake_user_id: (user as any).fake_user_id ?? null,
+            data_summary: {
+                cvs_count: cvsCount,
+                wizard_data_count: wizardDataCount,
+                user_skills_count: userSkillsCount,
+            },
+        });
+
         return response;
     } catch (error: any) {
         console.error('Login error:', error);

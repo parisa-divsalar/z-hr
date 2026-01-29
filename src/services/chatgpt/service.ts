@@ -2,8 +2,39 @@
  * [API KEY] OpenAI: OPENAI_API_KEY (set in .env.local)
  * Keep this header so it isn't removed accidentally.
  */
+import { db } from '@/lib/db';
 import { getOpenAIClient } from './client';
 import { PROMPTS } from './prompts';
+
+/** برای ذخیرهٔ ورودی/خروجی هر تعامل با ChatGPT در دیتابیس */
+export type AiLogContext = { userId?: string | null; endpoint: string; action: string };
+
+const AI_LOG_MAX_LEN = 25000;
+const AI_LOG_PREVIEW_LEN = 500;
+
+function logAiInteraction(
+    ctx: AiLogContext | null | undefined,
+    action: string,
+    input: unknown,
+    output: unknown
+): void {
+    if (!ctx?.endpoint) return;
+    try {
+        const inputStr = typeof input === 'string' ? input : JSON.stringify(input ?? '');
+        const outputStr = typeof output === 'string' ? output : JSON.stringify(output ?? '');
+        db.aiInteractions.append({
+            user_id: ctx.userId ? parseInt(String(ctx.userId), 10) : null,
+            endpoint: ctx.endpoint,
+            action: ctx.action || action,
+            input_preview: inputStr.slice(0, AI_LOG_PREVIEW_LEN),
+            output_preview: outputStr.slice(0, AI_LOG_PREVIEW_LEN),
+            input_full: inputStr.length > AI_LOG_MAX_LEN ? inputStr.slice(0, AI_LOG_MAX_LEN) + '...[truncated]' : inputStr,
+            output_full: outputStr.length > AI_LOG_MAX_LEN ? outputStr.slice(0, AI_LOG_MAX_LEN) + '...[truncated]' : outputStr,
+        });
+    } catch (e) {
+        console.warn('AiInteraction log failed:', e);
+    }
+}
 
 /**
  * Complete CV Analysis Result with all sections
@@ -118,12 +149,15 @@ export class ChatGPTService {
      * Analyze CV/Resume text and extract structured information
      * Enhanced: Now accepts optional jobDescription for context-aware analysis
      */
-    static async analyzeCV(cvText: string, jobDescription?: string): Promise<CVAnalysisResult> {
+    static async analyzeCV(
+        cvText: string,
+        jobDescription?: string,
+        logContext?: AiLogContext
+    ): Promise<CVAnalysisResult> {
         let openai: ReturnType<typeof getOpenAIClient> | null = null;
         try {
             openai = getOpenAIClient();
         } catch (e) {
-            // No API key / client init issue: return a safe fallback so the app keeps working.
             console.warn('OpenAI client unavailable, using fallback CV analysis:', e);
             return ChatGPTService.fallbackAnalyzeCV(cvText);
         }
@@ -150,15 +184,10 @@ export class ChatGPTService {
                 throw new Error('No response from ChatGPT');
             }
 
-            try {
-                return JSON.parse(content) as CVAnalysisResult;
-            } catch (parseError) {
-                const msg =
-                    parseError instanceof Error ? parseError.message : String(parseError);
-                throw new Error(`ChatGPT returned invalid JSON: ${msg}`);
-            }
+            const result = JSON.parse(content) as CVAnalysisResult;
+            logAiInteraction(logContext, 'analyzeCV', { cvText: cvText?.slice(0, 2000), jobDescription }, result);
+            return result;
         } catch (error) {
-            // If OpenAI call fails (quota/network/etc), fall back instead of throwing 500.
             console.warn('OpenAI analyzeCV failed, using fallback CV analysis:', error);
             return ChatGPTService.fallbackAnalyzeCV(cvText);
         }
@@ -168,7 +197,12 @@ export class ChatGPTService {
      * Improve a section of CV
      * Enhanced: Now accepts optional jobDescription for context-aware improvement
      */
-    static async improveCVSection(section: string, context?: string, jobDescription?: string): Promise<string> {
+    static async improveCVSection(
+        section: string,
+        context?: string,
+        jobDescription?: string,
+        logContext?: AiLogContext
+    ): Promise<string> {
         const openai = getOpenAIClient();
         try {
             const response = await openai.chat.completions.create({
@@ -186,7 +220,9 @@ export class ChatGPTService {
                 temperature: 0.7,
             });
 
-            return response.choices[0]?.message?.content || section;
+            const out = response.choices[0]?.message?.content || section;
+            logAiInteraction(logContext, 'improveCVSection', { section, context, jobDescription }, out);
+            return out;
         } catch (error) {
             console.error('Error improving CV section:', error);
             throw new Error('Failed to improve CV section');
@@ -212,6 +248,7 @@ export class ChatGPTService {
             languages?: any;
             additionalInfo?: any;
         };
+        logContext?: AiLogContext;
     }): Promise<unknown> {
         let openai: ReturnType<typeof getOpenAIClient> | null = null;
         try {
@@ -257,7 +294,9 @@ export class ChatGPTService {
             if (!content) throw new Error('No response from ChatGPT');
 
             try {
-                return JSON.parse(content) as unknown;
+                const result = JSON.parse(content) as unknown;
+                logAiInteraction(params.logContext, 'improveStructuredResume', { resume: params.resume, mode: detectedMode, jobDescription }, result);
+                return result;
             } catch (parseError) {
                 const msg = parseError instanceof Error ? parseError.message : String(parseError);
                 throw new Error(`ChatGPT returned invalid JSON: ${msg}`);
@@ -271,7 +310,7 @@ export class ChatGPTService {
     /**
      * Generate cover letter
      */
-    static async generateCoverLetter(cvData: any, jobDescription: string): Promise<string> {
+    static async generateCoverLetter(cvData: any, jobDescription: string, logContext?: AiLogContext): Promise<string> {
         const openai = getOpenAIClient();
         try {
             const response = await openai.chat.completions.create({
@@ -289,7 +328,9 @@ export class ChatGPTService {
                 temperature: 0.8,
             });
 
-            return response.choices[0]?.message?.content || '';
+            const out = response.choices[0]?.message?.content || '';
+            logAiInteraction(logContext, 'generateCoverLetter', { cvData, jobDescription }, out);
+            return out;
         } catch (error) {
             console.error('Error generating cover letter:', error);
             throw new Error('Failed to generate cover letter');
@@ -300,7 +341,7 @@ export class ChatGPTService {
      * Generate interview questions
      * Enhanced: Now accepts optional jobDescription for better context
      */
-    static async generateInterviewQuestions(position: string, cvData: any, jobDescription?: string): Promise<string[]> {
+    static async generateInterviewQuestions(position: string, cvData: any, jobDescription?: string, logContext?: AiLogContext): Promise<string[]> {
         const openai = getOpenAIClient();
         try {
             const response = await openai.chat.completions.create({
@@ -325,17 +366,13 @@ export class ChatGPTService {
             }
 
             const parsed = JSON.parse(content);
-            // Handle both array and object with questions key
-            // New format returns { questions: [...] }, old format returns array directly
-            if (Array.isArray(parsed)) {
-                return parsed;
-            } else if (parsed.questions && Array.isArray(parsed.questions)) {
-                return parsed.questions;
-            } else {
-                // Fallback: return empty array if structure is unexpected
+            const questions =
+                Array.isArray(parsed) ? parsed : (parsed?.questions && Array.isArray(parsed.questions) ? parsed.questions : []);
+            if (!Array.isArray(parsed) && !parsed?.questions && parsed && Object.keys(parsed).length > 0) {
                 console.warn('Unexpected response format from generateInterviewQuestions:', parsed);
-                return [];
             }
+            logAiInteraction(logContext, 'generateInterviewQuestions', { position, cvData, jobDescription }, questions);
+            return questions;
         } catch (error) {
             console.error('Error generating interview questions:', error);
             throw new Error('Failed to generate interview questions');
@@ -345,7 +382,7 @@ export class ChatGPTService {
     /**
      * Analyze skill gap
      */
-    static async analyzeSkillGap(cvData: any, jobDescription: string): Promise<SkillGapAnalysis> {
+    static async analyzeSkillGap(cvData: any, jobDescription: string, logContext?: AiLogContext): Promise<SkillGapAnalysis> {
         const openai = getOpenAIClient();
         try {
             const response = await openai.chat.completions.create({
@@ -369,7 +406,9 @@ export class ChatGPTService {
                 throw new Error('No response from ChatGPT');
             }
 
-            return JSON.parse(content) as SkillGapAnalysis;
+            const result = JSON.parse(content) as SkillGapAnalysis;
+            logAiInteraction(logContext, 'analyzeSkillGap', { cvData, jobDescription }, result);
+            return result;
         } catch (error) {
             console.error('Error analyzing skill gap:', error);
             throw new Error('Failed to analyze skill gap');
@@ -379,7 +418,7 @@ export class ChatGPTService {
     /**
      * Chat completion for general purposes
      */
-    static async chat(messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>): Promise<string> {
+    static async chat(messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>, logContext?: AiLogContext): Promise<string> {
         const openai = getOpenAIClient();
         try {
             const response = await openai.chat.completions.create({
@@ -388,7 +427,9 @@ export class ChatGPTService {
                 temperature: 0.7,
             });
 
-            return response.choices[0]?.message?.content || '';
+            const out = response.choices[0]?.message?.content || '';
+            logAiInteraction(logContext, 'chat', messages, out);
+            return out;
         } catch (error) {
             console.error('Error in chat:', error);
             throw new Error('Failed to get chat response');
@@ -398,7 +439,7 @@ export class ChatGPTService {
     /**
      * Extract text from file using ChatGPT Vision API for images or reading file content for text files
      */
-    static async extractTextFromFile(file: File): Promise<string> {
+    static async extractTextFromFile(file: File, logContext?: AiLogContext): Promise<string> {
         const openai = getOpenAIClient();
         try {
             const fileType = file.type.toLowerCase();
@@ -432,7 +473,9 @@ export class ChatGPTService {
                     max_tokens: 4000,
                 });
 
-                return response.choices[0]?.message?.content || '';
+                const out = response.choices[0]?.message?.content || '';
+                logAiInteraction(logContext, 'extractTextFromFile', { fileName: file.name, fileType: file.type }, out);
+                return out;
             }
 
             // Handle PDF files - convert to image first or use text extraction

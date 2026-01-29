@@ -158,14 +158,22 @@ const Navbar = () => {
               </Stack>
             ) : (
               <Stack direction='row' gap={3}>
-                <MuiButton color='secondary' variant='outlined' onClick={() => router.push(PublicRoutes.login)}>
+                <MuiButton
+                  component={Link}
+                  href={PublicRoutes.login}
+                  color='secondary'
+                  variant='outlined'
+                  sx={{ textDecoration: 'none' }}
+                >
                   Login
                 </MuiButton>
 
                 <MuiButton
+                  component={Link}
+                  href={PublicRoutes.register}
                   color='secondary'
                   startIcon={<UserPlusIcon />}
-                  onClick={() => router.push(PublicRoutes.register)}
+                  sx={{ textDecoration: 'none' }}
                 >
                   Sign Up
                 </MuiButton>
@@ -307,25 +315,25 @@ const Navbar = () => {
         ) : (
           <Stack gap={1.25}>
             <MuiButton
+              component={Link}
+              href={PublicRoutes.login}
               color='secondary'
               variant='outlined'
               fullWidth
-              onClick={() => {
-                router.push(PublicRoutes.login);
-                closeMenu();
-              }}
+              onClick={closeMenu}
+              sx={{ textDecoration: 'none' }}
             >
               Login
             </MuiButton>
 
             <MuiButton
+              component={Link}
+              href={PublicRoutes.register}
               color='secondary'
               startIcon={<UserPlusIcon />}
               fullWidth
-              onClick={() => {
-                router.push(PublicRoutes.register);
-                closeMenu();
-              }}
+              onClick={closeMenu}
+              sx={{ textDecoration: 'none' }}
             >
               Sign Up
             </MuiButton>

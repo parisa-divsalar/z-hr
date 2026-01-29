@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 
 import { db } from '@/lib/db';
 import { ChatGPTService } from '@/services/chatgpt/service';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+async function getUserId(request: NextRequest): Promise<string | null> {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('accessToken')?.value ?? request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+        if (!token) return null;
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        return decoded.userId?.toString() ?? null;
+    } catch {
+        return null;
+    }
+}
 
 const normalize = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
 
@@ -65,7 +81,9 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        const coverLetter = await ChatGPTService.generateCoverLetter(cvData, jobDescription);
+        const userId = await getUserId(request);
+        const logContext = userId ? { userId, endpoint: '/api/cv/cover-letter', action: 'generateCoverLetter' } : undefined;
+        const coverLetter = await ChatGPTService.generateCoverLetter(cvData, jobDescription, logContext);
 
         db.coverLetters.upsert({
             request_id: requestId,

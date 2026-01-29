@@ -1,5 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 import { ChatGPTService } from '@/services/chatgpt/service';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+async function getUserId(request: NextRequest): Promise<string | null> {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('accessToken')?.value ?? request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+        if (!token) return null;
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        return decoded.userId?.toString() ?? null;
+    } catch {
+        return null;
+    }
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -12,7 +28,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // فقط در مرحله نهایی از ChatGPT استفاده می‌کنیم
         if (!isFinalStep) {
             return NextResponse.json({
                 analysis: {
@@ -25,8 +40,9 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Analyze skill gap using ChatGPT (فقط در مرحله نهایی)
-        const analysis = await ChatGPTService.analyzeSkillGap(cvData, jobDescription);
+        const userId = await getUserId(request);
+        const logContext = userId ? { userId, endpoint: '/api/skills/analyze-gap', action: 'analyzeSkillGap' } : undefined;
+        const analysis = await ChatGPTService.analyzeSkillGap(cvData, jobDescription, logContext);
 
         return NextResponse.json({
             analysis,

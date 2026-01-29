@@ -15,6 +15,8 @@ export async function GET() {
     const userSkills = db.userSkills.findAll();
     const interviewSessions = db.interviewSessions.findAll();
     const registrationLogs = db.registrationLogs.findAll();
+    const loginLogs = db.loginLogs.findAll();
+    const aiInteractions = db.aiInteractions.findAll();
     const coverLetters = db.coverLetters.findAll();
     const wizardData = db.wizardData.findAll();
     const resumeDrafts = db.resumeDrafts.findAll();
@@ -31,6 +33,8 @@ export async function GET() {
         user_skills: userSkills.length,
         interview_sessions: interviewSessions.length,
         registration_logs: registrationLogs.length,
+        login_logs: loginLogs.length,
+        ai_interactions: aiInteractions.length,
         cover_letters: coverLetters.length,
         wizard_data: wizardData.length,
         resume_drafts: resumeDrafts.length,
@@ -46,6 +50,8 @@ export async function GET() {
         user_skills: userSkills,
         interview_sessions: interviewSessions,
         registration_logs: registrationLogs,
+        login_logs: loginLogs,
+        ai_interactions: aiInteractions,
         cover_letters: coverLetters,
         wizard_data: wizardData,
         resume_drafts: resumeDrafts,

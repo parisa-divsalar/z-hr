@@ -26,14 +26,14 @@ export default function ApiTestPage() {
       setPing({
         loading: false,
         success: data.ok === true,
-        message: data.ok ? 'اتصال به API پروژه Z-HR برقرار است.' : 'پاسخ غیرمنتظره.',
+        message: data.ok ? 'Connected to Z-HR API.' : 'Unexpected response.',
         detail: data.message,
       });
     } catch (e) {
       setPing({
         loading: false,
         success: false,
-        message: 'خطا در اتصال به Z-HR API.',
+        message: 'Failed to connect to Z-HR API.',
         detail: e instanceof Error ? e.message : String(e),
       });
     }
@@ -47,14 +47,14 @@ export default function ApiTestPage() {
       setChatgpt({
         loading: false,
         success: data.success === true,
-        message: data.success ? 'ChatGPT API متصل و در دسترس است.' : (data.message || 'خطا'),
+        message: data.success ? 'ChatGPT API connected.' : (data.message || 'Error'),
         detail: data.reply || data.error,
       });
     } catch (e) {
       setChatgpt({
         loading: false,
         success: false,
-        message: 'خطا در تست ChatGPT.',
+        message: 'ChatGPT test failed.',
         detail: e instanceof Error ? e.message : String(e),
       });
     }
@@ -69,8 +69,8 @@ export default function ApiTestPage() {
         loading: false,
         success: data.success === true,
         message: data.success
-          ? `API مشاغل (Adzuna) متصل است. ${data.count} شغل دریافت شد.`
-          : (data.message || 'API کلید ندارد یا خطا دارد.'),
+          ? `Jobs API (Adzuna) connected. ${data.count} job(s) fetched.`
+          : (data.message || 'API key missing or error.'),
         detail:
           data.sample?.title != null
             ? `${data.sample.title} @ ${data.sample.company} (${data.sample.source})`
@@ -80,7 +80,7 @@ export default function ApiTestPage() {
       setJobs({
         loading: false,
         success: false,
-        message: 'خطا در تست API مشاغل.',
+        message: 'Jobs API test failed.',
         detail: e instanceof Error ? e.message : String(e),
       });
     }
@@ -109,7 +109,7 @@ export default function ApiTestPage() {
           onClick={onRun}
           disabled={result.loading}
         >
-          {result.loading ? 'در حال تست...' : runLabel}
+          {result.loading ? 'Testing...' : runLabel}
         </Button>
         {result.success !== undefined && !result.loading && (
           <span
@@ -119,7 +119,7 @@ export default function ApiTestPage() {
                 : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
             }`}
           >
-            {result.success ? '✓ متصل' : '✗ خطا'}
+            {result.success ? '✓ Connected' : '✗ Error'}
           </span>
         )}
       </div>
@@ -134,32 +134,32 @@ export default function ApiTestPage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="تست API ها" />
+      <PageBreadcrumb pageTitle="API Tests" />
       <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-        با دکمه‌های زیر اتصال به API های متصل به پروژه Z-HR را تست کنید. مطمئن شوید اپ اصلی روی{' '}
-        <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">{ZHR_API_URL}</code> در حال اجرا است.
+        Use the buttons below to test connections to Z-HR APIs. Ensure the main app is running at{' '}
+        <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">{ZHR_API_URL}</code>.
       </p>
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         <TestCard
-          title="اتصال به Z-HR API"
-          description="بررسی می‌کند پنل ادمین به سرور اصلی Z-HR متصل است."
+          title="Z-HR API connection"
+          description="Checks that the admin panel can reach the main Z-HR server."
           result={ping}
           onRun={runPing}
-          runLabel="تست اتصال"
+          runLabel="Test connection"
         />
         <TestCard
           title="ChatGPT API"
-          description="بررسی می‌کند OPENAI_API_KEY در .env.local تنظیم شده و درخواست به OpenAI ارسال می‌شود."
+          description="Checks that OPENAI_API_KEY is set in .env.local and requests reach OpenAI."
           result={chatgpt}
           onRun={runChatGPT}
-          runLabel="تست ChatGPT"
+          runLabel="Test ChatGPT"
         />
         <TestCard
           title="Adzuna / Jobs API"
-          description="بررسی می‌کند ADZUNA_APP_ID و ADZUNA_APP_KEY تنظیم شده و یک شغل نمونه دریافت می‌شود."
+          description="Checks that ADZUNA_APP_ID and ADZUNA_APP_KEY are set and a sample job is fetched."
           result={jobs}
           onRun={runJobs}
-          runLabel="تست Jobs API"
+          runLabel="Test Jobs API"
         />
       </div>
     </div>

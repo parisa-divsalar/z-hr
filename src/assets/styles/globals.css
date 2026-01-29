@@ -39,3 +39,9 @@ html, body {
     width: fit-content !important;
     border-radius: 0.875rem !important;
 }
+
+/* Override Next.js dev portal position (left/top from 0px to unset) */
+nextjs-portal {
+    left: unset;
+    top: unset;
+}
