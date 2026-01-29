@@ -19,6 +19,9 @@ export async function GET() {
     const wizardData = db.wizardData.findAll();
     const resumeDrafts = db.resumeDrafts.findAll();
     const resumeSectionOutputs = db.resumeSectionOutputs.findAll();
+    const jobPositions = db.jobPositions.findAll();
+    const jobPositionsActive = db.jobPositions.findActive();
+    const jobPositionsNew = db.jobPositions.findNewlyAdded(5);
 
     const overview = {
       summary: {
@@ -32,6 +35,9 @@ export async function GET() {
         wizard_data: wizardData.length,
         resume_drafts: resumeDrafts.length,
         resume_section_outputs: resumeSectionOutputs.length,
+        job_positions: jobPositions.length,
+        job_positions_active: jobPositionsActive.length,
+        job_positions_new: jobPositionsNew.length,
       },
       tables: {
         users,
@@ -44,6 +50,9 @@ export async function GET() {
         wizard_data: wizardData,
         resume_drafts: resumeDrafts,
         resume_section_outputs: resumeSectionOutputs,
+        job_positions: jobPositions,
+        job_positions_active: jobPositionsActive,
+        job_positions_new: jobPositionsNew,
       },
       source: 'data/ (file-based JSON)',
       generatedAt: new Date().toISOString(),

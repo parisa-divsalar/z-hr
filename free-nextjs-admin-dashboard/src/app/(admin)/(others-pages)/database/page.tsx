@@ -1,7 +1,8 @@
 'use client';
 
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import React, { useEffect, useState } from 'react';
+import Button from '@/components/ui/button/Button';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const ZHR_API_URL = process.env.NEXT_PUBLIC_ZHR_API_URL || 'http://localhost:3000';
 
@@ -23,6 +24,9 @@ const TABLE_LABELS: Record<string, string> = {
   wizard_data: 'داده ویزارد',
   resume_drafts: 'پیش‌نویس رزومه',
   resume_section_outputs: 'خروجی بخش‌های رزومه',
+  job_positions: 'Job positions (همه)',
+  job_positions_active: 'Job positions (فعال)',
+  job_positions_new: 'Job positions (اضافه‌شده به لیست)',
 };
 
 export default function DatabasePage() {
@@ -30,31 +34,47 @@ export default function DatabasePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTable, setActiveTable] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+
+  const fetchDb = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${ZHR_API_URL}/api/admin/database`, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      setData(json);
+      setActiveTable((prev) => (prev ? prev : json.tables && Object.keys(json.tables).length > 0 ? Object.keys(json.tables)[0] : null));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'خطا در دریافت داده');
+      setData(null);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchDb = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`${ZHR_API_URL}/api/admin/database`, {
-          cache: 'no-store',
-          headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        setData(json);
-        if (json.tables && Object.keys(json.tables).length > 0 && !activeTable) {
-          setActiveTable(Object.keys(json.tables)[0]);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'خطا در دریافت داده');
-        setData(null);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchDb();
-  }, []);
+  }, [fetchDb]);
+
+  const runSync = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+    try {
+      const res = await fetch(`${ZHR_API_URL}/api/jobs/sync`, { cache: 'no-store' });
+      const json = await res.json();
+      setSyncMessage(json.message || (json.added != null ? `${json.added} شغل جدید اضافه شد.` : json.error || 'انجام شد.'));
+      await fetchDb(false);
+    } catch (e) {
+      setSyncMessage(e instanceof Error ? e.message : 'خطا در همگام‌سازی');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -94,8 +114,18 @@ export default function DatabasePage() {
       <PageBreadcrumb pageTitle="Database (Z-HR)" />
       <div className="space-y-6">
         <div className="rounded-lg border border-stroke bg-white p-4 dark:border-strokedark dark:bg-boxdark">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">خلاصه دیتابیس</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">منبع: {data.source} · به‌روزرسانی: {new Date(data.generatedAt).toLocaleString('fa-IR')}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">خلاصه دیتابیس</h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">منبع: {data.source} · به‌روزرسانی: {new Date(data.generatedAt).toLocaleString('fa-IR')}</p>
+            </div>
+            <Button variant="primary" size="sm" onClick={runSync} disabled={syncing}>
+              {syncing ? 'در حال همگام‌سازی...' : 'همگام‌سازی Job positions'}
+            </Button>
+          </div>
+          {syncMessage && (
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{syncMessage}</p>
+          )}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {Object.entries(data.summary).map(([key, count]) => (
               <div

@@ -74,3 +74,22 @@
 | resume_section_outputs | خروجی بخش‌های رزومه |
 
 صفحه Database در پنل ادمین این جداول را با تعداد رکورد و امکان انتخاب هر جدول برای مشاهده ردیف‌ها نشان می‌دهد.
+
+---
+
+## Job Positions و همگام‌سازی هر ۵ دقیقه
+
+- **ذخیره:** داده‌های job position از API Adzuna در دیتابیس محلی (`data/job_positions.json`) ذخیره می‌شوند.
+- **صفحه Database:** سه باکس اضافه شده‌اند:
+  - **Job positions (همه)** — تعداد کل
+  - **Job positions (فعال)** — فقط رکوردهای فعال
+  - **Job positions (اضافه‌شده به لیست)** — رکوردهای اضافه‌شده در ۵ دقیقه اخیر
+- **همگام‌سازی:** دکمه «همگام‌سازی Job positions» در همان صفحه Database از API مشاغل داده می‌گیرد و رکوردهای جدید را بدون تکرار اضافه می‌کند.
+- **هر ۵ دقیقه (Cron):** برای به‌روزرسانی خودکار، یک cron یا scheduler باید هر ۵ دقیقه یک بار این آدرس را فراخوانی کند:
+  ```
+  GET (یا POST) http://localhost:3000/api/jobs/sync
+  ```
+  مثال با **crontab** (لینوکس) یا **Task Scheduler** (ویندوز) یا **Vercel Cron** در `vercel.json`:
+  ```json
+  "crons": [{ "path": "/api/jobs/sync", "schedule": "*/5 * * * *" }]
+  ```

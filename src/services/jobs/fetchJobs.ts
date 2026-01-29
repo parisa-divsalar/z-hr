@@ -33,6 +33,7 @@ export async function fetchJobsFromAdzunaAPI(params: {
   query?: string;
   location?: string;
   limit?: number;
+  page?: number;
 }): Promise<JobPosition[]> {
   const appId = process.env.ADZUNA_APP_ID;
   const appKey = process.env.ADZUNA_APP_KEY;
@@ -41,14 +42,14 @@ export async function fetchJobsFromAdzunaAPI(params: {
     return [];
   }
 
-  const { query = 'developer', location = 'dubai', limit = 20 } = params;
+  const { query = 'developer', location = 'dubai', limit = 20, page = 1 } = params;
   
   try {
     // Adzuna API - Supported country codes: at, au, be, br, ca, ch, de, es, fr, gb, in, it, mx, nl, nz, pl, sg, us, za
     // Note: UAE (ae) is NOT supported, so we use 'us' or 'gb' as fallback
     // If location contains "dubai" or "uae", use 'us' for remote jobs or 'gb' for UK
     const countryCode = getAdzunaCountryCode(location);
-    const url = new URL(`https://api.adzuna.com/v1/api/jobs/${countryCode}/search/1`);
+    const url = new URL(`https://api.adzuna.com/v1/api/jobs/${countryCode}/search/${page}`);
     url.searchParams.set('app_id', appId);
     url.searchParams.set('app_key', appKey);
     url.searchParams.set('what', query);
@@ -186,6 +187,54 @@ async function fetchJobsFromPublicSources(params: {
   return [];
 }
 
+/** Max pages to fetch from Adzuna per sync (50 results per page). */
+const ADZUNA_PAGES_PER_SYNC = 10;
+
+/** Queries to search so we get more variety (developer, frontend, backend, etc.). */
+const SYNC_QUERIES = ['developer', 'software engineer', 'frontend', 'backend', 'full stack'];
+
+/**
+ * Fetch multiple pages from Adzuna for sync (many more jobs per run).
+ */
+export async function fetchAdzunaJobsMultiplePages(params: {
+  location?: string;
+  resultsPerPage?: number;
+  maxPages?: number;
+  queries?: string[];
+}): Promise<JobPosition[]> {
+  const {
+    location = 'New York',
+    resultsPerPage = 50,
+    maxPages = ADZUNA_PAGES_PER_SYNC,
+    queries = SYNC_QUERIES,
+  } = params;
+
+  const allJobs: JobPosition[] = [];
+  const seen = new Set<string>();
+
+  for (const query of queries) {
+    for (let page = 1; page <= maxPages; page++) {
+      const jobs = await fetchJobsFromAdzunaAPI({
+        query,
+        location,
+        limit: resultsPerPage,
+        page,
+      });
+      for (const j of jobs) {
+        const key = `${(j.sourceUrl || j.applicationUrl || '').trim() || `${j.title}|${j.company}`}`;
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          allJobs.push(j);
+        }
+      }
+      if (jobs.length < resultsPerPage) break;
+      await new Promise((r) => setTimeout(r, 200));
+    }
+  }
+
+  return allJobs;
+}
+
 /**
  * Main function to fetch jobs from all available sources
  * Tries multiple APIs and combines results
@@ -194,6 +243,7 @@ export async function fetchAllJobs(params: {
   query?: string;
   location?: string;
   limit?: number;
+  page?: number;
 }): Promise<JobPosition[]> {
   const allJobs: JobPosition[] = [];
   

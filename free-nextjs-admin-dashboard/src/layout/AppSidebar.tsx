@@ -59,6 +59,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Blog", path: "/blog", pro: false },
       { name: "Database (Z-HR)", path: "/database", pro: false },
+      { name: "API Test", path: "/api-test", pro: false },
       // { name: "404 Error", path: "/error-404", pro: false },
     ],
   },
