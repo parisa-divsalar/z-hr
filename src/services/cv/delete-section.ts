@@ -14,3 +14,5 @@ export async function deleteResumeSection(params: DeleteSectionParams) {
     return data as { updatedResume?: unknown };
 }
 
+
+

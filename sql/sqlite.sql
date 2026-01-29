@@ -55,3 +55,5 @@ CREATE INDEX IF NOT EXISTS idx_cvs_request_id ON cvs(request_id);
 CREATE INDEX IF NOT EXISTS idx_user_skills_user_id ON user_skills(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_skills_skill_id ON user_skills(skill_id);
 
+
+
