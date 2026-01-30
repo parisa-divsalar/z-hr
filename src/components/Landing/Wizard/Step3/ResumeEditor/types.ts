@@ -21,9 +21,10 @@ export type SectionKey =
     | 'summary'
     | 'skills'
     | 'contactWays'
+    | 'education'
     | 'languages'
     | 'certificates'
-    | 'jobDescription'
+    | 'selectedProjects'
     | 'experience'
     | 'additionalInfo';
 

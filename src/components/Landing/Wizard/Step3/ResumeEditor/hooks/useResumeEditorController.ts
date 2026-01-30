@@ -24,12 +24,14 @@ import {
 } from '../profileSession';
 import { extractImprovedText, extractPollingRequestId, pollCvAnalysisAndCreateCv } from '../services';
 import {
+    applyEducationEditText,
     applyCertificateEditText,
     applyExperienceEditText,
     applyLanguagesEditText,
     applyLineListEditText,
     applyPhoneEmailToContactWays,
     applyProfileEditText,
+    applySelectedProjectsEditText,
     buildUpdatedCvPayload,
     cleanSummaryText,
     createEmptyProfile,
@@ -37,20 +39,25 @@ import {
     extractAdditionalInfoText,
     extractCertificateEntries,
     extractContactWays,
+    extractEducationEntries,
     extractEmailAndPhone,
     extractExperienceEntries,
-    extractJobDescriptionText,
     extractLanguages,
+    extractSelectedProjectEntries,
     extractSkills,
     extractSummary,
+    formatEducationEditText,
     formatCertificateEditText,
     formatExperienceEditText,
     formatLanguagesEditText,
     formatLineListEditText,
     formatProfileEditText,
+    formatSelectedProjectsEditText,
     normalizeCertificates,
+    normalizeEducationEntries,
     normalizeExperiences,
     normalizeLanguages,
+    normalizeSelectedProjects,
     resolveCvPayload,
     resolveCvRecord,
 } from '../utils';
@@ -84,12 +91,14 @@ export type ResumeEditorController = {
     setSkills: Dispatch<SetStateAction<string[]>>;
     contactWays: string[];
     setContactWays: Dispatch<SetStateAction<string[]>>;
+    education: string[];
+    setEducation: Dispatch<SetStateAction<string[]>>;
     languages: ResumeLanguage[];
     setLanguages: Dispatch<SetStateAction<ResumeLanguage[]>>;
     certificates: string[];
     setCertificates: Dispatch<SetStateAction<string[]>>;
-    jobDescription: string;
-    setJobDescription: Dispatch<SetStateAction<string>>;
+    selectedProjects: string[];
+    setSelectedProjects: Dispatch<SetStateAction<string[]>>;
     additionalInfo: string;
     setAdditionalInfo: Dispatch<SetStateAction<string>>;
     experiences: ResumeExperience[];
@@ -100,10 +109,14 @@ export type ResumeEditorController = {
     setProfileEditText: Dispatch<SetStateAction<string>>;
     contactWaysEditText: string;
     setContactWaysEditText: Dispatch<SetStateAction<string>>;
+    educationEditText: string;
+    setEducationEditText: Dispatch<SetStateAction<string>>;
     languagesEditText: string;
     setLanguagesEditText: Dispatch<SetStateAction<string>>;
     certificatesEditText: string;
     setCertificatesEditText: Dispatch<SetStateAction<string>>;
+    selectedProjectsEditText: string;
+    setSelectedProjectsEditText: Dispatch<SetStateAction<string>>;
     additionalInfoEditText: string;
     setAdditionalInfoEditText: Dispatch<SetStateAction<string>>;
     experienceEditText: string;
@@ -198,11 +211,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     const [skills, setSkills] = useState<string[]>([]);
     const [contactWays, setContactWays] = useState<string[]>([]);
     const [contactWaysEditText, setContactWaysEditText] = useState('');
+    const [education, setEducation] = useState<string[]>([]);
+    const [educationEditText, setEducationEditText] = useState('');
     const [languages, setLanguages] = useState<ResumeLanguage[]>([]);
     const [languagesEditText, setLanguagesEditText] = useState('');
     const [certificates, setCertificates] = useState<string[]>([]);
     const [certificatesEditText, setCertificatesEditText] = useState('');
-    const [jobDescription, setJobDescription] = useState('');
+    const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+    const [selectedProjectsEditText, setSelectedProjectsEditText] = useState('');
     const [additionalInfo, setAdditionalInfo] = useState('');
     const [additionalInfoEditText, setAdditionalInfoEditText] = useState('');
     const [experiences, setExperiences] = useState<ResumeExperience[]>([]);
@@ -273,7 +289,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     );
 
     const AUTO_IMPROVE_ORDER = useMemo<SectionKey[]>(
-        () => ['summary', 'certificates', 'jobDescription', 'experience', 'additionalInfo'],
+        () => ['summary', 'skills', 'experience', 'education', 'certificates', 'selectedProjects', 'languages', 'additionalInfo'],
         [],
     );
     const shouldBlockBelowSummary = isAutoPipelineMode && !Boolean(autoImproved.summary) && !Boolean(improveError);
@@ -397,6 +413,15 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                   ? normalizeLanguages(applyLineListEditText((session as any).languages))
                   : [],
         );
+        setEducation(() => {
+            const raw = extractEducationEntries(session);
+            const normalized = normalizeEducationEntries(raw);
+            if (normalized.length) return normalized;
+            if (typeof (session as any).education === 'string') {
+                return applyEducationEditText((session as any).education);
+            }
+            return [];
+        });
         setCertificates(
             Array.isArray((session as any).certificates)
                 ? (session as any).certificates
@@ -407,7 +432,15 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                       .filter(Boolean)
                 : [],
         );
-        setJobDescription(String((session as any).jobDescription?.text ?? '').trim());
+        setSelectedProjects(() => {
+            const raw = extractSelectedProjectEntries(session);
+            const normalized = normalizeSelectedProjects(raw);
+            if (normalized.length) return normalized;
+            if (typeof (session as any).selectedProjects === 'string') {
+                return applySelectedProjectsEditText((session as any).selectedProjects);
+            }
+            return [];
+        });
         setAdditionalInfo(String((session as any).additionalInfo?.text ?? '').trim());
 
         const sessionExperiencesRaw = extractExperienceEntries(session);
@@ -415,8 +448,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         setProfileEditText(formatProfileEditText(createEmptyProfile()));
         setContactWaysEditText('');
+        setEducationEditText('');
         setLanguagesEditText('');
         setCertificatesEditText('');
+        setSelectedProjectsEditText('');
         setAdditionalInfoEditText('');
         setExperienceEditText('');
         setCvError(null);
@@ -444,13 +479,162 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         }
     };
 
+    const formatBulletBlock = (header: string, bullets: string[]) => {
+        const cleanHeader = String(header ?? '').trim();
+        const cleanBullets = Array.isArray(bullets)
+            ? bullets.map((b) => String(b ?? '').trim()).filter(Boolean)
+            : [];
+        const lines = [
+            ...(cleanHeader ? [cleanHeader] : []),
+            ...cleanBullets.map((b) => `- ${b}`),
+        ];
+        return lines.join('\n').trim();
+    };
+
+    const formatExperienceText = (items: any[]): string => {
+        if (!Array.isArray(items)) return '';
+        return items
+            .map((entry) => {
+                const title = String(entry?.title ?? entry?.position ?? '').trim();
+                const company = String(entry?.company ?? entry?.organization ?? '').trim();
+                const dates = String(entry?.dates ?? entry?.duration ?? '').trim();
+                const header = [title, company, dates].filter(Boolean).join(' | ');
+                return formatBulletBlock(header, Array.isArray(entry?.bullets) ? entry.bullets : []);
+            })
+            .filter(Boolean)
+            .join('\n\n');
+    };
+
+    const formatEducationText = (items: any[]): string => {
+        if (!Array.isArray(items)) return '';
+        return items
+            .map((entry) => {
+                const degree = String(entry?.degree ?? '').trim();
+                const institution = String(entry?.institution ?? entry?.school ?? '').trim();
+                const location = String(entry?.location ?? '').trim();
+                const dates = String(entry?.dates ?? '').trim();
+                const header = [degree, institution].filter(Boolean).join(' - ');
+                const meta = [location, dates].filter(Boolean).join(' | ');
+                const details = Array.isArray(entry?.details)
+                    ? entry.details.map((d: any) => String(d ?? '').trim()).filter(Boolean)
+                    : [];
+                return [header, meta, ...details].filter(Boolean).join('\n').trim();
+            })
+            .filter(Boolean)
+            .join('\n\n');
+    };
+
+    const formatCertificatesText = (items: any[]): string => {
+        if (!Array.isArray(items)) return '';
+        return items
+            .map((entry) => {
+                const title = String(entry?.title ?? '').trim();
+                const issuer = String(entry?.issuer ?? '').trim();
+                const date = String(entry?.issue_date ?? entry?.issueDate ?? '').trim();
+                const header = [title, issuer].filter(Boolean).join(' - ');
+                return [header, date].filter(Boolean).join('\n').trim();
+            })
+            .filter(Boolean)
+            .join('\n\n');
+    };
+
+    const formatSelectedProjectsText = (items: any[]): string => {
+        if (!Array.isArray(items)) return '';
+        return items
+            .map((entry) => {
+                const name = String(entry?.name ?? '').trim();
+                const summary = String(entry?.summary ?? '').trim();
+                const tech = Array.isArray(entry?.tech)
+                    ? entry.tech.map((t: any) => String(t ?? '').trim()).filter(Boolean)
+                    : [];
+                const bullets = Array.isArray(entry?.bullets)
+                    ? entry.bullets.map((b: any) => String(b ?? '').trim()).filter(Boolean)
+                    : [];
+                const link = String(entry?.link ?? '').trim();
+                const lines = [name, summary].filter(Boolean);
+                if (tech.length) lines.push(`Tech: ${tech.join(', ')}`);
+                if (bullets.length) lines.push(...bullets.map((b: string) => `- ${b}`));
+                if (link) lines.push(`Link: ${link}`);
+                return lines.join('\n').trim();
+            })
+            .filter(Boolean)
+            .join('\n\n');
+    };
+
+    const formatLanguagesText = (items: any[]): string => {
+        if (!Array.isArray(items)) return '';
+        return items
+            .map((entry) => {
+                const name = String(entry?.language ?? entry?.name ?? '').trim();
+                const level = String(entry?.level ?? '').trim();
+                return [name, level].filter(Boolean).join(' - ').trim();
+            })
+            .filter(Boolean)
+            .join('\n');
+    };
+
+    const formatAdditionalInfoText = (value: any): string => {
+        if (typeof value === 'string') return value;
+        const notes = value?.notes;
+        if (Array.isArray(notes) && notes.length) {
+            return notes.map((n: any) => String(n ?? '').trim()).filter(Boolean).join('\n');
+        }
+        return '';
+    };
+
+    const formatSkillsText = (value: any): string => {
+        if (Array.isArray(value) && value.length) {
+            if (typeof value[0] === 'string') return value.map((v) => String(v ?? '').trim()).filter(Boolean).join('\n');
+            const flattened = value
+                .flatMap((entry: any) =>
+                    Array.isArray(entry?.skills) ? entry.skills : (entry?.skills ?? entry?.skill ?? entry?.name),
+                )
+                .map((v: any) => String(v ?? '').trim())
+                .filter(Boolean);
+            if (flattened.length) return flattened.join('\n');
+        }
+        return '';
+    };
+
+    const resolveImprovedSectionText = (section: SectionKey, improvedResume: any, fallback: string): string => {
+        if (!improvedResume || typeof improvedResume !== 'object') return fallback;
+        const safe = improvedResume as any;
+        const direct = safe[section];
+        if (typeof direct === 'string' && direct.trim()) return direct;
+
+        switch (section) {
+            case 'summary':
+                return typeof safe.summary === 'string' && safe.summary.trim() ? safe.summary : fallback;
+            case 'skills':
+                return (
+                    formatSkillsText(safe.technicalSkills ?? safe.technical_skills ?? safe.skills) || fallback
+                );
+            case 'experience':
+                return (
+                    formatExperienceText(safe.professionalExperience ?? safe.experience ?? []) || fallback
+                );
+            case 'education':
+                return formatEducationText(safe.education ?? []) || fallback;
+            case 'certificates':
+                return formatCertificatesText(safe.certifications ?? safe.certificates ?? []) || fallback;
+            case 'selectedProjects':
+                return formatSelectedProjectsText(safe.selectedProjects ?? []) || fallback;
+            case 'languages':
+                return formatLanguagesText(safe.languages ?? []) || fallback;
+            case 'additionalInfo':
+                return formatAdditionalInfoText(safe.additionalInfo ?? {}) || fallback;
+            default:
+                return fallback;
+        }
+    };
+
     const applyTypedSectionText = (section: string, partialText: string) => {
         switch (section) {
             case 'summary':
                 setSummary(partialText);
                 return;
-            case 'jobDescription':
-                setJobDescription(partialText);
+            case 'education':
+                setEducation(applyEducationEditText(partialText));
                 return;
             case 'additionalInfo':
                 setAdditionalInfo(partialText);
@@ -470,6 +654,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             case 'certificates':
                 setCertificates(applyCertificateEditText(partialText));
                 return;
+            case 'selectedProjects':
+                setSelectedProjects(applySelectedProjectsEditText(partialText));
+                return;
         }
     };
 
@@ -481,12 +668,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 return formatLineListEditText(skills);
             case 'contactWays':
                 return formatLineListEditText(contactWays);
+            case 'education':
+                return formatEducationEditText(education);
             case 'languages':
                 return formatLanguagesEditText(languages);
             case 'certificates':
                 return formatCertificateEditText(certificates);
-            case 'jobDescription':
-                return jobDescription;
+            case 'selectedProjects':
+                return formatSelectedProjectsEditText(selectedProjects);
             case 'experience':
                 return formatExperienceEditText(experiences);
             case 'additionalInfo':
@@ -550,9 +739,12 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                  */
                 const rawPayload = {
                     summary: getSectionTextForImprove('summary'),
+                    skills: getSectionTextForImprove('skills'),
                     experience: getSectionTextForImprove('experience'),
+                    education: getSectionTextForImprove('education'),
                     certifications: getSectionTextForImprove('certificates'),
-                    jobDescription: getSectionTextForImprove('jobDescription'),
+                    selectedProjects: getSectionTextForImprove('selectedProjects'),
+                    languages: getSectionTextForImprove('languages'),
                     additionalInfo: getSectionTextForImprove('additionalInfo'),
                 };
 
@@ -564,18 +756,31 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 });
 
                 const improvedResume = (improveRes as any)?.result?.improvedResume ?? {};
+                const hasImprovedContent =
+                    improvedResume && typeof improvedResume === 'object' && Object.keys(improvedResume).length > 0;
+                const fallback = (value: string) => (hasImprovedContent ? '' : value);
 
                 const improvedBySection: Record<string, string> = {
-                    summary: String((improvedResume as any)?.summary ?? rawPayload.summary ?? ''),
-                    experience: String((improvedResume as any)?.experience ?? rawPayload.experience ?? ''),
-                    certificates: String(
-                        (improvedResume as any)?.certifications ??
-                            (improvedResume as any)?.certificates ??
-                            rawPayload.certifications ??
-                            '',
+                    summary: resolveImprovedSectionText('summary', improvedResume, fallback(rawPayload.summary)),
+                    skills: resolveImprovedSectionText('skills', improvedResume, fallback(rawPayload.skills)),
+                    experience: resolveImprovedSectionText('experience', improvedResume, fallback(rawPayload.experience)),
+                    education: resolveImprovedSectionText('education', improvedResume, fallback(rawPayload.education)),
+                    certificates: resolveImprovedSectionText(
+                        'certificates',
+                        improvedResume,
+                        fallback(rawPayload.certifications ?? ''),
                     ),
-                    jobDescription: String((improvedResume as any)?.jobDescription ?? rawPayload.jobDescription ?? ''),
-                    additionalInfo: String((improvedResume as any)?.additionalInfo ?? rawPayload.additionalInfo ?? ''),
+                    selectedProjects: resolveImprovedSectionText(
+                        'selectedProjects',
+                        improvedResume,
+                        fallback(rawPayload.selectedProjects),
+                    ),
+                    languages: resolveImprovedSectionText('languages', improvedResume, fallback(rawPayload.languages)),
+                    additionalInfo: resolveImprovedSectionText(
+                        'additionalInfo',
+                        improvedResume,
+                        fallback(rawPayload.additionalInfo),
+                    ),
                 };
 
                 for (let i = 0; i < AUTO_IMPROVE_ORDER.length; i++) {
@@ -585,6 +790,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
                     const improved = String(improvedBySection[section] ?? '').trim();
                     if (!improved) {
+                        applyTypedSectionText(section, '');
                         setAutoImproved((prev) => ({ ...prev, [section]: true }));
                         continue;
                     }
@@ -644,8 +850,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                         setSkills([]);
                         setContactWays([]);
                         setLanguages([]);
+                        setEducation([]);
                         setCertificates([]);
-                        setJobDescription('');
+                        setSelectedProjects([]);
                         setAdditionalInfo('');
                         setExperiences([]);
                     }
@@ -665,11 +872,18 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                     extractContactWays(payload).length > 0 ? extractContactWays(payload) : extractContactWays(record);
                 const detectedLanguages =
                     extractLanguages(payload).length > 0 ? extractLanguages(payload) : extractLanguages(record);
+                const detectedEducation =
+                    normalizeEducationEntries(extractEducationEntries(payload)).length > 0
+                        ? normalizeEducationEntries(extractEducationEntries(payload))
+                        : normalizeEducationEntries(extractEducationEntries(record));
                 const detectedCertificates =
                     normalizeCertificates(extractCertificateEntries(payload)).length > 0
                         ? normalizeCertificates(extractCertificateEntries(payload))
                         : normalizeCertificates(extractCertificateEntries(record));
-                const detectedJobDescription = extractJobDescriptionText(payload) || extractJobDescriptionText(record);
+                const detectedSelectedProjects =
+                    normalizeSelectedProjects(extractSelectedProjectEntries(payload)).length > 0
+                        ? normalizeSelectedProjects(extractSelectedProjectEntries(payload))
+                        : normalizeSelectedProjects(extractSelectedProjectEntries(record));
                 const detectedAdditionalInfo = extractAdditionalInfoText(payload) || extractAdditionalInfoText(record);
                 const extracted = extractExperienceEntries(payload).length
                     ? extractExperienceEntries(payload)
@@ -681,8 +895,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                     setSkills((prev) => (Array.isArray(prev) && prev.length ? prev : detectedSkills));
                     setContactWays((prev) => (Array.isArray(prev) && prev.length ? prev : detectedContactWays));
                     setLanguages((prev) => (Array.isArray(prev) && prev.length ? prev : detectedLanguages));
+                    setEducation((prev) => (Array.isArray(prev) && prev.length ? prev : detectedEducation));
                     setCertificates((prev) => (Array.isArray(prev) && prev.length ? prev : detectedCertificates));
-                    setJobDescription((prev) => (prev?.trim?.() ? prev : detectedJobDescription));
+                    setSelectedProjects((prev) => (Array.isArray(prev) && prev.length ? prev : detectedSelectedProjects));
                     setAdditionalInfo((prev) => (prev?.trim?.() ? prev : detectedAdditionalInfo));
                     setExperiences((prev) => (Array.isArray(prev) && prev.length ? prev : normalizedExperiences));
                 } else {
@@ -690,8 +905,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                     setSkills(detectedSkills);
                     setContactWays(detectedContactWays);
                     setLanguages(detectedLanguages);
+                    setEducation(detectedEducation);
                     setCertificates(detectedCertificates);
-                    setJobDescription(detectedJobDescription);
+                    setSelectedProjects(detectedSelectedProjects);
                     setAdditionalInfo(detectedAdditionalInfo);
                     setExperiences(normalizedExperiences);
                 }
@@ -754,9 +970,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             }
             if (section === 'summary') textOnlyBackupRef.current.summary = summary;
             if (section === 'skills') textOnlyBackupRef.current.skills = [...skills];
+            if (section === 'education') textOnlyBackupRef.current.education = [...education];
             if (section === 'languages') textOnlyBackupRef.current.languages = [...languages];
             if (section === 'certificates') textOnlyBackupRef.current.certificates = [...certificates];
-            if (section === 'jobDescription') textOnlyBackupRef.current.jobDescription = jobDescription;
+            if (section === 'selectedProjects') textOnlyBackupRef.current.selectedProjects = [...selectedProjects];
             if (section === 'additionalInfo') textOnlyBackupRef.current.additionalInfo = additionalInfo;
             if (section === 'experience') textOnlyBackupRef.current.experience = [...experiences];
 
@@ -771,8 +988,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 );
             }
             if (section === 'skills' && skills.length === 0) setSkills(['']);
+            if (section === 'education') setEducationEditText(formatEducationEditText(education));
             if (section === 'languages') setLanguagesEditText(formatLanguagesEditText(languages));
             if (section === 'certificates') setCertificatesEditText(formatCertificateEditText(certificates));
+            if (section === 'selectedProjects') setSelectedProjectsEditText(formatSelectedProjectsEditText(selectedProjects));
             if (section === 'additionalInfo') setAdditionalInfoEditText(additionalInfo);
             if (section === 'experience') setExperienceEditText(formatExperienceEditText(experiences));
 
@@ -802,8 +1021,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         }
         if (section === 'skills' && skills.length === 0) setSkills(['']);
         if (section === 'contactWays') setContactWaysEditText(formatLineListEditText(contactWays));
+        if (section === 'education') setEducationEditText(formatEducationEditText(education));
         if (section === 'languages') setLanguagesEditText(formatLanguagesEditText(languages));
         if (section === 'certificates') setCertificatesEditText(formatCertificateEditText(certificates));
+        if (section === 'selectedProjects') setSelectedProjectsEditText(formatSelectedProjectsEditText(selectedProjects));
         if (section === 'additionalInfo') setAdditionalInfoEditText(additionalInfo);
         if (section === 'experience') setExperienceEditText(formatExperienceEditText(experiences));
         setEditingSection(section);
@@ -882,6 +1103,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 });
             }
 
+            if (editingSection === 'education') {
+                const nextEducation = applyEducationEditText(educationEditText);
+                setEducation(nextEducation);
+                persistTextOnlySession((draft) => {
+                    draft.education = nextEducation.map((text) => ({ text }));
+                });
+            }
+
             if (editingSection === 'certificates') {
                 const nextCertificates = applyCertificateEditText(certificatesEditText);
                 setCertificates(nextCertificates);
@@ -890,9 +1119,11 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 });
             }
 
-            if (editingSection === 'jobDescription') {
+            if (editingSection === 'selectedProjects') {
+                const nextSelectedProjects = applySelectedProjectsEditText(selectedProjectsEditText);
+                setSelectedProjects(nextSelectedProjects);
                 persistTextOnlySession((draft) => {
-                    draft.jobDescription = { ...(draft.jobDescription ?? {}), text: jobDescription };
+                    draft.selectedProjects = nextSelectedProjects.map((text) => ({ text }));
                 });
             }
 
@@ -921,10 +1152,16 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             const nextContactWays = parsedProfile
                 ? applyPhoneEmailToContactWays(contactWays, parsedProfile.phone, parsedProfile.email)
                 : contactWays;
+            const nextEducation =
+                editingSection === 'education' ? applyEducationEditText(educationEditText) : education;
             const nextLanguages =
                 editingSection === 'languages' ? applyLanguagesEditText(languagesEditText) : languages;
             const nextCertificates =
                 editingSection === 'certificates' ? applyCertificateEditText(certificatesEditText) : certificates;
+            const nextSelectedProjects =
+                editingSection === 'selectedProjects'
+                    ? applySelectedProjectsEditText(selectedProjectsEditText)
+                    : selectedProjects;
             const nextAdditionalInfo =
                 editingSection === 'additionalInfo' ? String(additionalInfoEditText ?? '') : additionalInfo;
             const nextExperiences =
@@ -939,9 +1176,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 summary,
                 skills: normalizedSkills,
                 contactWays: normalizedContactWays,
+                education: nextEducation,
                 languages: nextLanguages,
                 certificates: nextCertificates,
-                jobDescription,
+                selectedProjects: nextSelectedProjects,
                 additionalInfo: nextAdditionalInfo,
                 experiences: nextExperiences,
             });
@@ -954,17 +1192,19 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                       ? formatLineListEditText(normalizedSkills)
                       : sectionForApi === 'contactWays'
                         ? formatLineListEditText(normalizedContactWays)
+                        : sectionForApi === 'education'
+                          ? formatEducationEditText(nextEducation)
                         : sectionForApi === 'languages'
                           ? formatLanguagesEditText(nextLanguages)
                           : sectionForApi === 'certificates'
                             ? formatCertificateEditText(nextCertificates)
-                            : sectionForApi === 'jobDescription'
-                              ? jobDescription
-                              : sectionForApi === 'additionalInfo'
-                                ? nextAdditionalInfo
-                                : sectionForApi === 'experience'
-                                  ? formatExperienceEditText(nextExperiences)
-                                  : null;
+                            : sectionForApi === 'selectedProjects'
+                              ? formatSelectedProjectsEditText(nextSelectedProjects)
+                    : sectionForApi === 'additionalInfo'
+                      ? nextAdditionalInfo
+                      : sectionForApi === 'experience'
+                        ? formatExperienceEditText(nextExperiences)
+                        : null;
 
             delete textOnlyBackupRef.current[editingSection];
             setEditingSection(null);
@@ -1029,9 +1269,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         const nextContactWays = parsedProfile
             ? applyPhoneEmailToContactWays(nextContactWaysBase, parsedProfile.phone, parsedProfile.email)
             : nextContactWaysBase;
+        const nextEducation = editingSection === 'education' ? applyEducationEditText(educationEditText) : education;
         const nextLanguages = editingSection === 'languages' ? applyLanguagesEditText(languagesEditText) : languages;
         const nextCertificates =
             editingSection === 'certificates' ? applyCertificateEditText(certificatesEditText) : certificates;
+        const nextSelectedProjects =
+            editingSection === 'selectedProjects'
+                ? applySelectedProjectsEditText(selectedProjectsEditText)
+                : selectedProjects;
         const nextAdditionalInfo = editingSection === 'additionalInfo' ? additionalInfoEditText : additionalInfo;
         const nextExperiences =
             editingSection === 'experience' ? applyExperienceEditText(experiences, experienceEditText) : experiences;
@@ -1041,8 +1286,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         if (editingSection === 'profile') setProfile(nextProfile);
         if (editingSection === 'contactWays') setContactWays(normalizedContactWays);
         if (editingSection === 'profile') setContactWays(normalizedContactWays);
+        if (editingSection === 'education') setEducation(nextEducation);
         if (editingSection === 'languages') setLanguages(nextLanguages);
         if (editingSection === 'certificates') setCertificates(nextCertificates);
+        if (editingSection === 'selectedProjects') setSelectedProjects(nextSelectedProjects);
         if (editingSection === 'additionalInfo') setAdditionalInfo(nextAdditionalInfo);
         if (editingSection === 'experience') setExperiences(nextExperiences);
 
@@ -1069,9 +1316,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             summary,
             skills: normalizedSkills,
             contactWays: normalizedContactWays,
+            education: nextEducation,
             languages: nextLanguages,
             certificates: nextCertificates,
-            jobDescription,
+            selectedProjects: nextSelectedProjects,
             additionalInfo: nextAdditionalInfo,
             experiences: nextExperiences,
         });
@@ -1084,17 +1332,19 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                   ? formatLineListEditText(normalizedSkills)
                   : sectionForApi === 'contactWays'
                     ? formatLineListEditText(normalizedContactWays)
+                    : sectionForApi === 'education'
+                      ? formatEducationEditText(nextEducation)
                     : sectionForApi === 'languages'
                       ? formatLanguagesEditText(nextLanguages)
                       : sectionForApi === 'certificates'
                         ? formatCertificateEditText(nextCertificates)
-                        : sectionForApi === 'jobDescription'
-                          ? jobDescription
-                          : sectionForApi === 'additionalInfo'
-                            ? nextAdditionalInfo
-                            : sectionForApi === 'experience'
-                              ? formatExperienceEditText(nextExperiences)
-                              : null;
+                        : sectionForApi === 'selectedProjects'
+                          ? formatSelectedProjectsEditText(nextSelectedProjects)
+                    : sectionForApi === 'additionalInfo'
+                      ? nextAdditionalInfo
+                      : sectionForApi === 'experience'
+                        ? formatExperienceEditText(nextExperiences)
+                        : null;
 
         try {
             if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = effectiveRequestId;
@@ -1128,9 +1378,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             }
             if (editingSection === 'summary' && typeof backup === 'string') setSummary(backup);
             if (editingSection === 'skills' && Array.isArray(backup)) setSkills(backup);
+            if (editingSection === 'education' && Array.isArray(backup)) setEducation(backup);
             if (editingSection === 'languages' && Array.isArray(backup)) setLanguages(backup);
             if (editingSection === 'certificates' && Array.isArray(backup)) setCertificates(backup);
-            if (editingSection === 'jobDescription' && typeof backup === 'string') setJobDescription(backup);
+            if (editingSection === 'selectedProjects' && Array.isArray(backup)) setSelectedProjects(backup);
             if (editingSection === 'additionalInfo' && typeof backup === 'string') setAdditionalInfo(backup);
             if (editingSection === 'experience' && Array.isArray(backup)) setExperiences(backup);
             delete textOnlyBackupRef.current[editingSection];
@@ -1172,8 +1423,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             skills: sectionToDelete === 'skills' ? [] : skills,
             contactWays: sectionToDelete === 'contactWays' ? [] : contactWays,
             languages: sectionToDelete === 'languages' ? [] : languages,
+            education: sectionToDelete === 'education' ? [] : education,
             certificates: sectionToDelete === 'certificates' ? [] : certificates,
-            jobDescription: sectionToDelete === 'jobDescription' ? '' : jobDescription,
+            selectedProjects: sectionToDelete === 'selectedProjects' ? [] : selectedProjects,
             additionalInfo: sectionToDelete === 'additionalInfo' ? '' : additionalInfo,
             experiences: sectionToDelete === 'experience' ? [] : experiences,
         };
@@ -1182,8 +1434,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         setSkills(nextValues.skills);
         setContactWays(nextValues.contactWays);
         setLanguages(nextValues.languages);
+        setEducation(nextValues.education);
         setCertificates(nextValues.certificates);
-        setJobDescription(nextValues.jobDescription);
+        setSelectedProjects(nextValues.selectedProjects);
         setAdditionalInfo(nextValues.additionalInfo);
         setExperiences(nextValues.experiences);
 
@@ -1201,11 +1454,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             if (sectionToDelete === 'languages') {
                 draft.languages = [];
             }
+            if (sectionToDelete === 'education') {
+                draft.education = [];
+            }
             if (sectionToDelete === 'certificates') {
                 draft.certificates = [];
             }
-            if (sectionToDelete === 'jobDescription') {
-                draft.jobDescription = { ...(draft.jobDescription ?? {}), text: '' };
+            if (sectionToDelete === 'selectedProjects') {
+                draft.selectedProjects = [];
             }
             if (sectionToDelete === 'additionalInfo') {
                 draft.additionalInfo = { ...(draft.additionalInfo ?? {}), text: '' };
@@ -1308,9 +1564,10 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             summary,
             skills,
             contactWays,
+            education,
             languages,
             certificates,
-            jobDescription,
+            selectedProjects,
             additionalInfo,
         ],
     );
@@ -1363,12 +1620,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         setSkills,
         contactWays,
         setContactWays,
+        education,
+        setEducation,
         languages,
         setLanguages,
         certificates,
         setCertificates,
-        jobDescription,
-        setJobDescription,
+        selectedProjects,
+        setSelectedProjects,
         additionalInfo,
         setAdditionalInfo,
         experiences,
@@ -1378,10 +1637,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         setProfileEditText,
         contactWaysEditText,
         setContactWaysEditText,
+        educationEditText,
+        setEducationEditText,
         languagesEditText,
         setLanguagesEditText,
         certificatesEditText,
         setCertificatesEditText,
+        selectedProjectsEditText,
+        setSelectedProjectsEditText,
         additionalInfoEditText,
         setAdditionalInfoEditText,
         experienceEditText,

@@ -12,9 +12,10 @@ import { useResumeEditorController, type ResumeEditorMode } from './ResumeEditor
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import AdditionalInfoSection from './ResumeEditor/sections/AdditionalInfoSection';
 import CertificatesSection from './ResumeEditor/sections/CertificatesSection';
+import EducationSection from './ResumeEditor/sections/EducationSection';
 import ExperienceSection from './ResumeEditor/sections/ExperienceSection';
-import JobDescriptionSection from './ResumeEditor/sections/JobDescriptionSection';
 import LanguagesSection from './ResumeEditor/sections/LanguagesSection';
+import SelectedProjectsSection from './ResumeEditor/sections/SelectedProjectsSection';
 import SkillsSection from './ResumeEditor/sections/SkillsSection';
 import SummarySection from './ResumeEditor/sections/SummarySection';
 import { MainCardContainer, ResumeContainer } from './ResumeEditor/styled';
@@ -42,9 +43,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({ setStage, mode = '
         summary: 'Summary',
         skills: 'Technical Skills',
         contactWays: 'Contact Ways',
+        education: 'Education',
         languages: 'Languages',
         certificates: 'Certificates',
-        jobDescription: 'Job Description',
+        selectedProjects: 'Selected Projects',
         experience: 'Professional Experience',
         additionalInfo: 'Additional Information',
     };
@@ -107,9 +109,10 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({ setStage, mode = '
 
                     <SummarySection c={c} />
                     <SkillsSection c={c} />
+                    <EducationSection c={c} />
                     <CertificatesSection c={c} />
-                    <JobDescriptionSection c={c} />
                     <ExperienceSection c={c} />
+                    <SelectedProjectsSection c={c} />
                     <LanguagesSection c={c} />
                     <AdditionalInfoSection c={c} />
                 </CardContent>

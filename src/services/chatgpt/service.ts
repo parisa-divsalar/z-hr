@@ -180,10 +180,34 @@ export class ChatGPTService {
                 next.languages = list;
                 break;
             }
+            case 'education': {
+                if (Array.isArray(sectionText)) {
+                    next.education = sectionText;
+                    break;
+                }
+                const blocks = String(sectionText ?? '')
+                    .split(/\n\s*\n+/)
+                    .map((b) => b.trim())
+                    .filter(Boolean);
+                next.education = blocks.map((text) => ({ text }));
+                break;
+            }
             case 'certificates': {
                 const list = ChatGPTService.parseLineList(sectionText);
                 next.certificates = list;
                 next.certifications = list;
+                break;
+            }
+            case 'selectedProjects': {
+                if (Array.isArray(sectionText)) {
+                    next.selectedProjects = sectionText;
+                    break;
+                }
+                const blocks = String(sectionText ?? '')
+                    .split(/\n\s*\n+/)
+                    .map((b) => b.trim())
+                    .filter(Boolean);
+                next.selectedProjects = blocks.map((text) => ({ text }));
                 break;
             }
             case 'jobDescription': {
@@ -265,6 +289,14 @@ export class ChatGPTService {
             case 'certificates': {
                 next.certificates = [];
                 next.certifications = [];
+                break;
+            }
+            case 'education': {
+                next.education = [];
+                break;
+            }
+            case 'selectedProjects': {
+                next.selectedProjects = [];
                 break;
             }
             case 'jobDescription': {

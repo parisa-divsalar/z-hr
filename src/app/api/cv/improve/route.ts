@@ -23,6 +23,70 @@ export async function POST(request: NextRequest) {
         const userId = await getUserId(request);
         const logContext = userId ? { userId, endpoint: '/api/cv/improve', action: 'improve' } : undefined;
 
+        const normalizeStructuredResume = (value: any) => {
+            const safe = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+            const toStringArray = (input: any): string[] => {
+                if (Array.isArray(input)) {
+                    return input.map((v) => String(v ?? '').trim()).filter(Boolean);
+                }
+                if (typeof input === 'string') {
+                    return input
+                        .split(/\r?\n|[,;]+/)
+                        .map((v) => v.trim())
+                        .filter(Boolean);
+                }
+                return [];
+            };
+            const toBlocks = (input: any): string[] => {
+                if (Array.isArray(input)) {
+                    return input.map((v) => String(v ?? '').trim()).filter(Boolean);
+                }
+                if (typeof input === 'string') {
+                    return input
+                        .split(/\n\s*\n+/)
+                        .map((b) => b.trim())
+                        .filter(Boolean);
+                }
+                return [];
+            };
+            const toCertificationArray = (input: any) => {
+                if (Array.isArray(input)) return input;
+                const blocks = toBlocks(input);
+                if (!blocks.length) return [];
+                return blocks.map((text) => ({ title: text, issuer: '', issue_date: '' }));
+            };
+            const toLanguageArray = (input: any) => {
+                if (Array.isArray(input)) return input;
+                const lines = toStringArray(input);
+                if (!lines.length) return [];
+                return lines.map((line) => {
+                    const parts = line.split(/\s*[-–—|]\s*/);
+                    return { language: parts[0] ?? '', level: parts.slice(1).join(' ') ?? '' };
+                });
+            };
+            return {
+                personalInfo: {
+                    name: String(safe.personalInfo?.name ?? safe.personalInfo?.fullName ?? ''),
+                    email: String(safe.personalInfo?.email ?? ''),
+                    phone: String(safe.personalInfo?.phone ?? ''),
+                    location: String(safe.personalInfo?.location ?? ''),
+                },
+                summary: String(safe.summary ?? ''),
+                technicalSkills: Array.isArray(safe.technicalSkills)
+                    ? safe.technicalSkills
+                    : toStringArray(safe.technicalSkills),
+                professionalExperience: Array.isArray(safe.professionalExperience) ? safe.professionalExperience : [],
+                education: Array.isArray(safe.education) ? safe.education : [],
+                certifications: toCertificationArray(safe.certifications ?? safe.certificates),
+                selectedProjects: Array.isArray(safe.selectedProjects) ? safe.selectedProjects : [],
+                languages: toLanguageArray(safe.languages),
+                additionalInfo:
+                    safe.additionalInfo && typeof safe.additionalInfo === 'object' && !Array.isArray(safe.additionalInfo)
+                        ? { notes: Array.isArray(safe.additionalInfo.notes) ? safe.additionalInfo.notes : [] }
+                        : { notes: [] },
+            };
+        };
+
         if (resume && typeof resume === 'object') {
             if (!isFinalStep) {
                 return NextResponse.json({
@@ -35,51 +99,38 @@ export async function POST(request: NextRequest) {
             const resumeObject = resume as Record<string, unknown>;
             const isAnalysisMode = mode === 'analysis' || (mode !== 'sections_text' && 'personalInfo' in resumeObject);
 
-            if (!isAnalysisMode) {
-                const rawSummary = String(resumeObject.summary ?? '');
-                const rawExperience = String(resumeObject.experience ?? '');
-                const rawCertifications = String(
-                    resumeObject.certifications ?? resumeObject.certificates ?? ''
-                );
-                const rawJobDescription = String(resumeObject.jobDescription ?? '');
-                const rawAdditionalInfo = String(resumeObject.additionalInfo ?? '');
-                const jobDescriptionText = rawJobDescription.trim();
+            const resumeAny = resumeObject as any;
+            const jobDescriptionText = String(
+                resumeAny.jobDescription?.text ?? resumeAny.jobDescriptionText ?? resumeAny.jobDescription ?? ''
+            ).trim();
 
-                const improveOne = async (text: string) => {
-                    const trimmed = text.trim();
-                    if (!trimmed) return text;
-                    return await ChatGPTService.improveCVSection(trimmed, undefined, jobDescriptionText, logContext);
-                };
-
-                const [summary, experience, certifications, jobDescription, additionalInfo] = await Promise.all([
-                    improveOne(rawSummary),
-                    improveOne(rawExperience),
-                    improveOne(rawCertifications),
-                    improveOne(rawJobDescription),
-                    improveOne(rawAdditionalInfo),
-                ]);
-
-                return NextResponse.json({
-                    originalResume: resumeObject,
-                    improvedResume: {
-                        summary,
-                        experience,
-                        certifications,
-                        jobDescription,
-                        additionalInfo,
-                    },
-                });
-            }
+            const structuredInput = !isAnalysisMode
+                ? {
+                      personalInfo: resumeAny.personalInfo ?? resumeAny.profile ?? {},
+                      summary: resumeAny.summary ?? '',
+                      technicalSkills: resumeAny.technicalSkills ?? resumeAny.skills ?? [],
+                      professionalExperience: resumeAny.professionalExperience ?? resumeAny.experience ?? [],
+                      education: resumeAny.education ?? [],
+                      certifications: resumeAny.certifications ?? resumeAny.certificates ?? [],
+                      selectedProjects: resumeAny.selectedProjects ?? [],
+                      languages: resumeAny.languages ?? [],
+                      additionalInfo: resumeAny.additionalInfo ?? {},
+                  }
+                : undefined;
 
             const improvedResume = await ChatGPTService.improveStructuredResume({
                 resume,
-                mode,
+                mode: isAnalysisMode ? mode : 'sections_text',
+                jobDescription: jobDescriptionText || undefined,
+                structuredInput,
                 logContext,
             });
 
+            const normalizedImproved = normalizeStructuredResume(improvedResume);
+
             return NextResponse.json({
                 originalResume: resume,
-                improvedResume,
+                improvedResume: normalizedImproved,
             });
         }
 

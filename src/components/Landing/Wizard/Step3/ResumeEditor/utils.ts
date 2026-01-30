@@ -289,25 +289,16 @@ export const applyLanguagesEditText = (text: string): ResumeLanguage[] => {
     return normalizeLanguages(parsed);
 };
 
-export const extractJobDescriptionText = (payload: any): string => {
-    if (!payload || typeof payload !== 'object') return '';
-    return (
-        payload.jobDescription?.text ??
-        payload.jobDescriptionText ??
-        payload.job_description ??
-        payload.job_description_text ??
-        payload.positionDescription ??
-        payload.position_description ??
-        payload.description ??
-        ''
-    );
-};
-
 export const extractAdditionalInfoText = (payload: any): string => {
     if (!payload || typeof payload !== 'object') return '';
 
     const additionalInfo = (payload as any).additionalInfo;
     if (typeof additionalInfo === 'string') return additionalInfo;
+
+    const notes = additionalInfo?.notes;
+    if (Array.isArray(notes) && notes.length > 0) {
+        return notes.map((note: any) => String(note ?? '').trim()).filter(Boolean).join('\n');
+    }
 
     return (
         additionalInfo?.text ??
@@ -349,6 +340,91 @@ export const formatCertificateEditText = (items: string[]): string =>
         .join('\n\n');
 
 export const applyCertificateEditText = (text: string): string[] =>
+    String(text ?? '')
+        .split(/\n\s*\n+/)
+        .map((b) => b.trim())
+        .filter(Boolean);
+
+export const extractEducationEntries = (payload: any): any[] => {
+    if (!payload || typeof payload !== 'object') return [];
+    if (Array.isArray(payload.education)) return payload.education;
+    if (Array.isArray(payload.education_history)) return payload.education_history;
+    if (Array.isArray(payload.educationHistory)) return payload.educationHistory;
+    if (Array.isArray(payload.profile?.education)) return payload.profile.education;
+    return [];
+};
+
+export const normalizeEducationEntries = (raw: any[]): string[] => {
+    return raw
+        .map((entry) => {
+            if (typeof entry === 'string') return entry.trim();
+            if (!entry || typeof entry !== 'object') return '';
+            const degree = String(entry.degree ?? entry.title ?? entry.field ?? '').trim();
+            const institution = String(entry.institution ?? entry.school ?? entry.university ?? '').trim();
+            const dates = String(entry.dates ?? entry.year ?? entry.duration ?? '').trim();
+            const location = String(entry.location ?? entry.city ?? entry.country ?? '').trim();
+            const details = Array.isArray(entry.details) ? entry.details.map((d: any) => String(d ?? '').trim()) : [];
+            const header = [degree, institution].filter(Boolean).join(' - ');
+            const meta = [dates, location].filter(Boolean).join(' | ');
+            const lines = [header, meta].filter(Boolean);
+            const extra = details.filter(Boolean);
+            return [...lines, ...extra].join('\n').trim();
+        })
+        .filter(Boolean);
+};
+
+export const formatEducationEditText = (items: string[]): string =>
+    items
+        .map((x) => String(x ?? '').trim())
+        .filter(Boolean)
+        .join('\n\n');
+
+export const applyEducationEditText = (text: string): string[] =>
+    String(text ?? '')
+        .split(/\n\s*\n+/)
+        .map((b) => b.trim())
+        .filter(Boolean);
+
+export const extractSelectedProjectEntries = (payload: any): any[] => {
+    if (!payload || typeof payload !== 'object') return [];
+    if (Array.isArray(payload.selectedProjects)) return payload.selectedProjects;
+    if (Array.isArray(payload.selected_projects)) return payload.selected_projects;
+    if (Array.isArray(payload.projects)) return payload.projects;
+    if (Array.isArray(payload.projectList)) return payload.projectList;
+    if (Array.isArray(payload.profile?.selectedProjects)) return payload.profile.selectedProjects;
+    return [];
+};
+
+export const normalizeSelectedProjects = (raw: any[]): string[] => {
+    return raw
+        .map((entry) => {
+            if (typeof entry === 'string') return entry.trim();
+            if (!entry || typeof entry !== 'object') return '';
+            const name = String(entry.name ?? entry.title ?? '').trim();
+            const summary = String(entry.summary ?? entry.description ?? entry.text ?? '').trim();
+            const tech = Array.isArray(entry.tech)
+                ? entry.tech.map((t: any) => String(t ?? '').trim()).filter(Boolean)
+                : [];
+            const bullets = Array.isArray(entry.bullets)
+                ? entry.bullets.map((b: any) => String(b ?? '').trim()).filter(Boolean)
+                : [];
+            const link = String(entry.link ?? entry.url ?? '').trim();
+            const lines = [name, summary].filter(Boolean);
+            if (tech.length) lines.push(`Tech: ${tech.join(', ')}`);
+            if (bullets.length) lines.push(...bullets.map((b) => `- ${b}`));
+            if (link) lines.push(`Link: ${link}`);
+            return lines.join('\n').trim();
+        })
+        .filter(Boolean);
+};
+
+export const formatSelectedProjectsEditText = (items: string[]): string =>
+    items
+        .map((x) => String(x ?? '').trim())
+        .filter(Boolean)
+        .join('\n\n');
+
+export const applySelectedProjectsEditText = (text: string): string[] =>
     String(text ?? '')
         .split(/\n\s*\n+/)
         .map((b) => b.trim())
@@ -479,6 +555,8 @@ export const extractSkills = (payload: any): string[] => {
 
     const candidates = [
         payload.skills,
+        payload.technicalSkills,
+        payload.technical_skills,
         payload.skillList,
         payload.skillsList,
         payload.skill_set,
@@ -486,6 +564,15 @@ export const extractSkills = (payload: any): string[] => {
     ];
 
     for (const candidate of candidates) {
+        if (Array.isArray(candidate) && candidate.length && typeof candidate[0] === 'object') {
+            const flattened = candidate
+                .flatMap((entry: any) =>
+                    Array.isArray(entry?.skills) ? entry.skills : (entry?.skills ?? entry?.skill ?? entry?.name),
+                )
+                .map((v: any) => String(v ?? '').trim())
+                .filter(Boolean);
+            if (flattened.length) return flattened;
+        }
         const normalized = normalizeSkillArray(candidate);
         if (normalized.length) {
             return normalized;
@@ -649,9 +736,10 @@ export const buildUpdatedCvPayload = (
         summary: string;
         skills: string[];
         contactWays: string[];
+        education: string[];
         languages: ResumeLanguage[];
         certificates: string[];
-        jobDescription: string;
+        selectedProjects: string[];
         additionalInfo: string;
         experiences: ResumeExperience[];
     },
@@ -678,14 +766,6 @@ export const buildUpdatedCvPayload = (
         return values.additionalInfo;
     };
 
-    const normalizeJobDescription = () => {
-        const existing = base.jobDescription;
-        if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
-            return { ...existing, text: values.jobDescription };
-        }
-        return { text: values.jobDescription };
-    };
-
     const nextExperiences = values.experiences.map((exp) => ({
         company: exp.company,
         companyName: exp.company,
@@ -707,11 +787,11 @@ export const buildUpdatedCvPayload = (
         skillList: values.skills,
         contactWays: values.contactWays,
         contactWay: values.contactWays,
+        education: values.education.map((entry) => ({ text: entry })),
         languages: values.languages,
         certificates: values.certificates,
         certifications: values.certificates,
-        jobDescription: normalizeJobDescription(),
-        jobDescriptionText: values.jobDescription,
+        selectedProjects: values.selectedProjects.map((entry) => ({ text: entry })),
         additionalInfo: normalizeAdditionalInfo(),
         additionalInfoText: values.additionalInfo,
         experiences: nextExperiences,
