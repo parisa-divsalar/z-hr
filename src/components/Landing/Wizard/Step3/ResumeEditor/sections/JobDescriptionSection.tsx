@@ -5,10 +5,12 @@ import SectionHeader from '../SectionHeader';
 import { SectionContainer, SummaryContainer, SummaryText, StyledTextareaAutosize } from '../styled';
 
 import type { ResumeEditorController } from '../hooks/useResumeEditorController';
+import type { ImproveOption } from '../types';
 
 type Props = { c: ResumeEditorController };
 
 export default function JobDescriptionSection({ c }: Props) {
+    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === 'jobDescription';
     const hasContent = c.jobDescription.trim().length > 0;
     const shouldRender =
@@ -26,6 +28,12 @@ export default function JobDescriptionSection({ c }: Props) {
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('jobDescription')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('jobDescription')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('jobDescription')}
+                onImproveOption={
+                    c.isPreview || c.isTextOnlyMode
+                        ? undefined
+                        : (option) => void c.handleImprove('jobDescription', option)
+                }
+                improveOptions={improveOptions}
                 isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'jobDescription'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'jobDescription'}

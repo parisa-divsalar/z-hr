@@ -55,7 +55,14 @@ import {
     resolveCvRecord,
 } from '../utils';
 
-import type { ResumeExperience, ResumeLanguage, ResumeProfile, SectionKey } from '../types';
+import type { ImproveOption, ResumeExperience, ResumeLanguage, ResumeProfile, SectionKey } from '../types';
+
+const IMPROVE_OPTION_CONTEXT: Record<ImproveOption, string> = {
+    shorter: 'Make the text shorter and more concise while keeping the meaning.',
+    longer: 'Make the text longer with more detail, without adding false information.',
+    creative: 'Make the text more creative and engaging while keeping it professional.',
+    formal: 'Make the text more formal, polished, and professional.',
+};
 
 export type ResumeEditorMode = 'editor' | 'preview';
 
@@ -127,7 +134,7 @@ export type ResumeEditorController = {
     handleEdit: (section: string) => void;
     handleSave: () => Promise<void>;
     handleCancel: () => void;
-    handleImprove: (section: string) => Promise<void>;
+    handleImprove: (section: string, option?: ImproveOption) => Promise<void>;
     handleDownloadPdf: () => Promise<void>;
     handleSkillsChange: (index: number, value: string) => void;
     requestDeleteSection: (section: SectionKey) => void;
@@ -1247,7 +1254,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     };
 
     const handleImprove = useCallback(
-        async (section: string) => {
+        async (section: string, option?: ImproveOption) => {
             if (improvingSection) return;
             if (!requestId) {
                 setImproveError('requestId is missing. Please refresh and try again.');
@@ -1267,11 +1274,13 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                     throw new Error('Nothing to improve for this section.');
                 }
 
+                const context = option ? IMPROVE_OPTION_CONTEXT[option] : undefined;
                 const postResponse = await postImproved({
                     userId: accessToken ?? undefined,
                     lang: 'en',
                     cvSection: section,
                     paragraph: String(currentText),
+                    context,
                 });
                 const improved = (postResponse as any)?.result?.improved;
                 if (!improved || !String(improved).trim()) {

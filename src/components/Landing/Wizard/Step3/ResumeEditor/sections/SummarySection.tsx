@@ -5,12 +5,14 @@ import SectionHeader from '../SectionHeader';
 import { SectionContainer, SummaryContainer, SummaryText, StyledTextareaAutosize } from '../styled';
 
 import type { ResumeEditorController } from '../hooks/useResumeEditorController';
+import type { ImproveOption } from '../types';
 
 type Props = {
     c: ResumeEditorController;
 };
 
 export default function SummarySection({ c }: Props) {
+    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const hasContent = c.summary.trim().length > 0;
     const isEditing = !c.isPreview && c.editingSection === 'summary';
     const shouldRender = hasContent || isEditing || c.isPreCvLoading || c.shouldBlockBelowSummary;
@@ -24,6 +26,10 @@ export default function SummarySection({ c }: Props) {
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('summary')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('summary')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('summary')}
+                onImproveOption={
+                    c.isPreview || c.isTextOnlyMode ? undefined : (option) => void c.handleImprove('summary', option)
+                }
+                improveOptions={improveOptions}
                 isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'summary'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'summary'}

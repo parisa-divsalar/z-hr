@@ -5,10 +5,12 @@ import SectionHeader from '../SectionHeader';
 import { ExperienceTextareaAutosize, SectionContainer, SummaryText } from '../styled';
 
 import type { ResumeEditorController } from '../hooks/useResumeEditorController';
+import type { ImproveOption } from '../types';
 
 type Props = { c: ResumeEditorController };
 
 export default function CertificatesSection({ c }: Props) {
+    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === 'certificates';
     const hasContent = c.certificates.some((entry) => String(entry ?? '').trim().length > 0);
     const shouldRender =
@@ -26,6 +28,12 @@ export default function CertificatesSection({ c }: Props) {
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('certificates')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('certificates')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('certificates')}
+                onImproveOption={
+                    c.isPreview || c.isTextOnlyMode
+                        ? undefined
+                        : (option) => void c.handleImprove('certificates', option)
+                }
+                improveOptions={improveOptions}
                 isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'certificates'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'certificates'}

@@ -13,10 +13,12 @@ import {
 } from '../styled';
 
 import type { ResumeEditorController } from '../hooks/useResumeEditorController';
+import type { ImproveOption } from '../types';
 
 type Props = { c: ResumeEditorController };
 
 export default function ExperienceSection({ c }: Props) {
+    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === 'experience';
     const visibleExperiences = c.experiences.filter((exp) =>
         [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
@@ -37,6 +39,10 @@ export default function ExperienceSection({ c }: Props) {
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('experience')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('experience')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('experience')}
+                onImproveOption={
+                    c.isPreview || c.isTextOnlyMode ? undefined : (option) => void c.handleImprove('experience', option)
+                }
+                improveOptions={improveOptions}
                 isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'experience'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'experience'}

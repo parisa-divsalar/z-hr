@@ -27,6 +27,8 @@ export type SectionKey =
     | 'experience'
     | 'additionalInfo';
 
+export type ImproveOption = 'shorter' | 'longer' | 'creative' | 'formal';
+
 
 
 

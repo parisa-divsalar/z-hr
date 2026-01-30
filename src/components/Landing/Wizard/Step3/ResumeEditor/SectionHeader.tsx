@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import { Button, CircularProgress, IconButton, Skeleton } from '@mui/material';
+import { Button, CircularProgress, IconButton, Menu, MenuItem, Skeleton } from '@mui/material';
 
 import DeleteIcon from '@/assets/images/icons/clean.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 
 import { SectionHeaderContainer, SectionTitle, SectionActions } from './styled';
+import type { ImproveOption } from './types';
 
 interface SectionHeaderProps {
     title: string;
@@ -23,6 +24,8 @@ interface SectionHeaderProps {
     showImproveIcon?: boolean;
     hideActions?: boolean;
     actionsSkeleton?: boolean;
+    improveOptions?: ImproveOption[];
+    onImproveOption?: (option: ImproveOption) => void;
 }
 
 const SectionHeader = ({
@@ -40,8 +43,27 @@ const SectionHeader = ({
     showImproveIcon = true,
     hideActions,
     actionsSkeleton,
+    improveOptions,
+    onImproveOption,
 }: SectionHeaderProps) => {
     const shouldShowActions = !hideActions || Boolean(actionsSkeleton);
+    const [improveAnchor, setImproveAnchor] = useState<null | HTMLElement>(null);
+    const shouldUseImproveMenu = Boolean(onImproveOption) && Boolean(improveOptions?.length);
+    const improveMenuOpen = Boolean(improveAnchor);
+
+    const handleOpenImproveMenu = (event: React.MouseEvent<HTMLElement>) => {
+        if (Boolean(improveDisabled) || Boolean(isImproving) || !onImproveOption) return;
+        setImproveAnchor(event.currentTarget);
+    };
+
+    const handleCloseImproveMenu = () => {
+        setImproveAnchor(null);
+    };
+
+    const handleSelectImproveOption = (option: ImproveOption) => {
+        handleCloseImproveMenu();
+        onImproveOption?.(option);
+    };
 
     return (
         <SectionHeaderContainer>
@@ -92,11 +114,34 @@ const SectionHeader = ({
                                     {showImproveIcon ? (
                                         <IconButton
                                             size='small'
-                                            onClick={onImprove}
-                                            disabled={Boolean(improveDisabled) || Boolean(isImproving) || !onImprove}
+                                            onClick={shouldUseImproveMenu ? handleOpenImproveMenu : onImprove}
+                                            disabled={
+                                                Boolean(improveDisabled) ||
+                                                Boolean(isImproving) ||
+                                                (!onImprove && !onImproveOption)
+                                            }
                                         >
                                             {isImproving ? <CircularProgress size={16} /> : <StarIcon />}
                                         </IconButton>
+                                    ) : null}
+                                    {shouldUseImproveMenu ? (
+                                        <Menu
+                                            anchorEl={improveAnchor}
+                                            open={improveMenuOpen}
+                                            onClose={handleCloseImproveMenu}
+                                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                        >
+                                            {(improveOptions ?? []).map((option) => (
+                                                <MenuItem
+                                                    key={option}
+                                                    disabled={Boolean(improveDisabled) || Boolean(isImproving)}
+                                                    onClick={() => handleSelectImproveOption(option)}
+                                                >
+                                                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                                                </MenuItem>
+                                            ))}
+                                        </Menu>
                                     ) : null}
                                 </>
                             )}
