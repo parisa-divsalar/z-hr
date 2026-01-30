@@ -43,22 +43,20 @@ const DeleteSectionDialog: FunctionComponent<DeleteSectionDialogProps> = ({
 
                 <Divider />
 
-                <ActionContainer>
+                <ActionContainer sx={{ flexDirection: 'row' }}>
                     <MuiButton
-                        fullWidth
                         variant='contained'
                         color='secondary'
-                        sx={{ width: '258px' }}
+                        sx={{ flex: 1 }}
                         onClick={onConfirm}
                         disabled={Boolean(isDeleting)}
                     >
                         Delete
                     </MuiButton>
                     <MuiButton
-                        fullWidth
                         variant='text'
                         color='inherit'
-                        sx={{ width: '258px' }}
+                        sx={{ flex: 1 }}
                         onClick={onCancel}
                         disabled={Boolean(isDeleting)}
                     >

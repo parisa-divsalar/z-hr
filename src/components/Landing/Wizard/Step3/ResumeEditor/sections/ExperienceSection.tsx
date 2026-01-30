@@ -17,6 +17,19 @@ import type { ResumeEditorController } from '../hooks/useResumeEditorController'
 type Props = { c: ResumeEditorController };
 
 export default function ExperienceSection({ c }: Props) {
+    const isEditing = !c.isPreview && c.editingSection === 'experience';
+    const visibleExperiences = c.experiences.filter((exp) =>
+        [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
+    );
+    const hasContent = visibleExperiences.length > 0;
+    const shouldRender =
+        hasContent ||
+        isEditing ||
+        c.shouldBlockBelowSummary ||
+        (c.isAutoPipelineMode && c.shouldSkeletonSection('experience'));
+
+    if (!shouldRender) return null;
+
     return (
         <ExperienceContainer>
             <SectionHeader
@@ -24,7 +37,7 @@ export default function ExperienceSection({ c }: Props) {
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('experience')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('experience')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('experience')}
-                isEditing={!c.isPreview && c.editingSection === 'experience'}
+                isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'experience'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'experience'}
                 deleteDisabled={c.isSaving || c.isDeletingSection}
@@ -51,10 +64,6 @@ export default function ExperienceSection({ c }: Props) {
                 />
             ) : (
                 (() => {
-                    const visibleExperiences = c.experiences.filter((exp) =>
-                        [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
-                    );
-
                     if (visibleExperiences.length === 0) {
                         return (
                             <Typography variant='body2' color='text.secondary'>

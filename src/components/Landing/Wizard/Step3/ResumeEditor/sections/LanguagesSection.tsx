@@ -9,6 +9,16 @@ import type { ResumeEditorController } from '../hooks/useResumeEditorController'
 type Props = { c: ResumeEditorController };
 
 export default function LanguagesSection({ c }: Props) {
+    const isEditing = !c.isPreview && c.editingSection === 'languages';
+    const hasContent = c.languages.some((lang) => String(lang?.name ?? '').trim().length > 0);
+    const shouldRender =
+        hasContent ||
+        isEditing ||
+        c.shouldBlockBelowSummary ||
+        (c.isAutoPipelineMode && c.shouldSkeletonSection('languages'));
+
+    if (!shouldRender) return null;
+
     return (
         <SectionContainer>
             <SectionHeader
@@ -16,7 +26,7 @@ export default function LanguagesSection({ c }: Props) {
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('languages')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('languages')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('languages')}
-                isEditing={!c.isPreview && c.editingSection === 'languages'}
+                isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'languages'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'languages'}
                 deleteDisabled={c.isSaving || c.isDeletingSection}

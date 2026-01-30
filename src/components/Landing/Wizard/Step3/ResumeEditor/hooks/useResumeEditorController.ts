@@ -1107,6 +1107,8 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
     const confirmDeleteSection = async () => {
         if (!pendingDeleteSection || isDeletingSection) return;
+        const sectionToDelete = pendingDeleteSection;
+        setPendingDeleteSection(null);
 
         setIsDeletingSection(true);
         setSaveError(null);
@@ -1115,14 +1117,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         const nextValues = {
             profile,
-            summary: pendingDeleteSection === 'summary' ? '' : summary,
-            skills: pendingDeleteSection === 'skills' ? [] : skills,
-            contactWays: pendingDeleteSection === 'contactWays' ? [] : contactWays,
-            languages: pendingDeleteSection === 'languages' ? [] : languages,
-            certificates: pendingDeleteSection === 'certificates' ? [] : certificates,
-            jobDescription: pendingDeleteSection === 'jobDescription' ? '' : jobDescription,
-            additionalInfo: pendingDeleteSection === 'additionalInfo' ? '' : additionalInfo,
-            experiences: pendingDeleteSection === 'experience' ? [] : experiences,
+            summary: sectionToDelete === 'summary' ? '' : summary,
+            skills: sectionToDelete === 'skills' ? [] : skills,
+            contactWays: sectionToDelete === 'contactWays' ? [] : contactWays,
+            languages: sectionToDelete === 'languages' ? [] : languages,
+            certificates: sectionToDelete === 'certificates' ? [] : certificates,
+            jobDescription: sectionToDelete === 'jobDescription' ? '' : jobDescription,
+            additionalInfo: sectionToDelete === 'additionalInfo' ? '' : additionalInfo,
+            experiences: sectionToDelete === 'experience' ? [] : experiences,
         };
 
         setSummary(nextValues.summary);
@@ -1135,29 +1137,29 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         setExperiences(nextValues.experiences);
 
         persistTextOnlySession((draft) => {
-            if (pendingDeleteSection === 'summary') {
+            if (sectionToDelete === 'summary') {
                 draft.background = { ...(draft.background ?? {}), text: '' };
             }
-            if (pendingDeleteSection === 'skills') {
+            if (sectionToDelete === 'skills') {
                 draft.skills = [];
             }
-            if (pendingDeleteSection === 'contactWays') {
+            if (sectionToDelete === 'contactWays') {
                 draft.contactWay = [];
                 draft.contactWays = [];
             }
-            if (pendingDeleteSection === 'languages') {
+            if (sectionToDelete === 'languages') {
                 draft.languages = [];
             }
-            if (pendingDeleteSection === 'certificates') {
+            if (sectionToDelete === 'certificates') {
                 draft.certificates = [];
             }
-            if (pendingDeleteSection === 'jobDescription') {
+            if (sectionToDelete === 'jobDescription') {
                 draft.jobDescription = { ...(draft.jobDescription ?? {}), text: '' };
             }
-            if (pendingDeleteSection === 'additionalInfo') {
+            if (sectionToDelete === 'additionalInfo') {
                 draft.additionalInfo = { ...(draft.additionalInfo ?? {}), text: '' };
             }
-            if (pendingDeleteSection === 'experience') {
+            if (sectionToDelete === 'experience') {
                 draft.experiences = [];
             }
         });
@@ -1178,7 +1180,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         try {
             const deleteResponse = await deleteResumeSection({
-                section: pendingDeleteSection,
+                section: sectionToDelete,
                 resume: resumeForDelete,
             });
             const resumeToSave = deleteResponse?.updatedResume ?? updatedPayload;

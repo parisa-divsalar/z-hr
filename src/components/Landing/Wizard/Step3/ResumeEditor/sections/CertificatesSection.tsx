@@ -9,6 +9,16 @@ import type { ResumeEditorController } from '../hooks/useResumeEditorController'
 type Props = { c: ResumeEditorController };
 
 export default function CertificatesSection({ c }: Props) {
+    const isEditing = !c.isPreview && c.editingSection === 'certificates';
+    const hasContent = c.certificates.some((entry) => String(entry ?? '').trim().length > 0);
+    const shouldRender =
+        hasContent ||
+        isEditing ||
+        c.shouldBlockBelowSummary ||
+        (c.isAutoPipelineMode && c.shouldSkeletonSection('certificates'));
+
+    if (!shouldRender) return null;
+
     return (
         <SectionContainer>
             <SectionHeader
@@ -16,7 +26,7 @@ export default function CertificatesSection({ c }: Props) {
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('certificates')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('certificates')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('certificates')}
-                isEditing={!c.isPreview && c.editingSection === 'certificates'}
+                isEditing={isEditing}
                 isImproving={!c.isPreview && c.improvingSection === 'certificates'}
                 improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'certificates'}
                 deleteDisabled={c.isSaving || c.isDeletingSection}
