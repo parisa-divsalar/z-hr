@@ -267,6 +267,7 @@ export const db = {
             const newUser = {
                 id: newId,
                 ...data,
+                coin: data?.coin ?? 0,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             };

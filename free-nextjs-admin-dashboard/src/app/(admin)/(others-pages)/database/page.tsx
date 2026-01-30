@@ -13,7 +13,7 @@ type DbOverview = {
   generatedAt: string;
 };
 
-type UserRow = { id?: number; email?: string; name?: string; fake_user_id?: string; [k: string]: unknown };
+type UserRow = { id?: number; eصصصصmail?: string; name?: string; fake_user_id?: string; [k: string]: unknown };
 
 function filterByUserId(arr: unknown[], userId: number, idKey = 'user_id'): unknown[] {
   if (!Array.isArray(arr)) return [];
