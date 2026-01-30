@@ -49,6 +49,9 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
     };
   }, []);
 
+  const leftSuggestions = suggestions.slice(0, 3);
+  const rightSuggestions = suggestions.slice(3, 6);
+
   return (
     <>
       <Stack textAlign='center' mt={2} mb={2}>
@@ -61,14 +64,28 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
       </Stack>
       <Grid container spacing={3} mt={2}>
         <Grid size={{ xs: 6 }}>
-          {Array.from({ length: 3 }).map((_, index) =>
-            index === 0 ? (
-              <ResumeMoreTemplates key={index} />
-            ) : (
-              <Box key={index} mt={2.5}>
-                <ResumeMoreTemplates />
-              </Box>
-            ),
+          {loadingSuggestions ? (
+            <Typography variant='subtitle2' color='text.secondary'>
+              Loading suggestions...
+            </Typography>
+          ) : suggestionsError ? (
+            <Typography variant='subtitle2' color='error'>
+              {suggestionsError}
+            </Typography>
+          ) : leftSuggestions.length === 0 ? (
+            <Typography variant='subtitle2' color='text.secondary'>
+              No feature suggestions available.
+            </Typography>
+          ) : (
+            leftSuggestions.map((suggestion, index) =>
+              index === 0 ? (
+                <ResumeMoreTemplates key={suggestion.id} suggestion={suggestion} />
+              ) : (
+                <Box key={suggestion.id} mt={2.5}>
+                  <ResumeMoreTemplates suggestion={suggestion} />
+                </Box>
+              ),
+            )
           )}
         </Grid>
         <Grid size={{ xs: 6 }}>
@@ -81,7 +98,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
               {suggestionsError}
             </Typography>
           ) : (
-            <ResumeTemplatesRight suggestions={suggestions} />
+            <ResumeTemplatesRight suggestions={rightSuggestions} />
           )}
         </Grid>
       </Grid>

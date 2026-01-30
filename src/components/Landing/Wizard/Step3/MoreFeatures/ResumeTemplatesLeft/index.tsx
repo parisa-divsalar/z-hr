@@ -5,10 +5,15 @@ import { Typography } from '@mui/material';
 import FrameFeaturesSvg from '@/assets/images/bg/frameFeatures.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { MoreFeatureSuggestion } from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
 
 import { Container, LeftSection, TitleSection, RightSection, FrameFeaturesImage } from './styled';
 
-const ResumeMoreTemplates: React.FC = () => {
+interface ResumeMoreTemplatesProps {
+  suggestion: Pick<MoreFeatureSuggestion, 'title' | 'description'>;
+}
+
+const ResumeMoreTemplates: React.FC<ResumeMoreTemplatesProps> = ({ suggestion }) => {
   const [offset, setOffset] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
@@ -49,12 +54,12 @@ const ResumeMoreTemplates: React.FC = () => {
           <MuiCheckbox
             label={
               <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-                Resume Template
+                {suggestion.title}
               </Typography>
             }
           />
           <Typography variant='subtitle2' color='text.primary' fontWeight='400' ml={1} mt={1}>
-            Choose from our professionally designed resume templates to make your application stand out.
+            {suggestion.description}
           </Typography>
         </TitleSection>
         <MuiButton

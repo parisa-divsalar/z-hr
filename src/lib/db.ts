@@ -26,37 +26,81 @@ const defaultMoreFeatures = [
     {
         id: 1,
         title: 'Job Position Suggestions',
-        description:
-            'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+        description: 'Get role matches based on your resume and target industry.',
         cards: [
-            { id: 1, number: 1, title: 'Questions', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
-            { id: 2, number: 2, title: 'Questions', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
-            { id: 3, number: 3, title: 'Questions', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
-            { id: 4, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
+            { id: 1, number: 1, title: 'Top Roles', answer: 'Shortlist positions aligned to your experience.' },
+            { id: 2, number: 2, title: 'Company Fit', answer: 'Focus on roles that match your strengths.' },
+            { id: 3, number: 3, title: 'Next Steps', answer: 'See recommended actions for each role.' },
         ],
     },
     {
         id: 2,
-        title: 'Skill Assessment Tools',
-        description:
-            'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+        title: 'Interview Questions',
+        description: 'Practice targeted questions for your role and seniority.',
         cards: [
-            { id: 1, number: 1, title: 'Technical Skills', tag: 'Hard skill', answer: 'I thrive in and  working with.' },
-            { id: 2, number: 2, title: 'Leadership', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
-            { id: 3, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and enjoy  with.' },
-            { id: 4, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and enjoy  with.' },
+            { id: 1, number: 1, title: 'Behavioral', answer: 'Answer common leadership and teamwork prompts.' },
+            { id: 2, number: 2, title: 'Technical', answer: 'Work through skill-specific challenges.' },
+            { id: 3, number: 3, title: 'Role Fit', answer: 'Prepare for hiring manager expectations.' },
         ],
     },
     {
         id: 3,
-        title: 'Career Development',
-        description:
-            'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+        title: 'Voice Interview Practice',
+        description: 'Record answers and get feedback on clarity and pacing.',
         cards: [
-            { id: 1, number: 1, title: 'Goal Setting', tag: 'Career planning', answer: 'I thrive in and enjoy  with.' },
-            { id: 2, number: 2, title: 'Networking', tag: 'Professional development', answer: 'I thrive in and enjoy  with.' },
-            { id: 3, number: 3, title: 'Continuous Learning', tag: 'Education  ', answer: 'I thrive in and enjoy  with.' },
-            { id: 4, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and enjoy  with.' },
+            { id: 1, number: 1, title: 'Mock Prompts', answer: 'Practice realistic voice interview questions.' },
+            { id: 2, number: 2, title: 'Delivery Check', answer: 'Improve tone, speed, and confidence.' },
+            { id: 3, number: 3, title: 'Retry Loop', answer: 'Replay, refine, and re-record responses.' },
+        ],
+    },
+    {
+        id: 4,
+        title: 'Cover Letter',
+        description: 'Generate a tailored letter aligned with the job description.',
+        cards: [
+            { id: 1, number: 1, title: 'Key Wins', answer: 'Highlight the most relevant achievements.' },
+            { id: 2, number: 2, title: 'Job Match', answer: 'Connect your skills to the role needs.' },
+            { id: 3, number: 3, title: 'Final Polish', answer: 'Refine tone and professionalism.' },
+        ],
+    },
+    {
+        id: 5,
+        title: 'Resume Template',
+        description: 'Pick layouts that best present your experience.',
+        cards: [
+            { id: 1, number: 1, title: 'Modern', answer: 'Clean layout focused on impact and results.' },
+            { id: 2, number: 2, title: 'Classic', answer: 'Traditional format optimized for ATS.' },
+            { id: 3, number: 3, title: 'Creative', answer: 'Visual style for standout applications.' },
+        ],
+    },
+    {
+        id: 6,
+        title: 'Learning Hub',
+        description: 'Access curated learning paths for upskilling.',
+        cards: [
+            { id: 1, number: 1, title: 'Skill Tracks', answer: 'Follow guided lessons by role.' },
+            { id: 2, number: 2, title: 'Resources', answer: 'Save courses, articles, and tools.' },
+            { id: 3, number: 3, title: 'Progress', answer: 'Track completion and milestones.' },
+        ],
+    },
+    {
+        id: 7,
+        title: 'Text Interview Practice (Chatbot)',
+        description: 'Chat-based interview simulations with instant feedback.',
+        cards: [
+            { id: 1, number: 1, title: 'Live Chat', answer: 'Answer questions in real time.' },
+            { id: 2, number: 2, title: 'Feedback', answer: 'Get tips to improve each response.' },
+            { id: 3, number: 3, title: 'Confidence', answer: 'Build fluency before real interviews.' },
+        ],
+    },
+    {
+        id: 8,
+        title: 'Video Interview',
+        description: 'Practice camera presence with structured prompts.',
+        cards: [
+            { id: 1, number: 1, title: 'On-Camera', answer: 'Record video answers to sample prompts.' },
+            { id: 2, number: 2, title: 'Review', answer: 'Identify clarity, posture, and eye contact.' },
+            { id: 3, number: 3, title: 'Improve', answer: 'Iterate until you feel confident.' },
         ],
     },
 ];
@@ -524,7 +568,23 @@ export const db = {
         },
     },
     moreFeatures: {
-        findAll: () => readFile(moreFeaturesFile, defaultMoreFeatures),
+        findAll: () => {
+            const rows = readFile(moreFeaturesFile, defaultMoreFeatures);
+            const seen = new Set<string>();
+            const merged: any[] = [];
+
+            const addRow = (row: any) => {
+                const key = String(row?.title ?? row?.id ?? '').trim().toLowerCase();
+                if (!key || seen.has(key)) return;
+                seen.add(key);
+                merged.push(row);
+            };
+
+            rows.forEach(addRow);
+            defaultMoreFeatures.forEach(addRow);
+
+            return merged;
+        },
     },
 };
 
