@@ -41,6 +41,12 @@ robots.txt
 sitemap.xml
 sitemap-*.xml
 
+# local database files
+/data/*.json
+/data/*.db
+/data/*.sqlite
+/data/*.sqlite3
+
 .idea
 /.idea
 
