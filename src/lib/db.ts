@@ -21,6 +21,7 @@ const loginLogsFile = path.join(dataDir, 'login_logs.json');
 const aiInteractionsFile = path.join(dataDir, 'ai_interactions.json');
 const learningHubCoursesFile = path.join(dataDir, 'learning_hub_courses.json');
 const moreFeaturesFile = path.join(dataDir, 'more_features.json');
+const plansFile = path.join(dataDir, 'plans.json');
 
 const defaultMoreFeatures = [
     {
@@ -110,6 +111,117 @@ const defaultMoreFeatures = [
             { id: 2, number: 2, title: 'Review', answer: 'Identify clarity, posture, and eye contact.' },
             { id: 3, number: 3, title: 'Improve', answer: 'Iterate until you feel confident.' },
         ],
+    },
+];
+
+const defaultPlans = [
+    {
+        id: 1,
+        name: 'Starter (Free Plan)',
+        best_for: 'Perfect for students & first resume',
+        ats_friendly: true,
+        with_watermark: true,
+        templates: 'default',
+        job_description_match: false,
+        languages_supported: 'English',
+        format: 'PDF',
+        ai_resume_builder: 1,
+        ai_cover_letter: 0,
+        images_input: 0,
+        voice_input: 0,
+        video_input: 0,
+        file_input: 0,
+        wizard_edit: 0,
+        learning_hub: 0,
+        skill_gap: '0',
+        voice_interview: 0,
+        video_interview: 0,
+        question_interview: 0,
+        position_suggestion: 0,
+        processing_speed: 4,
+        price_aed: 0,
+        coin: null,
+    },
+    {
+        id: 2,
+        name: 'Pro',
+        best_for: 'For serious job seekers & career switchers',
+        ats_friendly: true,
+        with_watermark: false,
+        templates: '3 templates',
+        job_description_match: true,
+        languages_supported: 'English',
+        format: 'PDF/Word download',
+        ai_resume_builder: 2,
+        ai_cover_letter: 1,
+        images_input: 3,
+        voice_input: 2,
+        video_input: 0,
+        file_input: 1,
+        wizard_edit: 1,
+        learning_hub: 2,
+        skill_gap: '1 resume',
+        voice_interview: 0,
+        video_interview: 0,
+        question_interview: 1,
+        position_suggestion: 1,
+        processing_speed: 3,
+        price_aed: 100,
+        coin: null,
+    },
+    {
+        id: 3,
+        name: 'Plus',
+        best_for: 'Active job seekers, mid-level professionals, career changers',
+        ats_friendly: true,
+        with_watermark: false,
+        templates: '3 templates',
+        job_description_match: true,
+        languages_supported: 'English',
+        format: 'PDF/Word download',
+        ai_resume_builder: 4,
+        ai_cover_letter: 4,
+        images_input: 8,
+        voice_input: 6,
+        video_input: 1,
+        file_input: 2,
+        wizard_edit: 4,
+        learning_hub: 4,
+        skill_gap: '3 resume',
+        voice_interview: 1,
+        video_interview: 1,
+        question_interview: 3,
+        position_suggestion: 5,
+        processing_speed: 2,
+        price_aed: 250,
+        coin: null,
+    },
+    {
+        id: 4,
+        name: 'Elite',
+        best_for: 'For professionals, power users & international / Dubai career moves',
+        ats_friendly: true,
+        with_watermark: false,
+        templates: '3 templates',
+        job_description_match: true,
+        languages_supported: 'English',
+        format: 'PDF/Word download',
+        ai_resume_builder: 6,
+        ai_cover_letter: 12,
+        images_input: 12,
+        voice_input: 10,
+        video_input: 3,
+        file_input: 4,
+        wizard_edit: 4,
+        learning_hub: 10,
+        skill_gap: '6 resume',
+        voice_interview: 2,
+        video_interview: 2,
+        question_interview: 2,
+        position_suggestion: 6,
+        processing_speed: 1,
+        price_aed: 500,
+        coin: null,
     },
 ];
 
@@ -594,6 +706,9 @@ export const db = {
             return merged;
         },
     },
+    plans: {
+        findAll: () => readFile(plansFile, defaultPlans),
+    },
 };
 
 export function initDatabase() {
@@ -612,6 +727,7 @@ export function initDatabase() {
     if (!fs.existsSync(aiInteractionsFile)) writeFile(aiInteractionsFile, []);
     if (!fs.existsSync(learningHubCoursesFile)) writeFile(learningHubCoursesFile, []);
     if (!fs.existsSync(moreFeaturesFile)) writeFile(moreFeaturesFile, defaultMoreFeatures);
+    if (!fs.existsSync(plansFile)) writeFile(plansFile, defaultPlans);
 }
 
 initDatabase();

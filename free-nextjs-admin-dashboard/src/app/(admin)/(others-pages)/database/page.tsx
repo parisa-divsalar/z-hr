@@ -38,6 +38,7 @@ const TABLE_LABELS: Record<string, string> = {
   job_positions_new: 'Job positions (newly added)',
   learning_hub_courses: 'Learning Hub courses',
   more_features: 'More Features',
+  plans: 'Plans',
 };
 
 export default function DatabasePage() {
