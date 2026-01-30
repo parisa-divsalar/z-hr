@@ -32,6 +32,45 @@ export async function POST(request: NextRequest) {
                 });
             }
 
+            const resumeObject = resume as Record<string, unknown>;
+            const isAnalysisMode = mode === 'analysis' || (mode !== 'sections_text' && 'personalInfo' in resumeObject);
+
+            if (!isAnalysisMode) {
+                const rawSummary = String(resumeObject.summary ?? '');
+                const rawExperience = String(resumeObject.experience ?? '');
+                const rawCertifications = String(
+                    resumeObject.certifications ?? resumeObject.certificates ?? ''
+                );
+                const rawJobDescription = String(resumeObject.jobDescription ?? '');
+                const rawAdditionalInfo = String(resumeObject.additionalInfo ?? '');
+                const jobDescriptionText = rawJobDescription.trim();
+
+                const improveOne = async (text: string) => {
+                    const trimmed = text.trim();
+                    if (!trimmed) return text;
+                    return await ChatGPTService.improveCVSection(trimmed, undefined, jobDescriptionText, logContext);
+                };
+
+                const [summary, experience, certifications, jobDescription, additionalInfo] = await Promise.all([
+                    improveOne(rawSummary),
+                    improveOne(rawExperience),
+                    improveOne(rawCertifications),
+                    improveOne(rawJobDescription),
+                    improveOne(rawAdditionalInfo),
+                ]);
+
+                return NextResponse.json({
+                    originalResume: resumeObject,
+                    improvedResume: {
+                        summary,
+                        experience,
+                        certifications,
+                        jobDescription,
+                        additionalInfo,
+                    },
+                });
+            }
+
             const improvedResume = await ChatGPTService.improveStructuredResume({
                 resume,
                 mode,

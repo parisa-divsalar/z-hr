@@ -20,6 +20,7 @@ interface Step1Props {
 
 const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) => {
     const [stage, setStage] = useState<StageWizard>('SKILL_INPUT');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const recomputeAllFiles = useWizardStore((s) => s.recomputeAllFiles);
     const validate = useWizardStore((s) => s.validate);
     const setRequestId = useWizardStore((s) => s.setRequestId);
@@ -52,80 +53,93 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
     }
 
     const handleFinalSubmit = async () => {
-        recomputeAllFiles();
-
-        const state = useWizardStore.getState();
-        const isValid = validate();
-        if (!isValid) {
-            setStage('SKILL_INPUT');
-            return;
-        }
-
-        const wizardData = state.data;
-        const serializableWizard = buildWizardSerializable(wizardData);
-        const existingRequestId = useWizardStore.getState().requestId;
-        const isAuthenticated = Boolean(accessToken);
-        const fallbackRequestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        let finalRequestId = existingRequestId || fallbackRequestId;
-        let analysisResult: unknown = null;
-
-        if (isAuthenticated) {
-            try {
-                const saveRes = await apiClientClient.post('wizard/save', {
-                    requestId: finalRequestId,
-                    wizardData: serializableWizard,
-                });
-                const savedRequestId = saveRes?.data?.data?.requestId;
-                if (typeof savedRequestId === 'string' && savedRequestId.trim()) {
-                    finalRequestId = savedRequestId.trim();
-                }
-            } catch (error) {
-                console.error('Failed to save wizard data:', error);
-            }
-        }
-
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
-            const analyzeRes = await apiClientClient.post('cv/analyze', {
-                cvText: JSON.stringify(serializableWizard),
-                requestId: finalRequestId,
-            });
-            analysisResult = analyzeRes?.data?.analysis ?? analyzeRes?.data?.data?.analysis ?? null;
-        } catch (error) {
-            console.error('Failed to analyze CV:', error);
-        }
+            recomputeAllFiles();
 
-        if (analysisResult) {
+            const state = useWizardStore.getState();
+            const isValid = validate();
+            if (!isValid) {
+                setStage('SKILL_INPUT');
+                return;
+            }
+
+            const wizardData = state.data;
+            const serializableWizard = buildWizardSerializable(wizardData);
+            const existingRequestId = useWizardStore.getState().requestId;
+            const isAuthenticated = Boolean(accessToken);
+            const fallbackRequestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            let finalRequestId = existingRequestId || fallbackRequestId;
+            let analysisResult: unknown = null;
+
+            if (isAuthenticated) {
+                try {
+                    const saveRes = await apiClientClient.post('wizard/save', {
+                        requestId: finalRequestId,
+                        wizardData: serializableWizard,
+                    });
+                    const savedRequestId = saveRes?.data?.data?.requestId;
+                    if (typeof savedRequestId === 'string' && savedRequestId.trim()) {
+                        finalRequestId = savedRequestId.trim();
+                    }
+                } catch (error) {
+                    console.error('Failed to save wizard data:', error);
+                }
+            }
+
             try {
-                await improveResume({
-                    resume: analysisResult,
-                    mode: 'analysis',
-                    isFinalStep: true,
+                const analyzeRes = await apiClientClient.post('cv/analyze', {
+                    cvText: JSON.stringify(serializableWizard),
+                    requestId: finalRequestId,
                 });
+                analysisResult = analyzeRes?.data?.analysis ?? analyzeRes?.data?.data?.analysis ?? null;
             } catch (error) {
-                console.error('Failed to improve CV:', error);
+                console.error('Failed to analyze CV:', error);
             }
-        }
 
-        if (isAuthenticated && (!existingRequestId || existingRequestId !== finalRequestId)) {
-            setRequestId(finalRequestId);
-        }
-        const hasAnyFilesOrVoices = (wizardData.allFiles?.length ?? 0) > 0;
-
-        if (!hasAnyFilesOrVoices) {
-            saveWizardTextOnlySession(wizardData);
-            // keep it so Step3 can still fetch/edit the backend CV.
-            if (!isAuthenticated && !existingRequestId) {
-                setRequestId(null);
+            if (analysisResult) {
+                try {
+                    await improveResume({
+                        resume: analysisResult,
+                        mode: 'analysis',
+                        isFinalStep: true,
+                    });
+                } catch (error) {
+                    console.error('Failed to improve CV:', error);
+                }
             }
-            setActiveStep(3);
-            return;
-        }
 
-        clearWizardTextOnlySession();
-        setActiveStep(2);
+            if (isAuthenticated && (!existingRequestId || existingRequestId !== finalRequestId)) {
+                setRequestId(finalRequestId);
+            }
+            const hasAnyFilesOrVoices = (wizardData.allFiles?.length ?? 0) > 0;
+
+            if (!hasAnyFilesOrVoices) {
+                saveWizardTextOnlySession(wizardData);
+                // keep it so Step3 can still fetch/edit the backend CV.
+                if (!isAuthenticated && !existingRequestId) {
+                    setRequestId(null);
+                }
+                setActiveStep(3);
+                return;
+            }
+
+            clearWizardTextOnlySession();
+            setActiveStep(2);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    return <Questions onNext={handleFinalSubmit} setAiStatus={setAiStatus} setStage={setStage} />;
+    return (
+        <Questions
+            onNext={handleFinalSubmit}
+            setAiStatus={setAiStatus}
+            setStage={setStage}
+            isSubmitting={isSubmitting}
+        />
+    );
 };
 
 export default Step1;

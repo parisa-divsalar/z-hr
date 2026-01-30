@@ -88,6 +88,7 @@ export type ResumeEditorController = {
     experiences: ResumeExperience[];
     setExperiences: Dispatch<SetStateAction<ResumeExperience[]>>;
 
+
     profileEditText: string;
     setProfileEditText: Dispatch<SetStateAction<string>>;
     contactWaysEditText: string;
@@ -415,6 +416,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         if (!canFetchCv) setHasCvLoadedOnce(true);
     }, [canFetchCv, accessToken, requestId]);
+
 
     // When request context changes, require a fresh get-cv load before auto-improve can run.
     useEffect(() => {

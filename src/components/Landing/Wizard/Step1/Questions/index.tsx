@@ -41,6 +41,7 @@ interface QuestionsProps {
     onNext: () => void;
     setAiStatus: (status: AIStatus) => void;
     setStage: (stage: StageWizard) => void;
+    isSubmitting?: boolean;
 }
 
 type VoicePayload = { id?: string; url: string; blob: Blob; duration: number };
@@ -386,7 +387,12 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
     );
 };
 
-const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _setAiStatus, setStage }) => {
+const Questions: FunctionComponent<QuestionsProps> = ({
+    onNext,
+    setAiStatus: _setAiStatus,
+    setStage,
+    isSubmitting,
+}) => {
     const { data: wizardData } = useWizardStore();
 
     const editStageByStepId = useMemo<Record<string, StageWizard>>(
@@ -720,6 +726,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({ onNext, setAiStatus: _se
                         size='large'
                         onClick={onNext}
                         endIcon={<ArrowRightIcon />}
+                        loading={Boolean(isSubmitting)}
                         sx={{ width: { xs: '100%', sm: 'auto' } }}
                     >
                         Submit
