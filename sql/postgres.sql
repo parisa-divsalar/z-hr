@@ -52,3 +52,6 @@ CREATE INDEX IF NOT EXISTS idx_user_skills_skill_id ON user_skills(skill_id);
 
 
 
+
+
+
