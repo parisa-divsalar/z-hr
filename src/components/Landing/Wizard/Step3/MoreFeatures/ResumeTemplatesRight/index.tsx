@@ -4,7 +4,6 @@ import { Box, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
-import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
 import {
   CardsWrapper,
@@ -17,112 +16,37 @@ import {
   SuggestionCardHeader,
 } from '../styled';
 
-const jobSuggestions = [
-  {
-    id: 1,
-    title: 'Job Position Suggestions',
-    description:
-      'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
-    cards: [
-      {
-        number: 1,
-        title: 'Questions',
-        tag: 'Soft skill',
-        answer: 'I thrive in and  working with.',
-      },
-      {
-        number: 2,
-        title: 'Questions',
-        tag: 'Soft skill',
-        answer: 'I thrive in and  working with.',
-      },
-      {
-        number: 3,
-        title: 'Questions',
-        tag: 'Soft skill',
-        answer: 'I thrive in and  working with.',
-      },
-      {
-        number: 3,
-        title: 'Project Management',
-        tag: 'Soft skill',
-        answer: 'I thrive in and  working with.',
-      },
-    ],
-  },
+export type MoreFeatureCard = {
+  id: number | string;
+  number: number;
+  title: string;
+  tag?: string;
+  answer: string;
+};
 
-  {
-    id: 2,
-    title: 'Skill Assessment Tools',
-    description:
-      'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+export type MoreFeatureSuggestion = {
+  id: number | string;
+  title: string;
+  description: string;
+  cards: MoreFeatureCard[];
+};
 
-    cards: [
-      {
-        number: 1,
-        title: 'Technical Skills',
-        tag: 'Hard skill',
-        answer: 'I thrive in and  working with.',
-      },
-      {
-        number: 2,
-        title: 'Leadership',
-        tag: 'Soft skill',
-        answer: 'I thrive in and  working with.',
-      },
-      {
-        number: 3,
-        title: 'Project Management',
-        tag: 'Soft skill',
-        answer: 'I thrive in and enjoy  with.',
-      },
-      {
-        number: 3,
-        title: 'Project Management',
-        tag: 'Soft skill',
-        answer: 'I thrive in and enjoy  with.',
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: 'Career Development',
-    description:
-      'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+interface ResumeTemplatesRightProps {
+  suggestions: MoreFeatureSuggestion[];
+}
 
-    cards: [
-      {
-        number: 1,
-        title: 'Goal Setting',
-        tag: 'Career planning',
-        answer: 'I thrive in and enjoy  with.',
-      },
-      {
-        number: 2,
-        title: 'Networking',
-        tag: 'Professional development',
-        answer: 'I thrive in and enjoy  with.',
-      },
-      {
-        number: 3,
-        title: 'Continuous Learning',
-        tag: 'Education  ',
-        answer: 'I thrive in and enjoy  with.',
-      },
-      {
-        number: 3,
-        title: 'Project Management',
-        tag: 'Soft skill',
-        answer: 'I thrive in and enjoy  with.',
-      },
-    ],
-  },
-];
+const ResumeTemplatesRight: FunctionComponent<ResumeTemplatesRightProps> = ({ suggestions }) => {
+  if (!suggestions || suggestions.length === 0) {
+    return (
+      <Typography variant='subtitle2' color='text.secondary'>
+        No feature suggestions available.
+      </Typography>
+    );
+  }
 
-const ResumeTemplatesRight: FunctionComponent = () => {
   return (
     <>
-      {jobSuggestions.map((suggestion) => (
+      {suggestions.map((suggestion) => (
         <Box key={suggestion.id} sx={{ border: `1px solid`, borderColor: 'grey.100', borderRadius: '8px', mb: 2 }}>
           <JobSuggestionsContainer>
             <JobSuggestionsLeft>
@@ -147,8 +71,8 @@ const ResumeTemplatesRight: FunctionComponent = () => {
             </JobSuggestionsLeft>
             <JobSuggestionsRight>
               <CardsWrapper>
-                {suggestion.cards.map((card) => (
-                  <SuggestionCard key={generateFakeUUIDv4()}>
+                {(suggestion.cards || []).map((card) => (
+                  <SuggestionCard key={card.id}>
                     <SuggestionCardHeader>
                       <NumberBadge>{card.number}</NumberBadge>
                       <Box>

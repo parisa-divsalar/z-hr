@@ -1,11 +1,13 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 
 import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import ArrowBackIcon from '@/assets/images/icons/Icon-back.svg';
 import ResumeMoreTemplates from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesLeft';
-import ResumeTemplatesRight from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
+import ResumeTemplatesRight, {
+  MoreFeatureSuggestion,
+} from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
 import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
 
@@ -17,6 +19,35 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const { setStage } = props;
   const router = useRouter();
   const requestId = useWizardStore((state) => state.requestId);
+  const [suggestions, setSuggestions] = useState<MoreFeatureSuggestion[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(true);
+  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadSuggestions = async () => {
+      setLoadingSuggestions(true);
+      setSuggestionsError(null);
+      try {
+        const res = await fetch('/api/more-features', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as MoreFeatureSuggestion[];
+        if (isMounted) setSuggestions(Array.isArray(json) ? json : []);
+      } catch (error) {
+        if (isMounted) {
+          setSuggestionsError(error instanceof Error ? error.message : 'Failed to load more features');
+          setSuggestions([]);
+        }
+      } finally {
+        if (isMounted) setLoadingSuggestions(false);
+      }
+    };
+
+    loadSuggestions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <>
@@ -41,7 +72,17 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
           )}
         </Grid>
         <Grid size={{ xs: 6 }}>
-          <ResumeTemplatesRight />
+          {loadingSuggestions ? (
+            <Typography variant='subtitle2' color='text.secondary'>
+              Loading suggestions...
+            </Typography>
+          ) : suggestionsError ? (
+            <Typography variant='subtitle2' color='error'>
+              {suggestionsError}
+            </Typography>
+          ) : (
+            <ResumeTemplatesRight suggestions={suggestions} />
+          )}
         </Grid>
       </Grid>
 

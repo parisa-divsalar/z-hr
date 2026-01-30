@@ -25,6 +25,7 @@ export async function GET() {
     const jobPositionsActive = db.jobPositions.findActive();
     const jobPositionsNew = db.jobPositions.findNewlyAdded(5);
     const learningHubCourses = db.learningHubCourses.findAll();
+    const moreFeatures = db.moreFeatures.findAll();
 
     const overview = {
       summary: {
@@ -44,6 +45,7 @@ export async function GET() {
         job_positions_active: jobPositionsActive.length,
         job_positions_new: jobPositionsNew.length,
         learning_hub_courses: learningHubCourses.length,
+        more_features: moreFeatures.length,
       },
       tables: {
         users,
@@ -62,6 +64,7 @@ export async function GET() {
         job_positions_active: jobPositionsActive,
         job_positions_new: jobPositionsNew,
         learning_hub_courses: learningHubCourses,
+        more_features: moreFeatures,
       },
       source: 'data/ (file-based JSON)',
       generatedAt: new Date().toISOString(),

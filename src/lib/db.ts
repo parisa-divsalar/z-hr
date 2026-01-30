@@ -20,6 +20,46 @@ const jobPositionsFile = path.join(dataDir, 'job_positions.json');
 const loginLogsFile = path.join(dataDir, 'login_logs.json');
 const aiInteractionsFile = path.join(dataDir, 'ai_interactions.json');
 const learningHubCoursesFile = path.join(dataDir, 'learning_hub_courses.json');
+const moreFeaturesFile = path.join(dataDir, 'more_features.json');
+
+const defaultMoreFeatures = [
+    {
+        id: 1,
+        title: 'Job Position Suggestions',
+        description:
+            'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+        cards: [
+            { id: 1, number: 1, title: 'Questions', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
+            { id: 2, number: 2, title: 'Questions', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
+            { id: 3, number: 3, title: 'Questions', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
+            { id: 4, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
+        ],
+    },
+    {
+        id: 2,
+        title: 'Skill Assessment Tools',
+        description:
+            'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+        cards: [
+            { id: 1, number: 1, title: 'Technical Skills', tag: 'Hard skill', answer: 'I thrive in and  working with.' },
+            { id: 2, number: 2, title: 'Leadership', tag: 'Soft skill', answer: 'I thrive in and  working with.' },
+            { id: 3, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and enjoy  with.' },
+            { id: 4, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and enjoy  with.' },
+        ],
+    },
+    {
+        id: 3,
+        title: 'Career Development',
+        description:
+            'Choose from our professionally designed resume templates to make your application stand out.\n' + '\n',
+        cards: [
+            { id: 1, number: 1, title: 'Goal Setting', tag: 'Career planning', answer: 'I thrive in and enjoy  with.' },
+            { id: 2, number: 2, title: 'Networking', tag: 'Professional development', answer: 'I thrive in and enjoy  with.' },
+            { id: 3, number: 3, title: 'Continuous Learning', tag: 'Education  ', answer: 'I thrive in and enjoy  with.' },
+            { id: 4, number: 3, title: 'Project Management', tag: 'Soft skill', answer: 'I thrive in and enjoy  with.' },
+        ],
+    },
+];
 
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -483,6 +523,9 @@ export const db = {
             return added;
         },
     },
+    moreFeatures: {
+        findAll: () => readFile(moreFeaturesFile, defaultMoreFeatures),
+    },
 };
 
 export function initDatabase() {
@@ -500,6 +543,7 @@ export function initDatabase() {
     if (!fs.existsSync(loginLogsFile)) writeFile(loginLogsFile, []);
     if (!fs.existsSync(aiInteractionsFile)) writeFile(aiInteractionsFile, []);
     if (!fs.existsSync(learningHubCoursesFile)) writeFile(learningHubCoursesFile, []);
+    if (!fs.existsSync(moreFeaturesFile)) writeFile(moreFeaturesFile, defaultMoreFeatures);
 }
 
 initDatabase();
