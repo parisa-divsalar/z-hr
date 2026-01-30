@@ -400,6 +400,19 @@ export default function DatabasePage() {
                 <p className="text-xl font-bold text-gray-900 dark:text-white">{count}</p>
               </div>
             ))}
+            {!('coin' in data.summary) && (
+              <div
+                className={`rounded-lg border p-3 cursor-pointer transition-colors ${
+                  activeTable === 'coin'
+                    ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                    : 'border-gray-200 bg-gray-50 dark:border-strokedark dark:bg-meta-4'
+                }`}
+                onClick={() => setActiveTable('coin')}
+              >
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{TABLE_LABELS.coin}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{coinActiveCount}</p>
+              </div>
+            )}
           </div>
         </div>
 
