@@ -112,6 +112,15 @@ const resizeTextarea = (el: HTMLTextAreaElement | null) => {
     const scrollParent = findScrollableAncestor(el);
     const prevScrollTop = scrollParent?.scrollTop ?? null;
     const minHeight = 52;
+
+    // When the field is empty, some browsers can report a larger scrollHeight because the
+    // placeholder is long and wraps (textarea uses pre-wrap). Keep the collapsed input height
+    // consistent with our other inputs on the page.
+    if (el.value === '') {
+        el.style.overflowY = 'hidden';
+        el.style.height = `${minHeight}px`;
+        return;
+    }
     // Use the most compatible approach for measuring scrollHeight across browsers.
     // Setting height to 'auto' avoids issues where padding/box-sizing makes '0px' unreliable.
     el.style.height = 'auto';
