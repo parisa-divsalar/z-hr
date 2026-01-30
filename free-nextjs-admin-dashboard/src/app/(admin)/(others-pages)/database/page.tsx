@@ -39,6 +39,7 @@ const TABLE_LABELS: Record<string, string> = {
   learning_hub_courses: 'Learning Hub courses',
   more_features: 'More Features',
   plans: 'Plans',
+  coin: 'Coin',
 };
 
 export default function DatabasePage() {
@@ -155,7 +156,209 @@ export default function DatabasePage() {
     );
   }
 
-  const tableKeys = Object.keys(data.tables);
+  const coinTable = [
+    {
+      feature: 'AI resume builder',
+      coinPrice: 12,
+      starterCount: 1,
+      starterCoins: 12,
+      proCount: 2,
+      proCoins: 24,
+      plusCount: 4,
+      plusCoins: 48,
+      eliteCount: 6,
+      eliteCoins: 72,
+    },
+    {
+      feature: 'AI Cover Letter',
+      coinPrice: 10,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 1,
+      proCoins: 10,
+      plusCount: 4,
+      plusCoins: 40,
+      eliteCount: 12,
+      eliteCoins: 120,
+    },
+    {
+      feature: 'Images input',
+      coinPrice: 8,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 3,
+      proCoins: 24,
+      plusCount: 8,
+      plusCoins: 64,
+      eliteCount: 12,
+      eliteCoins: 96,
+    },
+    {
+      feature: 'Voice input',
+      coinPrice: 10,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 2,
+      proCoins: 20,
+      plusCount: 6,
+      plusCoins: 60,
+      eliteCount: 10,
+      eliteCoins: 100,
+    },
+    {
+      feature: 'Video input',
+      coinPrice: 16,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 0,
+      proCoins: 0,
+      plusCount: 1,
+      plusCoins: 16,
+      eliteCount: 3,
+      eliteCoins: 48,
+    },
+    {
+      feature: 'File input',
+      coinPrice: 12,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 1,
+      proCoins: 12,
+      plusCount: 2,
+      plusCoins: 24,
+      eliteCount: 4,
+      eliteCoins: 48,
+    },
+    {
+      feature: 'Wizard Edit',
+      coinPrice: 6,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 1,
+      proCoins: 6,
+      plusCount: 4,
+      plusCoins: 24,
+      eliteCount: 4,
+      eliteCoins: 24,
+    },
+    {
+      feature: 'Learning Hub',
+      coinPrice: 4,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 2,
+      proCoins: 8,
+      plusCount: 4,
+      plusCoins: 16,
+      eliteCount: 10,
+      eliteCoins: 40,
+    },
+    {
+      feature: 'Skill gape',
+      coinPrice: 6,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 1,
+      proCoins: 6,
+      plusCount: 3,
+      plusCoins: 18,
+      eliteCount: 6,
+      eliteCoins: 36,
+    },
+    {
+      feature: 'Voice interview',
+      coinPrice: 12,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 0,
+      proCoins: 0,
+      plusCount: 1,
+      plusCoins: 12,
+      eliteCount: 2,
+      eliteCoins: 24,
+    },
+    {
+      feature: 'Video interview',
+      coinPrice: 20,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 0,
+      proCoins: 0,
+      plusCount: 1,
+      plusCoins: 20,
+      eliteCount: 2,
+      eliteCoins: 40,
+    },
+    {
+      feature: 'Question interview',
+      coinPrice: 4,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 1,
+      proCoins: 4,
+      plusCount: 3,
+      plusCoins: 12,
+      eliteCount: 2,
+      eliteCoins: 8,
+    },
+    {
+      feature: 'Position Suggestion',
+      coinPrice: 8,
+      starterCount: 0,
+      starterCoins: 0,
+      proCount: 1,
+      proCoins: 8,
+      plusCount: 5,
+      plusCoins: 40,
+      eliteCount: 6,
+      eliteCoins: 48,
+    },
+    {
+      feature: 'Price',
+      coinPrice: '',
+      starterCount: '0',
+      starterCoins: '12',
+      proCount: '100 AED',
+      proCoins: '122 AED',
+      plusCount: '250 AED',
+      plusCoins: '394 AED',
+      eliteCount: '500 AED',
+      eliteCoins: '704 AED',
+    },
+  ];
+  const coinActiveCount = coinTable.filter((row) => Number(row.coinPrice) > 0).length;
+  const planTable = [
+    {
+      feature: 'Best for',
+      starter: 'Perfect for students & first resume',
+      pro: 'For serious job seekers & career switchers',
+      plus: 'Active job seekers, mid-level professionals, career changers',
+      elite: 'For professionals, power users & international / Dubai career moves',
+    },
+    { feature: 'Starter (Free Plan)', starter: 'Starter (Free Plan)', pro: 'Pro', plus: 'Plus', elite: 'Elite' },
+    { feature: 'ATS-friendly', starter: '✅', pro: '✅', plus: '✅', elite: '✅' },
+    { feature: 'With watermark', starter: '✅', pro: '❌', plus: '❌', elite: '❌' },
+    { feature: 'templates', starter: 'defult', pro: '3 templates', plus: '3 templates', elite: '3 templates' },
+    { feature: 'Job Description Match', starter: '❌', pro: '✅', plus: '✅', elite: '✅' },
+    { feature: 'languages supported', starter: 'English', pro: 'English', plus: 'English', elite: 'English' },
+    { feature: 'format', starter: 'PDF', pro: 'PDF/Word download', plus: 'PDF/Word download', elite: 'PDF/Word download' },
+    { feature: 'AI resume builder', starter: '1', pro: '2', plus: '4', elite: '6' },
+    { feature: 'AI Cover Letter', starter: '0', pro: '1', plus: '4', elite: '12' },
+    { feature: 'Images input', starter: '0', pro: '3', plus: '8', elite: '12' },
+    { feature: 'Voice input', starter: '0', pro: '2', plus: '6', elite: '10' },
+    { feature: 'video input', starter: '0', pro: '0', plus: '1', elite: '3' },
+    { feature: 'file input', starter: '0', pro: '1', plus: '2', elite: '4' },
+    { feature: 'Wizard Edit', starter: '0', pro: '1', plus: '4', elite: '4' },
+    { feature: 'learning Hub', starter: '0', pro: '2', plus: '4', elite: '10' },
+    { feature: 'skill gape', starter: '0', pro: '1 resume', plus: '3 resume', elite: '6 resume' },
+    { feature: 'voice interview', starter: '0', pro: '0', plus: '1', elite: '2' },
+    { feature: 'video interview', starter: '0', pro: '0', plus: '1', elite: '2' },
+    { feature: 'Question interview', starter: '0', pro: '1', plus: '3', elite: '2' },
+    { feature: 'Position Suggestion', starter: '0', pro: '1', plus: '5', elite: '6' },
+    { feature: 'Processing Speed', starter: '#4', pro: '#3', plus: '#2', elite: '#1' },
+    { feature: 'Price', starter: '0', pro: '100 AED', plus: '250 AED', elite: '500 AED' },
+    { feature: 'coin', starter: '', pro: '', plus: '', elite: '' },
+  ];
 
   return (
     <div>
@@ -200,54 +403,148 @@ export default function DatabasePage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
-          <div className="border-b border-stroke px-4 py-3 dark:border-strokedark flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-gray-900 dark:text-white">
-              {activeTable ? (TABLE_LABELS[activeTable] || activeTable) : 'Select table'}
-            </h3>
-            {activeTable === 'users' && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">Click a row to view all logs and data for that user.</p>
-            )}
-          </div>
-          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
-            {activeTable && data.tables[activeTable] && (data.tables[activeTable] as unknown[]).length > 0 ? (
+        {activeTable === 'coin' && (
+          <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
+            <div className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+              <h3 className="font-semibold text-gray-900 dark:text-white">Coin</h3>
+            </div>
+            <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="sticky top-0 bg-gray-100 dark:bg-meta-4">
+                <thead className="bg-gray-100 dark:bg-meta-4">
                   <tr>
-                    {(Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
-                      <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                        {col}
-                      </th>
-                    ))}
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap" rowSpan={2}>
+                      Feature
+                    </th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap" rowSpan={2}>
+                      Coin price
+                    </th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap text-center" colSpan={2}>
+                      Starter (Free Plan)
+                    </th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap text-center" colSpan={2}>
+                      Pro
+                    </th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap text-center" colSpan={2}>
+                      Plus
+                    </th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap text-center" colSpan={2}>
+                      Elite
+                    </th>
+                  </tr>
+                  <tr>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Count</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Coins</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Count</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Coins</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Count</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Coins</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Count</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Coins</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(data.tables[activeTable] as unknown[]).map((row, idx) => {
-                    const isUserRow = activeTable === 'users';
-                    const userRow = row as UserRow;
-                    return (
-                      <tr
-                        key={idx}
-                        className={`border-t border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-meta-4/50 ${isUserRow ? 'cursor-pointer' : ''}`}
-                        onClick={isUserRow ? () => setSelectedUser(userRow) : undefined}
-                      >
-                        {Object.entries(row as object).map(([k, v]) => (
-                          <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
-                            {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  })}
+                  {coinTable.map((row) => (
+                    <tr key={row.feature} className="border-t border-stroke dark:border-strokedark">
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{row.feature}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.coinPrice || '—'}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.starterCount}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.starterCoins}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.proCount}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.proCoins}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.plusCount}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.plusCoins}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.eliteCount}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.eliteCoins}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-            ) : (
-              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                {activeTable ? 'This table is empty.' : 'Select a table above.'}
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeTable === 'plans' && (
+          <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
+            <div className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+              <h3 className="font-semibold text-gray-900 dark:text-white">Plan</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-100 dark:bg-meta-4">
+                  <tr>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Feature</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Starter (Free Plan)</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Pro</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Plus</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Elite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {planTable.map((row) => (
+                    <tr key={row.feature} className="border-t border-stroke dark:border-strokedark">
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{row.feature}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{row.starter || '—'}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{row.pro || '—'}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{row.plus || '—'}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{row.elite || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTable !== 'plans' && activeTable !== 'coin' && (
+          <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
+            <div className="border-b border-stroke px-4 py-3 dark:border-strokedark flex items-center justify-between gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {activeTable ? (TABLE_LABELS[activeTable] || activeTable) : 'Select table'}
+              </h3>
+              {activeTable === 'users' && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">Click a row to view all logs and data for that user.</p>
+              )}
+            </div>
+            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
+              {activeTable && data.tables[activeTable] && (data.tables[activeTable] as unknown[]).length > 0 ? (
+                <table className="w-full text-left text-sm">
+                  <thead className="sticky top-0 bg-gray-100 dark:bg-meta-4">
+                    <tr>
+                      {(Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
+                        <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data.tables[activeTable] as unknown[]).map((row, idx) => {
+                      const isUserRow = activeTable === 'users';
+                      const userRow = row as UserRow;
+                      return (
+                        <tr
+                          key={idx}
+                          className={`border-t border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-meta-4/50 ${isUserRow ? 'cursor-pointer' : ''}`}
+                          onClick={isUserRow ? () => setSelectedUser(userRow) : undefined}
+                        >
+                          {Object.entries(row as object).map(([k, v]) => (
+                            <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
+                              {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  {activeTable ? 'This table is empty.' : 'Select a table above.'}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {selectedUser != null && userId != null && (
           <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={() => setSelectedUser(null)}>
