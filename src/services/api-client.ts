@@ -3,7 +3,7 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 export const API_SERVER_BASE_URL = 'https://apisrv.zenonrobotics.ae/api/';
 
 const createAPIClient = (baseURL: string): AxiosInstance => {
-    const instance = axios.create({ baseURL });
+    const instance = axios.create({ baseURL, withCredentials: true });
 
     instance.interceptors.response.use(
         (res) => res,

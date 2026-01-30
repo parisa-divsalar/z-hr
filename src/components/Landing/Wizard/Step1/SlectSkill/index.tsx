@@ -33,6 +33,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 import { SelectOption } from '@/components/UI/MuiSelectOptions';
 import { apiClientClient } from '@/services/api-client';
+import { usePlanGate } from '@/hooks/usePlanGate';
 import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
@@ -355,6 +356,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             toastTimerRef.current = null;
         }, 4000);
     }, []);
+    const { guardAction, planDialog } = usePlanGate();
 
     const handleShowVoiceRecorder = () => {
         if (isVoiceLimitReached) {
@@ -475,6 +477,9 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
     const handleOpenFileDialog = () => {
         fileInputRef.current?.click();
     };
+
+    const handleProtectedFileDialog = () => guardAction(handleOpenFileDialog);
+    const handleProtectedVoiceRecorder = () => guardAction(handleShowVoiceRecorder);
 
     const ensureFileWithId = (file: File) => {
         const f = file as File & { id?: string };
@@ -723,14 +728,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
 
             <ActionRow>
                 <ActionButtonsGroup direction='row' gap={0.5}>
-                    <ActionIconButton aria-label='Attach file' onClick={handleOpenFileDialog}>
+                    <ActionIconButton aria-label='Attach file' onClick={handleProtectedFileDialog}>
                         <AttachIcon />
                     </ActionIconButton>
                     <Stack direction='column' alignItems='center' gap={1}>
                         {!showRecordingControls && (
                             <RecordActionIconButton
                                 aria-label='Record draft action'
-                                onClick={handleShowVoiceRecorder}
+                                onClick={handleProtectedVoiceRecorder}
                                 disabled={isVoiceLimitReached}
                                 dimmed={isVoiceLimitReached}
                             >
@@ -753,6 +758,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     </Stack>
                 </ActionButtonsGroup>
             </ActionRow>
+            {planDialog}
             {toastInfo && (
                 <ToastContainer>
                     <MuiAlert message={toastInfo.message} severity={toastInfo.severity} />

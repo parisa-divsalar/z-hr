@@ -13,6 +13,7 @@ import { FilePreviewContainer, FileTypeLabel } from '@/components/Landing/Wizard
 import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import MuiButton from '@/components/UI/MuiButton';
+import { usePlanGate } from '@/hooks/usePlanGate';
 
 import { getFileCategory } from '../../attachmentRules';
 import { InputContent } from '../../SKillInput/styled';
@@ -263,6 +264,11 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
         fileInputRef,
     } = props;
 
+    const { guardAction, planDialog } = usePlanGate();
+
+    const handleAttachClick = () => guardAction(onOpenFileDialog);
+    const handleRecordClick = () => guardAction(onShowVoiceRecorder);
+
     const hasBackgroundText = backgroundText.trim() !== '';
     const hasDraft = hasBackgroundText || uploadedFiles.length > 0 || voiceRecordings.length > 0;
     const shouldHighlightAddButton = backgroundEntries.length === 0 && !isEditingEntry;
@@ -311,12 +317,12 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
             </ContainerSkill>
             <ActionRow>
                 <ActionButtonsGroup direction='row' gap={0.5}>
-                    <ActionIconButton aria-label='Attach file' onClick={onOpenFileDialog}>
+                    <ActionIconButton aria-label='Attach file' onClick={handleAttachClick}>
                         <AttachIcon />
                     </ActionIconButton>
                     <Stack direction='column' alignItems='center' gap={1}>
                         {!showRecordingControls && (
-                            <ActionIconButton aria-label='Record draft action' onClick={onShowVoiceRecorder}>
+                            <ActionIconButton aria-label='Record draft action' onClick={handleRecordClick}>
                                 <RecordIcon />
                             </ActionIconButton>
                         )}
@@ -364,6 +370,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                     </ActionButtonsGroup>
                 )}
             </ActionRow>
+            {planDialog}
             {voiceRecordings.length > 0 && (
                 <ContainerSkillAttachVoice direction='row' active>
                     <WrapRow direction='row' gap={1.5}>
