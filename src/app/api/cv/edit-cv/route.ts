@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { db } from '@/lib/db';
+import { ChatGPTService } from '@/services/chatgpt/service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -22,11 +23,22 @@ async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
 
 export async function PUT(request: NextRequest) {
     try {
-        const { userId, requestId, bodyOfResume, title } = await request.json();
+        const { userId, requestId, bodyOfResume, title, section, sectionText } = await request.json();
         const authedUserId = await getUserIdFromAuth(request);
 
         if (!requestId) {
             return NextResponse.json({ error: 'requestId is required' }, { status: 400 });
+        }
+
+        const finalUserId = authedUserId || (userId ? String(userId) : null);
+        let nextBodyOfResume = bodyOfResume;
+        if (section && bodyOfResume && typeof bodyOfResume === 'object' && sectionText !== undefined) {
+            nextBodyOfResume = await ChatGPTService.editResumeSection(
+                bodyOfResume,
+                String(section),
+                sectionText,
+                finalUserId ? { userId: finalUserId, endpoint: '/api/cv/edit-cv', action: 'edit' } : { endpoint: '/api/cv/edit-cv', action: 'edit' },
+            );
         }
 
         // Check if CV exists
@@ -35,8 +47,8 @@ export async function PUT(request: NextRequest) {
         if (cv) {
             // Update existing CV
             const updateData: any = {};
-            if (bodyOfResume !== undefined) {
-                updateData.content = JSON.stringify(bodyOfResume);
+            if (nextBodyOfResume !== undefined) {
+                updateData.content = JSON.stringify(nextBodyOfResume);
             }
             if (title !== undefined) {
                 updateData.title = title;
@@ -45,7 +57,6 @@ export async function PUT(request: NextRequest) {
             cv = db.cvs.update(requestId, updateData);
         } else {
             // Create new CV if doesn't exist
-            const finalUserId = authedUserId || (userId ? String(userId) : null);
             if (!finalUserId) {
                 return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
             }
@@ -53,7 +64,7 @@ export async function PUT(request: NextRequest) {
             cv = db.cvs.create({
                 user_id: parseInt(finalUserId),
                 request_id: requestId,
-                content: bodyOfResume ? JSON.stringify(bodyOfResume) : null,
+                content: nextBodyOfResume ? JSON.stringify(nextBodyOfResume) : null,
                 title: title || null,
             });
         }

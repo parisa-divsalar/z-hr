@@ -4,6 +4,8 @@ export type EditCVParams = {
     userId?: string | null;
     requestId: string;
     bodyOfResume: unknown;
+    section?: string;
+    sectionText?: unknown;
 };
 
 type RawCVRecord = Record<string, unknown>;
@@ -35,6 +37,8 @@ export async function editCV(params: EditCVParams) {
         userId: params.userId ?? undefined,
         requestId: params.requestId,
         bodyOfResume: params.bodyOfResume,
+        section: params.section ?? undefined,
+        sectionText: params.sectionText ?? undefined,
     });
 
     if (Array.isArray(data)) {

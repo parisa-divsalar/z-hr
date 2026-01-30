@@ -105,6 +105,134 @@ export interface SkillGapAnalysis {
 export type ResumeImproveMode = 'analysis' | 'sections_text' | 'auto';
 
 export class ChatGPTService {
+    private static parseLineList(value: unknown): string[] {
+        if (Array.isArray(value)) {
+            return value.map((v) => String(v ?? '').trim()).filter(Boolean);
+        }
+        if (value === null || value === undefined) return [];
+        const text = typeof value === 'string' ? value : String(value);
+        return text
+            .split(/[\r\n]+|[,;•]+/)
+            .map((v) => v.trim())
+            .filter(Boolean);
+    }
+
+    private static parseLanguages(value: unknown): Array<{ name: string; level: string }> {
+        if (Array.isArray(value)) {
+            return value
+                .map((entry) => {
+                    if (!entry || typeof entry !== 'object') {
+                        const name = String(entry ?? '').trim();
+                        return name ? { name, level: '' } : null;
+                    }
+                    const anyEntry = entry as any;
+                    const name = String(anyEntry.name ?? anyEntry.language ?? '').trim();
+                    const level = String(anyEntry.level ?? anyEntry.proficiency ?? '').trim();
+                    if (!name && !level) return null;
+                    return { name, level };
+                })
+                .filter(Boolean) as Array<{ name: string; level: string }>;
+        }
+        if (typeof value !== 'string') return [];
+        return value
+            .split(/\r?\n+/)
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((line) => {
+                const match = line.split(/\s*[-:|]\s*/);
+                const name = String(match[0] ?? '').trim();
+                const level = String(match.slice(1).join(' - ') ?? '').trim();
+                return { name, level };
+            })
+            .filter((entry) => entry.name.length > 0);
+    }
+
+    private static applyResumeSectionEdit(resume: unknown, section: string, sectionText: unknown): unknown {
+        if (!resume || typeof resume !== 'object' || Array.isArray(resume)) {
+            return resume ?? {};
+        }
+
+        const next: any = { ...(resume as any) };
+        const asObject = (value: any) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
+
+        switch (section) {
+            case 'summary': {
+                const text = String(sectionText ?? '');
+                next.summary = text;
+                const profile = asObject(next.profile);
+                if (profile) next.profile = { ...profile, summary: text };
+                break;
+            }
+            case 'skills': {
+                const list = ChatGPTService.parseLineList(sectionText);
+                next.skills = list;
+                next.skillList = list;
+                break;
+            }
+            case 'contactWays': {
+                const list = ChatGPTService.parseLineList(sectionText);
+                next.contactWays = list;
+                next.contactWay = list;
+                break;
+            }
+            case 'languages': {
+                const list = ChatGPTService.parseLanguages(sectionText);
+                next.languages = list;
+                break;
+            }
+            case 'certificates': {
+                const list = ChatGPTService.parseLineList(sectionText);
+                next.certificates = list;
+                next.certifications = list;
+                break;
+            }
+            case 'jobDescription': {
+                const text = String(sectionText ?? '');
+                const jobDescription = asObject(next.jobDescription);
+                next.jobDescription = jobDescription ? { ...jobDescription, text } : { text };
+                next.jobDescriptionText = text;
+                break;
+            }
+            case 'experience': {
+                if (Array.isArray(sectionText)) {
+                    next.experiences = sectionText;
+                    next.experience = sectionText;
+                    break;
+                }
+                const blocks = String(sectionText ?? '')
+                    .split(/\n\s*\n+/)
+                    .map((b) => b.trim())
+                    .filter(Boolean);
+                const base = Array.isArray(next.experiences) ? next.experiences.map((e: any) => ({ ...e })) : [];
+                const maxLen = Math.max(base.length, blocks.length);
+                const nextExperiences = [];
+                for (let i = 0; i < maxLen; i += 1) {
+                    const existing = base[i] ?? {};
+                    const description = blocks[i] ?? '';
+                    if (!description && !existing.description) continue;
+                    nextExperiences.push({
+                        ...existing,
+                        description,
+                    });
+                }
+                next.experiences = nextExperiences;
+                next.experience = nextExperiences;
+                break;
+            }
+            case 'additionalInfo': {
+                const text = String(sectionText ?? '');
+                const additionalInfo = asObject(next.additionalInfo);
+                next.additionalInfo = additionalInfo ? { ...additionalInfo, text } : text;
+                next.additionalInfoText = text;
+                break;
+            }
+            default:
+                break;
+        }
+
+        return next;
+    }
+
     private static applyResumeSectionDeletion(resume: unknown, section: string): unknown {
         if (!resume || typeof resume !== 'object' || Array.isArray(resume)) {
             return resume ?? {};
@@ -292,6 +420,57 @@ export class ChatGPTService {
         } catch (error) {
             console.warn('OpenAI deleteResumeSection failed, deleting section locally:', error);
             return ChatGPTService.applyResumeSectionDeletion(resume, section);
+        }
+    }
+
+    /**
+     * Edit a resume section in a structured resume JSON.
+     */
+    static async editResumeSection(
+        resume: unknown,
+        section: string,
+        sectionText: unknown,
+        logContext?: AiLogContext
+    ): Promise<unknown> {
+        let openai: ReturnType<typeof getOpenAIClient> | null = null;
+        try {
+            openai = getOpenAIClient();
+        } catch (e) {
+            console.warn('OpenAI client unavailable, editing section locally:', e);
+            return ChatGPTService.applyResumeSectionEdit(resume, section, sectionText);
+        }
+
+        try {
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are an expert ATS resume editor. Always respond with valid JSON only.',
+                    },
+                    {
+                        role: 'user',
+                        content: PROMPTS.editResumeSection({ resume, section, sectionText }),
+                    },
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.1,
+            });
+
+            const content = response.choices[0]?.message?.content;
+            if (!content) throw new Error('No response from ChatGPT');
+
+            try {
+                const result = JSON.parse(content) as unknown;
+                logAiInteraction(logContext, 'editResumeSection', { section, sectionText }, result);
+                return result;
+            } catch (parseError) {
+                const msg = parseError instanceof Error ? parseError.message : String(parseError);
+                throw new Error(`ChatGPT returned invalid JSON: ${msg}`);
+            }
+        } catch (error) {
+            console.warn('OpenAI editResumeSection failed, editing section locally:', error);
+            return ChatGPTService.applyResumeSectionEdit(resume, section, sectionText);
         }
     }
 

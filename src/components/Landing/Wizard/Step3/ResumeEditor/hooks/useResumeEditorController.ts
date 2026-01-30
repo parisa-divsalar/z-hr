@@ -939,6 +939,26 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 experiences: nextExperiences,
             });
 
+            const sectionForApi = editingSection === 'profile' ? undefined : editingSection;
+            const sectionText =
+                sectionForApi === 'summary'
+                    ? summary
+                    : sectionForApi === 'skills'
+                      ? formatLineListEditText(normalizedSkills)
+                      : sectionForApi === 'contactWays'
+                        ? formatLineListEditText(normalizedContactWays)
+                        : sectionForApi === 'languages'
+                          ? formatLanguagesEditText(nextLanguages)
+                          : sectionForApi === 'certificates'
+                            ? formatCertificateEditText(nextCertificates)
+                            : sectionForApi === 'jobDescription'
+                              ? jobDescription
+                              : sectionForApi === 'additionalInfo'
+                                ? nextAdditionalInfo
+                                : sectionForApi === 'experience'
+                                  ? formatExperienceEditText(nextExperiences)
+                                  : null;
+
             delete textOnlyBackupRef.current[editingSection];
             setEditingSection(null);
 
@@ -960,6 +980,8 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                     userId: accessToken ?? undefined,
                     requestId: newRequestId,
                     bodyOfResume: updatedPayload,
+                    section: sectionForApi,
+                    sectionText,
                 });
 
                 setRequestId(newRequestId);
@@ -1047,12 +1069,34 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             experiences: nextExperiences,
         });
 
+        const sectionForApi = editingSection === 'profile' ? undefined : editingSection;
+        const sectionText =
+            sectionForApi === 'summary'
+                ? summary
+                : sectionForApi === 'skills'
+                  ? formatLineListEditText(normalizedSkills)
+                  : sectionForApi === 'contactWays'
+                    ? formatLineListEditText(normalizedContactWays)
+                    : sectionForApi === 'languages'
+                      ? formatLanguagesEditText(nextLanguages)
+                      : sectionForApi === 'certificates'
+                        ? formatCertificateEditText(nextCertificates)
+                        : sectionForApi === 'jobDescription'
+                          ? jobDescription
+                          : sectionForApi === 'additionalInfo'
+                            ? nextAdditionalInfo
+                            : sectionForApi === 'experience'
+                              ? formatExperienceEditText(nextExperiences)
+                              : null;
+
         try {
             if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = effectiveRequestId;
             await editCV({
                 userId: accessToken ?? undefined,
                 requestId: effectiveRequestId,
                 bodyOfResume: updatedPayload,
+                section: sectionForApi,
+                sectionText,
             });
 
             if (!requestId) setRequestId(effectiveRequestId);

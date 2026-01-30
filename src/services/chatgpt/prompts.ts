@@ -397,5 +397,31 @@ SECTION REMOVAL RULES:
 RESUME JSON:
 ${JSON.stringify(params.resume)}
 `,
+    editResumeSection: (params: { resume: unknown; section: string; sectionText: unknown }) => `
+You are an expert ATS resume editor.
+Your task is to update the "${params.section}" section in the resume JSON provided below using the new section content.
+
+CRITICAL REQUIREMENTS:
+- Return valid JSON only (no markdown, no explanations).
+- Preserve all other sections exactly as they are.
+- Do not invent or add new content outside the provided section content.
+- Keep arrays as arrays and objects as objects. Do NOT convert data types.
+
+SECTION UPDATE RULES:
+- summary: set "summary" and "profile.summary" to the provided text.
+- skills: use a string list; update both "skills" and "skillList".
+- contactWays: use a string list; update both "contactWays" and "contactWay".
+- languages: create array items with "name" and "level". If only names exist, leave level empty.
+- certificates: use a string list; update both "certificates" and "certifications".
+- jobDescription: update "jobDescription" (or its "text") and "jobDescriptionText".
+- experience: update "experiences" and "experience". Use objects with at least "description".
+- additionalInfo: update "additionalInfo" (or its "text") and "additionalInfoText".
+
+NEW SECTION CONTENT:
+${JSON.stringify(params.sectionText)}
+
+RESUME JSON:
+${JSON.stringify(params.resume)}
+`,
 };
 
