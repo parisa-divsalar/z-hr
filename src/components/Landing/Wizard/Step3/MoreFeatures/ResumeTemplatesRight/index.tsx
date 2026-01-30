@@ -2,7 +2,6 @@ import { FunctionComponent } from 'react';
 
 import { Box, Typography } from '@mui/material';
 
-import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import {
@@ -28,6 +27,7 @@ export type MoreFeatureSuggestion = {
   id: number | string;
   title: string;
   description: string;
+  coin?: number;
   cards: MoreFeatureCard[];
 };
 
@@ -62,12 +62,9 @@ const ResumeTemplatesRight: FunctionComponent<ResumeTemplatesRightProps> = ({ su
                   {suggestion.description}
                 </Typography>
               </JobSuggestionsHeader>
-              <MuiButton
-                text='More'
-                variant='contained'
-                color='secondary'
-                sx={{ backgroundColor: '#F0F0F2', color: 'secondary.main' }}
-              />
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='500'>
+                Coin: {suggestion.coin ?? 0}
+              </Typography>
             </JobSuggestionsLeft>
             <JobSuggestionsRight>
               <CardsWrapper>

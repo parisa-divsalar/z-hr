@@ -11,6 +11,7 @@ import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
 import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
 import ArrowRightIcon from '@/assets/images/icons/links.svg';
 import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
+import type { MoreFeatureSuggestion } from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
@@ -48,6 +49,11 @@ const ResumeGeneratorPage = () => {
     const [isPreviewLoading, setIsPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [featureCards, setFeatureCards] = useState<{ id: number | string; title: string; description: string }[]>(
+        [],
+    );
+    const [featureCardsLoading, setFeatureCardsLoading] = useState(true);
+    const [featureCardsError, setFeatureCardsError] = useState<string | null>(null);
 
     useEffect(() => {
         const raw = searchParams.get('requestId') ?? searchParams.get('RequestId');
@@ -58,6 +64,40 @@ const ResumeGeneratorPage = () => {
             trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
         if (normalized) setRequestId(normalized);
     }, [searchParams, setRequestId]);
+
+    useEffect(() => {
+        let isMounted = true;
+        const loadFeatureCards = async () => {
+            setFeatureCardsLoading(true);
+            setFeatureCardsError(null);
+            try {
+                const res = await fetch('/api/more-features', { cache: 'no-store' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = (await res.json()) as MoreFeatureSuggestion[];
+                const rows = Array.isArray(json) ? json : [];
+                const mapped = rows
+                    .map((row, index) => ({
+                        id: row.id ?? `${row.title ?? 'feature'}-${index}`,
+                        title: row.title ?? 'Untitled',
+                        description: row.description ?? '',
+                    }))
+                    .filter((row) => row.title || row.description);
+                if (isMounted) setFeatureCards(mapped);
+            } catch (error) {
+                if (isMounted) {
+                    setFeatureCardsError(error instanceof Error ? error.message : 'Failed to load features');
+                    setFeatureCards([]);
+                }
+            } finally {
+                if (isMounted) setFeatureCardsLoading(false);
+            }
+        };
+
+        loadFeatureCards();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const renderResumeThumbnail = useCallback(async () => {
         const element = resumePdfRef.current;
@@ -170,33 +210,6 @@ const ResumeGeneratorPage = () => {
         if (requestId) qs.set('requestId', requestId);
         router.push(`/resume-builder?${qs.toString()}`);
     }, [router, requestId]);
-
-    const featureCards = [
-        {
-            title: 'Resume Template',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Job Position Suggestions',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Learning Hub',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Interview Questions',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Text Interview Practice (Chatbot)',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Voice Interview Practice',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-    ];
 
     return (
         <Container>
@@ -377,26 +390,46 @@ const ResumeGeneratorPage = () => {
             <StyledDivider />
 
             <Grid container spacing={{ xs: 2, sm: 3 }}>
-                {featureCards.map((card, index) => (
-                    <Grid key={index} size={{ xs: 12, sm: 6, lg: 4 }}>
-                        <FeatureCard
-                            onMouseEnter={() => setHoveredCard(index)}
-                            onMouseLeave={() => setHoveredCard(null)}
-                        >
-                            <FeatureCardIcon>
-                                {hoveredCard === index ? <LinkDarkIcon /> : <ArrowRightIcon />}
-                            </FeatureCardIcon>
-                            <Stack spacing={2}>
-                                <Typography variant='body1' color='text.primary' fontWeight='500'>
-                                    {card.title}
-                                </Typography>
-                                <Typography variant='body2' color='text.primary' fontWeight='400'>
-                                    {truncateText(card.description, 110)}
-                                </Typography>
-                            </Stack>
-                        </FeatureCard>
+                {featureCardsLoading ? (
+                    <Grid size={{ xs: 12 }}>
+                        <Typography variant='body2' color='text.secondary'>
+                            Loading features...
+                        </Typography>
                     </Grid>
-                ))}
+                ) : featureCardsError ? (
+                    <Grid size={{ xs: 12 }}>
+                        <Typography variant='body2' color='error'>
+                            {featureCardsError}
+                        </Typography>
+                    </Grid>
+                ) : featureCards.length === 0 ? (
+                    <Grid size={{ xs: 12 }}>
+                        <Typography variant='body2' color='text.secondary'>
+                            No feature data available.
+                        </Typography>
+                    </Grid>
+                ) : (
+                    featureCards.map((card, index) => (
+                        <Grid key={card.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+                            <FeatureCard
+                                onMouseEnter={() => setHoveredCard(index)}
+                                onMouseLeave={() => setHoveredCard(null)}
+                            >
+                                <FeatureCardIcon>
+                                    {hoveredCard === index ? <LinkDarkIcon /> : <ArrowRightIcon />}
+                                </FeatureCardIcon>
+                                <Stack spacing={2}>
+                                    <Typography variant='body1' color='text.primary' fontWeight='500'>
+                                        {card.title}
+                                    </Typography>
+                                    <Typography variant='body2' color='text.primary' fontWeight='400'>
+                                        {truncateText(card.description, 110)}
+                                    </Typography>
+                                </Stack>
+                            </FeatureCard>
+                        </Grid>
+                    ))
+                )}
             </Grid>
         </Container>
     );

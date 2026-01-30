@@ -27,6 +27,7 @@ const defaultMoreFeatures = [
         id: 1,
         title: 'Job Position Suggestions',
         description: 'Get role matches based on your resume and target industry.',
+        coin: 40,
         cards: [
             { id: 1, number: 1, title: 'Top Roles', answer: 'Shortlist positions aligned to your experience.' },
             { id: 2, number: 2, title: 'Company Fit', answer: 'Focus on roles that match your strengths.' },
@@ -37,6 +38,7 @@ const defaultMoreFeatures = [
         id: 2,
         title: 'Interview Questions',
         description: 'Practice targeted questions for your role and seniority.',
+        coin: 35,
         cards: [
             { id: 1, number: 1, title: 'Behavioral', answer: 'Answer common leadership and teamwork prompts.' },
             { id: 2, number: 2, title: 'Technical', answer: 'Work through skill-specific challenges.' },
@@ -47,6 +49,7 @@ const defaultMoreFeatures = [
         id: 3,
         title: 'Voice Interview Practice',
         description: 'Record answers and get feedback on clarity and pacing.',
+        coin: 50,
         cards: [
             { id: 1, number: 1, title: 'Mock Prompts', answer: 'Practice realistic voice interview questions.' },
             { id: 2, number: 2, title: 'Delivery Check', answer: 'Improve tone, speed, and confidence.' },
@@ -57,6 +60,7 @@ const defaultMoreFeatures = [
         id: 4,
         title: 'Cover Letter',
         description: 'Generate a tailored letter aligned with the job description.',
+        coin: 30,
         cards: [
             { id: 1, number: 1, title: 'Key Wins', answer: 'Highlight the most relevant achievements.' },
             { id: 2, number: 2, title: 'Job Match', answer: 'Connect your skills to the role needs.' },
@@ -67,6 +71,7 @@ const defaultMoreFeatures = [
         id: 5,
         title: 'Resume Template',
         description: 'Pick layouts that best present your experience.',
+        coin: 25,
         cards: [
             { id: 1, number: 1, title: 'Modern', answer: 'Clean layout focused on impact and results.' },
             { id: 2, number: 2, title: 'Classic', answer: 'Traditional format optimized for ATS.' },
@@ -77,6 +82,7 @@ const defaultMoreFeatures = [
         id: 6,
         title: 'Learning Hub',
         description: 'Access curated learning paths for upskilling.',
+        coin: 20,
         cards: [
             { id: 1, number: 1, title: 'Skill Tracks', answer: 'Follow guided lessons by role.' },
             { id: 2, number: 2, title: 'Resources', answer: 'Save courses, articles, and tools.' },
@@ -87,6 +93,7 @@ const defaultMoreFeatures = [
         id: 7,
         title: 'Text Interview Practice (Chatbot)',
         description: 'Chat-based interview simulations with instant feedback.',
+        coin: 45,
         cards: [
             { id: 1, number: 1, title: 'Live Chat', answer: 'Answer questions in real time.' },
             { id: 2, number: 2, title: 'Feedback', answer: 'Get tips to improve each response.' },
@@ -97,6 +104,7 @@ const defaultMoreFeatures = [
         id: 8,
         title: 'Video Interview',
         description: 'Practice camera presence with structured prompts.',
+        coin: 55,
         cards: [
             { id: 1, number: 1, title: 'On-Camera', answer: 'Record video answers to sample prompts.' },
             { id: 2, number: 2, title: 'Review', answer: 'Identify clarity, posture, and eye contact.' },
