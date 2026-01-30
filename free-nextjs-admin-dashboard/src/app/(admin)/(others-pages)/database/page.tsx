@@ -204,8 +204,8 @@ export default function DatabasePage() {
                         onClick={isUserRow ? () => setSelectedUser(userRow) : undefined}
                       >
                         {Object.entries(row as object).map(([k, v]) => (
-                          <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title={typeof v === 'string' ? v : JSON.stringify(v)}>
-                            {typeof v === 'object' && v !== null ? JSON.stringify(v).slice(0, 80) + (JSON.stringify(v).length > 80 ? '…' : '') : String(v ?? '—')}
+                          <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
+                            {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
                           </td>
                         ))}
                       </tr>
@@ -224,7 +224,7 @@ export default function DatabasePage() {
         {selectedUser != null && userId != null && (
           <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={() => setSelectedUser(null)}>
             <div
-              className="w-full max-w-2xl bg-white dark:bg-boxdark shadow-xl overflow-hidden flex flex-col max-h-full"
+              className="w-full max-w-4xl bg-white dark:bg-boxdark shadow-xl overflow-hidden flex flex-col max-h-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
@@ -252,12 +252,12 @@ export default function DatabasePage() {
                         {label} ({data.length})
                       </div>
                       {data.length > 0 ? (
-                        <div className="max-h-48 overflow-auto">
-                          <table className="w-full text-left text-xs">
-                            <thead className="bg-gray-50 dark:bg-meta-4/50 sticky top-0">
+                        <div className="max-h-80 overflow-auto overflow-x-auto">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead className="bg-gray-50 dark:bg-meta-4/50 sticky top-0 z-10">
                               <tr>
                                 {(Object.keys(data[0] as object) as string[]).map((col) => (
-                                  <th key={col} className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                                  <th key={col} className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark">
                                     {col}
                                   </th>
                                 ))}
@@ -265,10 +265,10 @@ export default function DatabasePage() {
                             </thead>
                             <tbody>
                               {data.map((row: any, i) => (
-                                <tr key={i} className="border-t border-stroke dark:border-strokedark">
+                                <tr key={i} className="border-b border-stroke dark:border-strokedark hover:bg-gray-50/50 dark:hover:bg-meta-4/30">
                                   {Object.entries(row).map(([k, v]) => (
-                                    <td key={k} className="px-2 py-1 text-gray-600 dark:text-gray-400 max-w-[200px] truncate" title={typeof v === 'string' ? v : JSON.stringify(v)}>
-                                      {typeof v === 'object' && v !== null ? JSON.stringify(v).slice(0, 60) + (JSON.stringify(v).length > 60 ? '…' : '') : String(v ?? '—')}
+                                    <td key={k} className="px-2 py-1.5 text-gray-600 dark:text-gray-400 break-words whitespace-pre-wrap align-top min-w-0 max-w-xl">
+                                      {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
                                     </td>
                                   ))}
                                 </tr>
