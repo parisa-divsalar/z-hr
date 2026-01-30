@@ -19,6 +19,7 @@ const coverLettersFile = path.join(dataDir, 'cover_letters.json');
 const jobPositionsFile = path.join(dataDir, 'job_positions.json');
 const loginLogsFile = path.join(dataDir, 'login_logs.json');
 const aiInteractionsFile = path.join(dataDir, 'ai_interactions.json');
+const learningHubCoursesFile = path.join(dataDir, 'learning_hub_courses.json');
 
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -435,6 +436,53 @@ export const db = {
             return newRow;
         },
     },
+
+    /** دوره‌های Learning Hub (مشابه job_positions؛ از APIهای خارجی sync می‌شود) */
+    learningHubCourses: {
+        findAll: () => readFile(learningHubCoursesFile, []),
+        findById: (id: number) => {
+            const all = readFile(learningHubCoursesFile, []);
+            return all.find((c: any) => c.id === id);
+        },
+        findBySourceUrl: (sourceUrl: string) => {
+            const all = readFile(learningHubCoursesFile, []);
+            return all.find((c: any) => (c.source_url || c.sourceUrl) === sourceUrl);
+        },
+        add: (data: any) => {
+            const all = readFile(learningHubCoursesFile, []);
+            const newId = all.length > 0 ? Math.max(...all.map((c: any) => c.id || 0)) + 1 : 1;
+            const now = new Date().toISOString();
+            const row = {
+                id: newId,
+                ...data,
+                created_at: now,
+                updated_at: now,
+            };
+            all.push(row);
+            writeFile(learningHubCoursesFile, all);
+            return row;
+        },
+        addMany: (items: any[]) => {
+            const all = readFile(learningHubCoursesFile, []);
+            let maxId = all.length > 0 ? Math.max(...all.map((c: any) => c.id || 0)) : 0;
+            const now = new Date().toISOString();
+            let added = 0;
+            for (const item of items) {
+                const sourceUrl = item.source_url || item.sourceUrl;
+                if (!sourceUrl || all.some((c: any) => (c.source_url || c.sourceUrl) === sourceUrl)) continue;
+                maxId += 1;
+                all.push({
+                    id: maxId,
+                    ...item,
+                    created_at: now,
+                    updated_at: now,
+                });
+                added += 1;
+            }
+            if (added > 0) writeFile(learningHubCoursesFile, all);
+            return added;
+        },
+    },
 };
 
 export function initDatabase() {
@@ -451,6 +499,7 @@ export function initDatabase() {
     if (!fs.existsSync(jobPositionsFile)) writeFile(jobPositionsFile, []);
     if (!fs.existsSync(loginLogsFile)) writeFile(loginLogsFile, []);
     if (!fs.existsSync(aiInteractionsFile)) writeFile(aiInteractionsFile, []);
+    if (!fs.existsSync(learningHubCoursesFile)) writeFile(learningHubCoursesFile, []);
 }
 
 initDatabase();

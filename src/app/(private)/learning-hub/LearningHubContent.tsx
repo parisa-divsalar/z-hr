@@ -10,6 +10,7 @@ type LearningHubItem = {
   level: string;
   price: string;
   isFree: boolean;
+  image?: string;
 };
 
 export const mockLearningHubData: LearningHubItem[] = [
@@ -30,7 +31,7 @@ const LearningHubContent: React.FC<LearningHubContentProps> = ({ items = mockLea
     <Grid container spacing={3}>
       {items.map((item) => (
         <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-          <SkillGapCard title={item.title} level={item.level} price={item.price} isFree={item.isFree} />
+          <SkillGapCard title={item.title} level={item.level} price={item.price} isFree={item.isFree} image={item.image} />
         </Grid>
       ))}
     </Grid>

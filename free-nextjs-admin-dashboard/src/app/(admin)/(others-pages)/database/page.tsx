@@ -36,6 +36,7 @@ const TABLE_LABELS: Record<string, string> = {
   job_positions: 'Job positions (all)',
   job_positions_active: 'Job positions (active)',
   job_positions_new: 'Job positions (newly added)',
+  learning_hub_courses: 'Learning Hub courses',
 };
 
 export default function DatabasePage() {
@@ -45,6 +46,8 @@ export default function DatabasePage() {
   const [activeTable, setActiveTable] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [learningHubSyncing, setLearningHubSyncing] = useState(false);
+  const [learningHubSyncMessage, setLearningHubSyncMessage] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
 
   const fetchDb = useCallback(async (showLoading = true) => {
@@ -104,6 +107,21 @@ export default function DatabasePage() {
     }
   };
 
+  const runLearningHubSync = async () => {
+    setLearningHubSyncing(true);
+    setLearningHubSyncMessage(null);
+    try {
+      const res = await fetch(`${ZHR_API_URL}/api/learning-hub/sync`, { cache: 'no-store' });
+      const json = await res.json();
+      setLearningHubSyncMessage(json.message || (json.added != null ? `${json.added} new course(s) added.` : json.error || 'Done.'));
+      await fetchDb(false);
+    } catch (e) {
+      setLearningHubSyncMessage(e instanceof Error ? e.message : 'Learning Hub sync failed');
+    } finally {
+      setLearningHubSyncing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -147,12 +165,20 @@ export default function DatabasePage() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Database summary</h2>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Source: {data.source} · Updated: {new Date(data.generatedAt).toLocaleString()}</p>
             </div>
-            <Button variant="primary" size="sm" onClick={runSync} disabled={syncing}>
-              {syncing ? 'Syncing...' : 'Sync Job positions'}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="primary" size="sm" onClick={runSync} disabled={syncing}>
+                {syncing ? 'Syncing...' : 'Sync Job positions'}
+              </Button>
+              <Button variant="primary" size="sm" onClick={runLearningHubSync} disabled={learningHubSyncing}>
+                {learningHubSyncing ? 'Syncing...' : 'Sync Learning Hub courses'}
+              </Button>
+            </div>
           </div>
           {syncMessage && (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{syncMessage}</p>
+          )}
+          {learningHubSyncMessage && (
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{learningHubSyncMessage}</p>
           )}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {Object.entries(data.summary).map(([key, count]) => (
