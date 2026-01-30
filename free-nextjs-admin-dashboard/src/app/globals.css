@@ -798,3 +798,9 @@ span.flatpickr-weekday,
   content: attr(data-placeholder);
   color: #9ca3af;
 }
+
+/* Override Next.js dev portal position (left/top from 0px to unset) */
+nextjs-portal {
+  left: unset;
+  top: unset;
+}

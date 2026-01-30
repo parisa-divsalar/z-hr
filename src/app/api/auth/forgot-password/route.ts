@@ -20,17 +20,21 @@ export async function POST(request: NextRequest) {
         }
 
         const resetToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+        const logContext = { userId: String(user.id), endpoint: '/api/auth/forgot-password', action: 'chat' };
 
-        await ChatGPTService.chat([
-            {
-                role: 'system',
-                content: 'You are a helpful assistant. Generate a friendly password reset message.',
-            },
-            {
-                role: 'user',
-                content: `Generate a password reset message for user ${user.email}. The reset token is ${resetToken}.`,
-            },
-        ]);
+        await ChatGPTService.chat(
+            [
+                {
+                    role: 'system',
+                    content: 'You are a helpful assistant. Generate a friendly password reset message.',
+                },
+                {
+                    role: 'user',
+                    content: `Generate a password reset message for user ${user.email}. The reset token is ${resetToken}.`,
+                },
+            ],
+            logContext
+        );
 
         return NextResponse.json({
             message: 'If an account with that email exists, a password reset link has been sent.',

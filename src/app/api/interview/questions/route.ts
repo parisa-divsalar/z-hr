@@ -43,8 +43,10 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Generate interview questions using ChatGPT (فقط در مرحله نهایی)
-        const questions = await ChatGPTService.generateInterviewQuestions(position, cvData);
+        const logContext = finalUserId
+            ? { userId: finalUserId, endpoint: '/api/interview/questions', action: 'generateInterviewQuestions' }
+            : undefined;
+        const questions = await ChatGPTService.generateInterviewQuestions(position, cvData, undefined, logContext);
 
         // Save to database if userId provided
         let sessionId = null;

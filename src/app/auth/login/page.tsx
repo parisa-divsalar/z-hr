@@ -9,6 +9,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { IconButton, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useFormik } from 'formik';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 
@@ -242,7 +243,13 @@ const LoginPage = () => {
                             Already have an account?
                         </Typography>
 
-                        <MuiButton color='secondary' variant='text' onClick={() => router.push(PublicRoutes.register)}>
+                        <MuiButton
+                            component={Link}
+                            href={PublicRoutes.register}
+                            color='secondary'
+                            variant='text'
+                            sx={{ textDecoration: 'none' }}
+                        >
                             Sign up
                         </MuiButton>
                     </Stack>

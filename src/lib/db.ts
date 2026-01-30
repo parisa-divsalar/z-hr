@@ -16,6 +16,9 @@ const wizardDataFile = path.join(dataDir, 'wizard_data.json');
 const resumeDraftsFile = path.join(dataDir, 'resume_drafts.json');
 const resumeSectionOutputsFile = path.join(dataDir, 'resume_section_outputs.json');
 const coverLettersFile = path.join(dataDir, 'cover_letters.json');
+const jobPositionsFile = path.join(dataDir, 'job_positions.json');
+const loginLogsFile = path.join(dataDir, 'login_logs.json');
+const aiInteractionsFile = path.join(dataDir, 'ai_interactions.json');
 
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -87,6 +90,24 @@ export const db = {
             };
             logs.push(newRow);
             writeFile(registeredUsersLogFile, logs);
+            return newRow;
+        },
+    },
+
+    loginLogs: {
+        findAll: () => readFile(loginLogsFile, []),
+        findByUserId: (userId: number) => {
+            const logs = readFile(loginLogsFile, []);
+            return logs.filter((l: any) => l.user_id === userId);
+        },
+        append: (data: any) => {
+            const logs = readFile(loginLogsFile, []);
+            const newRow = {
+                ...data,
+                created_at: new Date().toISOString(),
+            };
+            logs.push(newRow);
+            writeFile(loginLogsFile, logs);
             return newRow;
         },
     },
@@ -216,6 +237,10 @@ export const db = {
 
     wizardData: {
         findAll: () => readFile(wizardDataFile, []),
+        findByUserId: (userId: number) => {
+            const wizardData = readFile(wizardDataFile, []);
+            return wizardData.filter((w: any) => w.user_id === userId);
+        },
         findByUserIdAndRequestId: (userId: number, requestId: string) => {
             const wizardData = readFile(wizardDataFile, []);
             return wizardData.find((w: any) => w.user_id === userId && w.request_id === requestId);
@@ -326,6 +351,90 @@ export const db = {
             return null;
         },
     },
+
+    jobPositions: {
+        findAll: () => readFile(jobPositionsFile, []),
+        findActive: () => {
+            const all = readFile(jobPositionsFile, []);
+            return all.filter((j: any) => j.is_active !== false);
+        },
+        findNewlyAdded: (withinMinutes: number = 5) => {
+            const all = readFile(jobPositionsFile, []);
+            const cutoff = new Date(Date.now() - withinMinutes * 60 * 1000).toISOString();
+            return all.filter((j: any) => (j.added_at || j.created_at) >= cutoff);
+        },
+        findBySourceUrl: (sourceUrl: string) => {
+            const all = readFile(jobPositionsFile, []);
+            return all.find((j: any) => j.sourceUrl === sourceUrl || j.source_url === sourceUrl);
+        },
+        add: (data: any) => {
+            const all = readFile(jobPositionsFile, []);
+            const newId = all.length > 0 ? Math.max(...all.map((j: any) => j.id || 0)) + 1 : 1;
+            const now = new Date().toISOString();
+            const row = {
+                id: newId,
+                ...data,
+                is_active: data.is_active !== false,
+                created_at: now,
+                updated_at: now,
+                added_at: now,
+            };
+            all.push(row);
+            writeFile(jobPositionsFile, all);
+            return row;
+        },
+        addMany: (items: any[]) => {
+            const all = readFile(jobPositionsFile, []);
+            let maxId = all.length > 0 ? Math.max(...all.map((j: any) => j.id || 0)) : 0;
+            const now = new Date().toISOString();
+            let added = 0;
+            for (const item of items) {
+                const sourceUrl = item.sourceUrl || item.source_url || item.applicationUrl;
+                if (!sourceUrl || all.some((j: any) => (j.sourceUrl || j.source_url) === sourceUrl)) continue;
+                maxId += 1;
+                all.push({
+                    id: maxId,
+                    ...item,
+                    is_active: true,
+                    created_at: now,
+                    updated_at: now,
+                    added_at: now,
+                });
+                added += 1;
+            }
+            if (added > 0) writeFile(jobPositionsFile, all);
+            return added;
+        },
+        update: (id: number, data: Partial<any>) => {
+            const all = readFile(jobPositionsFile, []);
+            const index = all.findIndex((j: any) => j.id === id);
+            if (index !== -1) {
+                all[index] = { ...all[index], ...data, updated_at: new Date().toISOString() };
+                writeFile(jobPositionsFile, all);
+                return all[index];
+            }
+            return null;
+        },
+    },
+
+    /** ورودی/خروجی هر تعامل با ChatGPT برای هر کاربر */
+    aiInteractions: {
+        findAll: () => readFile(aiInteractionsFile, []),
+        findByUserId: (userId: number) => {
+            const logs = readFile(aiInteractionsFile, []);
+            return logs.filter((l: any) => l.user_id === userId);
+        },
+        append: (data: any) => {
+            const logs = readFile(aiInteractionsFile, []);
+            const newRow = {
+                ...data,
+                created_at: new Date().toISOString(),
+            };
+            logs.push(newRow);
+            writeFile(aiInteractionsFile, logs);
+            return newRow;
+        },
+    },
 };
 
 export function initDatabase() {
@@ -339,6 +448,9 @@ export function initDatabase() {
     if (!fs.existsSync(resumeDraftsFile)) writeFile(resumeDraftsFile, []);
     if (!fs.existsSync(resumeSectionOutputsFile)) writeFile(resumeSectionOutputsFile, []);
     if (!fs.existsSync(coverLettersFile)) writeFile(coverLettersFile, []);
+    if (!fs.existsSync(jobPositionsFile)) writeFile(jobPositionsFile, []);
+    if (!fs.existsSync(loginLogsFile)) writeFile(loginLogsFile, []);
+    if (!fs.existsSync(aiInteractionsFile)) writeFile(aiInteractionsFile, []);
 }
 
 initDatabase();
