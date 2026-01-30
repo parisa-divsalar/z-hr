@@ -7,7 +7,7 @@ import { Checkbox, Stack, Typography } from '@mui/material';
 
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
-import LearningHubContent, { mockLearningHubData } from './LearningHubContent';
+import LearningHubContent from './LearningHubContent';
 import {
   HeaderDivider,
   LearningHubControls,
@@ -21,18 +21,47 @@ import {
   SortMenuContentStack,
 } from './styled';
 
-const AllLearningHubSection = () => <LearningHubContent items={mockLearningHubData} />;
-
-const FreeLearningHubSection = () => <LearningHubContent items={mockLearningHubData.filter((item) => item.isFree)} />;
-
-const PaidLearningHubSection = () => <LearningHubContent items={mockLearningHubData.filter((item) => !item.isFree)} />;
+type LearningHubItem = {
+  id: number;
+  title: string;
+  level: string;
+  price: string;
+  isFree: boolean;
+  image?: string;
+};
 
 const LearningHubPage = () => {
+  const [courses, setCourses] = useState<LearningHubItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string>('new-to-old');
   const [activeTab, setActiveTab] = useState<'all' | 'free' | 'paid'>('all');
   const sortButtonRef = useRef<HTMLDivElement | null>(null);
   const sortMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetch('/api/learning-hub/courses')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load courses');
+        return res.json();
+      })
+      .then((data) => {
+        if (!cancelled) setCourses(Array.isArray(data) ? data : []);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load courses');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSortClick = () => {
     setIsSortMenuOpen((prev) => !prev);
@@ -61,6 +90,18 @@ const LearningHubPage = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isSortMenuOpen]);
+
+  const sorted = [...courses].sort((a, b) => {
+    if (selectedOption === 'free-first') {
+      if (a.isFree !== b.isFree) return a.isFree ? -1 : 1;
+      return b.id - a.id;
+    }
+    if (selectedOption === 'old-to-new') return a.id - b.id;
+    return b.id - a.id; // new-to-old
+  });
+
+  const filteredByTab =
+    activeTab === 'free' ? sorted.filter((c) => c.isFree) : activeTab === 'paid' ? sorted.filter((c) => !c.isFree) : sorted;
 
   return (
     <LearningHubRoot>
@@ -150,9 +191,13 @@ const LearningHubPage = () => {
           />
         </LearningHubTabGroup>
 
-        {activeTab === 'all' && <AllLearningHubSection />}
-        {activeTab === 'free' && <FreeLearningHubSection />}
-        {activeTab === 'paid' && <PaidLearningHubSection />}
+        {loading && (
+          <Typography color='text.secondary'>Loading courses...</Typography>
+        )}
+        {error && (
+          <Typography color='error'>{error}</Typography>
+        )}
+        {!loading && !error && <LearningHubContent items={filteredByTab} />}
       </Stack>
     </LearningHubRoot>
   );
