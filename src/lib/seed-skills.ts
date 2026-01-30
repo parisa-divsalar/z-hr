@@ -1,12 +1,6 @@
 import { db } from './db';
 
-const SKILLS_BY_CATEGORY: Record<string, string[]> = {
-    'Web Frameworks': ['ASP.NET Core', 'React', 'Angular', 'Vue.js', 'Node.js', 'Django', 'Flask', 'Spring Boot'],
-    'Programming Languages': ['JavaScript', 'TypeScript', 'Python', 'Java', 'C#', 'C++', 'Go', 'Rust', 'PHP'],
-    Database: ['MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'SQL Server'],
-    DevOps: ['CI/CD', 'Docker', 'Kubernetes', 'Terraform', 'GitHub Actions', 'Jenkins'],
-    Other: ['Problem Solving', 'Communication', 'Teamwork', 'Leadership', 'Time Management'],
-};
+import { SKILLS_BY_CATEGORY } from './skills-catalog';
 
 export function seedSkills() {
     try {

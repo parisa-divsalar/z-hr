@@ -1,0 +1,35 @@
+export const SKILLS_BY_CATEGORY: Record<string, string[]> = {
+    // Keep categories aligned with `/api/skills/categories`
+    'Web Frameworks': [
+        'ASP.NET Core',
+        'React',
+        'Next.js',
+        'Angular',
+        'Vue.js',
+        'Nuxt',
+        'Svelte',
+        'SvelteKit',
+        'Remix',
+        'Gatsby',
+        'Express.js',
+        'NestJS',
+        'Fastify',
+        'Koa',
+        'Meteor',
+        'Django',
+        'Flask',
+        'FastAPI',
+        'Spring Boot',
+        'Ruby on Rails',
+        'Laravel',
+        'Symfony',
+        'Phoenix',
+        'Play Framework',
+    ],
+    'Programming Languages': ['JavaScript', 'TypeScript', 'Python', 'Java', 'C#', 'C++', 'Go', 'Rust', 'PHP'],
+    Database: ['MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'SQL Server'],
+    DevOps: ['CI/CD', 'Docker', 'Kubernetes', 'Terraform', 'GitHub Actions', 'Jenkins'],
+    Other: ['Problem Solving', 'Communication', 'Teamwork', 'Leadership', 'Time Management'],
+};
+
+
