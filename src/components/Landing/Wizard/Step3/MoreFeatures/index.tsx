@@ -62,8 +62,8 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
           You can utilize these features with your resume
         </Typography>
       </Stack>
-      <Grid container spacing={3} mt={2}>
-        <Grid size={{ xs: 6 }}>
+      <Grid container spacing={{ xs: 2, md: 3 }} mt={{ xs: 1, md: 2 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           {loadingSuggestions ? (
             <Typography variant='subtitle2' color='text.secondary'>
               Loading suggestions...
@@ -88,7 +88,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
             )
           )}
         </Grid>
-        <Grid size={{ xs: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           {loadingSuggestions ? (
             <Typography variant='subtitle2' color='text.secondary'>
               Loading suggestions...
@@ -103,7 +103,13 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
         </Grid>
       </Grid>
 
-      <Stack direction='row' gap={3} justifyContent='center' p={5}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        gap={{ xs: 2, sm: 3 }}
+        justifyContent='center'
+        alignItems='center'
+        p={{ xs: 2, sm: 3, md: 5 }}
+      >
         <MuiButton
           text='Back'
           variant='outlined'
