@@ -5,23 +5,23 @@ import { useRouter } from 'next/navigation';
 
 import Layout from '@/components/Layout';
 import { PublicRoutes } from '@/config/routes';
-import { useAuthStore } from '@/store/auth';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 export default function PrivateLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { accessToken, status } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthSession();
 
   useEffect(() => {
-    if (!accessToken && status !== 'loading') {
+    if (!isLoading && !isAuthenticated) {
       router.replace(PublicRoutes.login);
     }
-  }, [accessToken, status, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (status == 'loading') {
+  if (isLoading) {
     return <div style={{ padding: 40, textAlign: 'center' }}>در حال بررسی ...</div>;
   }
 
-  if (!accessToken) return null;
+  if (!isAuthenticated) return null;
 
   return <Layout>{children}</Layout>;
 }

@@ -93,20 +93,26 @@ export default function MinaComponent() {
                     <ProductFeatures />
                 </HoverRevealSection>
                 <HoverRevealSection>
-                    <Pricing />
+                    <div id='pricing'>
+                        <Pricing />
+                    </div>
                 </HoverRevealSection>
                 <HoverRevealSection>
                     <Blog />
                 </HoverRevealSection>
                 <HoverRevealSection>
-                    <Faq />
+                    <div id='faq'>
+                        <Faq />
+                    </div>
                 </HoverRevealSection>
                 <HoverRevealSection>
                     <Testimonials />
                 </HoverRevealSection>
             </main>
 
-            <FooterMain />
+            <div id='contact'>
+                <FooterMain />
+            </div>
         </div>
     );
 }

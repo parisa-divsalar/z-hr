@@ -37,6 +37,7 @@ import {
 } from '@/config/routes';
 import { useAuthStore } from '@/store/auth';
 import { useThemeStore } from '@/store/common';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import {
   sidebarMenuItems,
   isSidebarMenuItemActive,
@@ -45,27 +46,42 @@ import {
 const Navbar = () => {
   const { mode, setMode } = useThemeStore();
   const { accessToken } = useAuthStore();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuthSession();
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // If we have a cookie-based session but no accessToken in store, we still consider the user logged in.
+  const showAuthedUI = isAuthenticated && !isAuthLoading;
+
   const isHomeActive = pathname === '/' || pathname === '/(public)';
   const showSidebarItems = isSidebarVisible(pathname);
 
   if (!isLayoutVisible(pathname)) return null;
 
-  const navItems = useMemo(
-    () => [
+  const navItems = useMemo(() => {
+    if (showAuthedUI) {
+      return [
+        { label: 'Home', href: '/' },
+        // TODO: Wire these up to real routes/anchors when available.
+        { label: 'About Us', href: '/#about' },
+        { label: 'Our Plans', href: '/#plans' },
+        { label: 'Contact Us', href: '/#contact' },
+      ];
+    }
+
+    // Public/unauthenticated navbar (matches the marketing top nav).
+    return [
       { label: 'Home', href: '/' },
-      // TODO: Wire these up to real routes/anchors when available.
-      { label: 'About Us', href: '/#about' },
-      { label: 'Our Plans', href: '/#plans' },
+      { label: 'CV/Resume Builder', href: PublicRoutes.resumeGenerator },
+      { label: 'Pricing', href: '/#pricing' },
+      { label: 'Blog', href: PublicRoutes.blog },
+      { label: 'FAQ', href: '/#faq' },
       { label: 'Contact Us', href: '/#contact' },
-    ],
-    [],
-  );
+    ];
+  }, [showAuthedUI]);
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
   const openMenu = useCallback(() => setIsMenuOpen(true), []);
@@ -105,30 +121,24 @@ const Navbar = () => {
         ) : (
           <>
             <Stack direction='row' gap={2}>
-              <Link href='/' style={{ textDecoration: 'none' }}>
-                <Typography
-                  variant='subtitle1'
-                  fontWeight={isHomeActive ? '600' : '400'}
-                  color={isHomeActive ? 'text.primary' : 'grey.500'}
-                >
-                  Home
-                </Typography>
-              </Link>
+              {navItems.map((item) => {
+                const isActive = item.href === '/' ? isHomeActive : pathname === item.href;
 
-              <Typography variant='subtitle1' color='grey.500'>
-                About Us
-              </Typography>
-
-              <Typography variant='subtitle1' color='grey.500'>
-                Our Plans
-              </Typography>
-
-              <Typography variant='subtitle1' color='grey.500'>
-                Contact Us
-              </Typography>
+                return (
+                  <Link key={item.label} href={item.href} style={{ textDecoration: 'none' }}>
+                    <Typography
+                      variant='subtitle1'
+                      fontWeight={isActive ? '600' : '400'}
+                      color={isActive ? 'text.primary' : 'grey.500'}
+                    >
+                      {item.label}
+                    </Typography>
+                  </Link>
+                );
+              })}
             </Stack>
 
-            {accessToken ? (
+            {showAuthedUI ? (
               <Stack direction='row' gap={3}>
                 <Stack direction='row' gap={0.5} alignItems='center'>
                   <CoinIcon />
@@ -156,7 +166,7 @@ const Navbar = () => {
                   </Typography>
                 </MuiAvatar>
               </Stack>
-            ) : (
+            ) : isAuthLoading ? null : (
               <Stack direction='row' gap={3}>
                 <MuiButton
                   component={Link}
@@ -180,11 +190,11 @@ const Navbar = () => {
 
                 <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
 
-                <Stack className={classes.themeContainer}>
-                  <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
-                    {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
-                  </IconButton>
-                </Stack>
+                {/*<Stack className={classes.themeContainer}>*/}
+                {/*  <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>*/}
+                {/*    {mode === 'dark' ? <SunIcon /> : <MoonIcon />}*/}
+                {/*  </IconButton>*/}
+                {/*</Stack>*/}
               </Stack>
             )}
           </>
@@ -283,7 +293,7 @@ const Navbar = () => {
 
         <Divider sx={{ my: 1.5 }} />
 
-        {accessToken ? (
+        {showAuthedUI ? (
           <Stack gap={1.25}>
             <Stack direction='row' gap={0.75} alignItems='center' sx={{ px: 1 }}>
               <CoinIcon />
@@ -312,7 +322,7 @@ const Navbar = () => {
               </MuiAvatar>
             </Stack>
           </Stack>
-        ) : (
+        ) : isAuthLoading ? null : (
           <Stack gap={1.25}>
             <MuiButton
               component={Link}

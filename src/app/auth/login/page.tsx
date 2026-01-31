@@ -104,7 +104,7 @@ const LoginPage = () => {
 
             try {
                 const { data } = await apiClientClient.post('auth/login', values);
-                const accessToken = data?.data.userId;
+                const accessToken = data?.data?.token;
                 useAuthStore.getState().loginSuccess(accessToken, '');
                 router.push('/landing');
             } catch (error: any) {
