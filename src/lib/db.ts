@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-// Simple file-based database using JSON files (shared with repo-root /data by default)
-
-const repoRootDataDir = path.resolve(process.cwd(), '..', '..', 'data');
-const dataDir = process.env.DATABASE_PATH ? path.dirname(process.env.DATABASE_PATH) : repoRootDataDir;
+// Simple file-based database using JSON files (project-root ./data by default)
+// NOTE: In this repo the data folder is at <projectRoot>/data, so default to that.
+const defaultDataDir = path.resolve(process.cwd(), 'data');
+const dataDir = process.env.DATABASE_PATH ? path.dirname(process.env.DATABASE_PATH) : defaultDataDir;
 
 const usersFile = path.join(dataDir, 'users.json');
 const registeredUsersLogFile = path.join(dataDir, 'registered_users_log.json');

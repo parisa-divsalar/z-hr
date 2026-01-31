@@ -13,14 +13,12 @@ export async function POST(request: NextRequest) {
         // Check if user already exists
         const existingUser = db.users.findByEmail(email);
         if (existingUser) {
-            return NextResponse.json({
-                data: {
-                    userId: existingUser.id,
-                    email: existingUser.email,
-                    name: existingUser.name,
-                    isExisting: true,
+            return NextResponse.json(
+                {
+                    error: 'User already exists. Please sign in instead.',
                 },
-            });
+                { status: 409 },
+            );
         }
 
         // Hash password
