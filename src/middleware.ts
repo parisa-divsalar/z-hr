@@ -1,4 +1,28 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { PublicRoutes, normalizeRoute } from '@/config/routes';
+
+function isPublicPath(pathname: string) {
+    const normalizedPathname = normalizeRoute(pathname);
+
+    // Treat `/` as public (marketing/home page).
+    if (normalizedPathname === '/') return true;
+
+    const publicRoutes: string[] = [
+        PublicRoutes.landing,
+        PublicRoutes.blog,
+        PublicRoutes.moreFeatures,
+        PublicRoutes.resumeGenerator,
+        PublicRoutes.main,
+        PublicRoutes.congrats,
+    ];
+
+    return publicRoutes.some((route) => {
+        const normalizedRoute = normalizeRoute(route);
+        if (normalizedRoute === '/') return normalizedPathname === '/';
+        if (normalizedPathname === normalizedRoute) return true;
+        return normalizedPathname.startsWith(`${normalizedRoute}/`);
+    });
+}
 
 export function middleware(request: NextRequest) {
     const accessToken = request.cookies.get('accessToken')?.value;
@@ -19,6 +43,10 @@ export function middleware(request: NextRequest) {
         if (accessToken) {
             return NextResponse.redirect(new URL('/', request.url));
         }
+        return NextResponse.next();
+    }
+
+    if (isPublicPath(pathname)) {
         return NextResponse.next();
     }
 

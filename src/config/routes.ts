@@ -32,6 +32,7 @@ export const PrivateRoutes = {
 };
 
 export const VisibilityLayout: string[] = [
+    '/',
     PublicRoutes.landing,
     PublicRoutes.blog,
     PrivateRoutes.dashboard,

@@ -1,7 +1,7 @@
 'use client';
 
-import LoginPage from '@/app/auth/login/page';
+import MainPage from '@/app/main/page';
 
 export default function LandingPage() {
-    return <LoginPage />;
+    return <MainPage />;
 }

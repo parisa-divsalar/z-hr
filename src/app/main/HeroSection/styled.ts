@@ -6,6 +6,7 @@ export const HeroWrapper = styled(Box)(({ theme }) => ({
     isolation: 'isolate',
     overflow: 'hidden',
     textAlign: 'center',
+    backgroundColor:'#fff',
     padding: theme.spacing(10, 0),
     backgroundImage: 'url(/images/Maskgroup.jpg)',
     backgroundSize: '100% auto',

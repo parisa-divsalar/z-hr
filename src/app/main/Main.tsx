@@ -14,7 +14,6 @@ import KeyBenefits from '@/app/main/KeyBenefits';
 import Pricing from '@/app/main/Pricing';
 import ProductFeatures from '@/app/main/ProductFeatures';
 import Testimonials from '@/app/main/Testimonials';
-import Navbar from '@/components/Layout/Navbar';
 
 const easeOutBezier: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -71,7 +70,6 @@ export default function MinaComponent() {
                 flexDirection: 'column',
             }}
         >
-            <Navbar />
             <main
                 style={{
                     width: '100%',
