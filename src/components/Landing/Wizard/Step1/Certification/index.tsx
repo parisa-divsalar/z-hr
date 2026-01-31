@@ -398,7 +398,8 @@ const Certification: FunctionComponent<CertificationProps> = ({ setStage }) => {
     };
 
     return (
-        <Stack alignItems='center' justifyContent='center'>
+            <Stack alignItems='center' justifyContent='flex-start' width='100%'>
+
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
                 7. Capture your certifications
             </Typography>
