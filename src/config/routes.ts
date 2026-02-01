@@ -15,6 +15,7 @@ export const PublicRoutes = {
     resumeGenerator: '/resume-generator',
     main: '/main',
     blog: '/blog',
+    pricing: '/pricing',
 };
 
 export const PrivateRoutes = {
@@ -35,6 +36,7 @@ export const VisibilityLayout: string[] = [
     '/',
     PublicRoutes.landing,
     PublicRoutes.blog,
+    PublicRoutes.pricing,
     PrivateRoutes.dashboard,
     PrivateRoutes.history,
     PrivateRoutes.support,
