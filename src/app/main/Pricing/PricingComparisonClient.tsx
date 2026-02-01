@@ -1,6 +1,7 @@
 'use client';
 
 import type { ComponentProps } from 'react';
+import { useState } from 'react';
 
 import { Box, Card, CardContent, Chip, Link, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
@@ -187,7 +188,7 @@ function PlanHeader({ plan }: { plan: PricingPlan }) {
     );
 }
 
-function PlanNameCell({ plan }: { plan: PricingPlan }) {
+function PlanNameCell({ plan, onSelect }: { plan: PricingPlan; onSelect: () => void }) {
     return (
         <Stack
             direction='row'
@@ -199,6 +200,10 @@ function PlanNameCell({ plan }: { plan: PricingPlan }) {
             <Link
                 href='#'
                 underline='hover'
+                onClick={(e) => {
+                    e.preventDefault();
+                    onSelect();
+                }}
                 sx={{
                     typography: 'subtitle1',
                     fontWeight: 492,
@@ -245,15 +250,26 @@ function PriceFooter({ plan, isHighlighted }: { plan: PricingPlan; isHighlighted
             </Typography>
 
             <MuiButton fullWidth variant={isHighlighted ? 'contained' : plan.cta.variant} color='primary'>
-                {plan.cta.label}
+                Upgrade Now
             </MuiButton>
         </Stack>
     );
 }
 
-function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; features: PricingFeature[] }) {
-    const highlightedId = plans.find((p) => p.isPopular)?.id;
+function DesktopComparisonTable({
+    plans,
+    features,
+    activePlanId,
+    onSelectPlan,
+}: {
+    plans: PricingPlan[];
+    features: PricingFeature[];
+    activePlanId: PlanId;
+    onSelectPlan: (planId: PlanId) => void;
+}) {
     const highlightedRowIdx = 0; // row that starts with "Plan Name"
+    const priceFeature = features.find((f) => f.id === 'price') ?? { id: 'price', label: 'Price', values: {} as Record<PlanId, FeatureValue> };
+    const featureRows = features.filter((f) => f.id !== 'price');
 
     return (
         <Box sx={SX.desktopGrid(plans.length)}>
@@ -265,23 +281,34 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
                     </Typography>
                 </Box>
 
-                {features.map((f, fIdx) => (
+                {featureRows.map((f, fIdx) => (
                     <Box key={f.id} sx={[SX.featureLabelCell, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}>
                         <FeatureLabel feature={f} />
                     </Box>
                 ))}
 
+                <Box sx={SX.pricingLabelCell}>
+                    <Typography variant='body2' sx={SX.pricingLabelTypography}>
+                        {priceFeature.label}
+                    </Typography>
+                </Box>
             </Box>
 
             {/* Plan columns */}
             {plans.map((plan, idx) => {
-                const isHighlighted = plan.id === highlightedId;
+                const isHighlighted = plan.id === activePlanId;
                 const prevPlan = plans[idx - 1];
-                const showLeftDivider = idx > 0 && !isHighlighted && !(prevPlan && prevPlan.id === highlightedId);
+                const showLeftDivider = idx > 0 && !isHighlighted && !(prevPlan && prevPlan.id === activePlanId);
 
                 return (
                     <Box
                         key={plan.id}
+                        role='button'
+                        tabIndex={0}
+                        onClick={() => onSelectPlan(plan.id)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') onSelectPlan(plan.id);
+                        }}
                         sx={{
                             boxSizing: 'border-box',
                             position: 'relative',
@@ -290,6 +317,7 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
                             display: 'flex',
                             flexDirection: 'column',
                             height: '100%',
+                            cursor: 'pointer',
                             ...(isHighlighted
                                 ? {
                                       borderRadius: 3,
@@ -301,16 +329,16 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
                         }}
                     >
                         <PlanHeader plan={plan} />
-                        {features.map((f, fIdx) => (
+                        {featureRows.map((f, fIdx) => (
                             <Box key={f.id} sx={[SX.planValueCell, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}>
                                 {f.id === 'planName' ? (
-                                    <PlanNameCell plan={plan} />
+                                    <PlanNameCell plan={plan} onSelect={() => onSelectPlan(plan.id)} />
                                 ) : (
-                                    <CellValue value={f.values?.[plan.id]} isEmphasized={f.id === 'price'} />
+                                    <CellValue value={f.values?.[plan.id]} />
                                 )}
                             </Box>
                         ))}
-                        <Box sx={{ flex: 1, display: 'flex' }} />
+                        <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                     </Box>
                 );
             })}
@@ -318,23 +346,40 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
     );
 }
 
-function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: PricingFeature[] }) {
-    const highlightedId = plans.find((p) => p.isPopular)?.id;
+function MobilePlanCards({
+    plans,
+    features,
+    activePlanId,
+    onSelectPlan,
+}: {
+    plans: PricingPlan[];
+    features: PricingFeature[];
+    activePlanId: PlanId;
+    onSelectPlan: (planId: PlanId) => void;
+}) {
     const highlightedRowIdx = 0; // row that starts with "Plan Name"
+    const featureRows = features.filter((f) => f.id !== 'price');
 
     return (
         <Stack spacing={2.5}>
             {plans.map((plan) => {
-                const isHighlighted = plan.id === highlightedId;
+                const isHighlighted = plan.id === activePlanId;
 
                 return (
                     <Card
                         key={plan.id}
                         variant='outlined'
+                        role='button'
+                        tabIndex={0}
+                        onClick={() => onSelectPlan(plan.id)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') onSelectPlan(plan.id);
+                        }}
                         sx={{
                             borderRadius: 3,
                             border: isHighlighted ? `2px solid ${HIGHLIGHT_BORDER}` : `1px solid ${OUTER_BORDER}`,
                             boxShadow: isHighlighted ? '0px 8px 24px rgba(0,0,0,0.06)' : 'none',
+                            cursor: 'pointer',
                         }}
                     >
                         <CardContent sx={{ p: 2.5 }}>
@@ -343,7 +388,7 @@ function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: 
                             </Box>
 
                             <Box sx={{ mt: 1.5 }}>
-                                {features.map((f, fIdx) => (
+                                {featureRows.map((f, fIdx) => (
                                     <Box key={f.id} sx={[SX.mobileFeatureRow, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}>
                                         <FeatureLabel feature={f} sx={{ pr: 2 }} />
                                         {f.id === 'planName' ? (
@@ -366,11 +411,13 @@ function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: 
                                                 )}
                                             </Stack>
                                         ) : (
-                                            <CellValue value={f.values?.[plan.id]} isEmphasized={f.id === 'price'} />
+                                            <CellValue value={f.values?.[plan.id]} />
                                         )}
                                     </Box>
                                 ))}
                             </Box>
+
+                            <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                         </CardContent>
                     </Card>
                 );
@@ -382,11 +429,15 @@ function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: 
 export default function PricingComparisonClient({ plans, features }: { plans: PricingPlan[]; features: PricingFeature[] }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <900px
+    const defaultActivePlanId = (plans.find((p) => p.isPopular)?.id ?? plans[0]?.id) as PlanId | undefined;
+    const [activePlanId, setActivePlanId] = useState<PlanId | undefined>(defaultActivePlanId);
 
     const hydratedFeatures: PricingFeature[] = features.map((f) => ({
         ...f,
         ...(f.id === 'planName' ? { labelTypography: PLAN_NAME_TYPOGRAPHY } : {}),
     }));
+
+    if (!activePlanId) return null;
 
     return (
         <Stack width='100%' mt={4}>
@@ -401,9 +452,19 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
                 >
                     <Box sx={{ px: 0, py: { xs: 2, md: 2 } }}>
                         {isMobile ? (
-                            <MobilePlanCards plans={plans} features={hydratedFeatures} />
+                            <MobilePlanCards
+                                plans={plans}
+                                features={hydratedFeatures}
+                                activePlanId={activePlanId}
+                                onSelectPlan={setActivePlanId}
+                            />
                         ) : (
-                            <DesktopComparisonTable plans={plans} features={hydratedFeatures} />
+                            <DesktopComparisonTable
+                                plans={plans}
+                                features={hydratedFeatures}
+                                activePlanId={activePlanId}
+                                onSelectPlan={setActivePlanId}
+                            />
                         )}
                     </Box>
                 </Box>

@@ -245,7 +245,7 @@ function PriceFooter({ plan, isHighlighted }: { plan: PricingPlan; isHighlighted
             </Typography>
 
             <MuiButton fullWidth variant={isHighlighted ? 'contained' : plan.cta.variant} color='primary'>
-                {plan.cta.label}
+                Upgrade Now
             </MuiButton>
         </Stack>
     );
@@ -254,6 +254,8 @@ function PriceFooter({ plan, isHighlighted }: { plan: PricingPlan; isHighlighted
 function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; features: PricingFeature[] }) {
     const highlightedId = plans.find((p) => p.isPopular)?.id;
     const highlightedRowIdx = 0; // row that starts with "Plan Name"
+    const priceFeature = features.find((f) => f.id === 'price') ?? { id: 'price', label: 'Price', values: {} as Record<PlanId, FeatureValue> };
+    const featureRows = features.filter((f) => f.id !== 'price');
 
     return (
         <Box sx={SX.desktopGrid(plans.length)}>
@@ -265,12 +267,17 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
                     </Typography>
                 </Box>
 
-                {features.map((f, fIdx) => (
+                {featureRows.map((f, fIdx) => (
                     <Box key={f.id} sx={[SX.featureLabelCell, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}>
                         <FeatureLabel feature={f} />
                     </Box>
                 ))}
 
+                <Box sx={SX.pricingLabelCell}>
+                    <Typography variant='body2' sx={SX.pricingLabelTypography}>
+                        {priceFeature.label}
+                    </Typography>
+                </Box>
             </Box>
 
             {/* Plan columns */}
@@ -301,16 +308,16 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
                         }}
                     >
                         <PlanHeader plan={plan} />
-                        {features.map((f, fIdx) => (
+                        {featureRows.map((f, fIdx) => (
                             <Box key={f.id} sx={[SX.planValueCell, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}>
                                 {f.id === 'planName' ? (
                                     <PlanNameCell plan={plan} />
                                 ) : (
-                                    <CellValue value={f.values?.[plan.id]} isEmphasized={f.id === 'price'} />
+                                    <CellValue value={f.values?.[plan.id]} />
                                 )}
                             </Box>
                         ))}
-                        <Box sx={{ flex: 1, display: 'flex' }} />
+                        <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                     </Box>
                 );
             })}
@@ -321,6 +328,7 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
 function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: PricingFeature[] }) {
     const highlightedId = plans.find((p) => p.isPopular)?.id;
     const highlightedRowIdx = 0; // row that starts with "Plan Name"
+    const featureRows = features.filter((f) => f.id !== 'price');
 
     return (
         <Stack spacing={2.5}>
@@ -343,7 +351,7 @@ function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: 
                             </Box>
 
                             <Box sx={{ mt: 1.5 }}>
-                                {features.map((f, fIdx) => (
+                                {featureRows.map((f, fIdx) => (
                                     <Box key={f.id} sx={[SX.mobileFeatureRow, fIdx === highlightedRowIdx && { bgcolor: 'info.light' }]}>
                                         <FeatureLabel feature={f} sx={{ pr: 2 }} />
                                         {f.id === 'planName' ? (
@@ -366,11 +374,13 @@ function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: 
                                                 )}
                                             </Stack>
                                         ) : (
-                                            <CellValue value={f.values?.[plan.id]} isEmphasized={f.id === 'price'} />
+                                            <CellValue value={f.values?.[plan.id]} />
                                         )}
                                     </Box>
                                 ))}
                             </Box>
+
+                            <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                         </CardContent>
                     </Card>
                 );
