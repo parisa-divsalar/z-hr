@@ -1,9 +1,23 @@
 'use client';
 
 import type { ComponentProps } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Box, Card, CardContent, Chip, Link, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+    Box,
+    Card,
+    CardContent,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Link,
+    Stack,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 
@@ -16,9 +30,17 @@ const OUTER_BORDER = '#EAEAEA';
 const COL_DIVIDER = '#F0F0F0';
 const ROW_DIVIDER = '#EAEAEA';
 const HEADER_ROW_HEIGHT = 92;
+const CHANNEL_NAME = 'zcv-payment';
 
 type PlanId = 'starter' | 'pro' | 'plus' | 'elite';
 type FeatureValue = string | number | boolean | null;
+
+type PaymentResultMessage = {
+    type: 'payment_result';
+    status: 'success' | 'failed' | 'cancelled';
+    planId?: string;
+    at: number;
+};
 
 export type PricingPlan = {
     id: PlanId;
@@ -236,7 +258,15 @@ function PlanNameCell({ plan, onSelect }: { plan: PricingPlan; onSelect: () => v
     );
 }
 
-function PriceFooter({ plan, isHighlighted }: { plan: PricingPlan; isHighlighted: boolean }) {
+function PriceFooter({
+    plan,
+    isHighlighted,
+    onUpgrade,
+}: {
+    plan: PricingPlan;
+    isHighlighted: boolean;
+    onUpgrade: (plan: PricingPlan) => void;
+}) {
     return (
         <Stack
             gap={2}
@@ -249,7 +279,15 @@ function PriceFooter({ plan, isHighlighted }: { plan: PricingPlan; isHighlighted
                 {plan.price}
             </Typography>
 
-            <MuiButton fullWidth variant={isHighlighted ? 'contained' : plan.cta.variant} color='primary'>
+            <MuiButton
+                fullWidth
+                variant={isHighlighted ? 'contained' : plan.cta.variant}
+                color='primary'
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.stopPropagation();
+                    onUpgrade(plan);
+                }}
+            >
                 Upgrade Now
             </MuiButton>
         </Stack>
@@ -261,11 +299,13 @@ function DesktopComparisonTable({
     features,
     activePlanId,
     onSelectPlan,
+    onUpgrade,
 }: {
     plans: PricingPlan[];
     features: PricingFeature[];
     activePlanId: PlanId;
     onSelectPlan: (planId: PlanId) => void;
+    onUpgrade: (plan: PricingPlan) => void;
 }) {
     const highlightedRowIdx = 0; // row that starts with "Plan Name"
     const priceFeature = features.find((f) => f.id === 'price') ?? { id: 'price', label: 'Price', values: {} as Record<PlanId, FeatureValue> };
@@ -338,7 +378,7 @@ function DesktopComparisonTable({
                                 )}
                             </Box>
                         ))}
-                        <PriceFooter plan={plan} isHighlighted={isHighlighted} />
+                        <PriceFooter plan={plan} isHighlighted={isHighlighted} onUpgrade={onUpgrade} />
                     </Box>
                 );
             })}
@@ -351,11 +391,13 @@ function MobilePlanCards({
     features,
     activePlanId,
     onSelectPlan,
+    onUpgrade,
 }: {
     plans: PricingPlan[];
     features: PricingFeature[];
     activePlanId: PlanId;
     onSelectPlan: (planId: PlanId) => void;
+    onUpgrade: (plan: PricingPlan) => void;
 }) {
     const highlightedRowIdx = 0; // row that starts with "Plan Name"
     const featureRows = features.filter((f) => f.id !== 'price');
@@ -417,7 +459,7 @@ function MobilePlanCards({
                                 ))}
                             </Box>
 
-                            <PriceFooter plan={plan} isHighlighted={isHighlighted} />
+                            <PriceFooter plan={plan} isHighlighted={isHighlighted} onUpgrade={onUpgrade} />
                         </CardContent>
                     </Card>
                 );
@@ -431,11 +473,64 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
     const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <900px
     const defaultActivePlanId = (plans.find((p) => p.isPopular)?.id ?? plans[0]?.id) as PlanId | undefined;
     const [activePlanId, setActivePlanId] = useState<PlanId | undefined>(defaultActivePlanId);
+    const [upgradeConfirmOpen, setUpgradeConfirmOpen] = useState(false);
+    const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<PricingPlan | null>(null);
+    const [paymentResult, setPaymentResult] = useState<PaymentResultMessage | null>(null);
 
     const hydratedFeatures: PricingFeature[] = features.map((f) => ({
         ...f,
         ...(f.id === 'planName' ? { labelTypography: PLAN_NAME_TYPOGRAPHY } : {}),
     }));
+
+    useEffect(() => {
+        const handlePayload = (payload: unknown) => {
+            if (!payload || typeof payload !== 'object') return;
+            const p = payload as Partial<PaymentResultMessage>;
+            if (p.type !== 'payment_result') return;
+            if (p.status !== 'success' && p.status !== 'failed' && p.status !== 'cancelled') return;
+            setPaymentResult({
+                type: 'payment_result',
+                status: p.status,
+                planId: typeof p.planId === 'string' ? p.planId : undefined,
+                at: typeof p.at === 'number' ? p.at : Date.now(),
+            });
+        };
+
+        let bc: BroadcastChannel | null = null;
+        try {
+            bc = new BroadcastChannel(CHANNEL_NAME);
+            bc.onmessage = (e) => handlePayload(e.data);
+        } catch {
+            // ignore
+        }
+
+        const onWindowMessage = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin) return;
+            handlePayload(event.data);
+        };
+        window.addEventListener('message', onWindowMessage);
+
+        return () => {
+            window.removeEventListener('message', onWindowMessage);
+            try {
+                bc?.close();
+            } catch {
+                // ignore
+            }
+        };
+    }, []);
+
+    const handleUpgradeClick = (plan: PricingPlan) => {
+        setSelectedUpgradePlan(plan);
+        setUpgradeConfirmOpen(true);
+    };
+
+    const handleConfirmUpgrade = () => {
+        const planId = selectedUpgradePlan?.id;
+        const url = planId ? `/payment/test?plan=${encodeURIComponent(planId)}` : '/payment/test';
+        window.open(url, '_blank', 'noopener,noreferrer');
+        setUpgradeConfirmOpen(false);
+    };
 
     if (!activePlanId) return null;
 
@@ -457,6 +552,7 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
                                 features={hydratedFeatures}
                                 activePlanId={activePlanId}
                                 onSelectPlan={setActivePlanId}
+                                onUpgrade={handleUpgradeClick}
                             />
                         ) : (
                             <DesktopComparisonTable
@@ -464,11 +560,62 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
                                 features={hydratedFeatures}
                                 activePlanId={activePlanId}
                                 onSelectPlan={setActivePlanId}
+                                onUpgrade={handleUpgradeClick}
                             />
                         )}
                     </Box>
                 </Box>
             </Box>
+
+            <Dialog open={upgradeConfirmOpen} onClose={() => setUpgradeConfirmOpen(false)} fullWidth maxWidth='xs'>
+                <DialogTitle>Confirm upgrade</DialogTitle>
+                <DialogContent dividers>
+                    <Typography variant='body2' color='text.secondary'>
+                        Open the payment page in a new tab for{' '}
+                        <Typography component='span' variant='body2' fontWeight={700} color='text.primary'>
+                            {selectedUpgradePlan?.name ?? 'this plan'}
+                        </Typography>
+                        ?
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Stack direction='row' gap={1} width='100%'>
+                        <MuiButton fullWidth color='secondary' variant='outlined' onClick={() => setUpgradeConfirmOpen(false)}>
+                            Cancel
+                        </MuiButton>
+                        <MuiButton fullWidth color='primary' variant='contained' onClick={handleConfirmUpgrade}>
+                            Continue
+                        </MuiButton>
+                    </Stack>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={Boolean(paymentResult)} onClose={() => setPaymentResult(null)} fullWidth maxWidth='xs'>
+                <DialogTitle>Payment result</DialogTitle>
+                <DialogContent dividers>
+                    <Stack gap={1}>
+                        <Typography variant='body2' color='text.secondary'>
+                            Status:{' '}
+                            <Typography component='span' variant='body2' fontWeight={700} color='text.primary'>
+                                {paymentResult?.status ?? '—'}
+                            </Typography>
+                        </Typography>
+                        {paymentResult?.planId ? (
+                            <Typography variant='body2' color='text.secondary'>
+                                Plan:{' '}
+                                <Typography component='span' variant='body2' fontWeight={700} color='text.primary'>
+                                    {paymentResult.planId}
+                                </Typography>
+                            </Typography>
+                        ) : null}
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <MuiButton fullWidth color='primary' variant='contained' onClick={() => setPaymentResult(null)}>
+                        OK
+                    </MuiButton>
+                </DialogActions>
+            </Dialog>
         </Stack>
     );
 }
