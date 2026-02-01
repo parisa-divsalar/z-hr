@@ -76,7 +76,7 @@ const Navbar = () => {
     return [
       { label: 'Home', href: '/' },
       { label: 'CV/Resume Builder', href: PublicRoutes.resumeGenerator },
-      { label: 'Pricing', href: '/#pricing' },
+      { label: 'Pricing', href:  PublicRoutes.pricing },
       { label: 'Blog', href: PublicRoutes.blog },
       { label: 'FAQ', href: '/#faq' },
       { label: 'Contact Us', href: '/#contact' },

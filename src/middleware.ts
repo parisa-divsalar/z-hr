@@ -10,6 +10,7 @@ function isPublicPath(pathname: string) {
     const publicRoutes: string[] = [
         PublicRoutes.landing,
         PublicRoutes.blog,
+        PublicRoutes.pricing,
         PublicRoutes.moreFeatures,
         PublicRoutes.resumeGenerator,
         PublicRoutes.main,
