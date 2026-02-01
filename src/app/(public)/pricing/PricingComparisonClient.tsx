@@ -2,9 +2,9 @@
 
 import type { ComponentProps } from 'react';
 
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CloseIcon from '@mui/icons-material/Close';
 import { Box, Card, CardContent, Chip, Link, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 
 import MuiButton from '@/components/UI/MuiButton';
 
@@ -16,7 +16,8 @@ const COL_DIVIDER = '#F0F0F0';
 const ROW_DIVIDER = '#EAEAEA';
 const HEADER_ROW_HEIGHT = 92;
 
-type PlanId = 'starter' | 'pro' | 'careerPlus' | 'elite';
+type PlanId = 'starter' | 'pro' | 'plus' | 'elite';
+type FeatureValue = string | number | boolean | null;
 
 export type PricingPlan = {
     id: PlanId;
@@ -38,7 +39,7 @@ export type PricingFeature = {
     id: string;
     label: string;
     labelTypography?: FeatureLabelTypography;
-    availability: Record<PlanId, boolean>;
+    values: Record<PlanId, FeatureValue>;
 };
 
 const PLAN_NAME_TYPOGRAPHY: FeatureLabelTypography = { variant: 'h6', sx: { color: 'info.main', fontWeight: 492 } };
@@ -115,11 +116,39 @@ const SX = {
     },
 };
 
-function AvailabilityIcon({ value }: { value: boolean }) {
-    return value ? (
-        <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
-    ) : (
-        <CloseIcon sx={{ color: 'error.main', fontSize: 20 }} />
+function CellValue({ value, isEmphasized }: { value: FeatureValue; isEmphasized?: boolean }) {
+    if (typeof value === 'boolean') {
+        const size = isEmphasized ? 22 : 20;
+
+        return (
+            <Box
+                component='span'
+                sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    lineHeight: 0,
+                }}
+            >
+                {value ? (
+                    <CheckCircleRoundedIcon sx={{ fontSize: size, color: 'success.main' }} titleAccess='Yes' />
+                ) : (
+                    <CancelRoundedIcon sx={{ fontSize: size, color: 'error.main' }} titleAccess='No' />
+                )}
+            </Box>
+        );
+    }
+
+    const text = value == null ? '—' : typeof value === 'number' ? String(value) : value;
+
+    return (
+        <Typography
+            variant={isEmphasized ? 'subtitle1' : 'body2'}
+            color={isEmphasized ? 'primary.main' : 'text.primary'}
+            fontWeight={isEmphasized ? 600 : 450}
+            sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}
+        >
+            {text}
+        </Typography>
     );
 }
 
@@ -242,11 +271,6 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
                     </Box>
                 ))}
 
-                <Box sx={SX.pricingLabelCell}>
-                    <Typography variant='body2' sx={SX.pricingLabelTypography}>
-                        Pricing
-                    </Typography>
-                </Box>
             </Box>
 
             {/* Plan columns */}
@@ -282,13 +306,11 @@ function DesktopComparisonTable({ plans, features }: { plans: PricingPlan[]; fea
                                 {f.id === 'planName' ? (
                                     <PlanNameCell plan={plan} />
                                 ) : (
-                                    <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                                    <CellValue value={f.values?.[plan.id]} isEmphasized={f.id === 'price'} />
                                 )}
                             </Box>
                         ))}
-                        <Box sx={{ flex: 1, display: 'flex' }}>
-                            <PriceFooter plan={plan} isHighlighted={isHighlighted} />
-                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex' }} />
                     </Box>
                 );
             })}
@@ -344,14 +366,10 @@ function MobilePlanCards({ plans, features }: { plans: PricingPlan[]; features: 
                                                 )}
                                             </Stack>
                                         ) : (
-                                            <AvailabilityIcon value={Boolean(f.availability?.[plan.id])} />
+                                            <CellValue value={f.values?.[plan.id]} isEmphasized={f.id === 'price'} />
                                         )}
                                     </Box>
                                 ))}
-                            </Box>
-
-                            <Box sx={{ mt: 1.5, pt: 1.5, textAlign: 'center' }}>
-                                <PriceFooter plan={plan} isHighlighted={isHighlighted} />
                             </Box>
                         </CardContent>
                     </Card>
