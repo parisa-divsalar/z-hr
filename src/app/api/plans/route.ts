@@ -74,9 +74,8 @@ const FEATURE_DEFS: Array<{
   { id: 'questionInterview', label: 'Question interview', key: 'question_interview', kind: 'value' },
   { id: 'positionSuggestion', label: 'Position Suggestion', key: 'position_suggestion', kind: 'value' },
   { id: 'processingSpeed', label: 'Processing Speed', key: 'processing_speed', kind: 'rank' },
-  // Keep these last to match the DB table view (price row at bottom, then optional coin).
+  // Keep these last to match the DB table view (price row at bottom).
   { id: 'price', label: 'Price' },
-  { id: 'coin', label: 'coin', key: 'coin', kind: 'value' },
 ];
 
 /**
