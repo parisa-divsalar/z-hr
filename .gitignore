@@ -55,3 +55,7 @@ yarn.lock
 
 package-lock.json
 /package-lock.json
+
+# accidental local helper/output files (should never be committed)
+h origin dev
+tatus --porcelain=v1 -uall
