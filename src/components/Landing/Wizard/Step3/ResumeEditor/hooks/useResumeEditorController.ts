@@ -294,6 +294,86 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     );
     const shouldBlockBelowSummary = isAutoPipelineMode && !Boolean(autoImproved.summary) && !Boolean(improveError);
 
+    /**
+     * Persist the current editor state into the CV record (`data/cvs.json` via `/api/cv/edit-cv`).
+     * This is critical for admin DB view: the admin panel reads `cvs` from the server DB and
+     * expects improved content to be stored, not only shown in UI state.
+     */
+    const isAutoPersistingRef = useRef(false);
+    const lastAutoPersistKeyRef = useRef<string | null>(null);
+
+    const buildPayloadFromValues = useCallback(
+        (values: {
+            profile: ResumeProfile;
+            summary: string;
+            skills: string[];
+            contactWays: string[];
+            education: string[];
+            languages: ResumeLanguage[];
+            certificates: string[];
+            selectedProjects: string[];
+            additionalInfo: string;
+            experiences: ResumeExperience[];
+        }) => {
+            return buildUpdatedCvPayload(cvPayloadRef.current, values);
+        },
+        [],
+    );
+
+    const buildPayloadFromState = useCallback(() => {
+        const normalizedSkills = skills.map((s) => String(s ?? '').trim()).filter(Boolean);
+        const normalizedContactWays = contactWays.map((c) => String(c ?? '').trim()).filter(Boolean);
+        return buildPayloadFromValues({
+            profile,
+            summary,
+            skills: normalizedSkills,
+            contactWays: normalizedContactWays,
+            education,
+            languages,
+            certificates,
+            selectedProjects,
+            additionalInfo,
+            experiences,
+        });
+    }, [
+        additionalInfo,
+        buildPayloadFromValues,
+        certificates,
+        contactWays,
+        education,
+        experiences,
+        languages,
+        profile,
+        selectedProjects,
+        skills,
+        summary,
+    ]);
+
+    const autoPersistCv = useCallback(
+        async (payload: any, persistKey: string) => {
+            if (!requestId) return;
+            if (isAutoPersistingRef.current) return;
+            if (lastAutoPersistKeyRef.current === persistKey) return;
+
+            isAutoPersistingRef.current = true;
+            try {
+                await editCV({
+                    userId: accessToken ?? undefined,
+                    requestId,
+                    bodyOfResume: payload,
+                });
+                // Keep base ref in sync so future merges are stable.
+                cvPayloadRef.current = payload;
+                lastAutoPersistKeyRef.current = persistKey;
+            } catch {
+                // best-effort; do not block editor flow or spam errors
+            } finally {
+                isAutoPersistingRef.current = false;
+            }
+        },
+        [accessToken, requestId],
+    );
+
     const persistTextOnlySession = useCallback(
         (mutate: (draft: any) => void) => {
             try {
@@ -808,6 +888,32 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 }
 
                 setAutoImprovePhase('done');
+
+                // Persist improved final state into the CV row so admin "Users → Resumes" table reflects it.
+                if (requestId) {
+                    const payloadToSave = buildPayloadFromValues({
+                        profile,
+                        summary: improvedBySection.summary ?? summary,
+                        skills: applyLineListEditText(improvedBySection.skills ?? formatLineListEditText(skills)),
+                        contactWays,
+                        education: applyEducationEditText(improvedBySection.education ?? formatEducationEditText(education)),
+                        languages: applyLanguagesEditText(improvedBySection.languages ?? formatLanguagesEditText(languages)),
+                        certificates: applyCertificateEditText(
+                            improvedBySection.certificates ?? formatCertificateEditText(certificates),
+                        ),
+                        selectedProjects: applySelectedProjectsEditText(
+                            improvedBySection.selectedProjects ?? formatSelectedProjectsEditText(selectedProjects),
+                        ),
+                        additionalInfo: improvedBySection.additionalInfo ?? additionalInfo,
+                        experiences: applyExperienceEditText(
+                            experiences,
+                            improvedBySection.experience ?? formatExperienceEditText(experiences),
+                        ),
+                    });
+                    const userKey = accessToken ?? 'cookie';
+                    const persistKey = `auto-improve:${userKey}:${requestId}:${runKey}`;
+                    await autoPersistCv(payloadToSave, persistKey);
+                }
             } catch (err) {
                 const e = err as any;
                 setImproveError(e instanceof Error ? e.message : 'Failed to improve text. Please try again.');
@@ -826,6 +932,18 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         sessionSeededRunKey,
         AUTO_IMPROVE_ORDER,
         requestImprovedText,
+        autoPersistCv,
+        buildPayloadFromValues,
+        additionalInfo,
+        certificates,
+        contactWays,
+        education,
+        experiences,
+        languages,
+        profile,
+        selectedProjects,
+        skills,
+        summary,
     ]);
 
     const loadCvData = useCallback(
@@ -1548,6 +1666,11 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                     // Keep edit buffer in sync if user switches to edit mode afterwards.
                     setExperienceEditText(formatExperienceEditText(applyExperienceEditText(experiences, improved)));
                 }
+
+                // Persist improved changes so admin DB view sees the latest CV content.
+                const payloadToSave = buildPayloadFromState();
+                const persistKey = `manual-improve:${accessToken ?? ''}:${requestId}:${section}:${Date.now()}`;
+                await autoPersistCv(payloadToSave, persistKey);
             } catch (error) {
                 console.error('Failed to improve section', error);
                 setImproveError(error instanceof Error ? error.message : 'Failed to improve text. Please try again.');
@@ -1557,6 +1680,8 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         },
         [
             accessToken,
+            autoPersistCv,
+            buildPayloadFromState,
             experiences,
             improvingSection,
             isTextOnlyMode,

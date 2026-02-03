@@ -53,6 +53,7 @@ export default function DatabasePage() {
   const [learningHubSyncing, setLearningHubSyncing] = useState(false);
   const [learningHubSyncMessage, setLearningHubSyncMessage] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [expandedCvRequestId, setExpandedCvRequestId] = useState<string | null>(null);
 
   const [rowModalOpen, setRowModalOpen] = useState(false);
   const [rowMode, setRowMode] = useState<'add' | 'edit'>('add');
@@ -103,6 +104,22 @@ export default function DatabasePage() {
       ),
     };
   }, [data, userId, selectedUser?.email]);
+
+  const truncate = (value: unknown, maxLen = 140) => {
+    const s = typeof value === 'string' ? value : JSON.stringify(value);
+    if (!s) return '';
+    return s.length > maxLen ? `${s.slice(0, maxLen)}…` : s;
+  };
+
+  const safeJsonString = (value: unknown) => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  };
 
   const runSync = async () => {
     setSyncing(true);
@@ -839,28 +856,129 @@ export default function DatabasePage() {
                       </div>
                       {data.length > 0 ? (
                         <div className="max-h-80 overflow-auto overflow-x-auto">
-                          <table className="w-full text-left text-xs border-collapse">
-                            <thead className="bg-gray-50 dark:bg-meta-4/50 sticky top-0 z-10">
-                              <tr>
-                                {(Object.keys(data[0] as object) as string[]).map((col) => (
-                                  <th key={col} className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark">
-                                    {col}
+                          {key === 'cvs' ? (
+                            <table className="w-full text-left text-xs border-collapse">
+                              <thead className="bg-gray-50 dark:bg-meta-4/50 sticky top-0 z-10">
+                                <tr>
+                                  <th className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark">
+                                    id
                                   </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {data.map((row: any, i) => (
-                                <tr key={i} className="border-b border-stroke dark:border-strokedark hover:bg-gray-50/50 dark:hover:bg-meta-4/30">
-                                  {Object.entries(row).map(([k, v]) => (
-                                    <td key={k} className="px-2 py-1.5 text-gray-600 dark:text-gray-400 break-words whitespace-pre-wrap align-top min-w-0 max-w-xl">
-                                      {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
-                                    </td>
+                                  <th className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark">
+                                    request_id
+                                  </th>
+                                  <th className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark">
+                                    updated_at
+                                  </th>
+                                  <th className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark">
+                                    preview
+                                  </th>
+                                  <th className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark">
+                                    actions
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(data as any[])
+                                  .slice()
+                                  .sort((a, b) => {
+                                    const ta = Date.parse(String(a?.updated_at ?? a?.created_at ?? '')) || 0;
+                                    const tb = Date.parse(String(b?.updated_at ?? b?.created_at ?? '')) || 0;
+                                    return tb - ta;
+                                  })
+                                  .map((row: any, i) => {
+                                    const reqId = String(row?.request_id ?? row?.requestId ?? row?.id ?? i);
+                                    const isOpen = expandedCvRequestId === reqId;
+                                    const preview =
+                                      truncate(row?.title, 60) ||
+                                      truncate(row?.summary, 120) ||
+                                      truncate(row?.content, 160) ||
+                                      '—';
+                                    return (
+                                      <React.Fragment key={reqId}>
+                                        <tr className="border-b border-stroke dark:border-strokedark hover:bg-gray-50/50 dark:hover:bg-meta-4/30">
+                                          <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top">
+                                            {String(row?.id ?? '—')}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top">
+                                            {String(row?.request_id ?? row?.requestId ?? '—')}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top">
+                                            {String(row?.updated_at ?? row?.updatedAt ?? row?.created_at ?? row?.createdAt ?? '—')}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400 break-words whitespace-pre-wrap align-top max-w-xl">
+                                            {preview}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top">
+                                            <button
+                                              className="text-primary underline"
+                                              onClick={() => setExpandedCvRequestId(isOpen ? null : reqId)}
+                                            >
+                                              {isOpen ? 'Hide' : 'View'}
+                                            </button>
+                                          </td>
+                                        </tr>
+                                        {isOpen && (
+                                          <tr className="border-b border-stroke dark:border-strokedark">
+                                            <td colSpan={5} className="px-2 py-2 bg-gray-50 dark:bg-meta-4/30">
+                                              <div className="grid grid-cols-1 gap-3">
+                                                <div>
+                                                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    content
+                                                  </p>
+                                                  <pre className="text-[11px] leading-4 whitespace-pre-wrap break-words text-gray-700 dark:text-gray-200">
+                                                    {safeJsonString(row?.content ?? '')}
+                                                  </pre>
+                                                </div>
+                                                <div>
+                                                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    analysis_result
+                                                  </p>
+                                                  <pre className="text-[11px] leading-4 whitespace-pre-wrap break-words text-gray-700 dark:text-gray-200">
+                                                    {safeJsonString(row?.analysis_result ?? row?.analysisResult ?? '')}
+                                                  </pre>
+                                                </div>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                              </tbody>
+                            </table>
+                          ) : (
+                            <table className="w-full text-left text-xs border-collapse">
+                              <thead className="bg-gray-50 dark:bg-meta-4/50 sticky top-0 z-10">
+                                <tr>
+                                  {(Object.keys(data[0] as object) as string[]).map((col) => (
+                                    <th
+                                      key={col}
+                                      className="px-2 py-1.5 font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap border-b border-stroke dark:border-strokedark"
+                                    >
+                                      {col}
+                                    </th>
                                   ))}
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {data.map((row: any, i) => (
+                                  <tr
+                                    key={i}
+                                    className="border-b border-stroke dark:border-strokedark hover:bg-gray-50/50 dark:hover:bg-meta-4/30"
+                                  >
+                                    {Object.entries(row).map(([k, v]) => (
+                                      <td
+                                        key={k}
+                                        className="px-2 py-1.5 text-gray-600 dark:text-gray-400 break-words whitespace-pre-wrap align-top min-w-0 max-w-xl"
+                                      >
+                                        {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
                         </div>
                       ) : (
                         <p className="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">No records</p>
