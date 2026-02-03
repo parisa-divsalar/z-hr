@@ -67,10 +67,15 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
 
             const wizardData = state.data;
             const serializableWizard = buildWizardSerializable(wizardData);
-            const existingRequestId = useWizardStore.getState().requestId;
             const isAuthenticated = Boolean(accessToken);
             const fallbackRequestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            let finalRequestId = existingRequestId || fallbackRequestId;
+            /**
+             * Important:
+             * Each final submit should create a **new resume** (new row in `cvs.json`),
+             * so we must NOT reuse a previously stored requestId (sessionStorage).
+             * Otherwise, the next resume overwrites the previous one and admin shows only 1.
+             */
+            let finalRequestId = fallbackRequestId;
             let analysisResult: unknown = null;
 
             if (isAuthenticated) {
@@ -110,15 +115,13 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
                 }
             }
 
-            if (isAuthenticated && (!existingRequestId || existingRequestId !== finalRequestId)) {
-                setRequestId(finalRequestId);
-            }
+            if (isAuthenticated) setRequestId(finalRequestId);
             const hasAnyFilesOrVoices = (wizardData.allFiles?.length ?? 0) > 0;
 
             if (!hasAnyFilesOrVoices) {
                 saveWizardTextOnlySession(wizardData);
                 // keep it so Step3 can still fetch/edit the backend CV.
-                if (!isAuthenticated && !existingRequestId) {
+                if (!isAuthenticated) {
                     setRequestId(null);
                 }
                 setActiveStep(3);
