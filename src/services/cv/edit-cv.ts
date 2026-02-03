@@ -10,6 +10,12 @@ export type EditCVParams = {
 
 type RawCVRecord = Record<string, unknown>;
 
+const unwrapApiData = (payload: unknown) => {
+    if (!payload || typeof payload !== 'object') return payload;
+    const anyPayload = payload as any;
+    return anyPayload.data ?? payload;
+};
+
 const tryParseBodyOfResume = (value: unknown) => {
     if (typeof value !== 'string') {
         return value;
@@ -23,10 +29,26 @@ const tryParseBodyOfResume = (value: unknown) => {
     }
 };
 
-const normalizeCvRecord = (record: RawCVRecord) => ({
-    ...record,
-    bodyOfResume: tryParseBodyOfResume(record.bodyOfResume),
-});
+const extractResumeBody = (record: RawCVRecord) => {
+    const anyRecord = record as any;
+    return (
+        anyRecord.bodyOfResume ??
+        anyRecord.BodyOfResume ??
+        anyRecord.content ??
+        anyRecord.Content ??
+        anyRecord.cv ??
+        anyRecord.resume ??
+        anyRecord.data?.content
+    );
+};
+
+const normalizeCvRecord = (record: RawCVRecord) => {
+    const bodyOfResume = extractResumeBody(record);
+    return {
+        ...record,
+        bodyOfResume: tryParseBodyOfResume(bodyOfResume),
+    };
+};
 
 /**
  * Update CV via the Next.js API route (proxy to Apps/EditCV).
@@ -41,9 +63,11 @@ export async function editCV(params: EditCVParams) {
         sectionText: params.sectionText ?? undefined,
     });
 
-    if (Array.isArray(data)) {
-        return data.map((record: RawCVRecord) => normalizeCvRecord(record));
+    const unwrapped = unwrapApiData(data);
+
+    if (Array.isArray(unwrapped)) {
+        return unwrapped.map((record: RawCVRecord) => normalizeCvRecord(record));
     }
 
-    return normalizeCvRecord(data as RawCVRecord);
+    return normalizeCvRecord(unwrapped as RawCVRecord);
 }

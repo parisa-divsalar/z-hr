@@ -717,7 +717,32 @@ export const resolveCvRecord = (raw: any): any | null => {
 
 export const resolveCvPayload = (record: any): any => {
     if (!record || typeof record !== 'object') return {};
-    const body = (record as any).bodyOfResume;
+
+    /**
+     * Prefer `content` (our local DB + `/api/cv/get-cv` response).
+     * Some older flows used `bodyOfResume`/`BodyOfResume`.
+     *
+     * Also handle accidentally wrapped payloads where someone saved the whole API record
+     * (e.g. `{ requestId, content, analysis, ... }`) back into `cvs.content`.
+     */
+    const contentCandidate = (record as any).content ?? (record as any).Content ?? (record as any).data?.content;
+    if (contentCandidate && typeof contentCandidate === 'object') {
+        // If it looks like the wrapper record, unwrap its `.content`.
+        const maybeWrapper = contentCandidate as any;
+        if (maybeWrapper && typeof maybeWrapper === 'object' && 'content' in maybeWrapper && 'analysis' in maybeWrapper) {
+            return maybeWrapper.content ?? {};
+        }
+        return contentCandidate;
+    }
+    if (typeof contentCandidate === 'string') {
+        try {
+            return JSON.parse(contentCandidate);
+        } catch {
+            return record;
+        }
+    }
+
+    const body = (record as any).bodyOfResume ?? (record as any).BodyOfResume;
     if (body && typeof body === 'object') return body;
     if (typeof body === 'string') {
         try {
@@ -726,6 +751,9 @@ export const resolveCvPayload = (record: any): any => {
             return record;
         }
     }
+
+    // Last resort: assume the record itself is already the resume payload.
+    // (This can happen when external APIs return resume fields at the top level.)
     return record;
 };
 
