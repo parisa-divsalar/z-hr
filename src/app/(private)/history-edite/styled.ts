@@ -23,8 +23,6 @@ export const PreviewEditeRoot = styled(Stack)(({ theme }) => ({
     maxWidth: '1200px',
     margin: '0 auto',
     borderRadius: theme.spacing(1.75),
-    padding: theme.spacing(3.5),
-    gap: theme.spacing(3),
     transition: 'all 0.3s ease',
     border: `1px solid ${alpha(theme.palette.grey[300], 0.6)}`,
 

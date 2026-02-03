@@ -78,14 +78,14 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
 
   return (
     <PreviewEditeRoot>
-      <Grid container spacing={2} alignItems='center'>
-        <Grid size={{ xs: 12, sm: 12, md: 2 }}>
+      <Grid container spacing={2} alignItems='stretch'>
+        <Grid size={{ xs: 12, sm: 2, md: 2 }} sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
           <HistoryImage p={2}>
             <Image src={ResumeIcon} alt='Resume preview' fill />
           </HistoryImage>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 5, md: 7 }} p={2}>
+        <Grid size={{ xs: 12, sm: 7, md: 7 }} p={2}>
           <Stack direction='row' gap={1}>
             <Typography variant='h6' fontWeight='500' color='text.primary'>
               Resume Name
@@ -95,7 +95,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
             </Typography>
           </Stack>
 
-          <Stack direction='row' gap={2} alignItems='center'>
+          <Stack direction='row' gap={2} alignItems='center' flexWrap='wrap'>
             <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
               Nov 26, 2024
             </Typography>
@@ -150,7 +150,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
         </Grid>
 
         <Grid size={{ xs: 12, sm: 3, md: 3 }}>
-          <Stack gap={11} alignItems='flex-end'>
+          <Stack height='100%' justifyContent='space-between' alignItems='flex-end'>
             <RelativeStack direction='row' gap={3}>
               <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label='More options'>
                 <Dotsvertical />

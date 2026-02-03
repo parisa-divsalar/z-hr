@@ -120,14 +120,18 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                     </Stack>
                     {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mt: 1 }} />}
                 </Grid>
-                <Grid size={{ xs: 12, sm: 12, md: 2 }} pt={2} sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Grid
+                    size={{ xs: 12, sm: 2, md: 2 }}
+                    pt={2}
+                    sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}
+                >
                     <HistoryImage p={2}>
                         <Image src={ResumeIcon} alt='Resume preview' fill />
                     </HistoryImage>
                 </Grid>
 
                 <Grid
-                    size={{ xs: 12, sm: 5, md: 7 }}
+                    size={{ xs: 12, sm: 7, md: 7 }}
                     p={2}
                     sx={{
                         px: { xs: 2, sm: 2, md: 4 },
