@@ -27,8 +27,6 @@ export const PreviewEditeRoot = styled(Stack)(({ theme }) => ({
     gap: theme.spacing(3),
     transition: 'all 0.3s ease',
     border: `1px solid ${alpha(theme.palette.grey[300], 0.6)}`,
-    backgroundColor: theme.palette.background.paper,
-    boxShadow: '0 25px 60px rgba(15, 23, 42, 0.15)',
 
     '&:hover': {
         boxShadow: '0 30px 70px rgba(15, 23, 42, 0.25)',

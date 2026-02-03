@@ -235,7 +235,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                                 textTransform: 'none',
                             }}
                         >
-                            Edit In Preview
+                            Edit
                         </MuiButton>
                         <MuiButton
                             variant='contained'
