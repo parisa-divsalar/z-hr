@@ -738,6 +738,11 @@ export const db = {
             const rows = readFile<HistoryRow>(historyFile, []);
             return rows.filter((r: any) => Number(r.user_id) === Number(userId));
         },
+        findByUserIdAndId: (userId: number, id: string): HistoryRow | null => {
+            const rows = readFile<HistoryRow>(historyFile, []);
+            const row = rows.find((r: any) => r.id === id && Number(r.user_id) === Number(userId));
+            return row ?? null;
+        },
         upsert: (row: Omit<HistoryRow, 'created_at' | 'updated_at'> & Partial<Pick<HistoryRow, 'created_at' | 'updated_at'>>) => {
             const rows = readFile<HistoryRow>(historyFile, []);
             const idx = rows.findIndex((r: any) => r.id === row.id && Number(r.user_id) === Number(row.user_id));
@@ -757,6 +762,14 @@ export const db = {
             writeFile(historyFile, rows);
             return rows[idx];
         },
+        update: (userId: number, id: string, patch: Partial<HistoryRow>) => {
+            const rows = readFile<HistoryRow>(historyFile, []);
+            const idx = rows.findIndex((r: any) => r.id === id && Number(r.user_id) === Number(userId));
+            if (idx === -1) return null;
+            rows[idx] = { ...rows[idx], ...(patch as any), updated_at: new Date().toISOString() };
+            writeFile(historyFile, rows);
+            return rows[idx];
+        },
         toggleBookmark: (userId: number, id: string, isBookmarked?: boolean): HistoryRow | null => {
             const rows = readFile<HistoryRow>(historyFile, []);
             const idx = rows.findIndex((r: any) => r.id === id && Number(r.user_id) === Number(userId));
@@ -772,6 +785,14 @@ export const db = {
             if (idx === -1) return false;
             rows[idx] = { ...rows[idx], deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() };
             writeFile(historyFile, rows);
+            return true;
+        },
+        deleteHard: (userId: number, id: string): boolean => {
+            const rows = readFile<HistoryRow>(historyFile, []);
+            const before = rows.length;
+            const next = rows.filter((r: any) => !(r.id === id && Number(r.user_id) === Number(userId)));
+            if (next.length === before) return false;
+            writeFile(historyFile, next);
             return true;
         },
     },

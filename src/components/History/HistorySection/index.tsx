@@ -302,7 +302,8 @@ const HistorySection = () => {
     const sortButtonRef = useRef<HTMLDivElement>(null);
     const sortMenuRef = useRef<HTMLDivElement>(null);
 
-    const ITEMS_PER_PAGE = 3;
+    // Show all items by default (up to a safe cap); keep infinite-scroll behavior for very large lists.
+    const ITEMS_PER_PAGE = 50;
 
     const [sortOption, setSortOption] = useState<THistorySortOption>('NEW_TO_OLD');
 
