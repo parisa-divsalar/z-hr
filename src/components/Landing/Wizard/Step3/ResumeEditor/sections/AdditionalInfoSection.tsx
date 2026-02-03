@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
@@ -12,6 +12,7 @@ type Props = { c: ResumeEditorController };
 export default function AdditionalInfoSection({ c }: Props) {
     const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const shouldRender =
+        !c.isPreview ||
         c.shouldBlockBelowSummary ||
         c.isTextOnlyMode ||
         c.additionalInfo.trim().length > 0 ||
@@ -58,6 +59,10 @@ export default function AdditionalInfoSection({ c }: Props) {
                         value={c.additionalInfoEditText}
                         onChange={(e) => c.setAdditionalInfoEditText(e.target.value)}
                     />
+                ) : !c.additionalInfo.trim() ? (
+                    <Typography variant='body2' color='text.secondary'>
+                        No additional information found.
+                    </Typography>
                 ) : (
                     <SummaryText sx={{ whiteSpace: 'pre-line' }}>{c.additionalInfo}</SummaryText>
                 )}

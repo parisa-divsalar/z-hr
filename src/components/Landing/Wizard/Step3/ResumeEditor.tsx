@@ -34,10 +34,23 @@ interface ResumeEditorProps {
      * If not provided, ResumeEditor manages its own ref internally.
      */
     pdfTargetRef?: MutableRefObject<HTMLDivElement | null>;
+    /**
+     * Optional API overrides for admin / tooling flows.
+     */
+    apiUserId?: string | null;
+    requestIdOverride?: string | null;
+    disableAutoPoll?: boolean;
 }
 
-const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({ setStage, mode = 'editor', pdfTargetRef }) => {
-    const c = useResumeEditorController({ mode, pdfTargetRef });
+const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
+    setStage,
+    mode = 'editor',
+    pdfTargetRef,
+    apiUserId,
+    requestIdOverride,
+    disableAutoPoll,
+}) => {
+    const c = useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
     const sectionLabels: Record<SectionKey, string> = {
         summary: 'Summary',

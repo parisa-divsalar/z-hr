@@ -20,6 +20,38 @@ function filterByUserId(arr: unknown[], userId: number, idKey = 'user_id'): unkn
   return arr.filter((row: any) => row[idKey] === userId || row[idKey] === String(userId));
 }
 
+function toMMDDYYYY(iso: string) {
+  const d = new Date(iso);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = String(d.getFullYear());
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function sizeMBFromCvRow(row: any): string {
+  const str = typeof row?.content === 'string' ? row.content : JSON.stringify(row?.content ?? '');
+  const bytes = new TextEncoder().encode(str).length;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function tryParseJson(value: unknown): any | null {
+  if (value == null) return null;
+  if (typeof value === 'object') return value;
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
+function extractFullNameFromWizardRow(wizardRow: any): string {
+  const parsed = tryParseJson(wizardRow?.data);
+  return String(parsed?.fullName ?? '').trim();
+}
+
 const TABLE_LABELS: Record<string, string> = {
   users: 'Users',
   cvs: 'Resumes',
@@ -91,14 +123,51 @@ export default function DatabasePage() {
   const userDetailData = useMemo(() => {
     if (!data || userId == null) return null;
     const tables = data.tables as Record<string, unknown[]>;
+    const cvs = filterByUserId(tables.cvs ?? [], userId) as any[];
+    const history = filterByUserId(tables.history ?? [], userId) as any[];
+    const historyById = new Map<string, any>(history.map((h: any) => [String(h?.id ?? ''), h]));
+    const wizardData = filterByUserId(tables.wizard_data ?? [], userId, 'user_id') as any[];
+    const wizardByRequestId = new Map<string, any>(
+      wizardData.map((w: any) => [String(w?.request_id ?? w?.requestId ?? ''), w]).filter(([k]) => Boolean(k))
+    );
+
+    // Fallback: if history table is empty (or missing some items), derive from cvs so UI doesn't look broken.
+    const derivedFromCvs = (cvs ?? [])
+      .map((cv: any) => {
+        const rid = String(cv?.request_id ?? cv?.requestId ?? '').trim();
+        if (!rid) return null;
+        const existing = historyById.get(rid);
+        if (existing) return existing;
+        const wizardRow = wizardByRequestId.get(rid);
+        const fullName = extractFullNameFromWizardRow(wizardRow);
+        return {
+          id: rid,
+          user_id: userId,
+          name: fullName || String(cv?.title ?? "User's Resume"),
+          date: toMMDDYYYY(String(cv?.created_at ?? new Date().toISOString())),
+          Percentage: String(cv?.Percentage ?? '0%'),
+          position: '',
+          level: '',
+          title: String(cv?.title ?? ''),
+          Voice: '0',
+          Photo: '0',
+          Video: '0',
+          size: sizeMBFromCvRow(cv),
+          description: 'Resume',
+          is_bookmarked: false,
+        };
+      })
+      .filter(Boolean) as any[];
+
     return {
       login_logs: filterByUserId(tables.login_logs ?? [], userId),
       ai_interactions: filterByUserId(tables.ai_interactions ?? [], userId),
-      cvs: filterByUserId(tables.cvs ?? [], userId),
-      wizard_data: filterByUserId(tables.wizard_data ?? [], userId),
+      cvs,
+      wizard_data: wizardData,
       user_skills: filterByUserId(tables.user_skills ?? [], userId),
       interview_sessions: filterByUserId(tables.interview_sessions ?? [], userId),
       resume_drafts: filterByUserId(tables.resume_drafts ?? [], userId),
+      history: [...history, ...derivedFromCvs],
       registration_logs: (tables.registration_logs ?? []).filter(
         (r: any) => r.email === selectedUser?.email || r.user_id === userId
       ),
@@ -848,6 +917,7 @@ export default function DatabasePage() {
                     { key: 'user_skills', label: 'User skills', data: userDetailData.user_skills },
                     { key: 'interview_sessions', label: 'Interview sessions', data: userDetailData.interview_sessions },
                     { key: 'resume_drafts', label: 'Resume drafts', data: userDetailData.resume_drafts },
+                    { key: 'history', label: 'History', data: (userDetailData as any).history ?? [] },
                     { key: 'registration_logs', label: 'Registration logs', data: userDetailData.registration_logs },
                   ].map(({ key, label, data }) => (
                     <div key={key} className="rounded-lg border border-stroke dark:border-strokedark overflow-hidden">
@@ -888,6 +958,13 @@ export default function DatabasePage() {
                                   .map((row: any, i) => {
                                     const reqId = String(row?.request_id ?? row?.requestId ?? row?.id ?? i);
                                     const isOpen = expandedCvRequestId === reqId;
+                                    const requestIdForEditor = String(row?.request_id ?? row?.requestId ?? '').trim();
+                                    const editorHref =
+                                      requestIdForEditor && userId != null
+                                        ? `${ZHR_API_URL}/admin/resume-editor?userId=${encodeURIComponent(
+                                            String(userId)
+                                          )}&requestId=${encodeURIComponent(requestIdForEditor)}`
+                                        : null;
                                     const preview =
                                       truncate(row?.title, 60) ||
                                       truncate(row?.summary, 120) ||
@@ -915,6 +992,20 @@ export default function DatabasePage() {
                                             >
                                               {isOpen ? 'Hide' : 'View'}
                                             </button>
+                                            {editorHref && (
+                                              <>
+                                                <span className="mx-2 text-gray-300 dark:text-gray-600">|</span>
+                                                <a
+                                                  className="text-primary underline"
+                                                  href={editorHref}
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                  title="Open in Resume Editor"
+                                                >
+                                                  Edit
+                                                </a>
+                                              </>
+                                            )}
                                           </td>
                                         </tr>
                                         {isOpen && (
@@ -961,7 +1052,7 @@ export default function DatabasePage() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {data.map((row: any, i) => (
+                                {data.map((row: any, i: number) => (
                                   <tr
                                     key={i}
                                     className="border-b border-stroke dark:border-strokedark hover:bg-gray-50/50 dark:hover:bg-meta-4/30"

@@ -44,7 +44,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
     if (setActiveStep) {
       setActiveStep(3);
     } else {
-      router.push('/?step=3');
+      router.push('/history-edite?mode=editor');
     }
   };
 

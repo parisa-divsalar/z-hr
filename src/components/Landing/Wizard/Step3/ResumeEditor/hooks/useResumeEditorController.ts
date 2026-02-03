@@ -162,6 +162,23 @@ export type ResumeEditorController = {
 type Args = {
     mode?: ResumeEditorMode;
     pdfTargetRef?: MutableRefObject<HTMLDivElement | null>;
+    /**
+     * Override the userId used for API calls (get-cv/edit-cv/post-improved/...).
+     * Useful for admin tooling where we want to edit a specific user's resume
+     * without using the logged-in session token.
+     */
+    apiUserId?: string | null;
+    /**
+     * Override the requestId used for loading/saving the CV.
+     * Typically you should also set the wizard store requestId, but this makes
+     * standalone pages easier.
+     */
+    requestIdOverride?: string | null;
+    /**
+     * In normal wizard flow we poll analysis/create and then load CV.
+     * For admin/open-existing-resume flows we want to skip that and just load CV.
+     */
+    disableAutoPoll?: boolean;
 };
 
 export function useResumeEditorController(args: Args): ResumeEditorController {
@@ -171,9 +188,12 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     const [editingSection, setEditingSection] = useState<string | null>(null);
     const wizardData = useWizardStore((state) => state.data);
     const updateWizardField = useWizardStore((state) => state.updateField);
-    const requestId = useWizardStore((state) => state.requestId);
+    const requestIdFromStore = useWizardStore((state) => state.requestId);
     const setRequestId = useWizardStore((state) => state.setRequestId);
-    const accessToken = useAuthStore((state) => state.accessToken);
+    const accessTokenFromStore = useAuthStore((state) => state.accessToken);
+
+    const requestId = args.requestIdOverride ?? requestIdFromStore;
+    const accessToken = args.apiUserId ?? accessTokenFromStore;
 
     const canFetchCv = Boolean(requestId);
 
@@ -1047,6 +1067,12 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     useEffect(() => {
         if (!requestId) return;
 
+        // For admin/open-existing-resume flows: skip polling and just load.
+        if (args.disableAutoPoll) {
+            void loadCvData();
+            return;
+        }
+
         const key = `${accessToken ?? 'cookie'}:${requestId}`;
         if (lastAutoFetchKeyRef.current === key) return;
         lastAutoFetchKeyRef.current = key;
@@ -1068,7 +1094,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         return () => {
             cancelled = true;
         };
-    }, [requestId, accessToken, wizardData, loadCvData]);
+    }, [requestId, accessToken, wizardData, loadCvData, args.disableAutoPoll]);
 
     const handleEdit = (section: string) => {
         setSaveError(null);

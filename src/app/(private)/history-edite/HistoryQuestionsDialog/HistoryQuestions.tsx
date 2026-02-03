@@ -64,7 +64,7 @@ const HistoryQuestions = () => {
 
   const handleConfirm = () => {
     setOpenConfirmDialog(false);
-    router.push('/?step=1');
+    router.push('/resume-builder?step=1');
   };
 
   const mockItems = [

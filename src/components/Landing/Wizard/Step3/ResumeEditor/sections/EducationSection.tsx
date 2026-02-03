@@ -14,6 +14,7 @@ export default function EducationSection({ c }: Props) {
     const isEditing = !c.isPreview && c.editingSection === 'education';
     const hasContent = c.education.some((entry) => String(entry ?? '').trim().length > 0);
     const shouldRender =
+        !c.isPreview ||
         hasContent ||
         isEditing ||
         c.shouldBlockBelowSummary ||

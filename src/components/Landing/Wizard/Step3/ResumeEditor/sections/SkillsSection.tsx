@@ -14,6 +14,7 @@ export default function SkillsSection({ c }: Props) {
     const isEditing = !c.isPreview && c.editingSection === 'skills';
     const hasContent = c.skills.some((skill) => String(skill ?? '').trim().length > 0);
     const shouldRender =
+        !c.isPreview ||
         hasContent ||
         isEditing ||
         c.shouldBlockBelowSummary ||

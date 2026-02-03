@@ -16,6 +16,7 @@ import VoiceIcon from '@/assets/images/dashboard/voice.svg';
 import { HistoryImage, StyledDivider, TagPill } from '@/components/History/styled';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
 import { PreviewEditeRoot } from '../styled';
@@ -28,6 +29,7 @@ interface PreviewEditeProps {
 
 const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }) => {
     const router = useRouter();
+    const setRequestId = useWizardStore((s) => s.setRequestId);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const moreButtonRef = useRef<HTMLButtonElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -41,11 +43,22 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
     };
 
     const handleEditResume = () => {
+        const requestId = String(historyRow?.id ?? '').trim();
+        if (!requestId) {
+            setDownloadError('Missing resume id. Please go back and try again.');
+            return;
+        }
+
+        // Seed wizard context (Step3 loads CV by requestId from store/sessionStorage)
+        setRequestId(requestId);
+
         if (setActiveStep) {
             setActiveStep(3);
-        } else {
-            router.push('/?step=3');
+            return;
         }
+
+        // Render the real ResumeEditor component inside history-edite page (no separate page).
+        router.push(`/history-edite?id=${encodeURIComponent(requestId)}&mode=editor`);
     };
 
     const handleDownload = useCallback(async () => {
@@ -94,7 +107,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
     return (
         <PreviewEditeRoot ref={pdfRef}>
             <Grid container spacing={2} alignItems='stretch'>
-                <Grid item size={{ xs: 12, sm: 12, md: 12 }}>
+                <Grid size={{ xs: 12, sm: 12, md: 12 }}>
                     <Stack
                         direction={{ xs: 'column', sm: 'row' }}
                         alignItems={{ xs: 'flex-start', sm: 'center' }}
@@ -107,19 +120,13 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                     </Stack>
                     {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mt: 1 }} />}
                 </Grid>
-                <Grid
-                    item
-                    size={{ xs: 12, sm: 12, md: 2 }}
-                    pt={2}
-                    sx={{ display: 'flex', justifyContent: 'center' }}
-                >
+                <Grid size={{ xs: 12, sm: 12, md: 2 }} pt={2} sx={{ display: 'flex', justifyContent: 'center' }}>
                     <HistoryImage p={2}>
                         <Image src={ResumeIcon} alt='Resume preview' fill />
                     </HistoryImage>
                 </Grid>
 
                 <Grid
-                    item
                     size={{ xs: 12, sm: 5, md: 7 }}
                     p={2}
                     sx={{
@@ -208,7 +215,6 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                 </Grid>
 
                 <Grid
-                    item
                     size={{ xs: 12, sm: 3, md: 3 }}
                     display='flex'
                     alignItems='flex-end'

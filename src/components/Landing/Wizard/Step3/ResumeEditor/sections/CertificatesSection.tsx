@@ -14,6 +14,7 @@ export default function CertificatesSection({ c }: Props) {
     const isEditing = !c.isPreview && c.editingSection === 'certificates';
     const hasContent = c.certificates.some((entry) => String(entry ?? '').trim().length > 0);
     const shouldRender =
+        !c.isPreview ||
         hasContent ||
         isEditing ||
         c.shouldBlockBelowSummary ||

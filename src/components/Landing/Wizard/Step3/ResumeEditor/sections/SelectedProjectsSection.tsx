@@ -14,6 +14,7 @@ export default function SelectedProjectsSection({ c }: Props) {
     const isEditing = !c.isPreview && c.editingSection === 'selectedProjects';
     const hasContent = c.selectedProjects.some((entry) => String(entry ?? '').trim().length > 0);
     const shouldRender =
+        !c.isPreview ||
         hasContent ||
         isEditing ||
         c.shouldBlockBelowSummary ||

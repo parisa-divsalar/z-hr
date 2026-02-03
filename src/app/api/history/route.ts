@@ -2,10 +2,107 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
-
 import { db } from '@/lib/db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+function toMMDDYYYY(iso: string) {
+    const d = new Date(iso);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yyyy = String(d.getFullYear());
+    return `${mm}/${dd}/${yyyy}`;
+}
+
+function sizeMBFromCvContent(cv: any): string {
+    const str = typeof cv?.content === 'string' ? cv.content : JSON.stringify(cv?.content ?? '');
+    const bytes = Buffer.byteLength(str, 'utf8');
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function tryParseJson(value: unknown): any | null {
+    if (value == null) return null;
+    if (typeof value === 'object') return value;
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    try {
+        return JSON.parse(trimmed);
+    } catch {
+        return null;
+    }
+}
+
+function extractFullNameFromWizardDataRow(wizardRow: any): string {
+    const parsed = tryParseJson(wizardRow?.data);
+    const fullName = String(parsed?.fullName ?? '').trim();
+    return fullName;
+}
+
+function extractFullNameFromCvRow(cv: any): string {
+    const parsed = tryParseJson(cv?.content);
+    const fromProfile = String(parsed?.profile?.fullName ?? '').trim();
+    if (fromProfile) return fromProfile;
+    const direct = String(parsed?.fullName ?? '').trim();
+    if (direct) return direct;
+    return '';
+}
+
+function resolveDisplayNameForRequest(userId: number, requestId: string): string {
+    const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, requestId);
+    const fromWizard = extractFullNameFromWizardDataRow(wizardRow);
+    if (fromWizard) return fromWizard;
+    const cv = db.cvs.findByRequestId(requestId);
+    const fromCv = extractFullNameFromCvRow(cv);
+    if (fromCv) return fromCv;
+    return '';
+}
+
+/**
+ * Ensure `history.json` has rows for each CV the user has created.
+ * This prevents "empty history" UX when only `cvs.json` has data.
+ *
+ * - Does NOT resurrect deleted history rows.
+ * - Only upserts missing entries.
+ */
+function materializeHistoryFromCvs(userId: number) {
+    const allHistoryRows = db.history.findByUserId(userId); // includes deleted_at
+    const existingIds = new Set(allHistoryRows.map((r: any) => String(r?.id ?? '')));
+
+    const cvs = db.cvs.findByUserId(userId);
+    for (const cv of cvs) {
+        const requestId = String(cv?.request_id ?? '').trim();
+        if (!requestId) continue;
+        if (existingIds.has(requestId)) continue;
+
+        const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, requestId);
+        const counts = getCountsFromWizardDataRow(wizardRow);
+        const voice = counts ? String(counts.voiceCount) : '0';
+        const photo = counts ? String(counts.photoCount) : '0';
+        const video = counts ? String(counts.videoCount) : '0';
+        const fullName = extractFullNameFromWizardDataRow(wizardRow) || extractFullNameFromCvRow(cv);
+
+        db.history.upsert({
+            id: requestId,
+            user_id: userId,
+            name: fullName || (cv?.title as any) || "User's Resume",
+            date: toMMDDYYYY(String(cv?.created_at || new Date().toISOString())),
+            Percentage: '0%',
+            position: '',
+            level: '',
+            title: (cv?.title as any) || '',
+            Voice: voice,
+            Photo: photo,
+            size: sizeMBFromCvContent(cv),
+            Video: video,
+            description: 'Resume',
+            is_bookmarked: false,
+            deleted_at: null,
+        });
+
+        existingIds.add(requestId);
+    }
+}
 
 function getCountsFromWizardDataRow(wizardRow: any): { voiceCount: number; photoCount: number; videoCount: number } | null {
     if (!wizardRow?.data) return null;
@@ -93,6 +190,10 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     const bookmarkedOnly = url.searchParams.get('bookmarked') === '1' || url.searchParams.get('bookmarked') === 'true';
+
+    // If history is empty/incomplete, materialize from user's CVs so UI never shows empty history unexpectedly.
+    materializeHistoryFromCvs(userId);
+
     const rows = db.history.findByUserId(userId).filter((r: any) => !r?.deleted_at);
     const filtered = bookmarkedOnly ? rows.filter((r: any) => Boolean(r.is_bookmarked)) : rows;
 
@@ -101,10 +202,12 @@ export async function GET(request: NextRequest) {
         const row = filtered.find((r: any) => String(r?.id) === String(id));
         if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, String(id));
+        const requestId = String(id);
+        const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, requestId);
         const counts = getCountsFromWizardDataRow(wizardRow);
+        const fullName = resolveDisplayNameForRequest(userId, requestId);
         const enriched = counts
-            ? { ...row, Voice: String(counts.voiceCount), Photo: String(counts.photoCount), Video: String(counts.videoCount) }
+            ? { ...row, name: fullName || row?.name, Voice: String(counts.voiceCount), Photo: String(counts.photoCount), Video: String(counts.videoCount) }
             : row;
 
         return NextResponse.json({ data: enriched }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
@@ -116,9 +219,11 @@ export async function GET(request: NextRequest) {
         if (!requestId) return row;
         const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, requestId);
         const counts = getCountsFromWizardDataRow(wizardRow);
-        if (!counts) return row;
+        const fullName = resolveDisplayNameForRequest(userId, requestId);
+        const base = fullName ? { ...row, name: fullName } : row;
+        if (!counts) return base;
         return {
-            ...row,
+            ...base,
             Voice: String(counts.voiceCount),
             Photo: String(counts.photoCount),
             Video: String(counts.videoCount),

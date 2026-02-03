@@ -12,6 +12,7 @@ export default function LanguagesSection({ c }: Props) {
     const isEditing = !c.isPreview && c.editingSection === 'languages';
     const hasContent = c.languages.some((lang) => String(lang?.name ?? '').trim().length > 0);
     const shouldRender =
+        !c.isPreview ||
         hasContent ||
         isEditing ||
         c.shouldBlockBelowSummary ||

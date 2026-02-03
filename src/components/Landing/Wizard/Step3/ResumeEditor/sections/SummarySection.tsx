@@ -15,7 +15,7 @@ export default function SummarySection({ c }: Props) {
     const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const hasContent = c.summary.trim().length > 0;
     const isEditing = !c.isPreview && c.editingSection === 'summary';
-    const shouldRender = hasContent || isEditing || c.isPreCvLoading || c.shouldBlockBelowSummary;
+    const shouldRender = !c.isPreview || hasContent || isEditing || c.isPreCvLoading || c.shouldBlockBelowSummary;
 
     if (!shouldRender) return null;
 
@@ -52,6 +52,8 @@ export default function SummarySection({ c }: Props) {
                     <Box>
                         <SkeletonParagraph lines={5} />
                     </Box>
+                ) : !c.summary.trim() ? (
+                    <SummaryText sx={{ color: 'text.secondary' }}>No summary found.</SummaryText>
                 ) : (
                     <SummaryText>{c.summary}</SummaryText>
                 )}

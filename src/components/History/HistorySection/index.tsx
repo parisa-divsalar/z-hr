@@ -32,6 +32,7 @@ import { THistoryChannel } from '@/components/History/type';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { useAuthStore } from '@/store/auth';
 
 type THistorySortOption = 'NEW_TO_OLD' | 'OLD_TO_NEW' | 'SIZE' | 'FIT_SCORE';
 
@@ -75,7 +76,8 @@ const HistoryCard = ({
     };
 
     const handleEditClick = () => {
-        router.push(`/history-edite?id=${encodeURIComponent(id)}`);
+        // `id` here is the requestId of the CV (see /api/history route materializing from cvs.json)
+        router.push(`/history-edite?id=${encodeURIComponent(id)}&mode=editor`);
     };
 
     const handleFavorite = () => {
@@ -272,7 +274,7 @@ const HistoryCard = ({
                             })}
                         >
                             <MuiButton variant='outlined' color='secondary' onClick={handleEditClick}>
-                                More
+                                Edit
                             </MuiButton>
                             {/*<MuiButton*/}
                             {/*    variant='contained'*/}
@@ -306,6 +308,7 @@ const HistorySection = () => {
     const ITEMS_PER_PAGE = 50;
 
     const [sortOption, setSortOption] = useState<THistorySortOption>('NEW_TO_OLD');
+    const accessToken = useAuthStore((s) => s.accessToken);
 
     const selectedSortLabel = useMemo(
         () => SORT_OPTIONS.find((o) => o.value === sortOption)?.label ?? 'Sort',
@@ -368,7 +371,10 @@ const HistorySection = () => {
     useEffect(() => {
         // Fetch initial history from DB (API)
         setIsLoading(true);
-        fetch(`/api/history${bookmarksOnly ? '?bookmarked=1' : ''}`, { cache: 'no-store' })
+        fetch(`/api/history${bookmarksOnly ? '?bookmarked=1' : ''}`, {
+            cache: 'no-store',
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+        })
             .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
             .then((json) => {
                 const rows = Array.isArray(json?.data) ? (json.data as THistoryChannel[]) : [];
@@ -382,7 +388,7 @@ const HistorySection = () => {
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [bookmarksOnly]);
+    }, [bookmarksOnly, accessToken]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -429,7 +435,10 @@ const HistorySection = () => {
         setAllItems((prev) => prev.map((r) => (r.id === id ? { ...r, is_bookmarked: next } : r)));
         fetch(`/api/history`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            },
             body: JSON.stringify({ id, is_bookmarked: next }),
         }).catch(() => {
             setAllItems((prev) => prev.map((r) => (r.id === id ? { ...r, is_bookmarked: !next } : r)));
@@ -440,7 +449,10 @@ const HistorySection = () => {
         const snapshot = allItems;
         setAllItems((prev) => prev.filter((r) => r.id !== id));
         setVisibleCount((prev) => Math.min(prev, Math.max(0, sortedAllItems.length - 1)));
-        fetch(`/api/history?id=${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {
+        fetch(`/api/history?id=${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+        }).catch(() => {
             setAllItems(snapshot);
         });
     };

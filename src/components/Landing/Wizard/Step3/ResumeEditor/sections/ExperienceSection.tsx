@@ -25,6 +25,7 @@ export default function ExperienceSection({ c }: Props) {
     );
     const hasContent = visibleExperiences.length > 0;
     const shouldRender =
+        !c.isPreview ||
         hasContent ||
         isEditing ||
         c.shouldBlockBelowSummary ||
