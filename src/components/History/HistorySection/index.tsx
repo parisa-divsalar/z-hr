@@ -14,7 +14,6 @@ import ResumeIcon from '@/assets/images/dashboard/resume.svg?url';
 import TrashIcon from '@/assets/images/dashboard/trash-01.svg';
 import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
-import { communityChannels } from '@/components/History/mockData';
 import {
     HeaderDivider,
     HistoryCommunityCardRoot,
@@ -43,6 +42,11 @@ const SORT_OPTIONS: { value: THistorySortOption; label: string }[] = [
     { value: 'FIT_SCORE', label: 'Fit Score' },
 ];
 
+type HistoryCardProps = THistoryChannel & {
+    onToggleBookmark: (id: string, next: boolean) => void;
+    onDelete: (id: string) => void;
+};
+
 const HistoryCard = ({
     name,
     date,
@@ -54,7 +58,11 @@ const HistoryCard = ({
     Photo,
     Video,
     description,
-}: THistoryChannel) => {
+    id,
+    is_bookmarked,
+    onToggleBookmark,
+    onDelete,
+}: HistoryCardProps) => {
     const router = useRouter();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [downloadError, _setDownloadError] = useState<string | null>(null);
@@ -72,10 +80,12 @@ const HistoryCard = ({
 
     const handleFavorite = () => {
         setIsMenuOpen(false);
+        onToggleBookmark(id, !Boolean(is_bookmarked));
     };
 
     const handleDelete = () => {
         setIsMenuOpen(false);
+        onDelete(id);
     };
 
     useEffect(() => {
@@ -283,10 +293,11 @@ const HistoryCard = ({
 };
 
 const HistorySection = () => {
-    const [displayedItems, setDisplayedItems] = useState<THistoryChannel[]>([]);
+    const [allItems, setAllItems] = useState<THistoryChannel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [currentIndex, setCurrentIndex] = useState(0);
     const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+    const [bookmarksOnly, setBookmarksOnly] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(0);
     const observerTarget = useRef<HTMLDivElement>(null);
     const sortButtonRef = useRef<HTMLDivElement>(null);
     const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -319,8 +330,8 @@ const HistorySection = () => {
         return Number.isFinite(n) ? n : 0;
     };
 
-    const sortedDisplayedItems = useMemo(() => {
-        const items = [...displayedItems];
+    const sortedAllItems = useMemo(() => {
+        const items = [...allItems];
         switch (sortOption) {
             case 'NEW_TO_OLD':
                 return items.sort((a, b) => parseDateToTimestamp(b.date) - parseDateToTimestamp(a.date));
@@ -333,7 +344,11 @@ const HistorySection = () => {
             default:
                 return items;
         }
-    }, [displayedItems, sortOption]);
+    }, [allItems, sortOption]);
+
+    const displayedItems = useMemo(() => {
+        return sortedAllItems.slice(0, visibleCount);
+    }, [sortedAllItems, visibleCount]);
 
     const handleSortClick = () => {
         setIsSortMenuOpen((prev) => !prev);
@@ -345,22 +360,28 @@ const HistorySection = () => {
     };
 
     const loadMoreItems = useCallback(() => {
-        if (isLoading || currentIndex >= communityChannels.length) return;
-
-        setIsLoading(true);
-
-        setTimeout(() => {
-            const nextItems = communityChannels.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
-
-            setDisplayedItems((prev) => [...prev, ...nextItems]);
-            setCurrentIndex((prev) => prev + ITEMS_PER_PAGE);
-            setIsLoading(false);
-        }, 500);
-    }, [currentIndex, isLoading]);
+        if (isLoading) return;
+        setVisibleCount((prev) => Math.min(prev + ITEMS_PER_PAGE, sortedAllItems.length));
+    }, [isLoading, sortedAllItems.length]);
 
     useEffect(() => {
-        loadMoreItems();
-    }, [loadMoreItems]);
+        // Fetch initial history from DB (API)
+        setIsLoading(true);
+        fetch(`/api/history${bookmarksOnly ? '?bookmarked=1' : ''}`, { cache: 'no-store' })
+            .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+            .then((json) => {
+                const rows = Array.isArray(json?.data) ? (json.data as THistoryChannel[]) : [];
+                setAllItems(rows);
+                setVisibleCount(Math.min(ITEMS_PER_PAGE, rows.length));
+            })
+            .catch(() => {
+                setAllItems([]);
+                setVisibleCount(0);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, [bookmarksOnly]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -384,7 +405,7 @@ const HistorySection = () => {
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting && !isLoading && currentIndex < communityChannels.length) {
+                if (entries[0].isIntersecting && !isLoading && visibleCount < sortedAllItems.length) {
                     loadMoreItems();
                 }
             },
@@ -401,7 +422,27 @@ const HistorySection = () => {
                 observer.unobserve(currentTarget);
             }
         };
-    }, [isLoading, currentIndex, loadMoreItems]);
+    }, [isLoading, loadMoreItems, sortedAllItems.length, visibleCount]);
+
+    const handleToggleBookmark = (id: string, next: boolean) => {
+        setAllItems((prev) => prev.map((r) => (r.id === id ? { ...r, is_bookmarked: next } : r)));
+        fetch(`/api/history`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, is_bookmarked: next }),
+        }).catch(() => {
+            setAllItems((prev) => prev.map((r) => (r.id === id ? { ...r, is_bookmarked: !next } : r)));
+        });
+    };
+
+    const handleDelete = (id: string) => {
+        const snapshot = allItems;
+        setAllItems((prev) => prev.filter((r) => r.id !== id));
+        setVisibleCount((prev) => Math.min(prev, Math.max(0, sortedAllItems.length - 1)));
+        fetch(`/api/history?id=${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {
+            setAllItems(snapshot);
+        });
+    };
 
     return (
         <Stack gap={1}>
@@ -411,6 +452,8 @@ const HistorySection = () => {
                 </Typography>
                 <Stack direction='row' alignItems='center'>
                     <MuiCheckbox
+                        checked={bookmarksOnly}
+                        onChange={() => setBookmarksOnly((p) => !p)}
                         label={
                             <Typography variant='body2' fontWeight='400' color='text.primary'>
                                 Bookmarks{' '}
@@ -469,13 +512,18 @@ const HistorySection = () => {
                 </Stack>
             </SectionHeader>
 
-            {sortedDisplayedItems.map((channel, index) => (
-                <HistoryCard key={`${channel.id}-${index}`} {...channel} />
+            {displayedItems.map((channel, index) => (
+                <HistoryCard
+                    key={`${channel.id}-${index}`}
+                    {...channel}
+                    onToggleBookmark={handleToggleBookmark}
+                    onDelete={handleDelete}
+                />
             ))}
 
             <Stack ref={observerTarget} alignItems='center' justifyContent='center' py={2}>
                 {isLoading && <CircularProgress size={30} />}
-                {currentIndex >= communityChannels.length && displayedItems.length > 0 && (
+                {visibleCount >= sortedAllItems.length && displayedItems.length > 0 && (
                     <Typography variant='body2' color='text.secondary'>
                         No more items to load
                     </Typography>

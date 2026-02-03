@@ -11,4 +11,5 @@ export type THistoryChannel = {
   size: string;
   Video: string;
   description: string;
+  is_bookmarked?: boolean;
 };

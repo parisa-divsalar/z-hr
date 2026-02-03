@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 // Simple file-based database using JSON files (project-root ./data by default)
 // NOTE: In this repo the data folder is at <projectRoot>/data, so default to that.
@@ -22,6 +23,27 @@ const aiInteractionsFile = path.join(dataDir, 'ai_interactions.json');
 const learningHubCoursesFile = path.join(dataDir, 'learning_hub_courses.json');
 const moreFeaturesFile = path.join(dataDir, 'more_features.json');
 const plansFile = path.join(dataDir, 'plans.json');
+const historyFile = path.join(dataDir, 'history.json');
+
+type HistoryRow = {
+    id: string;
+    user_id: number;
+    name: string;
+    date: string;
+    Percentage: string;
+    position: string;
+    level: string;
+    title: string;
+    Voice: string;
+    Photo: string;
+    size: string;
+    Video: string;
+    description: string;
+    is_bookmarked?: boolean;
+    deleted_at?: string | null;
+    created_at: string;
+    updated_at: string;
+};
 
 const defaultMoreFeatures = [
     {
@@ -710,6 +732,49 @@ export const db = {
     plans: {
         findAll: () => readFile(plansFile, defaultPlans),
     },
+    history: {
+        findAll: (): HistoryRow[] => readFile<HistoryRow>(historyFile, []),
+        findByUserId: (userId: number): HistoryRow[] => {
+            const rows = readFile<HistoryRow>(historyFile, []);
+            return rows.filter((r: any) => Number(r.user_id) === Number(userId));
+        },
+        upsert: (row: Omit<HistoryRow, 'created_at' | 'updated_at'> & Partial<Pick<HistoryRow, 'created_at' | 'updated_at'>>) => {
+            const rows = readFile<HistoryRow>(historyFile, []);
+            const idx = rows.findIndex((r: any) => r.id === row.id && Number(r.user_id) === Number(row.user_id));
+            const now = new Date().toISOString();
+            if (idx === -1) {
+                const created_at = row.created_at ?? now;
+                const newRow: HistoryRow = {
+                    ...(row as any),
+                    created_at,
+                    updated_at: row.updated_at ?? created_at,
+                };
+                rows.push(newRow);
+                writeFile(historyFile, rows);
+                return newRow;
+            }
+            rows[idx] = { ...rows[idx], ...(row as any), updated_at: row.updated_at ?? now };
+            writeFile(historyFile, rows);
+            return rows[idx];
+        },
+        toggleBookmark: (userId: number, id: string, isBookmarked?: boolean): HistoryRow | null => {
+            const rows = readFile<HistoryRow>(historyFile, []);
+            const idx = rows.findIndex((r: any) => r.id === id && Number(r.user_id) === Number(userId));
+            if (idx === -1) return null;
+            const next = typeof isBookmarked === 'boolean' ? isBookmarked : !Boolean(rows[idx].is_bookmarked);
+            rows[idx] = { ...rows[idx], is_bookmarked: next, updated_at: new Date().toISOString() };
+            writeFile(historyFile, rows);
+            return rows[idx];
+        },
+        markDeleted: (userId: number, id: string): boolean => {
+            const rows = readFile<HistoryRow>(historyFile, []);
+            const idx = rows.findIndex((r: any) => r.id === id && Number(r.user_id) === Number(userId));
+            if (idx === -1) return false;
+            rows[idx] = { ...rows[idx], deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+            writeFile(historyFile, rows);
+            return true;
+        },
+    },
 };
 
 export function initDatabase() {
@@ -729,6 +794,7 @@ export function initDatabase() {
     if (!fs.existsSync(learningHubCoursesFile)) writeFile(learningHubCoursesFile, []);
     if (!fs.existsSync(moreFeaturesFile)) writeFile(moreFeaturesFile, defaultMoreFeatures);
     if (!fs.existsSync(plansFile)) writeFile(plansFile, defaultPlans);
+    if (!fs.existsSync(historyFile)) writeFile(historyFile, []);
 }
 
 initDatabase();
