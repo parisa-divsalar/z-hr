@@ -371,6 +371,15 @@ export const db = {
             const cvs = readFile(cvsFile, []);
             const index = cvs.findIndex((c: any) => c.request_id === requestId);
             if (index !== -1) {
+                // Ensure every CV row has a stable numeric id (admin panel relies on this).
+                const currentId = (cvs[index] as any)?.id;
+                if (currentId == null || String(currentId).trim() === '') {
+                    const ids = cvs
+                        .map((c: any) => Number(c?.id))
+                        .filter((n: number) => Number.isFinite(n));
+                    const nextId = (ids.length ? Math.max(...ids) : 0) + 1;
+                    (cvs[index] as any).id = nextId;
+                }
                 cvs[index] = { ...cvs[index], ...data, updated_at: new Date().toISOString() };
                 writeFile(cvsFile, cvs);
                 return cvs[index];
