@@ -54,12 +54,13 @@ export default function DatabasePage() {
   const [learningHubSyncMessage, setLearningHubSyncMessage] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
 
-  const [historyModalOpen, setHistoryModalOpen] = useState(false);
-  const [historyMode, setHistoryMode] = useState<'add' | 'edit'>('add');
-  const [historyJson, setHistoryJson] = useState('');
-  const [historySaving, setHistorySaving] = useState(false);
-  const [historyActionError, setHistoryActionError] = useState<string | null>(null);
-  const [historyEditingKey, setHistoryEditingKey] = useState<{ id: string; user_id: number } | null>(null);
+  const [rowModalOpen, setRowModalOpen] = useState(false);
+  const [rowMode, setRowMode] = useState<'add' | 'edit'>('add');
+  const [rowJson, setRowJson] = useState('');
+  const [rowSaving, setRowSaving] = useState(false);
+  const [rowActionError, setRowActionError] = useState<string | null>(null);
+  const [rowEditingWhere, setRowEditingWhere] = useState<Record<string, unknown> | null>(null);
+  const [plansView, setPlansView] = useState<'matrix' | 'rows'>('matrix');
 
   const fetchDb = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -133,109 +134,140 @@ export default function DatabasePage() {
     }
   };
 
-  const openAddHistory = () => {
-    setHistoryMode('add');
-    setHistoryEditingKey(null);
-    setHistoryActionError(null);
-    setHistoryJson(
-      JSON.stringify(
-        {
-          user_id: 0,
-          name: '',
-          date: '',
-          Percentage: '',
-          position: '',
-          level: '',
-          title: '',
-          Voice: '',
-          Photo: '',
-          size: '',
-          Video: '',
-          description: '',
-          is_bookmarked: false,
-        },
-        null,
-        2
-      )
-    );
-    setHistoryModalOpen(true);
-  };
+  const getCrudTable = useCallback((table: string | null) => {
+    if (!table) return null;
+    if (table === 'job_positions_active' || table === 'job_positions_new') return 'job_positions';
+    return table;
+  }, []);
 
-  const openEditHistory = (row: any) => {
-    const id = String(row?.id ?? '');
-    const user_id = Number(row?.user_id);
-    if (!id || !Number.isFinite(user_id)) {
-      setHistoryActionError('Cannot edit: row is missing id/user_id');
-      return;
+  const buildWhere = useCallback((table: string, row: any, idx: number) => {
+    if (table === 'history') {
+      const id = String(row?.id ?? '').trim();
+      const user_id = Number(row?.user_id);
+      if (id && Number.isFinite(user_id)) return { id, user_id };
+      return { _index: idx };
     }
-    setHistoryMode('edit');
-    setHistoryEditingKey({ id, user_id });
-    setHistoryActionError(null);
-    setHistoryJson(JSON.stringify(row, null, 2));
-    setHistoryModalOpen(true);
-  };
+    if (row?.id != null && String(row.id).trim() !== '') return { id: row.id };
+    if (row?.request_id != null && String(row.request_id).trim() !== '') return { request_id: row.request_id };
+    if (row?.source_url != null && String(row.source_url).trim() !== '') return { source_url: row.source_url };
+    if (row?.sourceUrl != null && String(row.sourceUrl).trim() !== '') return { sourceUrl: row.sourceUrl };
+    if (row?.email != null && String(row.email).trim() !== '') return { email: row.email };
+    return { _index: idx };
+  }, []);
 
-  const saveHistory = async () => {
-    setHistorySaving(true);
-    setHistoryActionError(null);
+  const openAddRow = useCallback(() => {
+    const t = getCrudTable(activeTable);
+    if (!t) return;
+    if (activeTable === 'plans' && plansView === 'matrix') return;
+    setRowMode('add');
+    setRowEditingWhere(null);
+    setRowActionError(null);
+    if (t === 'history') {
+      setRowJson(
+        JSON.stringify(
+          {
+            user_id: 0,
+            name: '',
+            date: '',
+            Percentage: '',
+            position: '',
+            level: '',
+            title: '',
+            Voice: '',
+            Photo: '',
+            size: '',
+            Video: '',
+            description: '',
+            is_bookmarked: false,
+          },
+          null,
+          2
+        )
+      );
+    } else {
+      setRowJson(JSON.stringify({}, null, 2));
+    }
+    setRowModalOpen(true);
+  }, [activeTable, getCrudTable, plansView]);
+
+  const openEditRow = useCallback(
+    (table: string, row: any, idx: number) => {
+      const t = getCrudTable(table);
+      if (!t) return;
+      setRowMode('edit');
+      setRowActionError(null);
+      setRowEditingWhere(buildWhere(t, row, idx));
+      setRowJson(JSON.stringify(row, null, 2));
+      setRowModalOpen(true);
+    },
+    [buildWhere, getCrudTable]
+  );
+
+  const saveRow = useCallback(async () => {
+    const tableForCrud = getCrudTable(activeTable);
+    if (!tableForCrud) return;
+    if (activeTable === 'plans' && plansView === 'matrix') return;
+
+    setRowSaving(true);
+    setRowActionError(null);
     try {
-      const parsed = JSON.parse(historyJson);
-      if (historyMode === 'add') {
-        const res = await fetch(`${ZHR_API_URL}/api/admin/history`, {
+      const parsed = JSON.parse(rowJson);
+      if (rowMode === 'add') {
+        const res = await fetch(`${ZHR_API_URL}/api/admin/table/${encodeURIComponent(tableForCrud)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(parsed),
+          body: JSON.stringify({ row: parsed }),
         });
         const json = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
       } else {
-        const id = historyEditingKey?.id || String(parsed?.id ?? '');
-        const user_id = historyEditingKey?.user_id ?? Number(parsed?.user_id);
-        if (!id || !Number.isFinite(user_id)) throw new Error('id and user_id are required for edit');
-        const res = await fetch(`${ZHR_API_URL}/api/admin/history`, {
+        const where = rowEditingWhere;
+        if (!where) throw new Error('Missing row identifier (where)');
+        const res = await fetch(`${ZHR_API_URL}/api/admin/table/${encodeURIComponent(tableForCrud)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ id, user_id, patch: parsed }),
+          body: JSON.stringify({ where, patch: parsed }),
         });
         const json = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
       }
 
-      setHistoryModalOpen(false);
+      setRowModalOpen(false);
       await fetchDb(false);
     } catch (e) {
-      setHistoryActionError(e instanceof Error ? e.message : 'Save failed');
+      setRowActionError(e instanceof Error ? e.message : 'Save failed');
     } finally {
-      setHistorySaving(false);
+      setRowSaving(false);
     }
-  };
+  }, [activeTable, fetchDb, getCrudTable, plansView, rowEditingWhere, rowJson, rowMode]);
 
-  const deleteHistory = async (row: any) => {
-    const id = String(row?.id ?? '');
-    const user_id = Number(row?.user_id);
-    if (!id || !Number.isFinite(user_id)) {
-      setHistoryActionError('Cannot delete: row is missing id/user_id');
-      return;
-    }
-    const ok = window.confirm(`Delete this history row permanently?\n\nid: ${id}\nuser_id: ${user_id}`);
-    if (!ok) return;
+  const deleteRow = useCallback(
+    async (table: string, row: any, idx: number) => {
+      const t = getCrudTable(table);
+      if (!t) return;
+      const where = buildWhere(t, row, idx);
+      const ok = window.confirm(`Delete this row permanently?\n\nTable: ${t}\nWhere: ${JSON.stringify(where)}`);
+      if (!ok) return;
 
-    setHistorySaving(true);
-    setHistoryActionError(null);
-    try {
-      const res = await fetch(`${ZHR_API_URL}/api/admin/history?id=${encodeURIComponent(id)}&user_id=${encodeURIComponent(String(user_id))}&hard=1`, {
-        method: 'DELETE',
-        headers: { Accept: 'application/json' },
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
-      await fetchDb(false);
-    } catch (e) {
-      setHistoryActionError(e instanceof Error ? e.message : 'Delete failed');
-    } finally {
-      setHistorySaving(false);
-    }
-  };
+      setRowSaving(true);
+      setRowActionError(null);
+      try {
+        const res = await fetch(`${ZHR_API_URL}/api/admin/table/${encodeURIComponent(t)}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ where }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+        await fetchDb(false);
+      } catch (e) {
+        setRowActionError(e instanceof Error ? e.message : 'Delete failed');
+      } finally {
+        setRowSaving(false);
+      }
+    },
+    [buildWhere, fetchDb, getCrudTable]
+  );
 
   if (loading) {
     return (
@@ -588,10 +620,20 @@ export default function DatabasePage() {
           </div>
         )}
 
-        {activeTable === 'plans' && (
+        {activeTable === 'plans' && plansView === 'matrix' && (
           <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-4 py-3 dark:border-strokedark">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Plan</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Plan</h3>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setPlansView('matrix')} disabled>
+                    Matrix
+                  </Button>
+                  <Button variant="primary" size="sm" onClick={() => setPlansView('rows')} disabled={false}>
+                    Manage rows
+                  </Button>
+                </div>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -620,7 +662,7 @@ export default function DatabasePage() {
           </div>
         )}
 
-        {activeTable !== 'plans' && activeTable !== 'coin' && (
+        {activeTable !== 'coin' && (activeTable !== 'plans' || plansView === 'rows') && (
           <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-4 py-3 dark:border-strokedark flex items-center justify-between gap-2">
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -630,97 +672,88 @@ export default function DatabasePage() {
                 {activeTable === 'users' && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">Click a row to view all logs and data for that user.</p>
                 )}
-                {activeTable === 'history' && (
-                  <Button variant="primary" size="sm" onClick={openAddHistory} disabled={historySaving}>
+                {activeTable === 'plans' && (
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setPlansView('matrix')} disabled={false}>
+                      Matrix
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setPlansView('rows')} disabled>
+                      Rows
+                    </Button>
+                  </div>
+                )}
+                {activeTable && activeTable !== 'coin' && !(activeTable === 'plans' && plansView === 'matrix') && (
+                  <Button variant="primary" size="sm" onClick={openAddRow} disabled={rowSaving}>
                     Add row
                   </Button>
                 )}
               </div>
             </div>
-            {activeTable === 'history' && historyActionError && (
+            {rowActionError && (
               <div className="border-b border-stroke px-4 py-3 dark:border-strokedark">
                 <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-                  {historyActionError}
+                  {rowActionError}
                 </div>
               </div>
             )}
             <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
               {activeTable && data.tables[activeTable] && (data.tables[activeTable] as unknown[]).length > 0 ? (
-                activeTable === 'history' ? (
-                  <table className="w-full text-left text-sm">
-                    <thead className="sticky top-0 bg-gray-100 dark:bg-meta-4">
-                      <tr>
-                        {(Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
-                          <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                            {col}
-                          </th>
-                        ))}
-                        <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(data.tables[activeTable] as unknown[]).map((row: any, idx) => {
-                        const key = `${String(row?.id ?? idx)}:${String(row?.user_id ?? '')}:${idx}`;
-                        return (
-                          <tr key={key} className="border-t border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-meta-4/50">
-                            {Object.entries(row as object).map(([k, v]) => (
-                              <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
-                                {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
-                              </td>
-                            ))}
-                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top">
-                              <div className="flex items-center gap-2">
-                                <Button variant="primary" size="sm" onClick={() => openEditHistory(row)} disabled={historySaving}>
-                                  Edit
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-600 ring-red-200 hover:bg-red-50 dark:text-red-300 dark:ring-red-900/50 dark:hover:bg-red-950/30"
-                                  onClick={() => deleteHistory(row)}
-                                  disabled={historySaving}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
+                <table className="w-full text-left text-sm">
+                  <thead className="sticky top-0 bg-gray-100 dark:bg-meta-4">
+                    <tr>
+                      {(Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
+                        <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                          {col}
+                        </th>
+                      ))}
+                      <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data.tables[activeTable] as unknown[]).map((row: any, idx) => {
+                      const isUserRow = activeTable === 'users';
+                      const userRow = row as UserRow;
+                      const key = `${String(row?.id ?? idx)}:${String(row?.user_id ?? '')}:${idx}`;
+                      return (
+                        <tr
+                          key={key}
+                          className={`border-t border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-meta-4/50 ${isUserRow ? 'cursor-pointer' : ''}`}
+                          onClick={isUserRow ? () => setSelectedUser(userRow) : undefined}
+                        >
+                          {Object.entries(row as object).map(([k, v]) => (
+                            <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
+                              {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
                             </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                ) : (
-                  <table className="w-full text-left text-sm">
-                    <thead className="sticky top-0 bg-gray-100 dark:bg-meta-4">
-                      <tr>
-                        {(Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
-                          <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                            {col}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(data.tables[activeTable] as unknown[]).map((row, idx) => {
-                        const isUserRow = activeTable === 'users';
-                        const userRow = row as UserRow;
-                        return (
-                          <tr
-                            key={idx}
-                            className={`border-t border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-meta-4/50 ${isUserRow ? 'cursor-pointer' : ''}`}
-                            onClick={isUserRow ? () => setSelectedUser(userRow) : undefined}
+                          ))}
+                          <td
+                            className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            {Object.entries(row as object).map(([k, v]) => (
-                              <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
-                                {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                )
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => openEditRow(activeTable, row, idx)}
+                                disabled={rowSaving}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 ring-red-200 hover:bg-red-50 dark:text-red-300 dark:ring-red-900/50 dark:hover:bg-red-950/30"
+                                onClick={() => deleteRow(activeTable, row, idx)}
+                                disabled={rowSaving}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               ) : (
                 <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                   {activeTable ? 'This table is empty.' : 'Select a table above.'}
@@ -730,45 +763,44 @@ export default function DatabasePage() {
           </div>
         )}
 
-        {historyModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => !historySaving && setHistoryModalOpen(false)}>
+        {rowModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => !rowSaving && setRowModalOpen(false)}>
             <div
               className="w-full max-w-3xl bg-white dark:bg-boxdark shadow-xl overflow-hidden flex flex-col max-h-[90vh] rounded-lg border border-stroke dark:border-strokedark"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {historyMode === 'add' ? 'Add history row' : 'Edit history row'}
+                  {rowMode === 'add' ? 'Add row' : 'Edit row'}
                 </h3>
-                <Button variant="primary" size="sm" onClick={() => setHistoryModalOpen(false)} disabled={historySaving}>
+                <Button variant="primary" size="sm" onClick={() => setRowModalOpen(false)} disabled={rowSaving}>
                   Close
                 </Button>
               </div>
 
               <div className="p-4 space-y-3 overflow-y-auto">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Paste/modify JSON. For edit, <code className="px-1 rounded bg-gray-100 dark:bg-meta-4">id</code> and{' '}
-                  <code className="px-1 rounded bg-gray-100 dark:bg-meta-4">user_id</code> are required (key fields can’t be changed).
+                  Paste/modify JSON. Key fields are inferred automatically (or fallback to row index). Key fields cannot be changed via edit.
                 </p>
-                {historyActionError && (
+                {rowActionError && (
                   <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-                    {historyActionError}
+                    {rowActionError}
                   </div>
                 )}
                 <textarea
                   className="w-full min-h-[320px] rounded border border-stroke bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-gray-200 dark:border-strokedark"
-                  value={historyJson}
-                  onChange={(e) => setHistoryJson(e.target.value)}
+                  value={rowJson}
+                  onChange={(e) => setRowJson(e.target.value)}
                   spellCheck={false}
                 />
               </div>
 
               <div className="border-t border-stroke px-4 py-3 dark:border-strokedark flex items-center justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setHistoryModalOpen(false)} disabled={historySaving}>
+                <Button variant="outline" size="sm" onClick={() => setRowModalOpen(false)} disabled={rowSaving}>
                   Cancel
                 </Button>
-                <Button variant="primary" size="sm" onClick={saveHistory} disabled={historySaving}>
-                  {historySaving ? 'Saving...' : 'Save'}
+                <Button variant="primary" size="sm" onClick={saveRow} disabled={rowSaving}>
+                  {rowSaving ? 'Saving...' : 'Save'}
                 </Button>
               </div>
             </div>
