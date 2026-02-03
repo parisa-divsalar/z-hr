@@ -19,12 +19,14 @@ import MuiButton from '@/components/UI/MuiButton';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
 import { PreviewEditeRoot } from '../styled';
+import { THistoryChannel } from '@/components/History/type';
 
 interface PreviewEditeProps {
     setActiveStep?: (step: number) => void;
+    historyRow?: THistoryChannel;
 }
 
-const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
+const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }) => {
     const router = useRouter();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const moreButtonRef = useRef<HTMLButtonElement>(null);
@@ -53,7 +55,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
         setDownloadError(null);
         try {
             const date = new Date().toISOString().slice(0, 10);
-            const baseName = sanitizeFileName("Zayd-Al-Mansoori's-Resume") || 'Resume';
+            const baseName = sanitizeFileName(historyRow?.name || 'Resume') || 'Resume';
             await exportElementToPdf(pdfRef.current, {
                 fileName: `${baseName}-${date}`,
                 marginPt: 24,
@@ -68,7 +70,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
         } finally {
             setIsDownloading(false);
         }
-    }, [isDownloading]);
+    }, [historyRow?.name, isDownloading]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -100,7 +102,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                     >
                         <BackIcon onClick={handleBackClick} style={{ cursor: 'pointer' }} />
                         <Typography variant='h5' color='text.primary' fontWeight='500'>
-                            Zayd Al-Mansoori's Resume
+                            {historyRow?.name || 'Resume'}
                         </Typography>
                     </Stack>
                     {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mt: 1 }} />}
@@ -127,10 +129,10 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                 >
                     <Stack direction='row' gap={1}>
                         <Typography variant='h6' fontWeight='500' color='text.primary'>
-                            Resume Name
+                            {historyRow?.title || 'Resume'}
                         </Typography>
 
-                        <TagPill sx={{ marginTop: '5px' }}> 85%</TagPill>
+                        {historyRow?.Percentage && <TagPill sx={{ marginTop: '5px' }}>{historyRow.Percentage}</TagPill>}
                     </Stack>
 
                     <Stack
@@ -141,19 +143,19 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                         sx={{ mt: 0.5 }}
                     >
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            Nov 26, 2024
+                            {historyRow?.date || '—'}
                         </Typography>
                         <StyledDivider orientation='vertical' flexItem />
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            2.5MB
+                            {historyRow?.size || '—'}
                         </Typography>
                         <StyledDivider orientation='vertical' flexItem />
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            Software Engineer
+                            {historyRow?.position || '—'}
                         </Typography>
                         <StyledDivider orientation='vertical' flexItem />
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            Senior
+                            {historyRow?.level || '—'}
                         </Typography>
                     </Stack>
 
@@ -167,19 +169,19 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VoiceIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                Voice
+                                Voice{historyRow?.Voice ? ` (${historyRow.Voice})` : ''}
                             </Typography>
                         </Stack>
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <ImageIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                Photo
+                                Photo{historyRow?.Photo ? ` (${historyRow.Photo})` : ''}
                             </Typography>
                         </Stack>
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VideoIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                Video
+                                Video{historyRow?.Video ? ` (${historyRow.Video})` : ''}
                             </Typography>
                         </Stack>
                     </Stack>

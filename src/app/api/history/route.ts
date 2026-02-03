@@ -90,11 +90,24 @@ export async function GET(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 
     const url = new URL(request.url);
+    const id = url.searchParams.get('id');
     const bookmarkedOnly = url.searchParams.get('bookmarked') === '1' || url.searchParams.get('bookmarked') === 'true';
-    const rows = db.history
-        .findByUserId(userId)
-        .filter((r: any) => !r?.deleted_at);
+    const rows = db.history.findByUserId(userId).filter((r: any) => !r?.deleted_at);
     const filtered = bookmarkedOnly ? rows.filter((r: any) => Boolean(r.is_bookmarked)) : rows;
+
+    // If `id` is provided, return just that row (or 404).
+    if (id) {
+        const row = filtered.find((r: any) => String(r?.id) === String(id));
+        if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+        const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, String(id));
+        const counts = getCountsFromWizardDataRow(wizardRow);
+        const enriched = counts
+            ? { ...row, Voice: String(counts.voiceCount), Photo: String(counts.photoCount), Video: String(counts.videoCount) }
+            : row;
+
+        return NextResponse.json({ data: enriched }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
+    }
 
     // Enrich Voice/Photo/Video with counts computed from saved wizard data (if present).
     const enriched = filtered.map((row: any) => {

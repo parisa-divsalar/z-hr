@@ -75,7 +75,7 @@ const HistoryCard = ({
     };
 
     const handleEditClick = () => {
-        router.push('/history-edite');
+        router.push(`/history-edite?id=${encodeURIComponent(id)}`);
     };
 
     const handleFavorite = () => {
