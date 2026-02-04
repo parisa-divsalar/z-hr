@@ -13,16 +13,21 @@ import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { getCoverLetter } from '@/services/cv/get-cover-letter';
+import { listCoverLetters } from '@/services/cv/list-cover-letters';
+import { updateCoverLetter } from '@/services/cv/update-cover-letter';
 import { useWizardStore } from '@/store/wizard/useWizardStore';
 
 import CreateCoverLetterDialog, { CreateCoverLetterValues } from './CreateCoverLetterDialog';
 
 type CoverLetterItem = {
     id: string;
+    requestId: string;
     title: string;
     body: string;
     draftBody: string;
     isEditing: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 };
 
 const normalizeCoverLetter = (text: string) => text.replace(/\r\n/g, '\n').trim();
@@ -152,8 +157,12 @@ const CoverLetter = () => {
     const storedRequestId = useWizardStore((s) => s.requestId);
     const setStoredRequestId = useWizardStore((s) => s.setRequestId);
 
-    const requestId = useMemo(() => {
-        const fromQuery = searchParams.get('requestId') ?? searchParams.get('RequestId');
+    // This is the resume requestId (cvRequestId).
+    const resumeRequestId = useMemo(() => {
+        // In History-Edit flow, the resume request id is passed as `?id=...`
+        // In other places it might be `?requestId=...`
+        const fromQuery =
+            searchParams.get('requestId') ?? searchParams.get('RequestId') ?? searchParams.get('id') ?? searchParams.get('cvRequestId');
         const normalizedQuery = fromQuery?.trim();
         return normalizedQuery ? normalizedQuery : storedRequestId;
     }, [searchParams, storedRequestId]);
@@ -164,31 +173,54 @@ const CoverLetter = () => {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
-    const fetchCoverLetter = async (requestIdToFetch: string) => {
+    const fetchCoverLettersForResume = async (cvRequestId: string) => {
         setIsFetching(true);
         setFetchError(null);
         try {
-            const raw = await getCoverLetter({ requestId: requestIdToFetch });
-            const text = extractCoverLetterText(raw);
-            const title = extractCoverLetterTitle(raw, 'Cover letter');
-
-            const apiId = `cl:${requestIdToFetch}`;
-            setItems((prev) => {
-                const rest = prev.filter((it) => it.id !== apiId).map((it) => ({ ...it, isEditing: false }));
-                if (!text) return rest;
-                return [
-                    {
-                        id: apiId,
+            const res = await listCoverLetters({ cvRequestId });
+            const nextItems: CoverLetterItem[] = (res?.items ?? [])
+                .map((row: any) => {
+                    const text = extractCoverLetterText(row?.coverLetter ?? row) ?? '';
+                    const title = extractCoverLetterTitle(row, 'Cover letter');
+                    const requestId = String(row?.requestId ?? '').trim();
+                    if (!requestId || !text) return null;
+                    return {
+                        id: `cl:${requestId}`,
+                        requestId,
                         title,
                         body: text,
                         draftBody: text,
                         isEditing: false,
-                    },
-                    ...rest,
-                ];
-            });
+                        createdAt: row?.createdAt,
+                        updatedAt: row?.updatedAt,
+                    } satisfies CoverLetterItem;
+                })
+                .filter(Boolean) as CoverLetterItem[];
+
+            setItems(nextItems);
         } catch (e: any) {
-            setFetchError(getErrorMessage(e));
+            // Backward compatible fallback: if list endpoint isn't available for some reason, try old single fetch.
+            try {
+                const raw = await getCoverLetter({ requestId: cvRequestId });
+                const text = extractCoverLetterText(raw);
+                const title = extractCoverLetterTitle(raw, 'Cover letter');
+                if (text) {
+                    setItems([
+                        {
+                            id: `cl:${cvRequestId}`,
+                            requestId: cvRequestId,
+                            title,
+                            body: text,
+                            draftBody: text,
+                            isEditing: false,
+                        },
+                    ]);
+                } else {
+                    setItems([]);
+                }
+            } catch (inner: any) {
+                setFetchError(getErrorMessage(inner ?? e));
+            }
         } finally {
             setIsFetching(false);
             setHasFetchedOnce(true);
@@ -196,11 +228,11 @@ const CoverLetter = () => {
     };
 
     useEffect(() => {
-        if (!requestId) return;
+        if (!resumeRequestId) return;
         setHasFetchedOnce(false);
-        void fetchCoverLetter(requestId);
+        void fetchCoverLettersForResume(resumeRequestId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [requestId]);
+    }, [resumeRequestId]);
 
     const startEdit = (id: string) => {
         setItems((prev) =>
@@ -210,14 +242,34 @@ const CoverLetter = () => {
         );
     };
 
-    const save = (id: string) => {
+    const save = async (id: string) => {
+        const item = items.find((x) => x.id === id);
+        if (!item) return;
+
+        const next = normalizeCoverLetter(item.draftBody);
+        if (!next) {
+            cancel(id);
+            return;
+        }
+
+        // optimistic UI
         setItems((prev) =>
-            prev.map((it) => {
-                if (it.id !== id) return it;
-                const next = normalizeCoverLetter(it.draftBody);
-                return { ...it, body: next || it.body, draftBody: next || it.body, isEditing: false };
-            }),
+            prev.map((it) => (it.id === id ? { ...it, body: next, draftBody: next, isEditing: false } : it)),
         );
+
+        try {
+            // If this item isn't linked to DB yet, skip persistence.
+            if (!item.requestId || item.requestId === 'generated') return;
+            await updateCoverLetter({ requestId: item.requestId, coverLetter: next, subject: item.title });
+        } catch (e: any) {
+            setFetchError(getErrorMessage(e));
+            // revert
+            setItems((prev) =>
+                prev.map((it) =>
+                    it.id === id ? { ...it, body: item.body, draftBody: item.body, isEditing: false } : it,
+                ),
+            );
+        }
     };
 
     const cancel = (id: string) => {
@@ -274,16 +326,17 @@ const CoverLetter = () => {
 
         if (createdRequestId) {
             const body = normalizeCoverLetter(coverLetterText);
-            const apiId = `cl:${createdRequestId}`;
             const title = extractCoverLetterTitle(rawResponse, 'Cover letter');
 
-            // Add or update the list item for this resume requestId (1 cover letter per resume).
+            // Prepend this new cover letter to the list (then re-sync from DB).
             setItems((prev) => {
+                const apiId = `cl:${createdRequestId}`;
                 const rest = prev.map((it) => ({ ...it, isEditing: false })).filter((it) => it.id !== apiId);
                 if (!body) return rest;
                 return [
                     {
                         id: apiId,
+                        requestId: createdRequestId,
                         title,
                         body,
                         draftBody: body,
@@ -294,20 +347,24 @@ const CoverLetter = () => {
             });
 
             setItems((prev) => prev.map((it) => ({ ...it, isEditing: false })));
-            setStoredRequestId(createdRequestId);
+            // Ensure resumeRequestId persists across refresh: prefer the current resumeRequestId; otherwise use the first created cover letter id.
+            const nextResumeId = resumeRequestId ?? createdRequestId;
+            setStoredRequestId(nextResumeId);
 
-     
+            // Also persist in the URL so reloads always have ?requestId=...
             try {
                 const nextParams = new URLSearchParams(searchParams.toString());
-                nextParams.set('requestId', createdRequestId);
+                // Keep both keys for backward compatibility across different flows.
+                nextParams.set('requestId', nextResumeId);
+                nextParams.set('id', nextResumeId);
                 nextParams.delete('RequestId');
                 router.replace(`${pathname}?${nextParams.toString()}`);
             } catch {
                 // ignore URL update issues
             }
 
-            // Ensure the list reflects DB state even if Next navigation remounts / state resets.
-            void fetchCoverLetter(createdRequestId);
+            // Ensure the list reflects DB state.
+            void fetchCoverLettersForResume(nextResumeId);
             return;
         }
 
@@ -318,6 +375,7 @@ const CoverLetter = () => {
             return [
                 {
                     id: 'cl:generated',
+                    requestId: 'generated',
                     title: 'Cover letter',
                     body,
                     draftBody: body,
@@ -332,7 +390,7 @@ const CoverLetter = () => {
         <Stack gap={2}>
             {fetchError && <MuiAlert severity='error' message={fetchError} hideDismissButton />}
 
-            {!requestId && (
+            {!resumeRequestId && (
                 <MuiAlert
                     severity='info'
                     message='RequestId not found. Open this page with ?requestId=... to load a saved cover letter.'
@@ -360,7 +418,7 @@ const CoverLetter = () => {
                 </Stack>
             )}
 
-            {!isFetching && requestId && hasFetchedOnce && items.length === 0 && !fetchError && (
+            {!isFetching && resumeRequestId && hasFetchedOnce && items.length === 0 && !fetchError && (
                 <Typography variant='body2' color='text.secondary'>
                     No cover letter found for this request.
                 </Typography>
@@ -448,8 +506,8 @@ const CoverLetter = () => {
                         <IconButton
                             sx={iconButtonSx}
                             aria-label='Refresh'
-                            disabled={!requestId || isFetching}
-                            onClick={() => requestId && fetchCoverLetter(requestId)}
+                            disabled={!resumeRequestId || isFetching}
+                            onClick={() => resumeRequestId && fetchCoverLettersForResume(resumeRequestId)}
                         >
                             <RefreshIcon />
                         </IconButton>
@@ -460,7 +518,7 @@ const CoverLetter = () => {
             <CreateCoverLetterDialog
                 open={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
-                resumeRequestId={requestId}
+                resumeRequestId={resumeRequestId}
                 onCreated={({ values, coverLetterText, requestId, rawResponse }) =>
                     handleCreated({ values, coverLetterText, requestId, rawResponse })
                 }

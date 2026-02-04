@@ -415,6 +415,39 @@ export const db = {
             const items = readFile(coverLettersFile, []);
             return items.find((c: any) => c.request_id === requestId);
         },
+        findByCvRequestId: (cvRequestId: string) => {
+            const items = readFile(coverLettersFile, []);
+            return items
+                .filter((c: any) => String(c?.cv_request_id ?? '').trim() === String(cvRequestId ?? '').trim())
+                .sort((a: any, b: any) => {
+                    const ta = String(a?.created_at ?? a?.updated_at ?? '');
+                    const tb = String(b?.created_at ?? b?.updated_at ?? '');
+                    return tb.localeCompare(ta);
+                });
+        },
+        findByCvRequestIdAndUserId: (cvRequestId: string, userId: number) => {
+            const items = readFile(coverLettersFile, []);
+            return items
+                .filter((c: any) => String(c?.cv_request_id ?? '').trim() === String(cvRequestId ?? '').trim())
+                .filter((c: any) => {
+                    const uid = Number(c?.user_id);
+                    return Number.isFinite(uid) && uid === Number(userId);
+                })
+                .sort((a: any, b: any) => {
+                    const ta = String(a?.created_at ?? a?.updated_at ?? '');
+                    const tb = String(b?.created_at ?? b?.updated_at ?? '');
+                    return tb.localeCompare(ta);
+                });
+        },
+        updateByRequestId: (requestId: string, patch: Partial<any>) => {
+            const items = readFile(coverLettersFile, []);
+            const index = items.findIndex((c: any) => c.request_id === requestId);
+            if (index === -1) return null;
+            const now = new Date().toISOString();
+            items[index] = { ...items[index], ...(patch as any), updated_at: now };
+            writeFile(coverLettersFile, items);
+            return items[index];
+        },
         upsert: (data: any) => {
             const items = readFile(coverLettersFile, []);
             const existingIndex = items.findIndex((c: any) => c.request_id === data.request_id);

@@ -6,7 +6,10 @@
     "name": null,
     "coin": 0,
     "created_at": "2026-01-06T11:34:34.823Z",
-    "updated_at": "2026-01-06T11:34:34.823Z"
+    "updated_at": "2026-02-04T22:35:15.588Z",
+    "user_state": "Free – Activated (Exploring)",
+    "user_state_reason": "free_activated",
+    "user_state_updated_at": "2026-02-04T22:35:15.587Z"
   },
   {
     "id": 2,

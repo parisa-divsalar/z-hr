@@ -621,6 +621,131 @@ export class ChatGPTService {
     }
 
     /**
+     * Generate cover letter (STRICT JSON output)
+     * Output format:
+     * {
+     *   companyName: string;
+     *   positionTitle: string;
+     *   subject: string;
+     *   content: string;
+     * }
+     */
+    static async generateCoverLetterJson(
+        params: { cvData: any; jobDescription: string; companyName?: string; positionTitle?: string },
+        logContext?: AiLogContext
+    ): Promise<{ companyName: string; positionTitle: string; subject: string; content: string }> {
+        const openai = getOpenAIClient();
+
+        const companyNameIn = String(params.companyName ?? '').trim();
+        const positionTitleIn = String(params.positionTitle ?? '').trim();
+        const jobDescription = String(params.jobDescription ?? '').trim();
+
+        const parseJsonLenient = (raw: string): any => {
+            const text = String(raw ?? '').trim();
+            if (!text) throw new Error('Empty response from ChatGPT');
+
+            // 1) direct
+            try {
+                return JSON.parse(text);
+            } catch {
+                // continue
+            }
+
+            // 2) remove markdown fences if present
+            const unfenced = text
+                .replace(/^```(?:json)?/i, '')
+                .replace(/```$/i, '')
+                .trim();
+            try {
+                return JSON.parse(unfenced);
+            } catch {
+                // continue
+            }
+
+            // 3) extract the largest {...} block
+            const start = unfenced.indexOf('{');
+            const end = unfenced.lastIndexOf('}');
+            if (start !== -1 && end !== -1 && end > start) {
+                const sliced = unfenced.slice(start, end + 1);
+                return JSON.parse(sliced);
+            }
+
+            // rethrow a consistent error
+            throw new Error('ChatGPT returned invalid JSON');
+        };
+
+        try {
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are an expert ATS-optimized cover letter writer. Return ONLY valid JSON.',
+                    },
+                    {
+                        role: 'user',
+                        content: PROMPTS.generateCoverLetterJson({
+                            cvData: params.cvData,
+                            jobDescription,
+                            companyName: companyNameIn,
+                            positionTitle: positionTitleIn,
+                        }),
+                    },
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.2,
+            });
+
+            const content = response.choices[0]?.message?.content;
+            if (!content) throw new Error('No response from ChatGPT');
+
+            const parsed = parseJsonLenient(content) as any;
+            const out = {
+                companyName: String(parsed?.companyName ?? companyNameIn ?? '').trim(),
+                positionTitle: String(parsed?.positionTitle ?? positionTitleIn ?? '').trim(),
+                subject: String(parsed?.subject ?? '').trim(),
+                content: String(parsed?.content ?? '').trim(),
+            };
+
+            if (!out.subject) {
+                const parts = [
+                    out.positionTitle ? `Application for ${out.positionTitle}` : 'Application',
+                    out.companyName ? `- ${out.companyName}` : '',
+                ].filter(Boolean);
+                out.subject = parts.join(' ').trim();
+            }
+
+            if (!out.content) throw new Error('Cover letter content is empty');
+
+            logAiInteraction(logContext, 'generateCoverLetterJson', { cvData: params.cvData, jobDescription }, out);
+            return out;
+        } catch (error) {
+            // If JSON mode fails (rare), try a plain-text fallback.
+            try {
+                const text = await ChatGPTService.generateCoverLetter(params.cvData, jobDescription, logContext);
+                const fallback = {
+                    companyName: companyNameIn,
+                    positionTitle: positionTitleIn,
+                    subject: [
+                        positionTitleIn ? `Application for ${positionTitleIn}` : 'Application',
+                        companyNameIn ? `- ${companyNameIn}` : '',
+                    ]
+                        .filter(Boolean)
+                        .join(' ')
+                        .trim(),
+                    content: String(text ?? '').trim(),
+                };
+                if (fallback.content) return fallback;
+            } catch {
+                // ignore, rethrow below
+            }
+
+            console.error('Error generating cover letter JSON:', error);
+            throw error instanceof Error ? error : new Error('Failed to generate cover letter JSON');
+        }
+    }
+
+    /**
      * Generate cover letter
      */
     static async generateCoverLetter(cvData: any, jobDescription: string, logContext?: AiLogContext): Promise<string> {

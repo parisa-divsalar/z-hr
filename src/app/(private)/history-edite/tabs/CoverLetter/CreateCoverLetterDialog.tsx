@@ -281,8 +281,8 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
             const raw = await addCoverLetter({
                 userId: userId ?? undefined,
                 lang: 'en',
-                // IMPORTANT: reuse resume requestId to ensure "one cover letter per resume"
-                requestId: resumeRequestId ?? null,
+                // Multi cover letters per resume: attach to resumeRequestId, but let server generate unique requestId per cover letter.
+                cvRequestId: resumeRequestId ?? null,
                 companyName: values.companyName.trim(),
                 positionTitle: values.positionTitle.trim(),
                 cvContent: values.cvContent.trim(),
