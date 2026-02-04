@@ -193,7 +193,15 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     const accessTokenFromStore = useAuthStore((state) => state.accessToken);
 
     const requestId = args.requestIdOverride ?? requestIdFromStore;
-    const accessToken = args.apiUserId ?? accessTokenFromStore;
+    const apiUserId = args.apiUserId ?? null;
+    /**
+     * Identity key used only for client-side de-duping keys/logging.
+     *
+     * IMPORTANT:
+     * - In normal user flows we rely on auth cookie; `accessTokenFromStore` is a JWT, NOT a userId.
+     * - In admin flows we pass `apiUserId` to query a specific user's resume in the DB.
+     */
+    const identityKey = apiUserId ?? accessTokenFromStore ?? 'cookie';
 
     const canFetchCv = Boolean(requestId);
 
@@ -378,7 +386,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             isAutoPersistingRef.current = true;
             try {
                 await editCV({
-                    userId: accessToken ?? undefined,
+                    userId: apiUserId ?? undefined,
                     requestId,
                     bodyOfResume: payload,
                 });
@@ -391,7 +399,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 isAutoPersistingRef.current = false;
             }
         },
-        [accessToken, requestId],
+        [apiUserId, requestId],
     );
 
     const persistTextOnlySession = useCallback(
@@ -483,7 +491,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         setIsTextOnlyMode(!canFetchCv);
 
-        const seedKey = canFetchCv ? `api:${accessToken ?? ''}:${requestId ?? ''}` : 'text-only';
+        const seedKey = canFetchCv ? `api:${identityKey}:${requestId ?? ''}` : 'text-only';
         if (lastSessionSeedKeyRef.current === seedKey) return;
         lastSessionSeedKeyRef.current = seedKey;
         setSessionSeededRunKey(`${seedKey}:${Date.now()}`);
@@ -557,14 +565,14 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         setCvError(null);
 
         if (!canFetchCv) setHasCvLoadedOnce(true);
-    }, [canFetchCv, accessToken, requestId]);
+    }, [canFetchCv, identityKey, requestId]);
 
 
     // When request context changes, require a fresh get-cv load before auto-improve can run.
     useEffect(() => {
         setCvLoadedApiKey(null);
         setCvLoadedRunKey(null);
-    }, [accessToken, requestId]);
+    }, [identityKey, requestId]);
 
     const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -791,7 +799,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             if (!text) return '';
 
             const postResponse = await postImproved({
-                userId: accessToken ?? undefined,
+                userId: apiUserId ?? undefined,
                 lang: 'en',
                 cvSection,
                 paragraph: text,
@@ -799,7 +807,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             const improved = (postResponse as any)?.result?.improved;
             return typeof improved === 'string' && improved.trim() ? improved : text;
         },
-        [accessToken],
+        [apiUserId],
     );
 
     // Auto-improve pipeline (file-flow + text-only).
@@ -812,7 +820,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             return;
         }
 
-        const apiKey = canFetchCv ? `${accessToken ?? ''}:${requestId ?? ''}` : null;
+        const apiKey = canFetchCv ? `${identityKey}:${requestId ?? ''}` : null;
         const runKey = sessionSeededRunKey
             ? `session:${sessionSeededRunKey}`
             : cvLoadedRunKey
@@ -849,7 +857,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 };
 
                 const improveRes = await improveResume({
-                    userId: accessToken ?? undefined,
+                    userId: apiUserId ?? undefined,
                     mode: 'sections_text',
                     resume: rawPayload,
                     isFinalStep: true,
@@ -930,7 +938,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                             improvedBySection.experience ?? formatExperienceEditText(experiences),
                         ),
                     });
-                    const userKey = accessToken ?? 'cookie';
+                    const userKey = identityKey;
                     const persistKey = `auto-improve:${userKey}:${requestId}:${runKey}`;
                     await autoPersistCv(payloadToSave, persistKey);
                 }
@@ -945,7 +953,8 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     }, [
         isTextOnlyMode,
         canFetchCv,
-        accessToken,
+        apiUserId,
+        identityKey,
         requestId,
         cvLoadedApiKey,
         cvLoadedRunKey,
@@ -969,7 +978,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     const loadCvData = useCallback(
         async (opts: { requestId?: string | null; userId?: string | null } = {}) => {
             const requestIdToLoad = opts.requestId ?? requestId;
-            const userIdToLoad = opts.userId ?? accessToken;
+            const userIdToLoad = opts.userId ?? apiUserId;
             if (!requestIdToLoad) return;
 
             setIsCvLoading(true);
@@ -1060,7 +1069,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 setHasCvLoadedOnce(true);
             }
         },
-        [requestId, accessToken, isSessionSeeded],
+        [requestId, apiUserId, isSessionSeeded],
     );
 
     // Poll analysis/create then load CV once.
@@ -1073,7 +1082,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             return;
         }
 
-        const key = `${accessToken ?? 'cookie'}:${requestId}`;
+        const key = `${identityKey}:${requestId}`;
         if (lastAutoFetchKeyRef.current === key) return;
         lastAutoFetchKeyRef.current = key;
 
@@ -1081,7 +1090,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         const run = async () => {
             try {
                 const bodyOfResume = loadWizardTextOnlySession() ?? buildWizardSerializable(wizardData);
-                await pollCvAnalysisAndCreateCv(requestId, bodyOfResume, accessToken ?? undefined, () => undefined);
+                await pollCvAnalysisAndCreateCv(requestId, bodyOfResume, apiUserId ?? undefined, () => undefined);
             } catch {
                 // best-effort
             }
@@ -1094,7 +1103,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         return () => {
             cancelled = true;
         };
-    }, [requestId, accessToken, wizardData, loadCvData, args.disableAutoPoll]);
+    }, [requestId, apiUserId, identityKey, wizardData, loadCvData, args.disableAutoPoll]);
 
     const handleEdit = (section: string) => {
         setSaveError(null);
@@ -1368,7 +1377,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             try {
                 if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = newRequestId;
                 await editCV({
-                    userId: accessToken ?? undefined,
+                    userId: apiUserId ?? undefined,
                     requestId: newRequestId,
                     bodyOfResume: updatedPayload,
                     section: sectionForApi,
@@ -1376,7 +1385,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 });
 
                 setRequestId(newRequestId);
-                await loadCvData({ requestId: newRequestId, userId: accessToken ?? undefined });
+                await loadCvData({ requestId: newRequestId, userId: apiUserId ?? undefined });
             } catch (error) {
                 console.error('Failed to save CV from text-only draft', error);
                 setSaveError(
@@ -1493,7 +1502,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         try {
             if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = effectiveRequestId;
             await editCV({
-                userId: accessToken ?? undefined,
+                userId: apiUserId ?? undefined,
                 requestId: effectiveRequestId,
                 bodyOfResume: updatedPayload,
                 section: sectionForApi,
@@ -1501,7 +1510,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             });
 
             if (!requestId) setRequestId(effectiveRequestId);
-            await loadCvData({ requestId: effectiveRequestId, userId: accessToken ?? undefined });
+            await loadCvData({ requestId: effectiveRequestId, userId: apiUserId ?? undefined });
             setEditingSection(null);
         } catch (error) {
             console.error('Failed to edit CV', error);
@@ -1638,12 +1647,12 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
             if (!isTextOnlyMode) manualEditSavedRequestIdRef.current = effectiveRequestId;
             await editCV({
-                userId: accessToken ?? undefined,
+                userId: apiUserId ?? undefined,
                 requestId: effectiveRequestId,
                 bodyOfResume: resumeToSave,
             });
             if (!requestId) setRequestId(effectiveRequestId);
-            await loadCvData({ requestId: effectiveRequestId, userId: accessToken ?? undefined });
+            await loadCvData({ requestId: effectiveRequestId, userId: apiUserId ?? undefined });
         } catch (error) {
             console.error('Failed to delete section', error);
             setSaveError(error instanceof Error ? error.message : 'Failed to delete section. Please try again.');
@@ -1676,7 +1685,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
                 const context = option ? IMPROVE_OPTION_CONTEXT[option] : undefined;
                 const postResponse = await postImproved({
-                    userId: accessToken ?? undefined,
+                    userId: apiUserId ?? undefined,
                     lang: 'en',
                     cvSection: section,
                     paragraph: String(currentText),
@@ -1695,7 +1704,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
                 // Persist improved changes so admin DB view sees the latest CV content.
                 const payloadToSave = buildPayloadFromState();
-                const persistKey = `manual-improve:${accessToken ?? ''}:${requestId}:${section}:${Date.now()}`;
+                const persistKey = `manual-improve:${identityKey}:${requestId}:${section}:${Date.now()}`;
                 await autoPersistCv(payloadToSave, persistKey);
             } catch (error) {
                 console.error('Failed to improve section', error);
@@ -1705,7 +1714,8 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             }
         },
         [
-            accessToken,
+            apiUserId,
+            identityKey,
             autoPersistCv,
             buildPayloadFromState,
             experiences,

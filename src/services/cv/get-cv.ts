@@ -65,11 +65,32 @@ export async function getCV(params: GetCVParams = {}) {
         queryParams.requestId = params.requestId;
     }
 
-    const { data } = await apiClientClient.get('cv/get-cv', {
-        params: queryParams,
-    });
+    /**
+     * Admin tooling: when `userId` is explicitly provided we want to fetch CVs
+     * for that user even if the browser currently has an auth cookie for a
+     * different user. Using `credentials: 'omit'` prevents cookie auth from
+     * taking precedence on the server routes.
+     */
+    const unwrapped = await (async () => {
+        if (params.userId) {
+            const qs = new URLSearchParams(queryParams);
+            const res = await fetch(`/api/cv/get-cv?${qs.toString()}`, {
+                method: 'GET',
+                cache: 'no-store',
+                credentials: 'omit',
+            });
+            const json = await res.json().catch(() => null);
+            if (!res.ok) {
+                throw new Error((json as any)?.error || `HTTP ${res.status}`);
+            }
+            return unwrapApiData(json);
+        }
 
-    const unwrapped = unwrapApiData(data);
+        const { data } = await apiClientClient.get('cv/get-cv', {
+            params: queryParams,
+        });
+        return unwrapApiData(data);
+    })();
 
     if (Array.isArray(unwrapped)) {
         return unwrapped.map((record: RawCVRecord) => normalizeCvRecord(record));

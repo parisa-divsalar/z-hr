@@ -20,6 +20,7 @@ const HistoryEdite = () => {
     const searchParams = useSearchParams();
     const id = useMemo(() => searchParams.get('id'), [searchParams]);
     const mode = useMemo(() => searchParams.get('mode'), [searchParams]);
+    const userId = useMemo(() => searchParams.get('userId'), [searchParams]);
     const accessToken = useAuthStore((s) => s.accessToken);
     const setRequestId = useWizardStore((s) => s.setRequestId);
 
@@ -61,13 +62,28 @@ const HistoryEdite = () => {
         setRequestId(requestId);
     }, [id, mode, setRequestId]);
 
+    const normalized = useMemo(() => {
+        const requestId = String(id ?? '').trim();
+        const apiUserId = String(userId ?? '').trim();
+        return {
+            requestId: requestId || null,
+            apiUserId: apiUserId || null,
+        };
+    }, [id, userId]);
+
     return (
         <HistoryEditeRoot>
             {mode === 'editor' ? (
                 <ResumeEditor
                     setStage={() => undefined}
                     setActiveStep={() => undefined}
-                    requestIdOverride={String(id ?? '').trim() || null}
+                    requestIdOverride={normalized.requestId}
+                    apiUserId={normalized.apiUserId}
+                    /**
+                     * History edit is an "open existing CV" flow.
+                     * We must NOT poll cv-analysis-detailed (it can hang for already-processed/old rows).
+                     */
+                    disableAutoPoll
                 />
             ) : (
                 <>

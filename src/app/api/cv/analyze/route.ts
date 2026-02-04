@@ -65,6 +65,23 @@ export async function POST(request: NextRequest) {
             : undefined;
         const analysis = await ChatGPTService.analyzeCV(finalCvText, undefined, logContext);
 
+        const normalizeAnalysisForStorage = (value: unknown) => {
+            if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+            const anyValue = value as any;
+            if (anyValue.improvedResume && typeof anyValue.improvedResume === 'object') return anyValue;
+            const looksLikeStructured =
+                'personalInfo' in anyValue ||
+                'summary' in anyValue ||
+                'technicalSkills' in anyValue ||
+                'professionalExperience' in anyValue ||
+                'education' in anyValue ||
+                'certifications' in anyValue ||
+                'languages' in anyValue ||
+                'additionalInfo' in anyValue;
+            if (!looksLikeStructured) return value;
+            return { improvedResume: value };
+        };
+
         // Save to database if authenticated
         if (finalUserId) {
             // ذخیره CV در database
@@ -72,14 +89,16 @@ export async function POST(request: NextRequest) {
             if (cv) {
                 cv = (db as any).cvs.update(reqId, {
                     content: typeof finalCvText === 'string' ? finalCvText : JSON.stringify(finalCvText),
-                    analysis_result: JSON.stringify(analysis),
+                    // Store in the requested shape for DB/admin: { improvedResume: ... }
+                    analysis_result: JSON.stringify(normalizeAnalysisForStorage(analysis)),
                 });
             } else {
                 cv = (db as any).cvs.create({
                     user_id: parseInt(finalUserId),
                     request_id: reqId,
                     content: typeof finalCvText === 'string' ? finalCvText : JSON.stringify(finalCvText),
-                    analysis_result: JSON.stringify(analysis),
+                    // Store in the requested shape for DB/admin: { improvedResume: ... }
+                    analysis_result: JSON.stringify(normalizeAnalysisForStorage(analysis)),
                 });
             }
 

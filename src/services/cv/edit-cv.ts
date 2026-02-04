@@ -55,15 +55,41 @@ const normalizeCvRecord = (record: RawCVRecord) => {
  * The API route will refresh and return the latest CV after a successful update.
  */
 export async function editCV(params: EditCVParams) {
-    const { data } = await apiClientClient.put('cv/edit-cv', {
-        userId: params.userId ?? undefined,
-        requestId: params.requestId,
-        bodyOfResume: params.bodyOfResume,
-        section: params.section ?? undefined,
-        sectionText: params.sectionText ?? undefined,
-    });
+    /**
+     * Admin tooling: when `userId` is explicitly provided we want to edit CVs
+     * for that user even if the browser currently has an auth cookie for a
+     * different user. Using `credentials: 'omit'` prevents cookie auth from
+     * taking precedence on the server routes.
+     */
+    const unwrapped = await (async () => {
+        const payload = {
+            userId: params.userId ?? undefined,
+            requestId: params.requestId,
+            bodyOfResume: params.bodyOfResume,
+            section: params.section ?? undefined,
+            sectionText: params.sectionText ?? undefined,
+        };
 
-    const unwrapped = unwrapApiData(data);
+        if (params.userId) {
+            const res = await fetch('/api/cv/edit-cv', {
+                method: 'PUT',
+                cache: 'no-store',
+                credentials: 'omit',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+            const json = await res.json().catch(() => null);
+            if (!res.ok) {
+                throw new Error((json as any)?.error || `HTTP ${res.status}`);
+            }
+            return unwrapApiData(json);
+        }
+
+        const { data } = await apiClientClient.put('cv/edit-cv', payload);
+        return unwrapApiData(data);
+    })();
 
     if (Array.isArray(unwrapped)) {
         return unwrapped.map((record: RawCVRecord) => normalizeCvRecord(record));

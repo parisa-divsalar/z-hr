@@ -31,6 +31,23 @@ export async function POST(request: NextRequest) {
 
         const finalRequestId = requestId || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+        const normalizeAnalysisForStorage = (value: unknown) => {
+            if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+            const anyValue = value as any;
+            if (anyValue.improvedResume && typeof anyValue.improvedResume === 'object') return anyValue;
+            const looksLikeStructured =
+                'personalInfo' in anyValue ||
+                'summary' in anyValue ||
+                'technicalSkills' in anyValue ||
+                'professionalExperience' in anyValue ||
+                'education' in anyValue ||
+                'certifications' in anyValue ||
+                'languages' in anyValue ||
+                'additionalInfo' in anyValue;
+            if (!looksLikeStructured) return value;
+            return { improvedResume: value };
+        };
+
         // Check if CV exists
         let cv = db.cvs.findByRequestId(finalRequestId);
         
@@ -39,7 +56,8 @@ export async function POST(request: NextRequest) {
             cv = db.cvs.update(finalRequestId, {
                 content: bodyOfResume ? JSON.stringify(bodyOfResume) : cv.content,
                 title: title || cv.title,
-                analysis_result: analysis ? JSON.stringify(analysis) : cv.analysis_result,
+                // Store in the requested shape for DB/admin: { improvedResume: ... }
+                analysis_result: analysis ? JSON.stringify(normalizeAnalysisForStorage(analysis)) : cv.analysis_result,
             });
         } else {
             // Create new CV
@@ -48,7 +66,8 @@ export async function POST(request: NextRequest) {
                 request_id: finalRequestId,
                 content: bodyOfResume ? JSON.stringify(bodyOfResume) : null,
                 title: title || null,
-                analysis_result: analysis ? JSON.stringify(analysis) : null,
+                // Store in the requested shape for DB/admin: { improvedResume: ... }
+                analysis_result: analysis ? JSON.stringify(normalizeAnalysisForStorage(analysis)) : null,
             });
         }
 

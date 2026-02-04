@@ -44,7 +44,17 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Access denied' }, { status: 403 });
         }
 
-        const analysisResult = cv.analysis_result ? JSON.parse(cv.analysis_result) : null;
+        const analysisResultRaw = cv.analysis_result ? JSON.parse(cv.analysis_result) : null;
+        // Backward compatibility: DB can store either:
+        // - legacy structured resume JSON
+        // - or `{ improvedResume: <structured resume JSON> }` (preferred/admin shape)
+        const analysisResult =
+            analysisResultRaw &&
+            typeof analysisResultRaw === 'object' &&
+            !Array.isArray(analysisResultRaw) &&
+            (analysisResultRaw as any).improvedResume
+                ? (analysisResultRaw as any).improvedResume
+                : analysisResultRaw;
         const content = cv.content ? (typeof cv.content === 'string' ? JSON.parse(cv.content) : cv.content) : null;
 
         return NextResponse.json({
