@@ -21,6 +21,7 @@ export const HistoryEditeRoot = styled(Box)(({ theme }) => ({
 export const PreviewEditeRoot = styled(Stack)(({ theme }) => ({
     width: '100%',
     maxWidth: '1200px',
+    padding: theme.spacing(2),
     margin: '0 auto',
     borderRadius: theme.spacing(1.75),
     transition: 'all 0.3s ease',
