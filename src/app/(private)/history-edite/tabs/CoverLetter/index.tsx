@@ -30,6 +30,35 @@ const normalizeCoverLetter = (text: string) => text.replace(/\r\n/g, '\n').trim(
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
+const extractCoverLetterTitle = (payload: unknown, fallback: string): string => {
+    if (!payload) return fallback;
+
+    const normalize = (s: unknown) => (typeof s === 'string' ? s.trim() : '');
+    const from = (obj: any) => {
+        const subject = normalize(obj?.subject);
+        if (subject) return subject;
+        const positionTitle = normalize(obj?.positionTitle);
+        const companyName = normalize(obj?.companyName);
+        if (positionTitle && companyName) return `${positionTitle} - ${companyName}`;
+        if (positionTitle) return positionTitle;
+        if (companyName) return companyName;
+        return '';
+    };
+
+    if (typeof payload === 'string') return fallback;
+    if (isRecord(payload)) {
+        const direct = from(payload as any);
+        if (direct) return direct;
+        const nested = (payload as any).data;
+        if (nested && typeof nested === 'object') {
+            const nestedTitle = from(nested);
+            if (nestedTitle) return nestedTitle;
+        }
+    }
+
+    return fallback;
+};
+
 const extractCoverLetterText = (payload: unknown): string | null => {
     if (typeof payload === 'string') {
         const v = normalizeCoverLetter(payload);
@@ -141,6 +170,7 @@ const CoverLetter = () => {
         try {
             const raw = await getCoverLetter({ requestId: requestIdToFetch });
             const text = extractCoverLetterText(raw);
+            const title = extractCoverLetterTitle(raw, 'Cover letter');
 
             const apiId = `cl:${requestIdToFetch}`;
             setItems((prev) => {
@@ -149,7 +179,7 @@ const CoverLetter = () => {
                 return [
                     {
                         id: apiId,
-                        title: 'Cover letter',
+                        title,
                         body: text,
                         draftBody: text,
                         isEditing: false,
@@ -234,10 +264,35 @@ const CoverLetter = () => {
         setIsCreateOpen(true);
     };
 
-    const handleCreated = (args: { values: CreateCoverLetterValues; coverLetterText: string; requestId: string | null }) => {
-        const { coverLetterText, requestId: createdRequestId } = args;
+    const handleCreated = (args: {
+        values: CreateCoverLetterValues;
+        coverLetterText: string;
+        requestId: string | null;
+        rawResponse?: unknown;
+    }) => {
+        const { coverLetterText, requestId: createdRequestId, rawResponse } = args;
 
         if (createdRequestId) {
+            const body = normalizeCoverLetter(coverLetterText);
+            const apiId = `cl:${createdRequestId}`;
+            const title = extractCoverLetterTitle(rawResponse, 'Cover letter');
+
+            // Add or update the list item for this resume requestId (1 cover letter per resume).
+            setItems((prev) => {
+                const rest = prev.map((it) => ({ ...it, isEditing: false })).filter((it) => it.id !== apiId);
+                if (!body) return rest;
+                return [
+                    {
+                        id: apiId,
+                        title,
+                        body,
+                        draftBody: body,
+                        isEditing: false,
+                    },
+                    ...rest,
+                ];
+            });
+
             setItems((prev) => prev.map((it) => ({ ...it, isEditing: false })));
             setStoredRequestId(createdRequestId);
 
@@ -250,6 +305,9 @@ const CoverLetter = () => {
             } catch {
                 // ignore URL update issues
             }
+
+            // Ensure the list reflects DB state even if Next navigation remounts / state resets.
+            void fetchCoverLetter(createdRequestId);
             return;
         }
 
@@ -402,7 +460,10 @@ const CoverLetter = () => {
             <CreateCoverLetterDialog
                 open={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
-                onCreated={({ values, coverLetterText, requestId }) => handleCreated({ values, coverLetterText, requestId })}
+                resumeRequestId={requestId}
+                onCreated={({ values, coverLetterText, requestId, rawResponse }) =>
+                    handleCreated({ values, coverLetterText, requestId, rawResponse })
+                }
             />
         </Stack>
     );

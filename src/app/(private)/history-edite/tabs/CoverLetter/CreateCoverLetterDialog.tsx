@@ -33,6 +33,8 @@ export type CreateCoverLetterValues = {
 type Props = {
     open: boolean;
     onClose: () => void;
+    /** Resume requestId (so cover letter is 1:1 per resume). */
+    resumeRequestId?: string | null;
     onCreated: (args: {
         values: CreateCoverLetterValues;
         coverLetterText: string;
@@ -69,6 +71,10 @@ const extractCoverLetterText = (payload: unknown): string | null => {
     ] as const;
 
     if (isRecord(payload)) {
+        // New structured output: { companyName, positionTitle, subject, content }
+        const structuredContent = payload.content;
+        if (typeof structuredContent === 'string' && normalizeText(structuredContent)) return normalizeText(structuredContent);
+
         for (const k of directKeys) {
             const v = payload[k];
             if (typeof v === 'string' && normalizeText(v)) return normalizeText(v);
@@ -229,7 +235,7 @@ const createEmptyValues = (defaults?: Partial<CreateCoverLetterValues>): CreateC
     jobDescription: defaults?.jobDescription ?? '',
 });
 
-export default function CreateCoverLetterDialog({ open, onClose, onCreated, defaultValues }: Props) {
+export default function CreateCoverLetterDialog({ open, onClose, onCreated, defaultValues, resumeRequestId }: Props) {
     const userId = useAuthStore((s) => s.accessToken);
     const [values, setValues] = useState<CreateCoverLetterValues>(() => createEmptyValues(defaultValues));
     const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof CreateCoverLetterValues, string>>>({});
@@ -275,7 +281,8 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
             const raw = await addCoverLetter({
                 userId: userId ?? undefined,
                 lang: 'en',
-                requestId: null,
+                // IMPORTANT: reuse resume requestId to ensure "one cover letter per resume"
+                requestId: resumeRequestId ?? null,
                 companyName: values.companyName.trim(),
                 positionTitle: values.positionTitle.trim(),
                 cvContent: values.cvContent.trim(),

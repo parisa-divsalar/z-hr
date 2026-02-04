@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
         requestId,
-        coverLetter: row.cover_letter ?? row.coverLetter ?? '',
+        coverLetter: row.cover_letter ?? row.coverLetter ?? row?.cover_letter_json?.content ?? '',
+        ...(row?.cover_letter_json && typeof row.cover_letter_json === 'object' ? row.cover_letter_json : {}),
         data: row,
     });
 }
@@ -60,6 +61,9 @@ export async function POST(request: NextRequest) {
         // - { cvContent, companyName, positionTitle, jobDescription, isFinalStep?, requestId? }
         const jobDescription = normalize(body?.jobDescription);
         const isFinalStep = Boolean(body?.isFinalStep ?? true);
+        // IMPORTANT:
+        // - requestId should usually be the resume requestId (1 cover letter per resume)
+        // - if missing, we still generate a requestId, but it won't be linked to a resume
         const requestId = normalize(body?.requestId) || makeRequestId();
 
         const cvData =
@@ -82,22 +86,48 @@ export async function POST(request: NextRequest) {
         }
 
         const userId = await getUserId(request);
+        const userIdNum = userId != null && String(userId).trim() ? Number(userId) : null;
+        const safeUserIdNum = Number.isFinite(userIdNum as any) ? (userIdNum as number) : null;
+
         const logContext = userId ? { userId, endpoint: '/api/cv/cover-letter', action: 'generateCoverLetter' } : undefined;
-        const coverLetter = await ChatGPTService.generateCoverLetter(cvData, jobDescription, logContext);
+        const coverLetterJson = await ChatGPTService.generateCoverLetterJson(
+            {
+                cvData,
+                jobDescription,
+                companyName: normalize(cvData?.companyName ?? body?.companyName),
+                positionTitle: normalize(cvData?.positionTitle ?? body?.positionTitle),
+            },
+            logContext,
+        );
 
         db.coverLetters.upsert({
             request_id: requestId,
-            cover_letter: coverLetter,
+            cv_request_id: requestId,
+            user_id: safeUserIdNum,
+            // Backward-compatible plain text field (UI reads this today)
+            cover_letter: coverLetterJson.content,
+            // New structured output
+            cover_letter_json: coverLetterJson,
             job_description: jobDescription,
             cv_data: cvData,
         });
 
         return NextResponse.json({
             requestId,
-            coverLetter,
+            // Backward compatibility
+            coverLetter: coverLetterJson.content,
+            // New fields
+            ...coverLetterJson,
         });
     } catch (error: any) {
         console.error('Error generating cover letter:', error);
-        return NextResponse.json({ error: error.message || 'Failed to generate cover letter' }, { status: 500 });
+        const msg = error?.message || 'Failed to generate cover letter';
+        if (msg === 'OPENAI_TIMEOUT') {
+            return NextResponse.json({ error: 'Cover letter generation timed out. Please try again.' }, { status: 504 });
+        }
+        if (typeof msg === 'string' && msg.includes('OPENAI_API_KEY is not set')) {
+            return NextResponse.json({ error: msg }, { status: 503 });
+        }
+        return NextResponse.json({ error: msg }, { status: 500 });
     }
 }

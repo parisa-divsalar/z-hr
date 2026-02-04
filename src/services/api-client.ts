@@ -3,7 +3,12 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 export const API_SERVER_BASE_URL = 'https://apisrv.zenonrobotics.ae/api/';
 
 const createAPIClient = (baseURL: string): AxiosInstance => {
-    const instance = axios.create({ baseURL, withCredentials: true });
+    const instance = axios.create({
+        baseURL,
+        withCredentials: true,
+        // Avoid infinite pending requests in the UI.
+        timeout: 60000,
+    });
 
     instance.interceptors.response.use(
         (res) => res,

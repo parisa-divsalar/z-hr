@@ -124,6 +124,19 @@ export default function DatabasePage() {
     if (!data || userId == null) return null;
     const tables = data.tables as Record<string, unknown[]>;
     const cvs = filterByUserId(tables.cvs ?? [], userId) as any[];
+    const cvRequestIds = new Set(
+      (cvs ?? [])
+        .map((cv: any) => String(cv?.request_id ?? cv?.requestId ?? '').trim())
+        .filter((rid: string) => Boolean(rid))
+    );
+    const coverLettersAll = (tables.cover_letters ?? []) as any[];
+    // Prefer user_id filter when available; fallback to matching by resume request_id.
+    const coverLetters = coverLettersAll.filter((row: any) => {
+      const rowUserId = row?.user_id ?? row?.userId ?? null;
+      if (rowUserId != null && (rowUserId === userId || rowUserId === String(userId))) return true;
+      const rid = String(row?.cv_request_id ?? row?.request_id ?? row?.requestId ?? '').trim();
+      return rid ? cvRequestIds.has(rid) : false;
+    });
     const history = filterByUserId(tables.history ?? [], userId) as any[];
     const historyById = new Map<string, any>(history.map((h: any) => [String(h?.id ?? ''), h]));
     const wizardData = filterByUserId(tables.wizard_data ?? [], userId, 'user_id') as any[];
@@ -165,6 +178,7 @@ export default function DatabasePage() {
       login_logs: filterByUserId(tables.login_logs ?? [], userId),
       ai_interactions: filterByUserId(tables.ai_interactions ?? [], userId),
       cvs,
+      cover_letters: coverLetters,
       wizard_data: wizardData,
       user_skills: filterByUserId(tables.user_skills ?? [], userId),
       interview_sessions: filterByUserId(tables.interview_sessions ?? [], userId),
@@ -938,6 +952,7 @@ export default function DatabasePage() {
                     { key: 'login_logs', label: 'Login logs', data: userDetailData.login_logs },
                     { key: 'ai_interactions', label: 'ChatGPT input/output', data: userDetailData.ai_interactions },
                     { key: 'cvs', label: 'Resumes', data: userDetailData.cvs },
+                    { key: 'cover_letters', label: 'Cover letters', data: (userDetailData as any).cover_letters ?? [] },
                     { key: 'wizard_data', label: 'Wizard data', data: userDetailData.wizard_data },
                     { key: 'user_skills', label: 'User skills', data: userDetailData.user_skills },
                     { key: 'interview_sessions', label: 'Interview sessions', data: userDetailData.interview_sessions },
@@ -1052,6 +1067,39 @@ export default function DatabasePage() {
                                                   <pre className="text-[11px] leading-4 whitespace-pre-wrap break-words text-gray-700 dark:text-gray-200">
                                                     {safeJsonString(row?.analysis_result ?? row?.analysisResult ?? '')}
                                                   </pre>
+                                                </div>
+                                                <div>
+                                                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    cover_letter (for this resume)
+                                                  </p>
+                                                  {(() => {
+                                                    const all = ((userDetailData as any)?.cover_letters ?? []) as any[];
+                                                    const rid = String(row?.request_id ?? row?.requestId ?? '').trim();
+                                                    const cl = all.find((x: any) => String(x?.cv_request_id ?? x?.request_id ?? x?.requestId ?? '').trim() === rid);
+                                                    const jsonObj = cl?.cover_letter_json ?? cl?.coverLetterJson ?? null;
+                                                    const subject = String(jsonObj?.subject ?? cl?.subject ?? '').trim();
+                                                    const content =
+                                                      String(jsonObj?.content ?? cl?.cover_letter ?? cl?.coverLetter ?? '').trim();
+                                                    if (!subject && !content) {
+                                                      return (
+                                                        <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                                                          —
+                                                        </div>
+                                                      );
+                                                    }
+                                                    return (
+                                                      <div className="space-y-2">
+                                                        {subject && (
+                                                          <div className="text-[11px] text-gray-700 dark:text-gray-200">
+                                                            <span className="font-medium">Subject:</span> {subject}
+                                                          </div>
+                                                        )}
+                                                        <pre className="text-[11px] leading-4 whitespace-pre-wrap break-words text-gray-700 dark:text-gray-200">
+                                                          {content}
+                                                        </pre>
+                                                      </div>
+                                                    );
+                                                  })()}
                                                 </div>
                                               </div>
                                             </td>

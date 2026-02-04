@@ -304,6 +304,61 @@ Return only the cover letter text, ready to be used in ATS systems.
 `,
 
     /**
+     * Generate cover letter (STRICT JSON output)
+     *
+     * OUTPUT FORMAT (JSON ONLY):
+     * {
+     *   "companyName": "string",
+     *   "positionTitle": "string",
+     *   "subject": "string",
+     *   "content": "full cover letter text"
+     * }
+     */
+    generateCoverLetterJson: (params: { cvData: any; jobDescription: string; companyName?: string; positionTitle?: string }) => {
+        const companyName = (params.companyName ?? '').toString().trim();
+        const positionTitle = (params.positionTitle ?? '').toString().trim();
+        const jobDescription = (params.jobDescription ?? '').toString().trim();
+
+        return `
+You are an expert ATS-optimized cover letter writer.
+
+INPUTS:
+- Company name: ${companyName || '(not provided)'}
+- Position title: ${positionTitle || '(not provided)'}
+
+STRUCTURED CV DATA:
+${JSON.stringify(params.cvData ?? {}, null, 2)}
+
+TARGET JOB DESCRIPTION:
+${jobDescription}
+
+REQUIREMENTS:
+1. Write a professional, compelling, ATS-friendly cover letter (max ~300-350 words).
+2. Use keywords from the job description naturally (do not keyword-stuff).
+3. Do NOT invent facts; only use information present in the CV data.
+4. Keep formatting simple and standard (no emojis, no markdown, no special characters).
+5. The letter must be coherent, specific, and tailored to the role and company.
+6. Create a clear email-style subject line.
+
+CRITICAL OUTPUT RULE:
+- Return ONLY valid JSON.
+- The JSON object MUST match EXACTLY this shape and key names:
+{
+  "companyName": "string",
+  "positionTitle": "string",
+  "subject": "string",
+  "content": "full cover letter text"
+}
+
+CONTENT RULES:
+- "companyName" must be the company name from input if provided, otherwise infer from job description if possible, otherwise empty string.
+- "positionTitle" must be the position title from input if provided, otherwise infer from job description if possible, otherwise empty string.
+- "subject" should look like: "Application for <Position Title> - <Company Name>" (adapt if missing values).
+- "content" must be the full cover letter text.
+`;
+    },
+
+    /**
      * Interview questions generation
      * Enhanced with structured CV data and job description context
      */
