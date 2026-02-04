@@ -11,6 +11,63 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+const SEED_COURSES = [
+  {
+    title: 'Front-end Path',
+    level: 'Mid-senior',
+    price: '$20',
+    isFree: true,
+    source: 'Seed',
+    source_url: 'https://z-hr.local/learning-hub/seed/front-end-path',
+    description: 'Demo seed course. Set RAPIDAPI_KEY to sync real courses.',
+  },
+  {
+    title: 'Back-end Path',
+    level: 'Senior',
+    price: '$25',
+    isFree: false,
+    source: 'Seed',
+    source_url: 'https://z-hr.local/learning-hub/seed/back-end-path',
+    description: 'Demo seed course. Set RAPIDAPI_KEY to sync real courses.',
+  },
+  {
+    title: 'Full Stack Path',
+    level: 'Mid-level',
+    price: '$30',
+    isFree: true,
+    source: 'Seed',
+    source_url: 'https://z-hr.local/learning-hub/seed/full-stack-path',
+    description: 'Demo seed course. Set RAPIDAPI_KEY to sync real courses.',
+  },
+  {
+    title: 'DevOps Path',
+    level: 'Mid-senior',
+    price: '$22',
+    isFree: true,
+    source: 'Seed',
+    source_url: 'https://z-hr.local/learning-hub/seed/devops-path',
+    description: 'Demo seed course. Set RAPIDAPI_KEY to sync real courses.',
+  },
+  {
+    title: 'UI/UX Design Path',
+    level: 'Junior',
+    price: '$15',
+    isFree: false,
+    source: 'Seed',
+    source_url: 'https://z-hr.local/learning-hub/seed/ui-ux-design-path',
+    description: 'Demo seed course. Set RAPIDAPI_KEY to sync real courses.',
+  },
+  {
+    title: 'Mobile Development Path',
+    level: 'Senior',
+    price: '$28',
+    isFree: true,
+    source: 'Seed',
+    source_url: 'https://z-hr.local/learning-hub/seed/mobile-development-path',
+    description: 'Demo seed course. Set RAPIDAPI_KEY to sync real courses.',
+  },
+] as const;
+
 /**
  * GET/POST /api/learning-hub/sync
  * Fetches courses from Udemy (RapidAPI) and merges into learning_hub_courses.
@@ -26,6 +83,7 @@ export async function POST() {
 }
 
 async function runSync() {
+  const totalBefore = db.learningHubCourses.findAll().length;
   try {
     const courses = await fetchCoursesFromUdemyRapidAPI();
     const toInsert = courses.map((c) => ({
@@ -61,10 +119,32 @@ async function runSync() {
     );
   } catch (error) {
     console.error('Error in /api/learning-hub/sync:', error);
+
+    // Dev-friendly fallback: if API key is missing and DB is empty, seed demo courses
+    // so the admin panel table doesn't stay at 0 during local development.
+    const msg = error instanceof Error ? error.message : 'Sync failed';
+    if (totalBefore === 0 && msg.toLowerCase().includes('rapidapi_key is missing')) {
+      const seeded = db.learningHubCourses.addMany(SEED_COURSES as any[]);
+      const total = db.learningHubCourses.findAll().length;
+      return NextResponse.json(
+        {
+          success: true,
+          added: seeded,
+          total,
+          fetched: 0,
+          message:
+            `RAPIDAPI_KEY is missing, so ${seeded} demo course(s) were seeded locally. ` +
+            'Set RAPIDAPI_KEY in the main project .env.local and restart the server to sync real courses.',
+        },
+        { headers: corsHeaders }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Sync failed',
+        error: msg,
+        total: totalBefore,
       },
       { status: 500, headers: corsHeaders }
     );

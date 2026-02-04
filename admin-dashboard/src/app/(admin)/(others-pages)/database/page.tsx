@@ -128,7 +128,9 @@ export default function DatabasePage() {
     const historyById = new Map<string, any>(history.map((h: any) => [String(h?.id ?? ''), h]));
     const wizardData = filterByUserId(tables.wizard_data ?? [], userId, 'user_id') as any[];
     const wizardByRequestId = new Map<string, any>(
-      wizardData.map((w: any) => [String(w?.request_id ?? w?.requestId ?? ''), w]).filter(([k]) => Boolean(k))
+      wizardData
+        .map((w: any) => [String(w?.request_id ?? w?.requestId ?? ''), w] as const)
+        .filter(([k]) => Boolean(k))
     );
 
     // Fallback: if history table is empty (or missing some items), derive from cvs so UI doesn't look broken.
@@ -209,18 +211,32 @@ export default function DatabasePage() {
     setLearningHubSyncing(true);
     setLearningHubSyncMessage(null);
     try {
-      const syncUrl = new URL(`${ZHR_API_URL}/api/learning-hub/youtube/sync`);
-      syncUrl.searchParams.set('maxCategories', '6');
-      syncUrl.searchParams.set('maxSkillsPerCategory', '3');
-      syncUrl.searchParams.set('maxPerSkill', '5');
-      const res = await fetch(syncUrl.toString(), { cache: 'no-store' });
-      const json = await res.json();
-      setLearningHubSyncMessage(
-        json.message ||
-          (json.added != null
-            ? `${json.added} new YouTube course(s) added (target 5 per skill).`
-            : json.error || 'Done.')
-      );
+      // Primary Learning Hub sync endpoint (Udemy via RapidAPI).
+      // This is the one documented in admin-dashboard/env.example and docs.
+      const res = await fetch(`${ZHR_API_URL}/api/learning-hub/sync`, { cache: 'no-store' });
+
+      let json: any = null;
+      try {
+        json = await res.json();
+      } catch {
+        // Ignore JSON parse errors; we'll fall back to HTTP status below.
+      }
+
+      if (!res.ok) {
+        const msg =
+          json?.message ||
+          json?.error ||
+          `HTTP ${res.status} while syncing Learning Hub courses`;
+        setLearningHubSyncMessage(msg);
+      } else {
+        setLearningHubSyncMessage(
+          json?.message ||
+            (json?.added != null
+              ? `${json.added} new course(s) added. Total: ${json.total ?? '—'}.`
+              : 'Done.')
+        );
+      }
+      // Refresh DB view either way (even on sync error) so counts/tables reflect reality.
       await fetchDb(false);
     } catch (e) {
       setLearningHubSyncMessage(e instanceof Error ? e.message : 'Learning Hub sync failed');
