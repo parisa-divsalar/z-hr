@@ -4,7 +4,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { CircularProgress, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import Dotsvertical from '@/assets/images/dashboard/dots-vertical.svg';
 import FrameFaw from '@/assets/images/dashboard/FrameFaw.svg';
@@ -164,9 +164,6 @@ const HistoryCard = ({
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
                             {level}
                         </Typography>
-                        <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            {level}
-                        </Typography>
                     </Stack>
 
                     <Stack
@@ -303,12 +300,24 @@ const HistorySection = () => {
     const observerTarget = useRef<HTMLDivElement>(null);
     const sortButtonRef = useRef<HTMLDivElement>(null);
     const sortMenuRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     // Show all items by default (up to a safe cap); keep infinite-scroll behavior for very large lists.
     const ITEMS_PER_PAGE = 50;
 
-    const [sortOption, setSortOption] = useState<THistorySortOption>('NEW_TO_OLD');
+    const sortFromUrl = useMemo<THistorySortOption>(() => {
+        const v = String(searchParams.get('sort') ?? '').trim().toUpperCase();
+        const allowed: THistorySortOption[] = ['NEW_TO_OLD', 'OLD_TO_NEW', 'SIZE', 'FIT_SCORE'];
+        return allowed.includes(v as THistorySortOption) ? (v as THistorySortOption) : 'NEW_TO_OLD';
+    }, [searchParams]);
+
+    const [sortOption, setSortOption] = useState<THistorySortOption>(sortFromUrl);
     const accessToken = useAuthStore((s) => s.accessToken);
+
+    useEffect(() => {
+        setSortOption((prev) => (prev === sortFromUrl ? prev : sortFromUrl));
+    }, [sortFromUrl]);
 
     const selectedSortLabel = useMemo(
         () => SORT_OPTIONS.find((o) => o.value === sortOption)?.label ?? 'Sort',
@@ -316,21 +325,33 @@ const HistorySection = () => {
     );
 
     const parseDateToTimestamp = (value: string) => {
-        const [mm, dd, yyyy] = value.split('/').map((x) => Number(x));
-        if (!mm || !dd || !yyyy) return 0;
-        const t = new Date(yyyy, mm - 1, dd).getTime();
+        const s = String(value ?? '').trim();
+        if (!s) return 0;
+
+        const parts = s.split('/');
+        if (parts.length === 3) {
+            const mm = Number(parts[0]);
+            const dd = Number(parts[1]);
+            const yyyy = Number(parts[2]);
+            if (mm && dd && yyyy) {
+                const t = new Date(yyyy, mm - 1, dd).getTime();
+                if (Number.isFinite(t)) return t;
+            }
+        }
+
+        const t = Date.parse(s);
         return Number.isFinite(t) ? t : 0;
     };
 
     const parseSizeMB = (value: string) => {
         // Expected format: "2.85 MB"
-        const n = Number.parseFloat(value.replace(/mb/i, '').trim());
+        const n = Number.parseFloat(String(value ?? '').replace(/mb/i, '').trim());
         return Number.isFinite(n) ? n : 0;
     };
 
     const parseFitScore = (value: string) => {
         // Expected format: "89%"
-        const n = Number.parseFloat(value.replace('%', '').trim());
+        const n = Number.parseFloat(String(value ?? '').replace('%', '').trim());
         return Number.isFinite(n) ? n : 0;
     };
 
@@ -361,6 +382,10 @@ const HistorySection = () => {
     const handleSortSelect = (option: THistorySortOption) => {
         setSortOption(option);
         setIsSortMenuOpen(false);
+
+        const next = new URLSearchParams(searchParams.toString());
+        next.set('sort', option);
+        router.replace(`?${next.toString()}`);
     };
 
     const loadMoreItems = useCallback(() => {
@@ -371,7 +396,12 @@ const HistorySection = () => {
     useEffect(() => {
         // Fetch initial history from DB (API)
         setIsLoading(true);
-        fetch(`/api/history${bookmarksOnly ? '?bookmarked=1' : ''}`, {
+        const qs = new URLSearchParams();
+        if (bookmarksOnly) qs.set('bookmarked', '1');
+        // keep server ordering consistent with UI default; client sorting still applies immediately.
+        qs.set('sort', sortOption);
+
+        fetch(`/api/history?${qs.toString()}`, {
             cache: 'no-store',
             headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
         })
@@ -388,7 +418,7 @@ const HistorySection = () => {
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [bookmarksOnly, accessToken]);
+    }, [bookmarksOnly, accessToken, sortOption]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -527,7 +557,7 @@ const HistorySection = () => {
 
             {displayedItems.map((channel, index) => (
                 <HistoryCard
-                    key={`${channel.id}-${index}`}
+                    key={channel.id}
                     {...channel}
                     onToggleBookmark={handleToggleBookmark}
                     onDelete={handleDelete}

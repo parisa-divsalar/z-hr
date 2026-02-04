@@ -6,6 +6,8 @@ import { db } from '@/lib/db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
+type THistorySortOption = 'NEW_TO_OLD' | 'OLD_TO_NEW' | 'SIZE' | 'FIT_SCORE';
+
 function toMMDDYYYY(iso: string) {
     const d = new Date(iso);
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -18,6 +20,66 @@ function sizeMBFromCvContent(cv: any): string {
     const str = typeof cv?.content === 'string' ? cv.content : JSON.stringify(cv?.content ?? '');
     const bytes = Buffer.byteLength(str, 'utf8');
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function parseDateToTimestamp(value: unknown): number {
+    const s = String(value ?? '').trim();
+    if (!s) return 0;
+
+    // Handle MM/DD/YYYY explicitly (history rows use this format)
+    const parts = s.split('/');
+    if (parts.length === 3) {
+        const mm = Number(parts[0]);
+        const dd = Number(parts[1]);
+        const yyyy = Number(parts[2]);
+        if (mm && dd && yyyy) {
+            const t = new Date(yyyy, mm - 1, dd).getTime();
+            if (Number.isFinite(t)) return t;
+        }
+    }
+
+    // Fallback: let JS parse ISO / "Nov 26, 2024" / etc.
+    const t = Date.parse(s);
+    return Number.isFinite(t) ? t : 0;
+}
+
+function parseSizeMB(value: unknown): number {
+    const s = String(value ?? '').trim();
+    if (!s) return 0;
+    // Accept "2.85 MB", "2.85MB", "2.85 mb"
+    const n = Number.parseFloat(s.replace(/mb/i, '').trim());
+    return Number.isFinite(n) ? n : 0;
+}
+
+function parseFitScore(value: unknown): number {
+    const s = String(value ?? '').trim();
+    if (!s) return 0;
+    const n = Number.parseFloat(s.replace('%', '').trim());
+    return Number.isFinite(n) ? n : 0;
+}
+
+function sortHistoryRows(rows: any[], sort: THistorySortOption): any[] {
+    const arr = [...rows];
+    switch (sort) {
+        case 'NEW_TO_OLD':
+            return arr.sort(
+                (a, b) =>
+                    parseDateToTimestamp(b?.date) - parseDateToTimestamp(a?.date) ||
+                    Date.parse(String(b?.created_at ?? '')) - Date.parse(String(a?.created_at ?? '')),
+            );
+        case 'OLD_TO_NEW':
+            return arr.sort(
+                (a, b) =>
+                    parseDateToTimestamp(a?.date) - parseDateToTimestamp(b?.date) ||
+                    Date.parse(String(a?.created_at ?? '')) - Date.parse(String(b?.created_at ?? '')),
+            );
+        case 'SIZE':
+            return arr.sort((a, b) => parseSizeMB(b?.size) - parseSizeMB(a?.size));
+        case 'FIT_SCORE':
+            return arr.sort((a, b) => parseFitScore(b?.Percentage) - parseFitScore(a?.Percentage));
+        default:
+            return arr;
+    }
 }
 
 function tryParseJson(value: unknown): any | null {
@@ -190,6 +252,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     const bookmarkedOnly = url.searchParams.get('bookmarked') === '1' || url.searchParams.get('bookmarked') === 'true';
+    const sort = (url.searchParams.get('sort') || 'NEW_TO_OLD') as THistorySortOption;
 
     // If history is empty/incomplete, materialize from user's CVs so UI never shows empty history unexpectedly.
     materializeHistoryFromCvs(userId);
@@ -230,7 +293,8 @@ export async function GET(request: NextRequest) {
         };
     });
 
-    return NextResponse.json({ data: enriched }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
+    const sorted = sortHistoryRows(enriched, sort);
+    return NextResponse.json({ data: sorted }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
 }
 
 export async function PATCH(request: NextRequest) {
