@@ -77,7 +77,9 @@ const HistoryCard = ({
 
     const handleEditClick = () => {
         // `id` here is the requestId of the CV (see /api/history route materializing from cvs.json)
-        router.push(`/history-edite?id=${encodeURIComponent(id)}&mode=editor`);
+        // First go to history-edite preview so user can see the selected history card,
+        // then the Edit button on that page will open the ResumeEditor.
+        router.push(`/history-edite?id=${encodeURIComponent(id)}`);
     };
 
     const handleFavorite = () => {
