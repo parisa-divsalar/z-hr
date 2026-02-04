@@ -28,7 +28,7 @@ export const PreviewEditeRoot = styled(Stack)(({ theme }) => ({
     border: `1px solid ${alpha(theme.palette.grey[300], 0.6)}`,
 
     '&:hover': {
-        boxShadow: '0 30px 70px rgba(15, 23, 42, 0.25)',
+        boxShadow: '0 10px 20px rgba(5, 3, 2, 0.25)',
     },
 
     [theme.breakpoints.down('md')]: {

@@ -391,7 +391,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                                 variant='caption'
                                 color={fieldErrors.cvContent ? 'error.main' : 'text.secondary'}
                             >
-                                CV content
+                                Job Description
                             </Typography>
                         </Stack>
                         <ContainerSkill direction='row' active={Boolean(values.cvContent.trim())}>
@@ -416,7 +416,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                                 variant='caption'
                                 color={fieldErrors.jobDescription ? 'error.main' : 'text.secondary'}
                             >
-                                Job description
+                                Subject
                             </Typography>
                             <TextField
                                 value={values.jobDescription}
