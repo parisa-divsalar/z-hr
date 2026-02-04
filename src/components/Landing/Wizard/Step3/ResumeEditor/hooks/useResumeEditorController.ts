@@ -64,6 +64,30 @@ import {
 
 import type { ImproveOption, ResumeExperience, ResumeLanguage, ResumeProfile, SectionKey } from '../types';
 
+const ALL_SECTION_KEYS: SectionKey[] = [
+    'summary',
+    'skills',
+    'contactWays',
+    'education',
+    'languages',
+    'certificates',
+    'selectedProjects',
+    'experience',
+    'additionalInfo',
+];
+
+function parseHiddenSections(value: unknown): SectionKey[] {
+    if (!Array.isArray(value)) return [];
+    const set = new Set<SectionKey>();
+    for (const item of value) {
+        if (typeof item !== 'string') continue;
+        if ((ALL_SECTION_KEYS as unknown as string[]).includes(item)) {
+            set.add(item as SectionKey);
+        }
+    }
+    return Array.from(set);
+}
+
 const IMPROVE_OPTION_CONTEXT: Record<ImproveOption, string> = {
     shorter: 'Make the text shorter and more concise while keeping the meaning.',
     longer: 'Make the text longer with more detail, without adding false information.',
@@ -155,6 +179,7 @@ export type ResumeEditorController = {
     cancelDeleteSection: () => void;
     pendingDeleteSection: SectionKey | null;
     isDeletingSection: boolean;
+    isSectionHidden: (section: SectionKey) => boolean;
 
     autoImproved: Record<string, boolean>;
 };
@@ -268,6 +293,56 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
     const [improveError, setImproveError] = useState<string | null>(null);
     const [pendingDeleteSection, setPendingDeleteSection] = useState<SectionKey | null>(null);
     const [isDeletingSection, setIsDeletingSection] = useState(false);
+
+    const hiddenSectionsStorageKey = useMemo(() => {
+        return `resumeEditor:hiddenSections:v1:${identityKey}:${requestId ?? 'text-only'}`;
+    }, [identityKey, requestId]);
+
+    const [hiddenSections, setHiddenSections] = useState<SectionKey[]>(() => {
+        try {
+            if (typeof window === 'undefined') return [];
+            const raw = sessionStorage.getItem(hiddenSectionsStorageKey);
+            if (!raw) return [];
+            return parseHiddenSections(JSON.parse(raw));
+        } catch {
+            return [];
+        }
+    });
+
+    // Keep hidden sections in sync when request context changes (e.g. requestId hydrated async).
+    useEffect(() => {
+        try {
+            if (typeof window === 'undefined') return;
+            const raw = sessionStorage.getItem(hiddenSectionsStorageKey);
+            if (!raw) {
+                setHiddenSections([]);
+                return;
+            }
+            setHiddenSections(parseHiddenSections(JSON.parse(raw)));
+        } catch {
+            setHiddenSections([]);
+        }
+    }, [hiddenSectionsStorageKey]);
+
+    useEffect(() => {
+        try {
+            if (typeof window === 'undefined') return;
+            sessionStorage.setItem(hiddenSectionsStorageKey, JSON.stringify(hiddenSections));
+        } catch {
+            // ignore
+        }
+    }, [hiddenSections, hiddenSectionsStorageKey]);
+
+    const isSectionHidden = useCallback(
+        (section: SectionKey) => {
+            return hiddenSections.includes(section);
+        },
+        [hiddenSections],
+    );
+
+    const hideSection = useCallback((section: SectionKey) => {
+        setHiddenSections((prev) => (prev.includes(section) ? prev : [...prev, section]));
+    }, []);
 
     const isFileFlowMode = canFetchCv && !isTextOnlyMode;
     const isAutoPipelineMode = isTextOnlyMode || isFileFlowMode;
@@ -1583,6 +1658,9 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
             experiences: sectionToDelete === 'experience' ? [] : experiences,
         };
 
+        // Remove the section from the editor UI (not just clearing its values).
+        hideSection(sectionToDelete);
+
         setSummary(nextValues.summary);
         setSkills(nextValues.skills);
         setContactWays(nextValues.contactWays);
@@ -1841,6 +1919,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
         cancelDeleteSection,
         pendingDeleteSection,
         isDeletingSection,
+        isSectionHidden,
 
         autoImproved,
 

@@ -120,14 +120,14 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
                         onDismissDownloadError={c.clearDownloadError}
                     />
 
-                    <SummarySection c={c} />
-                    <SkillsSection c={c} />
-                    <EducationSection c={c} />
-                    <CertificatesSection c={c} />
-                    <ExperienceSection c={c} />
-                    <SelectedProjectsSection c={c} />
-                    <LanguagesSection c={c} />
-                    <AdditionalInfoSection c={c} />
+                    {!c.isSectionHidden('summary') ? <SummarySection c={c} /> : null}
+                    {!c.isSectionHidden('skills') ? <SkillsSection c={c} /> : null}
+                    {!c.isSectionHidden('education') ? <EducationSection c={c} /> : null}
+                    {!c.isSectionHidden('certificates') ? <CertificatesSection c={c} /> : null}
+                    {!c.isSectionHidden('experience') ? <ExperienceSection c={c} /> : null}
+                    {!c.isSectionHidden('selectedProjects') ? <SelectedProjectsSection c={c} /> : null}
+                    {!c.isSectionHidden('languages') ? <LanguagesSection c={c} /> : null}
+                    {!c.isSectionHidden('additionalInfo') ? <AdditionalInfoSection c={c} /> : null}
                 </CardContent>
             </MainCardContainer>
 
