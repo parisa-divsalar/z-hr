@@ -24,6 +24,9 @@ const learningHubCoursesFile = path.join(dataDir, 'learning_hub_courses.json');
 const moreFeaturesFile = path.join(dataDir, 'more_features.json');
 const plansFile = path.join(dataDir, 'plans.json');
 const historyFile = path.join(dataDir, 'history.json');
+const userStatesFile = path.join(dataDir, 'user_states.json');
+const userStateHistoryFile = path.join(dataDir, 'user_state_history.json');
+const userStateLogsFile = path.join(dataDir, 'user_state_logs.json');
 
 type HistoryRow = {
     id: string;
@@ -44,6 +47,24 @@ type HistoryRow = {
     created_at: string;
     updated_at: string;
 };
+
+const defaultUserStates = [
+    { id: 1, name: 'Guest', slug: 'guest', order: 1, description: 'Why: The user has not committed yet and is only browsing after arriving from ads, organic search, blog, or referral. Bad guests mean low‑quality signups; good guests mean higher activation with less traffic.\nTeam focus: Clear message, sharp CTA, remove distractions. This is not a sales moment; it is an invitation moment.' },
+    { id: 2, name: 'Registered – Not Verified', slug: 'registered-not-verified', order: 2, description: 'Why: Early friction. The user registered but did not verify email/phone, so they are not yet a “real” user. Drop‑off here signals low trust or a painful flow.\nTeam focus: Simplify verification, explain why verification matters. UX and trust matter more than features here.' },
+    { id: 3, name: 'Registered – No Resume', slug: 'registered-no-resume', order: 3, description: 'Why: Activation lag. The account exists but no resume has been started. Curiosity is present, but the user is stuck.\nTeam focus: Drive the first action fast, remove extra choices. Push, do not teach.' },
+    { id: 4, name: 'Started Resume – Incomplete', slug: 'started-resume-incomplete', order: 4, description: 'Why: The resume was started but abandoned. The user saw value but hit friction (complexity, fatigue, uncertainty). This is the biggest product drop‑off.\nTeam focus: Reduce friction, smart reminders, break the flow into smaller steps. Design beats sales here.' },
+    { id: 5, name: 'Free – First Resume Completed', slug: 'free-first-resume-completed', order: 5, description: 'Why: The first resume is completed; this is the real activation moment and the true entry point to the product.\nTeam focus: Celebrate success and show “what’s next.” This is still trust‑building, not selling.' },
+    { id: 6, name: 'Free – Activated (Exploring)', slug: 'free-activated-exploring', order: 6, description: 'Why: The user is mentally ready for more value but has not decided to pay.\nTeam focus: Gradually introduce capabilities and show the growth path. Product story matters more than price. Offer light nudges (e.g., interview questions or position suggestions) without pressure.' },
+    { id: 7, name: 'Free – Feature Blocked', slug: 'free-feature-blocked', order: 7, description: 'Why: The golden sales moment—hit a locked feature and felt the pain.\nTeam focus: Explain the benefit clearly and connect the feature to the user’s problem. Sales should resolve pain, not advertise.' },
+    { id: 8, name: 'Paid – Just Converted', slug: 'paid-just-converted', order: 8, description: 'Why: Prevent buyer’s remorse. The user just paid and is still judging the decision.\nTeam focus: Lead them to their first paid win fast and remove ambiguity. Speed beats features here.' },
+    { id: 9, name: 'Paid – Active', slug: 'paid-active', order: 9, description: 'Why: They are using what they paid for, often across multiple resumes.\nTeam focus: Reinforce regular usage and show ROI. Consistency is key.' },
+    { id: 10, name: 'Paid – Power User', slug: 'paid-power-user', order: 10, description: 'Why: Highest LTV. Uses advanced tools like Interview and Skill Gap.\nTeam focus: Give special attention and collect feedback. These users are product partners, not just customers.' },
+    { id: 11, name: 'Paid – Credit Exhausted', slug: 'paid-credit-exhausted', order: 11, description: 'Why: Wants to continue but has no credits; an active user who hit the limit.\nTeam focus: This user is ready to buy now—be transparent, offer usage‑matched options, and do clean upsell without pressure. Fair and logical sales only.' },
+    { id: 12, name: 'Paid – Expired Plan', slug: 'paid-expired-plan', order: 12, description: 'Why: A former paying user whose plan expired (time/system event). They paid before and can return.\nTeam focus: Remind them of past value and the reason to come back. Value nostalgia works here.' },
+    { id: 13, name: 'Payment Failed', slug: 'payment-failed', order: 13, description: 'Why: They tried to pay but it failed; bad experience can cause fast churn.\nTeam focus: Human error messaging and fast resolution. Support beats product here.' },
+    { id: 14, name: 'Dormant User', slug: 'dormant-user', order: 14, description: 'Why: No activity for a while. Could be free or paid, with or without credits. Reactivation is cheaper than acquisition.\nTeam focus: Bring them back with smart reminders and new value, non‑intrusive messaging. Give a reason to return, not empty notifications. Soft re‑engagement.' },
+    { id: 15, name: 'Churn-risk User', slug: 'churn-risk-user', order: 15, description: 'Why: Still around but usage is declining—prevention before the drop.\nTeam focus: Early detection and proactive intervention. Prediction beats treatment here.' },
+];
 
 const defaultMoreFeatures = [
     {
@@ -738,6 +759,47 @@ export const db = {
             return merged;
         },
     },
+    userStates: {
+        findAll: () => readFile(userStatesFile, defaultUserStates),
+        findBySlug: (slug: string) => {
+            const rows = readFile(userStatesFile, defaultUserStates);
+            return rows.find((r: any) => String(r?.slug ?? '').toLowerCase() === String(slug ?? '').toLowerCase()) ?? null;
+        },
+    },
+    userStateHistory: {
+        findAll: () => readFile(userStateHistoryFile, []),
+        findByUserId: (userId: number) => {
+            const rows = readFile(userStateHistoryFile, []);
+            return rows.filter((r: any) => Number(r.user_id) === Number(userId));
+        },
+        append: (data: any) => {
+            const rows = readFile(userStateHistoryFile, []);
+            const now = new Date().toISOString();
+            const newRow = {
+                id: crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'),
+                ...data,
+                created_at: now,
+            };
+            rows.push(newRow);
+            writeFile(userStateHistoryFile, rows);
+            return newRow;
+        },
+    },
+    userStateLogs: {
+        findAll: () => readFile(userStateLogsFile, []),
+        append: (data: any) => {
+            const rows = readFile(userStateLogsFile, []);
+            const now = new Date().toISOString();
+            const newRow = {
+                id: crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'),
+                ...data,
+                created_at: now,
+            };
+            rows.push(newRow);
+            writeFile(userStateLogsFile, rows);
+            return newRow;
+        },
+    },
     plans: {
         findAll: () => readFile(plansFile, defaultPlans),
     },
@@ -825,6 +887,9 @@ export function initDatabase() {
     if (!fs.existsSync(moreFeaturesFile)) writeFile(moreFeaturesFile, defaultMoreFeatures);
     if (!fs.existsSync(plansFile)) writeFile(plansFile, defaultPlans);
     if (!fs.existsSync(historyFile)) writeFile(historyFile, []);
+    if (!fs.existsSync(userStatesFile)) writeFile(userStatesFile, defaultUserStates);
+    if (!fs.existsSync(userStateHistoryFile)) writeFile(userStateHistoryFile, []);
+    if (!fs.existsSync(userStateLogsFile)) writeFile(userStateLogsFile, []);
 }
 
 initDatabase();

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { recordUserStateTransition } from '@/lib/user-state';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
@@ -51,6 +52,8 @@ export async function POST(request: NextRequest) {
             username: username || email,
             password_hash: passwordHash,
         });
+
+        recordUserStateTransition(newUser.id, { isVerified: false, planStatus: 'none' }, { event: 'register' });
 
         return NextResponse.json({
             data: {

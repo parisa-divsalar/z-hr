@@ -73,6 +73,9 @@ const TABLES: Record<string, TableConfig> = {
   job_positions_new: { file: 'job_positions.json', aliasTo: 'job_positions', keyFields: ['id'], allowIndexFallback: true },
   learning_hub_courses: { file: 'learning_hub_courses.json', keyFields: ['id'], allowIndexFallback: true },
   more_features: { file: 'more_features.json', keyFields: ['id'], allowIndexFallback: true },
+  user_states: { file: 'user_states.json', keyFields: ['id'], allowIndexFallback: true },
+  user_state_history: { file: 'user_state_history.json', keyFields: ['id'], allowIndexFallback: true },
+  user_state_logs: { file: 'user_state_logs.json', keyFields: ['id'], allowIndexFallback: true },
   plans: { file: 'plans.json', keyFields: ['id'], allowIndexFallback: true },
   history: { file: 'history.json', keyFields: ['user_id', 'id'], allowIndexFallback: true },
 };

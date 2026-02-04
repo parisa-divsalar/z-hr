@@ -299,8 +299,53 @@ REQUIREMENTS:
 6. No emojis, special formatting, or non-standard characters
 7. Use standard business letter format
 
+ADDITIONAL ATS NOTES (from internal ATS guidance):
+- Keep formatting plain and single-column; avoid tables, text boxes, icons, or images
+- Avoid placing important text in headers/footers; keep all content in the main body
+- Use standard, recognizable job titles (add a standard title if the original is non-standard)
+- Include relevant keywords in both skills and experience context (not just a list)
+- Prefer measurable outcomes (numbers/KPIs) where possible
+- Use simple, parseable language and clear sectioning
+
 OUTPUT:
 Return only the cover letter text, ready to be used in ATS systems.
+`,
+
+        /**
+         * Audit user state edits (admin changes)
+         */
+        auditUserStateEdit: (before: any, after: any) => `
+You are an expert product analyst and data steward.
+Compare the BEFORE and AFTER user state records and produce a change log and merge guidance.
+
+BEFORE:
+${JSON.stringify(before ?? {}, null, 2)}
+
+AFTER:
+${JSON.stringify(after ?? {}, null, 2)}
+
+REQUIREMENTS:
+1. Identify field-level changes (including description/slug/order)
+2. Explain the impact on state logic and user flow
+3. Provide safe merge guidance (how to apply without breaking logic)
+4. Keep it short, structured, and actionable
+
+OUTPUT JSON FORMAT:
+{
+    "summary": "string",
+    "changes": [
+        {
+            "field": "string",
+            "before": "string",
+            "after": "string",
+            "impact": "low|medium|high",
+            "reason": "string"
+        }
+    ],
+    "mergeGuidance": ["string"],
+    "suggestedDescription": "string"
+}
+Return ONLY valid JSON.
 `,
 
     /**

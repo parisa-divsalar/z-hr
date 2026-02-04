@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 
 import { db } from '@/lib/db';
 import { ChatGPTService } from '@/services/chatgpt/service';
+import { recordUserStateTransition } from '@/lib/user-state';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -111,6 +112,10 @@ export async function POST(request: NextRequest) {
             job_description: jobDescription,
             cv_data: cvData,
         });
+
+        if (userId) {
+            recordUserStateTransition(parseInt(userId), {}, { event: 'cover_letter' });
+        }
 
         return NextResponse.json({
             requestId,

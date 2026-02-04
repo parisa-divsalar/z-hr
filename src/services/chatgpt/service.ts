@@ -651,85 +651,35 @@ export class ChatGPTService {
     }
 
     /**
-     * Generate cover letter as STRICT JSON
-     * Output format:
-     * { "companyName": "string", "positionTitle": "string", "subject": "string", "content": "full cover letter text" }
+     * Audit user state edits (admin changes)
      */
-    static async generateCoverLetterJson(
-        params: { cvData: any; jobDescription: string; companyName?: string; positionTitle?: string },
-        logContext?: AiLogContext,
-    ): Promise<{ companyName: string; positionTitle: string; subject: string; content: string }> {
-        let openai: ReturnType<typeof getOpenAIClient>;
+    static async auditUserStateEdit(before: any, after: any, logContext?: AiLogContext): Promise<any> {
+        const openai = getOpenAIClient();
         try {
-            openai = getOpenAIClient();
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            console.error('OpenAI client unavailable:', msg);
-            throw new Error(msg);
-        }
-        try {
-            const timeoutMs = Number(process.env.OPENAI_TIMEOUT_MS ?? 45000);
-            const controller = new AbortController();
-            const t = setTimeout(() => controller.abort(), Number.isFinite(timeoutMs) ? timeoutMs : 45000);
-
-            let response: any;
-            try {
-                // The OpenAI SDK supports abort signals; keep this loosely typed to avoid SDK version type mismatches.
-                response = await (openai.chat.completions.create as any)(
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o',
+                messages: [
                     {
-                        model: 'gpt-4o',
-                        messages: [
-                            {
-                                role: 'system',
-                                content:
-                                    'You are an expert ATS-optimized cover letter writer. Always respond with valid JSON only. No markdown, no extra text.',
-                            },
-                            {
-                                role: 'user',
-                                content: PROMPTS.generateCoverLetterJson(params),
-                            },
-                        ],
-                        response_format: { type: 'json_object' },
-                        temperature: 0.5,
+                        role: 'system',
+                        content: 'You are a precise JSON-only assistant for change auditing.',
                     },
-                    { signal: controller.signal },
-                );
-            } catch (e: any) {
-                // Aborted due to timeout
-                if (controller.signal.aborted) {
-                    throw new Error('OPENAI_TIMEOUT');
-                }
-                throw e;
-            } finally {
-                clearTimeout(t);
-            }
+                    {
+                        role: 'user',
+                        content: PROMPTS.auditUserStateEdit(before, after),
+                    },
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.2,
+            });
 
             const content = response.choices[0]?.message?.content;
             if (!content) throw new Error('No response from ChatGPT');
-
-            let parsed: any;
-            try {
-                parsed = JSON.parse(content);
-            } catch (parseError) {
-                const msg = parseError instanceof Error ? parseError.message : String(parseError);
-                throw new Error(`ChatGPT returned invalid JSON: ${msg}`);
-            }
-
-            const out = {
-                companyName: String(parsed?.companyName ?? '').trim(),
-                positionTitle: String(parsed?.positionTitle ?? '').trim(),
-                subject: String(parsed?.subject ?? '').trim(),
-                content: String(parsed?.content ?? '').trim(),
-            };
-
-            logAiInteraction(logContext, 'generateCoverLetterJson', params, out);
-            return out;
+            const parsed = JSON.parse(content);
+            logAiInteraction(logContext, 'auditUserStateEdit', { before, after }, parsed);
+            return parsed;
         } catch (error) {
-            console.error('Error generating cover letter (JSON):', error);
-            if (error instanceof Error && error.message === 'OPENAI_TIMEOUT') {
-                throw new Error('OPENAI_TIMEOUT');
-            }
-            throw new Error('Failed to generate cover letter');
+            console.error('Error auditing user state edit:', error);
+            throw new Error('Failed to audit user state edit');
         }
     }
 

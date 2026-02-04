@@ -75,6 +75,9 @@ export async function GET() {
     const jobPositionsNew = db.jobPositions.findNewlyAdded(5);
     const learningHubCourses = db.learningHubCourses.findAll();
     const moreFeatures = db.moreFeatures.findAll();
+    const userStates = db.userStates.findAll();
+    const userStateHistory = db.userStateHistory.findAll();
+    const userStateLogs = db.userStateLogs.findAll();
     const plans = db.plans.findAll();
     const history = db.history.findAll();
     const historyEnriched = history.map((row: any) => {
@@ -111,6 +114,9 @@ export async function GET() {
         job_positions_new: jobPositionsNew.length,
         learning_hub_courses: learningHubCourses.length,
         more_features: moreFeatures.length,
+        user_states: userStates.length,
+        user_state_history: userStateHistory.length,
+        user_state_logs: userStateLogs.length,
         plans: plans.length,
         history: historyEnriched.length,
       },
@@ -132,6 +138,9 @@ export async function GET() {
         job_positions_new: jobPositionsNew,
         learning_hub_courses: learningHubCourses,
         more_features: moreFeatures,
+        user_states: userStates,
+        user_state_history: userStateHistory,
+        user_state_logs: userStateLogs,
         plans,
         history: historyEnriched,
       },

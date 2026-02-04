@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { db } from '@/lib/db';
+import { recordUserStateTransition } from '@/lib/user-state';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -70,6 +71,8 @@ export async function POST(request: NextRequest) {
                 analysis_result: analysis ? JSON.stringify(normalizeAnalysisForStorage(analysis)) : null,
             });
         }
+
+        recordUserStateTransition(parseInt(finalUserId), {}, { event: 'cv_add' });
 
         return NextResponse.json({
             data: {
