@@ -209,9 +209,18 @@ export default function DatabasePage() {
     setLearningHubSyncing(true);
     setLearningHubSyncMessage(null);
     try {
-      const res = await fetch(`${ZHR_API_URL}/api/learning-hub/sync`, { cache: 'no-store' });
+      const syncUrl = new URL(`${ZHR_API_URL}/api/learning-hub/youtube/sync`);
+      syncUrl.searchParams.set('maxCategories', '6');
+      syncUrl.searchParams.set('maxSkillsPerCategory', '3');
+      syncUrl.searchParams.set('maxPerSkill', '5');
+      const res = await fetch(syncUrl.toString(), { cache: 'no-store' });
       const json = await res.json();
-      setLearningHubSyncMessage(json.message || (json.added != null ? `${json.added} new course(s) added.` : json.error || 'Done.'));
+      setLearningHubSyncMessage(
+        json.message ||
+          (json.added != null
+            ? `${json.added} new YouTube course(s) added (target 5 per skill).`
+            : json.error || 'Done.')
+      );
       await fetchDb(false);
     } catch (e) {
       setLearningHubSyncMessage(e instanceof Error ? e.message : 'Learning Hub sync failed');
