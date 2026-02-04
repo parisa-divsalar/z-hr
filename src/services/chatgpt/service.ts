@@ -651,6 +651,39 @@ export class ChatGPTService {
     }
 
     /**
+     * Audit user state edits (admin changes)
+     */
+    static async auditUserStateEdit(before: any, after: any, logContext?: AiLogContext): Promise<any> {
+        const openai = getOpenAIClient();
+        try {
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a precise JSON-only assistant for change auditing.',
+                    },
+                    {
+                        role: 'user',
+                        content: PROMPTS.auditUserStateEdit(before, after),
+                    },
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.2,
+            });
+
+            const content = response.choices[0]?.message?.content;
+            if (!content) throw new Error('No response from ChatGPT');
+            const parsed = JSON.parse(content);
+            logAiInteraction(logContext, 'auditUserStateEdit', { before, after }, parsed);
+            return parsed;
+        } catch (error) {
+            console.error('Error auditing user state edit:', error);
+            throw new Error('Failed to audit user state edit');
+        }
+    }
+
+    /**
      * Generate interview questions
      * Enhanced: Now accepts optional jobDescription for better context
      */

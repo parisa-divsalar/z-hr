@@ -12,6 +12,7 @@ async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
         const cookieToken = cookieStore.get('accessToken')?.value;
         const authHeader = request.headers.get('authorization');
         const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+        import { recordUserStateTransition } from '@/lib/user-state';
         const token = cookieToken || headerToken;
         if (!token) return null;
         const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -77,6 +78,10 @@ export async function PUT(request: NextRequest) {
                 content,
                 title: cv.title,
                 createdAt: cv.created_at,
+
+                if (finalUserId) {
+                    recordUserStateTransition(parseInt(finalUserId), {}, { event: 'cv_edit' });
+                }
                 updatedAt: cv.updated_at,
             },
         });

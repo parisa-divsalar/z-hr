@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { recordUserStateTransition } from '@/lib/user-state';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -68,6 +69,8 @@ export async function POST(request: NextRequest) {
                 user_skills_count: userSkillsCount,
             },
         });
+
+        recordUserStateTransition(userId, { isVerified: (user as any)?.is_verified ?? (user as any)?.email_verified ?? null }, { event: 'login' });
 
         return response;
     } catch (error: any) {

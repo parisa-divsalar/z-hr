@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { ChatGPTService } from '@/services/chatgpt/service';
 import { db } from '@/lib/db';
+import { recordUserStateTransition } from '@/lib/user-state';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -58,6 +59,8 @@ export async function POST(request: NextRequest) {
                 status: 'active',
             });
             sessionId = session.id;
+
+            recordUserStateTransition(parseInt(finalUserId), {}, { event: 'interview_questions' });
         }
 
         return NextResponse.json({

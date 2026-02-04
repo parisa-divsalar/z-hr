@@ -70,6 +70,9 @@ const TABLE_LABELS: Record<string, string> = {
   job_positions_new: 'Job positions (newly added)',
   learning_hub_courses: 'Learning Hub courses',
   more_features: 'More Features',
+  user_states: 'User States',
+  user_state_history: 'User State History',
+  user_state_logs: 'User State Logs',
   plans: 'Plans',
   coin: 'Coin',
   history: 'History',
@@ -94,6 +97,11 @@ export default function DatabasePage() {
   const [rowActionError, setRowActionError] = useState<string | null>(null);
   const [rowEditingWhere, setRowEditingWhere] = useState<Record<string, unknown> | null>(null);
   const [plansView, setPlansView] = useState<'matrix' | 'rows'>('matrix');
+  const [userStateAudit, setUserStateAudit] = useState<any | null>(null);
+  const [userStateAuditLogs, setUserStateAuditLogs] = useState<any[]>([]);
+  const [userStateAuditLoading, setUserStateAuditLoading] = useState(false);
+  const [userStateAuditError, setUserStateAuditError] = useState<string | null>(null);
+  const [userStateBefore, setUserStateBefore] = useState<any | null>(null);
 
   const fetchDb = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -118,6 +126,12 @@ export default function DatabasePage() {
   useEffect(() => {
     fetchDb();
   }, [fetchDb]);
+
+  useEffect(() => {
+    if (!data || activeTable !== 'user_states') return;
+    const logs = (data.tables?.user_state_logs as any[]) ?? [];
+    setUserStateAuditLogs(logs.slice().reverse());
+  }, [activeTable, data]);
 
   const userId = selectedUser?.id != null ? Number(selectedUser.id) : null;
   const userDetailData = useMemo(() => {
@@ -289,6 +303,11 @@ export default function DatabasePage() {
     (table: string, row: any, idx: number) => {
       const t = getCrudTable(table);
       if (!t) return;
+      if (table === 'user_states') {
+        setUserStateBefore(row ?? null);
+        setUserStateAudit(null);
+        setUserStateAuditError(null);
+      }
       setRowMode('edit');
       setRowActionError(null);
       setRowEditingWhere(buildWhere(t, row, idx));
@@ -327,6 +346,30 @@ export default function DatabasePage() {
         if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
       }
 
+      if (activeTable === 'user_states') {
+        try {
+          setUserStateAuditLoading(true);
+          setUserStateAuditError(null);
+          const auditRes = await fetch(`${ZHR_API_URL}/api/user-states/audit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+              before: userStateBefore,
+              after: parsed,
+              editor: 'admin',
+            }),
+          });
+          const auditJson = await auditRes.json().catch(() => ({}));
+          if (!auditRes.ok) throw new Error(auditJson?.error || `HTTP ${auditRes.status}`);
+          setUserStateAudit(auditJson?.audit ?? null);
+          setUserStateAuditLogs((prev) => [auditJson?.log, ...prev].filter(Boolean));
+        } catch (e) {
+          setUserStateAuditError(e instanceof Error ? e.message : 'Audit failed');
+        } finally {
+          setUserStateAuditLoading(false);
+        }
+      }
+
       setRowModalOpen(false);
       await fetchDb(false);
     } catch (e) {
@@ -334,7 +377,7 @@ export default function DatabasePage() {
     } finally {
       setRowSaving(false);
     }
-  }, [activeTable, fetchDb, getCrudTable, plansView, rowEditingWhere, rowJson, rowMode]);
+  }, [activeTable, fetchDb, getCrudTable, plansView, rowEditingWhere, rowJson, rowMode, userStateBefore]);
 
   const deleteRow = useCallback(
     async (table: string, row: any, idx: number) => {
@@ -796,11 +839,21 @@ export default function DatabasePage() {
                 <table className="w-full text-left text-sm">
                   <thead className="sticky top-0 bg-gray-100 dark:bg-meta-4">
                     <tr>
-                      {(Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
-                        <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                          {col}
-                        </th>
-                      ))}
+                      {activeTable === 'user_states' ? (
+                        <>
+                          <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">id</th>
+                          <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">name</th>
+                          <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">slug</th>
+                          <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">order</th>
+                          <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">description</th>
+                        </>
+                      ) : (
+                        (Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
+                          <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                            {col}
+                          </th>
+                        ))
+                      )}
                       <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
@@ -815,11 +868,23 @@ export default function DatabasePage() {
                           className={`border-t border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-meta-4/50 ${isUserRow ? 'cursor-pointer' : ''}`}
                           onClick={isUserRow ? () => setSelectedUser(userRow) : undefined}
                         >
-                          {Object.entries(row as object).map(([k, v]) => (
-                            <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
-                              {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
-                            </td>
-                          ))}
+                          {activeTable === 'user_states' ? (
+                            <>
+                              <td className="px-4 py-2 text-gray-600 dark:text-gray-400 align-top text-xs">{String(row?.id ?? '—')}</td>
+                              <td className="px-4 py-2 text-gray-600 dark:text-gray-400 align-top text-xs">{String(row?.name ?? '—')}</td>
+                              <td className="px-4 py-2 text-gray-600 dark:text-gray-400 align-top text-xs">{String(row?.slug ?? '—')}</td>
+                              <td className="px-4 py-2 text-gray-600 dark:text-gray-400 align-top text-xs">{String(row?.order ?? '—')}</td>
+                              <td className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-xl break-words whitespace-pre-wrap align-top text-xs">
+                                {String(row?.description ?? '—')}
+                              </td>
+                            </>
+                          ) : (
+                            Object.entries(row as object).map(([k, v]) => (
+                              <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
+                                {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
+                              </td>
+                            ))
+                          )}
                           <td
                             className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top"
                             onClick={(e) => e.stopPropagation()}
@@ -855,6 +920,72 @@ export default function DatabasePage() {
                 </div>
               )}
             </div>
+            {activeTable === 'user_states' && (
+              <div className="border-t border-stroke px-4 py-4 dark:border-strokedark">
+                <div className="rounded-lg border border-stroke bg-gray-50 p-4 dark:border-strokedark dark:bg-meta-4/40">
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="font-semibold text-gray-900 dark:text-white">User State Edit Log</h4>
+                    {userStateAuditLoading && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Analyzing changes…</span>
+                    )}
+                  </div>
+                  {userStateAuditError && (
+                    <div className="mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+                      {userStateAuditError}
+                    </div>
+                  )}
+                  {userStateAudit && (
+                    <div className="mt-3 grid grid-cols-1 gap-3">
+                      <div className="rounded border border-stroke bg-white px-3 py-2 text-sm text-gray-700 dark:border-strokedark dark:bg-boxdark dark:text-gray-200">
+                        <span className="font-semibold">Summary:</span> {String(userStateAudit.summary ?? '')}
+                      </div>
+                      <div className="rounded border border-stroke bg-white px-3 py-2 text-xs text-gray-700 dark:border-strokedark dark:bg-boxdark dark:text-gray-200">
+                        <div className="font-semibold mb-2">Changes</div>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {(Array.isArray(userStateAudit.changes) ? userStateAudit.changes : []).map((c: any, i: number) => (
+                            <li key={`c-${i}`}>
+                              <span className="font-semibold">{String(c?.field ?? '')}:</span> {String(c?.before ?? '')} → {String(c?.after ?? '')}
+                              {c?.impact ? ` (impact: ${c.impact})` : ''}
+                              {c?.reason ? ` — ${c.reason}` : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded border border-stroke bg-white px-3 py-2 text-xs text-gray-700 dark:border-strokedark dark:bg-boxdark dark:text-gray-200">
+                        <div className="font-semibold mb-2">Merge Guidance</div>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {(Array.isArray(userStateAudit.mergeGuidance) ? userStateAudit.mergeGuidance : []).map((m: string, i: number) => (
+                            <li key={`m-${i}`}>{String(m)}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      {userStateAudit.suggestedDescription && (
+                        <div className="rounded border border-stroke bg-white px-3 py-2 text-xs text-gray-700 dark:border-strokedark dark:bg-boxdark dark:text-gray-200">
+                          <div className="font-semibold mb-2">Suggested Description</div>
+                          <div>{String(userStateAudit.suggestedDescription)}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {userStateAuditLogs.length > 0 && (
+                    <div className="mt-4">
+                      <div className="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-2">Recent Edits</div>
+                      <div className="space-y-2">
+                        {userStateAuditLogs.map((log: any, i: number) => (
+                          <div key={`log-${i}`} className="rounded border border-stroke bg-white px-3 py-2 text-xs text-gray-700 dark:border-strokedark dark:bg-boxdark dark:text-gray-200">
+                            <div className="flex items-center justify-between">
+                              <span>{String(log?.state_name ?? 'User State')}</span>
+                              <span className="text-[10px] text-gray-500 dark:text-gray-400">{String(log?.created_at ?? '')}</span>
+                            </div>
+                            {log?.audit?.summary && <div className="mt-1">{String(log.audit.summary)}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
