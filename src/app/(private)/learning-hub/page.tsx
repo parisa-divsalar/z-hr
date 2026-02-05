@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Checkbox, Stack, Typography } from '@mui/material';
 
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { useAuthStore } from '@/store/auth';
+import { useWizardStore } from '@/store/wizard';
 
 import LearningHubContent from './LearningHubContent';
 import {
@@ -28,23 +30,73 @@ type LearningHubItem = {
   price: string;
   isFree: boolean;
   image?: string;
+  isBookmarked?: boolean;
 };
 
 const LearningHubPage = () => {
   const [courses, setCourses] = useState<LearningHubItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [profileMainSkill, setProfileMainSkill] = useState<string>('');
+  const [bookmarksOnly, setBookmarksOnly] = useState(false);
+  const [bookmarkedCourseIds, setBookmarkedCourseIds] = useState<number[]>([]);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string>('new-to-old');
   const [activeTab, setActiveTab] = useState<'all' | 'free' | 'paid'>('all');
   const sortButtonRef = useRef<HTMLDivElement | null>(null);
   const sortMenuRef = useRef<HTMLDivElement | null>(null);
+  const accessToken = useAuthStore((s) => s.accessToken);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/users/me', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const skill = String(json?.data?.mainSkill ?? '').trim();
+        if (!cancelled && skill) setProfileMainSkill(skill);
+      })
+      .catch(() => null);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const wizardMainSkill = useWizardStore((s) => s.data.mainSkill);
+  const effectiveSkill = (profileMainSkill || wizardMainSkill || '').trim();
+
+  const bookmarkedSet = useMemo(() => new Set(bookmarkedCourseIds), [bookmarkedCourseIds]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/learning-hub/bookmarks', {
+      cache: 'no-store',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    })
+      .then((res) => {
+        if (res.status === 401) return null;
+        if (!res.ok) throw new Error('Failed to load bookmarks');
+        return res.json();
+      })
+      .then((json) => {
+        if (cancelled) return;
+        const ids = Array.isArray(json?.data) ? (json.data as unknown[]) : [];
+        const normalized = ids.map((x) => Number(x)).filter((n) => Number.isFinite(n));
+        setBookmarkedCourseIds(normalized);
+      })
+      .catch(() => {
+        if (!cancelled) setBookmarkedCourseIds([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch('/api/learning-hub/courses')
+    const url = effectiveSkill ? `/api/learning-hub/courses?skill=${encodeURIComponent(effectiveSkill)}` : '/api/learning-hub/courses';
+    fetch(url)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load courses');
         return res.json();
@@ -61,7 +113,7 @@ const LearningHubPage = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [effectiveSkill]);
 
   const handleSortClick = () => {
     setIsSortMenuOpen((prev) => !prev);
@@ -103,6 +155,43 @@ const LearningHubPage = () => {
   const filteredByTab =
     activeTab === 'free' ? sorted.filter((c) => c.isFree) : activeTab === 'paid' ? sorted.filter((c) => !c.isFree) : sorted;
 
+  const filteredByBookmarks = bookmarksOnly ? filteredByTab.filter((c) => bookmarkedSet.has(c.id)) : filteredByTab;
+
+  const itemsWithBookmarkState = useMemo(
+    () =>
+      filteredByBookmarks.map((c) => ({
+        ...c,
+        isBookmarked: bookmarkedSet.has(c.id),
+      })),
+    [filteredByBookmarks, bookmarkedSet]
+  );
+
+  const handleToggleBookmark = (courseId: number, next: boolean) => {
+    setBookmarkedCourseIds((prev) => {
+      const s = new Set(prev);
+      if (next) s.add(courseId);
+      else s.delete(courseId);
+      return Array.from(s);
+    });
+
+    fetch('/api/learning-hub/bookmarks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify({ courseId, bookmarked: next }),
+    }).catch(() => {
+      // revert
+      setBookmarkedCourseIds((prev) => {
+        const s = new Set(prev);
+        if (next) s.delete(courseId);
+        else s.add(courseId);
+        return Array.from(s);
+      });
+    });
+  };
+
   return (
     <LearningHubRoot>
       <Stack gap={2} mt={1}>
@@ -110,8 +199,15 @@ const LearningHubPage = () => {
           <Typography variant='h5' fontWeight='500' color='text.primary'>
             Learning Hub
           </Typography>
+          {effectiveSkill && (
+            <Typography variant='body2' color='text.secondary'>
+              Showing courses for: {effectiveSkill}
+            </Typography>
+          )}
           <LearningHubControls>
             <MuiCheckbox
+              checked={bookmarksOnly}
+              onChange={(_, checked) => setBookmarksOnly(checked)}
               label={
                 <Typography variant='body2' fontWeight='400' color='text.primary'>
                   Bookmarks
@@ -197,7 +293,15 @@ const LearningHubPage = () => {
         {error && (
           <Typography color='error'>{error}</Typography>
         )}
-        {!loading && !error && <LearningHubContent items={filteredByTab} />}
+        {!loading && !error && itemsWithBookmarkState.length === 0 && (
+          <Typography color='text.secondary'>
+            No courses found{effectiveSkill ? ` for "${effectiveSkill}"` : ''}
+            {bookmarksOnly ? ' (bookmarks only)' : ''}.
+          </Typography>
+        )}
+        {!loading && !error && itemsWithBookmarkState.length > 0 && (
+          <LearningHubContent items={itemsWithBookmarkState} onToggleBookmark={handleToggleBookmark} />
+        )}
       </Stack>
     </LearningHubRoot>
   );

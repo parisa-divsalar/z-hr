@@ -1,6 +1,8 @@
 'use client';
 
-import { Typography } from '@mui/material';
+import BookmarkBorderRoundedIcon from '@mui/icons-material/BookmarkBorderRounded';
+import BookmarkRoundedIcon from '@mui/icons-material/BookmarkRounded';
+import { IconButton, Typography } from '@mui/material';
 
 import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
 import ArrowForwardIcon from '@/assets/images/dashboard/IconTp.svg';
@@ -28,6 +30,8 @@ interface SkillGapCardProps {
   price?: string;
   isFree?: boolean;
   image?: string;
+  isBookmarked?: boolean;
+  onToggleBookmark?: (next: boolean) => void;
 }
 
 const SkillGapCard = ({
@@ -36,11 +40,34 @@ const SkillGapCard = ({
   price = '$20',
   isFree = true,
   image,
+  isBookmarked = false,
+  onToggleBookmark,
 }: SkillGapCardProps) => {
   return (
     <CardWrapper>
       <CardImageWrapper>
         {image ? <CardImage src={image} alt={title} /> : <StyledRectangleImage as={RectangleImage} />}
+        {onToggleBookmark && (
+          <IconButton
+            size='small'
+            aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBookmark(!isBookmarked);
+            }}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 2,
+              bgcolor: 'rgba(255, 255, 255, 0.92)',
+              border: '1px solid rgba(0,0,0,0.06)',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 1)' },
+            }}
+          >
+            {isBookmarked ? <BookmarkRoundedIcon fontSize='small' /> : <BookmarkBorderRoundedIcon fontSize='small' />}
+          </IconButton>
+        )}
       </CardImageWrapper>
 
       <CardContent>

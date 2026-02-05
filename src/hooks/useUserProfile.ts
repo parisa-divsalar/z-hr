@@ -10,6 +10,8 @@ export interface UserProfile {
     email: string;
     name: string | null;
     coin: number | null;
+    mainSkill?: string;
+    dateOfBirth?: string;
 }
 
 let cachedProfile: UserProfile | null = null;

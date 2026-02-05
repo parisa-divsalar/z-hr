@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 
@@ -12,10 +12,31 @@ const corsHeaders = {
  * GET /api/learning-hub/courses
  * Returns all Learning Hub courses from DB (for the Learning Hub page).
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const rows = db.learningHubCourses.findAll();
-    const items = rows.map((c: Record<string, unknown>) => ({
+
+    // Query param: ?skill=...
+    const skillQuery = request.nextUrl.searchParams.get('skill')?.trim() ?? '';
+    const normalized = skillQuery.toLowerCase();
+
+    const filteredRows =
+      normalized.length > 0
+        ? rows.filter((c: Record<string, unknown>) => {
+            const title = String(c.title ?? '').toLowerCase();
+            const description = String((c as any).description ?? '').toLowerCase();
+            const category = String((c as any).category ?? '').toLowerCase();
+            const skill = String((c as any).skill ?? '').toLowerCase();
+            return (
+              title.includes(normalized) ||
+              description.includes(normalized) ||
+              category.includes(normalized) ||
+              skill.includes(normalized)
+            );
+          })
+        : rows;
+
+    const items = filteredRows.map((c: Record<string, unknown>) => ({
       id: c.id,
       title: c.title,
       level: c.level ?? 'Mid-level',
