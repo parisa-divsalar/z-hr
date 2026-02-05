@@ -22,12 +22,15 @@ import CreateCoverLetterDialog, { CreateCoverLetterValues } from './CreateCoverL
 type CoverLetterItem = {
     id: string;
     requestId: string;
+    cvRequestId?: string;
     title: string;
     body: string;
     draftBody: string;
     isEditing: boolean;
     createdAt?: string;
     updatedAt?: string;
+    /** True if this cover letter is attached to the current resume (cvRequestId from URL/store). */
+    isForCurrentResume?: boolean;
 };
 
 const normalizeCoverLetter = (text: string) => text.replace(/\r\n/g, '\n').trim();
@@ -172,35 +175,76 @@ const CoverLetter = () => {
     const [isFetching, setIsFetching] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+    const [fetchScope, setFetchScope] = useState<'resume' | 'user' | 'merged'>('resume');
 
-    const fetchCoverLettersForResume = async (cvRequestId: string) => {
+    const fetchCoverLetters = async (args?: { cvRequestId?: string | null }) => {
+        const cvRequestId = String(args?.cvRequestId ?? '').trim();
         setIsFetching(true);
         setFetchError(null);
+        setFetchScope(cvRequestId ? 'resume' : 'user');
         try {
-            const res = await listCoverLetters({ cvRequestId });
-            const nextItems: CoverLetterItem[] = (res?.items ?? [])
+            // If we have a resumeRequestId, fetch BOTH:
+            // - cover letters attached to this resume (cvRequestId filter)
+            // - all saved cover letters for the user (no filter)
+            // This fixes cases where users expect "all my cover letters" even when page is opened with ?id=...
+            const [resByResume, resByUser] = await Promise.all([
+                listCoverLetters({ cvRequestId: cvRequestId || null }),
+                cvRequestId
+                    ? // best-effort: user scope requires auth; if it fails we still show resume-scoped list
+                      listCoverLetters({ cvRequestId: null }).catch(() => null as any)
+                    : Promise.resolve(null as any),
+            ]);
+
+            const mergedRows = [
+                ...(resByResume?.items ?? []),
+                ...((cvRequestId ? (resByUser?.items ?? []) : []) as any[]),
+            ];
+
+            const byRequestId = new Map<string, any>();
+            for (const row of mergedRows) {
+                const rid = String(row?.requestId ?? '').trim();
+                if (!rid) continue;
+                // Keep the newest row for a given requestId (defensive; requestId should be unique)
+                const prev = byRequestId.get(rid);
+                const prevT = String(prev?.updatedAt ?? prev?.createdAt ?? '');
+                const nextT = String(row?.updatedAt ?? row?.createdAt ?? '');
+                if (!prev || nextT.localeCompare(prevT) > 0) byRequestId.set(rid, row);
+            }
+
+            const uniqueRows = Array.from(byRequestId.values());
+
+            if (cvRequestId && resByUser?.items?.length) setFetchScope('merged');
+
+            const nextItems: CoverLetterItem[] = uniqueRows
                 .map((row: any) => {
                     const text = extractCoverLetterText(row?.coverLetter ?? row) ?? '';
                     const title = extractCoverLetterTitle(row, 'Cover letter');
                     const requestId = String(row?.requestId ?? '').trim();
                     if (!requestId || !text) return null;
+                    const rowCvRequestId = String(row?.cvRequestId ?? row?.cv_request_id ?? '').trim();
                     return {
                         id: `cl:${requestId}`,
                         requestId,
+                        cvRequestId: rowCvRequestId || undefined,
                         title,
                         body: text,
                         draftBody: text,
                         isEditing: false,
                         createdAt: row?.createdAt,
                         updatedAt: row?.updatedAt,
+                        isForCurrentResume: cvRequestId ? rowCvRequestId === cvRequestId : undefined,
                     } satisfies CoverLetterItem;
                 })
                 .filter(Boolean) as CoverLetterItem[];
+
+            // Newest first
+            nextItems.sort((a, b) => String(b.updatedAt ?? b.createdAt ?? '').localeCompare(String(a.updatedAt ?? a.createdAt ?? '')));
 
             setItems(nextItems);
         } catch (e: any) {
             // Backward compatible fallback: if list endpoint isn't available for some reason, try old single fetch.
             try {
+                if (!cvRequestId) throw e;
                 const raw = await getCoverLetter({ requestId: cvRequestId });
                 const text = extractCoverLetterText(raw);
                 const title = extractCoverLetterTitle(raw, 'Cover letter');
@@ -228,9 +272,8 @@ const CoverLetter = () => {
     };
 
     useEffect(() => {
-        if (!resumeRequestId) return;
         setHasFetchedOnce(false);
-        void fetchCoverLettersForResume(resumeRequestId);
+        void fetchCoverLetters(resumeRequestId ? { cvRequestId: resumeRequestId } : undefined);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resumeRequestId]);
 
@@ -364,7 +407,7 @@ const CoverLetter = () => {
             }
 
             // Ensure the list reflects DB state.
-            void fetchCoverLettersForResume(nextResumeId);
+            void fetchCoverLetters({ cvRequestId: nextResumeId });
             return;
         }
 
@@ -390,10 +433,18 @@ const CoverLetter = () => {
         <Stack gap={2}>
             {fetchError && <MuiAlert severity='error' message={fetchError} hideDismissButton />}
 
-            {!resumeRequestId && (
+            {!resumeRequestId && !isFetching && !fetchError && (
                 <MuiAlert
                     severity='info'
-                    message='RequestId not found. Open this page with ?requestId=... to load a saved cover letter.'
+                    message='Showing your saved cover letters. To filter by a resume, open this page with ?requestId=...'
+                    hideDismissButton
+                />
+            )}
+
+            {resumeRequestId && fetchScope === 'merged' && !isFetching && !fetchError && (
+                <MuiAlert
+                    severity='info'
+                    message='Showing all your saved cover letters (including other resumes).'
                     hideDismissButton
                 />
             )}
@@ -424,6 +475,12 @@ const CoverLetter = () => {
                 </Typography>
             )}
 
+            {!isFetching && !resumeRequestId && fetchScope === 'user' && hasFetchedOnce && items.length === 0 && !fetchError && (
+                <Typography variant='body2' color='text.secondary'>
+                    You don&apos;t have any saved cover letters yet.
+                </Typography>
+            )}
+
             {items.map((item) => (
                 <Stack
                     key={item.id}
@@ -438,14 +495,22 @@ const CoverLetter = () => {
                         minWidth: 0,
                     }}
                 >
-                    <Typography
-                        variant='body1'
-                        fontWeight={492}
-                        color='text.primary'
-                        sx={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
-                    >
-                        {item.title}
-                    </Typography>
+                    <Stack direction='row' alignItems='baseline' justifyContent='space-between' gap={1} sx={{ minWidth: 0 }}>
+                        <Typography
+                            variant='body1'
+                            fontWeight={492}
+                            color='text.primary'
+                            sx={{ wordBreak: 'break-word', overflowWrap: 'anywhere', minWidth: 0 }}
+                        >
+                            {item.title}
+                        </Typography>
+
+                        {resumeRequestId && item.isForCurrentResume === false && (
+                            <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                Other resume
+                            </Typography>
+                        )}
+                    </Stack>
 
                     {item.isEditing ? (
                         <TextField
@@ -506,8 +571,8 @@ const CoverLetter = () => {
                         <IconButton
                             sx={iconButtonSx}
                             aria-label='Refresh'
-                            disabled={!resumeRequestId || isFetching}
-                            onClick={() => resumeRequestId && fetchCoverLettersForResume(resumeRequestId)}
+                            disabled={isFetching}
+                            onClick={() => fetchCoverLetters(resumeRequestId ? { cvRequestId: resumeRequestId } : undefined)}
                         >
                             <RefreshIcon />
                         </IconButton>

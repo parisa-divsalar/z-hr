@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { db } from '@/lib/db';
 import { ChatGPTService } from '@/services/chatgpt/service';
+import { recordUserStateTransition } from '@/lib/user-state';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -12,7 +13,6 @@ async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
         const cookieToken = cookieStore.get('accessToken')?.value;
         const authHeader = request.headers.get('authorization');
         const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-        import { recordUserStateTransition } from '@/lib/user-state';
         const token = cookieToken || headerToken;
         if (!token) return null;
         const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -72,16 +72,16 @@ export async function PUT(request: NextRequest) {
 
         const content = cv.content ? (typeof cv.content === 'string' ? JSON.parse(cv.content) : cv.content) : null;
 
+        if (finalUserId) {
+            recordUserStateTransition(parseInt(finalUserId), {}, { event: 'cv_edit' });
+        }
+
         return NextResponse.json({
             data: {
                 requestId: cv.request_id,
                 content,
                 title: cv.title,
                 createdAt: cv.created_at,
-
-                if (finalUserId) {
-                    recordUserStateTransition(parseInt(finalUserId), {}, { event: 'cv_edit' });
-                }
                 updatedAt: cv.updated_at,
             },
         });
