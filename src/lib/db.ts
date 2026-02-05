@@ -21,6 +21,7 @@ const jobPositionsFile = path.join(dataDir, 'job_positions.json');
 const loginLogsFile = path.join(dataDir, 'login_logs.json');
 const aiInteractionsFile = path.join(dataDir, 'ai_interactions.json');
 const learningHubCoursesFile = path.join(dataDir, 'learning_hub_courses.json');
+const learningHubBookmarksFile = path.join(dataDir, 'learning_hub_bookmarks.json');
 const moreFeaturesFile = path.join(dataDir, 'more_features.json');
 const plansFile = path.join(dataDir, 'plans.json');
 const historyFile = path.join(dataDir, 'history.json');
@@ -44,6 +45,14 @@ type HistoryRow = {
     description: string;
     is_bookmarked?: boolean;
     deleted_at?: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+type LearningHubBookmarkRow = {
+    id: string;
+    user_id: number;
+    course_id: number;
     created_at: string;
     updated_at: string;
 };
@@ -773,6 +782,53 @@ export const db = {
             return added;
         },
     },
+
+    learningHubBookmarks: {
+        findAll: () => readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []),
+        findByUserId: (userId: number) => {
+            const rows = readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []);
+            return rows.filter((r: any) => Number(r?.user_id) === Number(userId));
+        },
+        isBookmarked: (userId: number, courseId: number) => {
+            const rows = readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []);
+            return rows.some((r: any) => Number(r?.user_id) === Number(userId) && Number(r?.course_id) === Number(courseId));
+        },
+        toggle: (userId: number, courseId: number, isBookmarked?: boolean) => {
+            const rows = readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []);
+            const uid = Number(userId);
+            const cid = Number(courseId);
+            if (!Number.isFinite(uid) || !Number.isFinite(cid)) return null;
+
+            const idx = rows.findIndex((r: any) => Number(r?.user_id) === uid && Number(r?.course_id) === cid);
+            const exists = idx !== -1;
+            const next = typeof isBookmarked === 'boolean' ? isBookmarked : !exists;
+            const now = new Date().toISOString();
+
+            if (next) {
+                if (!exists) {
+                    const id =
+                        typeof (crypto as any).randomUUID === 'function'
+                            ? (crypto as any).randomUUID()
+                            : crypto.randomBytes(16).toString('hex');
+                    rows.push({
+                        id,
+                        user_id: uid,
+                        course_id: cid,
+                        created_at: now,
+                        updated_at: now,
+                    });
+                    writeFile(learningHubBookmarksFile, rows);
+                }
+                return { course_id: cid, is_bookmarked: true };
+            }
+
+            if (exists) {
+                rows.splice(idx, 1);
+                writeFile(learningHubBookmarksFile, rows);
+            }
+            return { course_id: cid, is_bookmarked: false };
+        },
+    },
     moreFeatures: {
         findAll: () => {
             const rows = readFile(moreFeaturesFile, defaultMoreFeatures);
@@ -909,6 +965,7 @@ export function initDatabase() {
     if (!fs.existsSync(interviewSessionsFile)) writeFile(interviewSessionsFile, []);
     if (!fs.existsSync(skillsFile)) writeFile(skillsFile, []);
     if (!fs.existsSync(userSkillsFile)) writeFile(userSkillsFile, []);
+if (!fs.existsSync(learningHubBookmarksFile)) writeFile(learningHubBookmarksFile, []);
     if (!fs.existsSync(wizardDataFile)) writeFile(wizardDataFile, []);
     if (!fs.existsSync(resumeDraftsFile)) writeFile(resumeDraftsFile, []);
     if (!fs.existsSync(resumeSectionOutputsFile)) writeFile(resumeSectionOutputsFile, []);

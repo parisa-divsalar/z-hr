@@ -54,6 +54,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
 
     const [loadingSkills, setLoadingSkills] = useState<boolean>(true);
     const [skillOptions, setSkillOptions] = useState<SelectOption[]>([]);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchSkills = async () => {
@@ -93,12 +94,27 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
         return !(hasFullName && hasMainSkill && hasValidDob);
     }, [data.fullName, data.mainSkill, data.dateOfBirth]);
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         const hasFullName = data.fullName.trim().length > 0;
         const hasMainSkill = data.mainSkill.trim().length > 0;
         const hasValidDob = isValidDateOfBirthDDMMYYYY(data.dateOfBirth);
         if (!(hasFullName && hasMainSkill && hasValidDob)) return;
-        onClose();
+
+        // Persist to DB (best-effort). This enables feature pages (e.g. Learning Hub)
+        // to filter content based on user's selected mainSkill after login.
+        try {
+            setSaving(true);
+            await apiClientClient.patch('users/me', {
+                fullName: data.fullName,
+                mainSkill: data.mainSkill,
+                dateOfBirth: data.dateOfBirth,
+            });
+        } catch {
+            // Non-blocking: user can continue even if API fails in local dev.
+        } finally {
+            setSaving(false);
+            onClose();
+        }
     };
 
     return (
@@ -162,7 +178,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                                 color='secondary'
                                 sx={{ flex: 1, minWidth: 0 }}
                                 onClick={handleConfirm}
-                                disabled={isSaveDisabled}
+                                disabled={isSaveDisabled || saving}
                             >
                                 Save
                             </MuiButton>
@@ -174,7 +190,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                             color='secondary'
                             sx={{ width: '258px' }}
                             onClick={handleConfirm}
-                            disabled={isSaveDisabled}
+                            disabled={isSaveDisabled || saving}
                         >
                             Save
                         </MuiButton>
