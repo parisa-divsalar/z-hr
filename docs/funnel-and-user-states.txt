@@ -1,0 +1,375 @@
+Funnel + User States Extraction (from User State.xlsx + Zenonwork Funnel Flow PDF)
+Date: 2026-02-05
+
+========================
+1) USER STATE DEFINITIONS (from User State.xlsx)
+========================
+1. Guest
+   Auth/Plan: Guest
+   Product Progress: No progress
+   Feature Usage: None
+   Financial State: No payment
+   Behavioral State: Anonymous
+   Core Event: page_view / cta_click_build_resume
+   KPI: CTR به Signup
+   Why it matters: کاربری که هنوز هیچ تعهدی نداده. از تبلیغ، سرچ ارگانیک، بلاگ یا معرفی وارد سایت شده و فقط در حال مشاهده است. Guest بد یعنی هزار تا Signup بی‌کیفیت، Guest خوب یعنی Activation بالا حتی با ترافیک کمتر.
+   Team focus: پیام واضح، CTA شفاف، حذف حواس‌پرتی. اینجا هنوز فروش مهم نیست، درست دعوت کردن مهمه.
+   Email/Notification Strategy:
+     Goal: Signup
+     Channel: On-site message (Email نداریم)
+     Tone: Hero copy شفاف، ارزش فوری
+     Example: Build a Dubai-ready CV in minutes. No signup required to start.
+     Not allowed: Popup زودهنگام، درخواست ایمیل قبل از دیدن ارزش
+
+2. Registered – Not Verified
+   Auth/Plan: Logged-in / No Plan
+   Product Progress: No resume
+   Feature Usage: None
+   Financial State: No payment
+   Behavioral State: Low intent
+   Core Event: signup_completed / verification_pending
+   KPI: Verification rate
+   Why it matters: اصطکاک اولیه. ثبت‌نام کرده ولی هنوز تأیید نکرده. اگر اینجا ریزش داری یعنی اعتماد کم یا فرایند آزاردهنده است.
+   Team focus: ساده‌سازی Verification، توضیح شفاف «چرا باید تأیید کنی». اینجا UX و اعتماد تعیین‌کننده‌اند.
+   Email/Notification Strategy:
+     Goal: Verification
+     Channel: Email + In-app banner
+     Tone: آرام، توضیحی، غیرتهدیدی
+     Example: Subject: Just one step left. We need to verify your email to save your progress.
+     Not allowed: تهدید («اکانتت حذف میشه»)، Countdown جعلی
+
+3. Registered – No Resume
+   Auth/Plan: Logged-in / Free
+   Product Progress: Onboarding only
+   Feature Usage: None
+   Financial State: No payment
+   Behavioral State: At risk
+   Core Event: dashboard_view
+   KPI: Time to first resume start / Activation
+   Why it matters: Activation lag. اکانت دارد، اما رزومه را شروع نکرده.
+   Team focus: هدایت سریع به اولین اقدام، حذف انتخاب‌های اضافی. کاربر را هل بده، نه آموزش طولانی.
+   Email/Notification Strategy:
+     Goal: Resume Started
+     Channel: In-app + 1 Email
+     Tone: هل دادن نرم
+     Example: You’re one step away from your first resume. Start with your name.
+     Not allowed: آموزش طولانی، لیست Feature
+
+4. Started Resume – Incomplete
+   Auth/Plan: Logged-in / Free
+   Product Progress: Resume draft
+   Feature Usage: Core only
+   Financial State: No payment
+   Behavioral State: Drop-off risk
+   Core Event: resume_started / resume_step_abandoned
+   KPI: Resume completion rate
+   Why it matters: بزرگ‌ترین Drop-off محصول. ارزش را دیده اما به مانع خورده.
+   Team focus: کاهش اصطکاک، یادآوری هوشمند، شکستن مسیر.
+   Email/Notification Strategy:
+     Goal: Resume Completed
+     Channel: Email + In-app reminder
+     Tone: حمایتی، نه قضاوتی
+     Example: Your resume is saved. You’re just a few steps away.
+     Not allowed: سرزنش، فشار زمانی
+
+5. Free – First Resume Completed
+   Auth/Plan: Logged-in / Free
+   Product Progress: 1 resume done
+   Feature Usage: Resume builder
+   Financial State: Free quota used
+   Behavioral State: Activated
+   Core Event: resume_completed
+   KPI: Activation rate (A2)
+   Why it matters: لحظه آها. نقطه ورود واقعی به محصول.
+   Team focus: Celebrate + نشان دادن «بعدش چی؟» (اعتمادسازی نه فروش).
+   Email/Notification Strategy:
+     Goal: تثبیت Activation
+     Channel: In-app celebration + Email
+     Tone: تشویقی
+     Example: Your resume is ready. Want to see how recruiters read it?
+     Not allowed: فروش مستقیم در اولین پیام
+
+6. Free – Activated (Exploring)
+   Auth/Plan: Logged-in / Free
+   Product Progress: Resume done
+   Feature Usage: Resume + Preview
+   Financial State: Free limit reached
+   Behavioral State: Curious
+   Core Event: resume_previewed / feature_viewed
+   KPI: Feature exploration depth
+   Why it matters: ذهن آماده ارزش بیشتر ولی تصمیم مالی نگرفته.
+   Team focus: معرفی تدریجی قابلیت‌ها، Story محصول مهم‌تر از قیمت.
+   Email/Notification Strategy:
+     Goal: Feature Discovery
+     Channel: Value-based email
+     Tone: کنجکاوی
+     Example: Here’s one thing most resumes miss. (بدون لینک خرید)
+     Not allowed: Price mention / CTA فروش مستقیم
+
+7. Free – Feature Blocked
+   Auth/Plan: Logged-in / Free
+   Product Progress: Resume done
+   Feature Usage: Hits locked features
+   Financial State: Upgrade CTA
+   Behavioral State: Conversion-ready
+   Core Event: locked_feature_clicked
+   KPI: Free → Paid conversion rate
+   Why it matters: نقطه طلایی فروش (درد را حس کرده).
+   Team focus: توضیح benefit دقیق + ارتباط مستقیم با مشکل کاربر.
+   Email/Notification Strategy:
+     Goal: Free → Paid
+     Channel: In-app modal + Email
+     Tone: پاسخ به درد
+     Example: This feature helps tailor your resume to a job description.
+     Not allowed: —
+
+8. Paid – Just Converted
+   Auth/Plan: Logged-in / Paid
+   Product Progress: Resume exists
+   Feature Usage: Core paid features
+   Financial State: Payment success
+   Behavioral State: High intent
+   Core Event: payment_success
+   KPI: Time to first paid action
+   Why it matters: جلوگیری از buyer’s remorse.
+   Team focus: هدایت فوری به اولین موفقیت پولی، حذف ابهام.
+   Email/Notification Strategy:
+     Goal: First Paid Win
+     Channel: In-app guided action + Email
+     Tone: مطمئن‌کننده
+     Example: Start with this 2-minute improvement.
+     Not allowed: رها کردن کاربر، توضیح پلن طولانی
+
+9. Paid – Active
+   Auth/Plan: Logged-in / Paid
+   Product Progress: Multiple resumes
+   Feature Usage: Resume + JD match
+   Financial State: Credits available
+   Behavioral State: Active
+   Core Event: resume_created_second / jd_match_used
+   KPI: Avg resumes per user
+   Why it matters: استفاده واقعی از پول پرداخت‌شده.
+   Team focus: تقویت استفاده منظم، نشان دادن ROI.
+   Email/Notification Strategy:
+     Goal: Retention
+     Channel: Occasional email
+     Tone: ROI-محور
+     Example: You’ve created 3 resumes. Want to tailor one for a role?
+     Not allowed: —
+
+10. Paid – Power User
+   Auth/Plan: Logged-in / Paid
+   Product Progress: Advanced usage
+   Feature Usage: Interview / Skill Gap
+   Financial State: Credits consumed
+   Behavioral State: Highly engaged
+   Core Event: interview_started / skill_gap_viewed
+   KPI: Feature adoption rate
+   Why it matters: بیشترین LTV.
+   Team focus: توجه ویژه، جمع‌آوری بازخورد.
+   Email/Notification Strategy:
+     Goal: Loyalty + Insight
+     Channel: Email شخصی‌سازی‌شده
+     Tone: احترام + مشارکت
+     Example: You’re one of our most active users. Can we ask what’s next?
+     Not allowed: —
+
+11. Paid – Credit Exhausted
+   Auth/Plan: Logged-in / Paid
+   Product Progress: Ongoing
+   Feature Usage: Wants advanced features
+   Financial State: No credits
+   Behavioral State: Upsell-ready
+   Core Event: credit_exhausted
+   KPI: Credit top-up rate
+   Why it matters: کاربر فعال که به سقف مصرف خورده.
+   Team focus: Upsell تمیز بدون فشار؛ پیشنهاد متناسب با استفاده.
+   Email/Notification Strategy:
+     Goal: Top-up
+     Channel: In-app + Email فوری
+     Tone: منطقی، بدون تخفیف بی‌دلیل
+     Example: You’ve used all your credits. Top up to continue.
+     Not allowed: فشار احساسی، تخفیف بی‌دلیل
+
+12. Paid – Expired Plan
+   Auth/Plan: Logged-in / Expired
+   Product Progress: Past resumes
+   Feature Usage: Locked paid features
+   Financial State: Expired
+   Behavioral State: Reactivation target
+   Core Event: plan_expired
+   KPI: Reactivation rate
+   Why it matters: کاربر سابق که قبلاً پرداخت کرده.
+   Team focus: یادآوری ارزش قبلی، دلیل بازگشت.
+   Email/Notification Strategy:
+     Goal: Reactivation
+     Channel: Email
+     Tone: نوستالژی ارزش
+     Example: Last time, you used Zenonwork to prepare a job-ready CV.
+     Not allowed: —
+
+13. Payment Failed
+   Auth/Plan: Logged-in / Blocked
+   Product Progress: Resume exists
+   Feature Usage: Access limited
+   Financial State: Failed transaction
+   Behavioral State: Frustrated
+   Core Event: payment_failed
+   KPI: Recovery success rate
+   Why it matters: تجربه بد = ریزش سریع.
+   Team focus: توضیح انسانی خطا، راه‌حل سریع.
+   Email/Notification Strategy:
+     Goal: Recovery
+     Channel: Email + In-app
+     Tone: انسانی، حمایتی
+     Example: Something went wrong with payment. Your work is safe. Let’s fix it.
+     Not allowed: —
+
+14. Dormant User
+   Auth/Plan: Logged-in / Any
+   Product Progress: Resume exists
+   Feature Usage: None recently
+   Financial State: Any
+   Behavioral State: Inactive
+   Core Event: no_event_14_days
+   KPI: Re-engagement rate
+   Why it matters: احیای کاربر ارزان‌تر از جذب جدید است.
+   Team focus: یادآوری هوشمند + ارزش جدید، غیرتهاجمی.
+   Email/Notification Strategy:
+     Goal: Re-engagement
+     Channel: Email کم‌تعداد
+     Tone: غیرتهاجمی، ارزشی
+     Example: A quick tip for job searching in Dubai (2-minute read)
+     Not allowed: CTA فروش، فشار
+
+15. Churn-risk User
+   Auth/Plan: Logged-in / Any
+   Product Progress: Resume exists
+   Feature Usage: Declining usage
+   Financial State: Any
+   Behavioral State: High churn risk
+   Core Event: usage_decline_detected
+   KPI: Churn probability
+   Why it matters: پیشگیری قبل از ریزش.
+   Team focus: تشخیص زودهنگام + مداخله پیشگیرانه.
+   Email/Notification Strategy:
+     Goal: Prevent churn
+     Channel: Email شخصی‌سازی‌شده
+     Tone: کمک‌محور
+     Example: We noticed you haven’t been using Zenonwork much lately. What are you trying to achieve?
+     Not allowed: —
+
+========================
+2) ALERT RULES (State-based) — from Excel
+========================
+1. Activation Drop Alert
+   From → To: 3 (Registered – No Resume) → 14 (Dormant)
+   Trigger: no resume_started AND no_event ≥ 7 days
+   Action: Email nudging + simplify first step
+
+2. Resume Abandonment Alert
+   From → To: 4 (Started Resume – Incomplete) → 14 (Dormant)
+   Trigger: resume_started AND resume_not_completed AND inactivity ≥ 3 days
+   Action: In-app reminder + Email: “Resume saved, You’re just a few steps away”
+   Deadline: 24h
+   KPI: Resume completion rate
+   PostHog/GA4/Mixpanel: resume_started AND NOT resume_completed within 3 days
+
+3. Free User Conversion Opportunity
+   From → To: 7 (Free – Feature Blocked) → 14 (Dormant)
+   Trigger: locked_feature_clicked AND no_upgrade AND inactivity ≥ 2 days
+   Action: Email with exact feature benefit & calculator + contextual upgrade modal
+   Deadline: 48h
+   KPI: Free → Paid conversion
+
+4. Buyer’s Remorse Alert
+   From → To: 8 (Paid – Just Converted) → 14 (Dormant)
+   Trigger: payment_success AND no_paid_feature_used ≥ 48 hours
+   Action: Guided onboarding + Auto-open first paid feature + Tooltip walkthrough
+   Deadline: 24–48h
+   KPI: First paid action
+
+5. Paid User Decay Alert
+   From → To: 9 (Paid – Active) → 14 (Dormant)
+   Trigger: paid_user AND no_event ≥ 7 days
+   Action: Re-engagement email + value reminder (“You still have X credits”)
+   Deadline: 7 days
+
+6. Power User Burnout Alert
+   From → To: 10 (Paid – Power User) → 14 (Dormant)
+   Trigger: high_usage_last_14_days AND sudden_drop ≥ 80%
+   Action: Personal email / credit gift + “What are you trying to achieve now?”
+   Deadline: 48h
+
+7. Upsell Timing Alert
+   From → To: 11 (Credit Exhausted) → 14 (Dormant)
+   Trigger: credit_exhausted AND no_topup ≥ 48 hours
+   Action: Credit top-up offer (light, not desperate)
+
+8. Payment Failure Risk
+   From → To: 13 (Payment Failed) → 14 (Dormant)
+   Trigger: payment_failed AND no_retry ≥ 24 hours
+   Action: Retry reminder + support link + clear error explanation
+   Deadline: 24h
+
+9. Churn Prediction Alert (پیش‌دستانه)
+   From → To: Any Active State (5–10) → 15 (Churn-risk)
+   Trigger: usage_decline ≥ 60% over 7 days
+   Action: Preventive re-engagement before dormancy
+   PostHog: event_count_last_7_days <= 40% of previous 7 days
+
+10–16: در فایل خالی است و نیاز به تعریف دارد.
+
+========================
+3) FUNNEL FLOW (from PDF)
+========================
+Main Entry & Navigation
+- Main Page (Home) with Header Navigation
+- Traffic Sources: Paid / Organic
+- Primary CTA: Build resume
+- Secondary CTA: Build resume
+- Other pages: Pricing, FAQ, Blog, Contact Us, CV/Resume Builder
+
+Auth Flow
+- Sign up / Login / Forgot Password / Reset Password
+- Social login: Google / LinkedIn / Apple
+
+Resume Builder Flow (Wizard)
+- Step 1: Personal + Visa Status + Contact + Language
+- Page 1: Job Background + Skill
+- Page 2: Experience History
+- Page 3: Education & Certificate
+- Page 4: Job Description Match (optional)
+- CV Preview + Template + Edit
+- Download (PDF/Word)
+
+Feature Modules (More Features)
+- Skill Gap
+- Interview Questions (Text)
+- Interview Voice
+- Cover Letter (New/Edit)
+- Suggestion Position
+- Learning Hub
+- History
+
+Paid vs Free
+- Free user: UnActive for more features
+- Paid user: Active for more features
+- Get Paid Feature / Coin / Plan
+
+Payment Flow
+- Pricing plans: 100 / 250 / 500 AED
+- Payment Page → Success Page / Failed Transaction
+- Retry flows after failure
+
+Re-engagement / Nudge Actions (from PDF + Alerts)
+- Email nudging + simplify first step
+- In-app reminder + email “Resume saved…”
+- Feature benefit + calculator + contextual upgrade modal
+- Guided onboarding + auto-open paid feature + tooltips
+- Re-engagement email + value reminder (“You still have X credits”)
+- Retry reminder + support link + clear error explanation
+
+Notes / Gaps
+- PDF text shows multiple UI pages (Dashboard, Payment history, Support/Ticket, Blog archive).
+- Some entries are duplicates or visually overlapped in PDF; above list is de-duplicated into a clean funnel.

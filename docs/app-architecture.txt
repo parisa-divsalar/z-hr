@@ -1,0 +1,615 @@
+App Architecture (derived from funnel + user state logic)
+Date: 2026-02-05
+
+1) Goal & Product Funnel (Business Objective Layer)
+- Primary objective: anonymous traffic → registered → resume created → feature usage → paid conversion → retention.
+- Entry points: Home (Build Resume CTA), Pricing, FAQ, Blog, Contact Us, Learning Hub.
+- Conversion hooks:
+  - locked_feature_clicked
+  - payment_success
+  - credit_exhausted
+  - plan_expired
+- Re-engagement thresholds:
+  - resume_started but not completed for ≥ 3 days
+  - no resume_started and no_event ≥ 7 days
+  - inactivity ≥ 14 days (churn-risk), ≥ 30 days (dormant)
+
+2) Core Domains & Modules (System Architecture)
+A) Auth & Identity
+- Flows: signup, login, verification, forgot password, reset password.
+- Authentication channels: email/phone + social logins (Google/LinkedIn/Apple).
+- Data effects: users, registration_logs, login_logs, user_state updates.
+- State impact: Guest → Registered–Not Verified → Registered–No Resume.
+
+B) Resume Builder (Wizard)
+- Wizard steps:
+  - Step 1: Personal + Visa Status + Contact + Language
+  - Step 2: Job Background + Skill
+  - Step 3: Experience History
+  - Step 4: Education & Certificates
+  - Step 5: Job Description Match (optional)
+- Outputs:
+  - wizard_data
+  - resume_drafts
+  - resume_section_outputs
+- State impact:
+  - Registered–No Resume → Started Resume–Incomplete → Free–First Resume Completed
+
+C) CV/Resume Engine (AI/Editing)
+- Responsibilities: generate section output, apply user overrides, save CV, preview & export.
+- Stored data: cvs, resume_drafts, resume_section_outputs, history.
+- Events: resume_generate, resume_override, cv_add, cv_edit, resume_completed.
+
+D) Value Expansion Features
+- Skill Gap (analysis), Interview Questions (text), Interview Voice (audio), Cover Letter, Position Suggestion, Learning Hub.
+- Locked feature access triggers conversion (Free–Feature Blocked).
+- Advanced usage triggers Paid–Power User.
+
+E) Payments & Plans
+- Plans: 100 / 250 / 500 AED (plus free plan), coins/credits for feature gating.
+- State spectrum: Paid–Just Converted, Paid–Active, Paid–Power User, Paid–Credit Exhausted, Paid–Expired Plan, Payment Failed.
+- Recovery: payment_failed → retry flow + support link.
+
+F) User State Engine & Analytics
+- Resolver dimensions:
+  - Auth/verification
+  - Resume progress
+  - Feature usage
+  - Plan/credits
+  - Inactivity windows
+- Outputs:
+  - user_state (current)
+  - user_state_history (transition log)
+  - user_state_logs (event trail)
+- Integrated with CRM triggers and admin dashboard audit.
+
+G) Admin & Operations
+- Database panel with CRUD per table, user detail inspection.
+- User state audit workflow (before/after + guidance).
+- Admin job sync + learning hub sync controls.
+
+3) Data Storage & Seeding
+Tables (JSON):
+- users
+- wizard_data
+- cvs
+- resume_drafts
+- resume_section_outputs
+- cover_letters
+- skills, user_skills
+- interview_sessions
+- job_positions
+- learning_hub_courses, learning_hub_bookmarks
+- plans, more_features
+- history
+- login_logs, registration_logs, ai_interactions
+- user_states, user_state_history, user_state_logs
+
+Seed Strategy:
+- data-seed/ holds base snapshot.
+- If data/*.json missing, system auto-seeds from data-seed.
+- Guarantees consistent dev onboarding without manual data sync.
+
+4) Backend Route Map (Functional Interface)
+Auth:
+- /api/auth/register
+- /api/auth/login
+- /api/auth/logout
+- /api/auth/forgot-password
+- /api/auth/update-password
+
+Wizard & Resume:
+- /api/wizard/save
+- /api/resume/generate
+- /api/resume/save-override
+
+CV & Cover Letter:
+- /api/cv/add-cv
+- /api/cv/edit-cv
+- /api/cv/delete
+- /api/cv/get-cv
+- /api/cv/analyze
+- /api/cv/improve
+- /api/cv/cover-letter
+
+Skill Gap & Interview:
+- /api/skills/analyze-gap
+- /api/interview/questions
+
+Learning Hub:
+- /api/learning-hub/courses
+- /api/learning-hub/bookmarks
+- /api/learning-hub/sync
+- /api/learning-hub/youtube/sync
+
+Jobs & Pricing:
+- /api/jobs/sync
+- /api/jobs/backfill-main-skill
+- /api/plans
+- /api/more-features
+
+User State & Admin:
+- /api/user-states
+- /api/user-states/resolve
+- /api/user-states/history
+- /api/user-states/audit
+- /api/user-states/definitions
+- /api/admin/database
+- /api/admin/table/[table]
+
+5) User State Logic (Detailed Rules)
+State order:
+- Guest
+- Registered – Not Verified
+- Registered – No Resume
+- Started Resume – Incomplete
+- Free – First Resume Completed
+- Free – Activated (Exploring)
+- Free – Feature Blocked
+- Paid – Just Converted
+- Paid – Active
+- Paid – Power User
+- Paid – Credit Exhausted
+- Paid – Expired Plan
+- Payment Failed
+- Dormant User
+- Churn-risk User
+
+Priority rules:
+- payment_failed or plan failed ⇒ Payment Failed
+- inactiveDays >= 30 ⇒ Dormant
+- inactiveDays >= 14 OR usageDecline ⇒ Churn-risk
+- isVerified = false ⇒ Registered – Not Verified
+- no resume started ⇒ Registered – No Resume
+- resume started but incomplete ⇒ Started Resume – Incomplete
+- planStatus paid ⇒ Paid tier branch
+- planStatus expired ⇒ Paid – Expired Plan
+- credits <= 0 ⇒ Paid – Credit Exhausted
+- featureBlocked or plan blocked ⇒ Free – Feature Blocked
+
+6) Engagement & Alert Rule Mapping
+- Resume Abandonment: resume_started & resume_not_completed & inactivity >= 3 days
+- Activation Drop: no resume_started & no_event >= 7 days
+- Free Conversion: locked_feature_clicked & no_upgrade & inactivity >= 2 days
+- Buyer’s Remorse: payment_success & no_paid_feature_used >= 48 hours
+- Paid Decay: paid_user & no_event >= 7 days
+- Power User Burnout: high_usage_last_14_days & sudden_drop >= 80%
+- Upsell Timing: credit_exhausted & no_topup >= 48 hours
+- Payment Failure: payment_failed & no_retry >= 24 hours
+- Churn Prediction: usage_decline >= 60% over 7 days
+
+7) Notification Strategy (Execution Layer)
+- Guest: on-site only
+- Not Verified: email + banner
+- Resume incomplete: email + in-app reminder
+- Feature blocked: modal + benefit email
+- Paid just converted: guided onboarding + tooltips
+- Paid decay: re-engagement email + credit reminder
+- Payment failed: retry reminder + support link
+
+8) Feature Gating & Monetization Detail
+- Free features: resume builder + limited preview/export.
+- Paid features: cover letter, skill gap, interview, learning hub, advanced resume tools.
+- Credits/coins: consumption model for premium actions.
+- Upsell triggers: credit_exhausted, locked_feature_clicked.
+
+9) Observability & Analytics
+- AI interaction logs: ai_interactions (prompt + output).
+- user_state_history: transition chain.
+- user_state_logs: event stream for advanced usage detection.
+- KPI targets: verification rate, activation rate, paid conversion rate, reactivation rate.
+
+10) Mapping to Current Code (Source of Truth)
+- Resolver: src/lib/user-state.ts
+- Event catalog: src/routes/user-state-events.ts
+- State table: data/user_states.json + data-seed/user_states.json
+- Admin DB view: admin-dashboard/src/app/(admin)/(others-pages)/database/page.tsx
+- Route index: src/routes/api-routes.ts
+- Funnel extraction: docs/funnel-and-user-states.txt
+
+11) Journey to Paid (Step-by-Step)
+- Step A: Anonymous → Guest (visit home)
+- Step B: CTA click → Signup → Registered – Not Verified
+- Step C: Verified → Registered – No Resume
+- Step D: Start wizard → Started Resume – Incomplete
+- Step E: Complete resume → Free – First Resume Completed
+- Step F: Explore features → Free – Activated (Exploring)
+- Step G: Locked feature clicked → Free – Feature Blocked
+- Step H: Pay → Paid – Just Converted
+- Step I: Use paid feature → Paid – Active → Paid – Power User
+- Step J: Credits exhausted → Paid – Credit Exhausted → Upsell
+- Step K: Plan expired or payment failed → Paid – Expired / Payment Failed
+- Step L: No activity → Dormant / Churn-risk
+
+12) Known Gaps (Need Confirmation)
+- Concrete frontend events for locked_feature_clicked, resume_started, resume_completed, paid_feature_used.
+- Precise payment webhook integration and plan/credit updates.
+- Clarify if planStatus is free/paid/expired/failed/blocked across all flows.
+
+13) Next Operational Steps
+- Implement analytics event taxonomy at frontend.
+- Add server-side scheduled checks for dormant/churn-risk evaluation.
+- Formalize notification templates per state.
+
+14) Event Taxonomy (Required for State Accuracy)
+Required core events and ownership:
+- page_view (web)
+- cta_click_build_resume (web)
+- signup_completed (auth)
+- verification_pending / verification_completed (auth)
+- dashboard_view (app)
+- resume_started (wizard)
+- resume_step_abandoned (wizard)
+- resume_completed (resume)
+- resume_previewed (resume)
+- feature_viewed (feature routing)
+- locked_feature_clicked (gating)
+- payment_success (billing)
+- payment_failed (billing)
+- paid_feature_used (paid gating)
+- credit_exhausted (billing)
+- plan_expired (billing)
+- usage_decline_detected (analytics)
+
+Event logging location:
+- server-side: recordUserActivity(...) in API routes
+- client-side: analytics pipeline (PostHog/GA4/Mixpanel)
+
+15) State → Route Mapping (Example Coverage)
+Guest:
+- Home, Pricing, FAQ, Blog, Contact Us
+- CTA: Build Resume
+
+Registered – Not Verified:
+- Verification page + Banner
+- Login allowed but feature gated
+
+Registered – No Resume:
+- Dashboard prompt → Wizard start
+
+Started Resume – Incomplete:
+- Wizard resume steps + Draft autosave
+
+Free – First Resume Completed:
+- Resume Preview + Download (Free)
+
+Free – Activated (Exploring):
+- Feature previews (Skill Gap/Interview/Cover Letter/Learning Hub)
+
+Free – Feature Blocked:
+- Upgrade modal + Pricing page
+
+Paid – Just Converted:
+- Auto-open first paid feature + guided onboarding
+
+Paid – Active / Power:
+- Full feature access + history + analytics
+
+Paid – Credit Exhausted:
+- Top-up/Upgrade flows
+
+Paid – Expired Plan:
+- Reactivation flow
+
+Payment Failed:
+- Retry payment + Support
+
+Dormant / Churn-risk:
+- Re-engagement email + in-app banner on return
+
+16) API Contract Notes (Data Expectations)
+Auth:
+- POST /api/auth/register: creates user + recordUserActivity('register')
+- POST /api/auth/login: recordUserActivity('login')
+
+Wizard & Resume:
+- POST /api/wizard/save: recordUserActivity('wizard_save')
+- POST /api/resume/generate: recordUserActivity('resume_generate')
+- POST /api/resume/save-override: recordUserActivity('resume_override')
+
+CV & Cover Letter:
+- POST /api/cv/add-cv: recordUserActivity('cv_add')
+- PUT /api/cv/edit-cv: recordUserActivity('cv_edit')
+- POST /api/cv/analyze: recordUserActivity('cv_analyze')
+- POST /api/cv/cover-letter: recordUserActivity('cover_letter')
+
+Skill Gap & Interview:
+- POST /api/skills/analyze-gap: recordUserActivity('skill_gap')
+- POST /api/interview/questions: recordUserActivity('interview_questions')
+
+Learning Hub:
+- GET /api/learning-hub/courses: recordUserActivity('learning_hub_view')
+- POST /api/learning-hub/sync: recordUserActivity('learning_hub_view', action=sync)
+
+17) Data Fields to Keep Consistent
+Users:
+- user_state, user_state_reason, user_state_updated_at, last_active_at
+- plan_status, credits/coin, payment_failed, feature_blocked
+
+Job Positions:
+- main_skill must be one of the existing categories in skills.json
+- backfill endpoint updates all existing rows when skills change
+
+18) Background Jobs / Schedulers
+- Cron: /api/jobs/sync every 5 min
+- Cron: /api/learning-hub/sync every 5 min
+- Scheduled state evaluator (optional):
+  - nightly: update dormant/churn-risk based on inactivity/usage trend
+
+19) Notification Templates (State → Template)
+- Not Verified: “Just one step left” (verification)
+- Resume Incomplete: “Resume saved, a few steps away”
+- Feature Blocked: “This feature solves X” + calculator
+- Buyer’s Remorse: “Let’s get your first paid win”
+- Dormant: “You still have X credits”
+- Payment Failed: “Payment issue, your work is safe”
+
+20) Implementation Checklist (No Questions Needed)
+- [x] State definitions extracted + rules mapped
+- [x] Funnel extracted from PDF
+- [x] Event logging added to server routes
+- [x] Admin table alignment fixed
+- [x] Job main_skill mapping + backfill endpoint
+- [x] Seed data strategy
+- [ ] Add front-end analytics event emission
+- [ ] Add scheduler for dormant/churn-risk evaluation
+- [ ] Payment webhook integration
+
+21) End-to-End User Journey (Flow Diagram)
+Anonymous → Home → CTA Build Resume
+  → Signup → Email/Phone Verify
+    → Dashboard → Wizard Step 1..5
+      → Resume Preview → Download (Free)
+        → Feature Exploration
+          → Locked Feature Clicked → Pricing → Payment
+            → Payment Success → Paid Onboarding → Paid Feature Used
+              → Regular Usage → Power User
+            → Payment Failed → Retry → Support
+        → Inactivity → Dormant / Churn-risk
+
+22) State Machine Diagram (Textual)
+Guest
+  └─(signup_completed)→ Registered – Not Verified
+       └─(verification_completed)→ Registered – No Resume
+            └─(resume_started)→ Started Resume – Incomplete
+                 └─(resume_completed)→ Free – First Resume Completed
+                      └─(feature_viewed)→ Free – Activated (Exploring)
+                           └─(locked_feature_clicked)→ Free – Feature Blocked
+                                └─(payment_success)→ Paid – Just Converted
+                                     └─(paid_feature_used)→ Paid – Active
+                                          └─(advanced_usage)→ Paid – Power User
+                                     └─(credits_exhausted)→ Paid – Credit Exhausted
+                                     └─(plan_expired)→ Paid – Expired Plan
+                                     └─(payment_failed)→ Payment Failed
+Any state with inactivity >= 14 days → Churn-risk
+Any state with inactivity >= 30 days → Dormant User
+
+23) Detailed State Descriptions (Operational Playbook)
+Guest
+- Trigger: page_view / cta_click_build_resume
+- Goal: drive signup without friction
+- Content: on-site value message only
+
+Registered – Not Verified
+- Trigger: signup_completed, verification_pending
+- Goal: complete verification with trust messaging
+- Content: email + in-app banner (no threats)
+
+Registered – No Resume
+- Trigger: dashboard_view without resume_started
+- Goal: start wizard quickly
+- Content: 1 email + in-app prompt
+
+Started Resume – Incomplete
+- Trigger: resume_started + resume_step_abandoned
+- Goal: resume completion within 3 days
+- Content: reminder email + in-app resume restore
+
+Free – First Resume Completed
+- Trigger: resume_completed
+- Goal: reinforce success and guide next action
+- Content: celebration + suggestion of next feature
+
+Free – Activated (Exploring)
+- Trigger: feature_viewed
+- Goal: increase feature discovery (soft)
+- Content: value-based emails without price CTA
+
+Free – Feature Blocked
+- Trigger: locked_feature_clicked
+- Goal: convert to paid
+- Content: upgrade modal + benefit message
+
+Paid – Just Converted
+- Trigger: payment_success
+- Goal: first paid win within 48 hours
+- Content: guided onboarding + auto-open first paid feature
+
+Paid – Active
+- Trigger: paid_feature_used
+- Goal: maintain consistent usage
+- Content: periodic ROI emails
+
+Paid – Power User
+- Trigger: advanced usage (interview/skill gap)
+- Goal: loyalty + feedback
+- Content: personalized email, feedback request
+
+Paid – Credit Exhausted
+- Trigger: credits_exhausted
+- Goal: top-up
+- Content: in-app + email, no pressure
+
+Paid – Expired Plan
+- Trigger: plan_expired
+- Goal: reactivation
+- Content: value reminder
+
+Payment Failed
+- Trigger: payment_failed
+- Goal: recover payment quickly
+- Content: retry + support link
+
+Dormant User
+- Trigger: inactivity >= 30 days
+- Goal: re-engage
+- Content: soft value reminder
+
+Churn-risk User
+- Trigger: usage_decline >= 60% in 7 days
+- Goal: prevent dormancy
+- Content: personalized check-in
+
+24) Required Background Jobs (Operational)
+- Job Sync: /api/jobs/sync every 5 min
+- Learning Hub Sync: /api/learning-hub/sync every 5 min
+- Main Skill Backfill (manual/weekly): /api/jobs/backfill-main-skill
+- State Evaluator (nightly): update dormant/churn-risk by activity windows
+
+25) Frontend Analytics Emission (Mandatory)
+- On CTA click: cta_click_build_resume
+- On resume start: resume_started
+- On resume step abandon: resume_step_abandoned
+- On resume complete: resume_completed
+- On preview: resume_previewed
+- On locked feature click: locked_feature_clicked
+- On paid feature use: paid_feature_used
+- On payment success/fail: payment_success/payment_failed
+
+26) Completion Definition (Done Criteria)
+- Every state has:
+  - trigger events
+  - KPI
+  - notification strategy
+  - route mapping
+  - backend event logging
+- Admin dashboard shows state logs and changes
+- Funnel metrics are trackable by analytics tooling
+
+27) Data Model (Field-Level Contract)
+users
+- id, email, phone, name, created_at
+- is_verified, verification_method, verified_at
+- user_state, user_state_reason, user_state_updated_at
+- last_active_at, last_login_at
+- plan_status (free|paid|expired|failed|blocked)
+- credits, coins
+- payment_failed (bool), feature_blocked (bool)
+- last_payment_at, last_plan_expired_at
+
+wizard_data
+- user_id, step, payload, created_at, updated_at
+
+resume_drafts
+- user_id, draft_id, content, status, created_at, updated_at
+
+resume_section_outputs
+- user_id, section, content, source, created_at
+
+cvs
+- user_id, cv_id, content, created_at, updated_at
+
+cover_letters
+- user_id, letter_id, content, created_at
+
+job_positions
+- id, title, company, location, skills, main_skill, source, created_at
+
+plans / more_features
+- plan_id, name, price_aed, credits, duration_days
+
+history / ai_interactions
+- user_id, event, payload, model, created_at
+
+user_state_logs
+- user_id, event, metadata, created_at
+
+user_state_history
+- user_id, from_state, to_state, reason, created_at
+
+28) Payment & Credits Lifecycle (Authoritative Flow)
+- payment_success:
+  - update users.plan_status = paid
+  - add credits based on plan
+  - set last_payment_at
+  - recordUserActivity('payment_success')
+- payment_failed:
+  - set payment_failed = true
+  - recordUserActivity('payment_failed')
+- credit_consumption:
+  - decrement credits on each paid feature use
+  - if credits <= 0 → set feature_blocked = true; recordUserActivity('credit_exhausted')
+- plan_expired:
+  - plan_status = expired; recordUserActivity('plan_expired')
+- refund/chargeback (optional):
+  - set plan_status = failed/blocked; recordUserActivity('payment_failed')
+
+29) Webhook & Billing Integration Requirements
+- Incoming events: payment_success, payment_failed, chargeback, subscription_expired
+- Validate signature + idempotency key
+- Map external customer_id → users.id
+- Store raw payload in history for audit
+- Retry strategy for transient failures (max 3)
+
+30) Frontend Event Ownership (Precise UI Touchpoints)
+- Home CTA button → cta_click_build_resume
+- Wizard start button → resume_started
+- Wizard step leave without save for ≥ 30s → resume_step_abandoned
+- Final submit on wizard → resume_completed
+- Preview click → resume_previewed
+- Locked feature button → locked_feature_clicked
+- Paid feature execute → paid_feature_used
+- Payment modal result → payment_success/payment_failed
+
+31) Analytics Pipeline (Data Capture Path)
+- Client: event queue → analytics SDK (PostHog/GA4/Mixpanel)
+- Server: recordUserActivity in API routes
+- Aggregation: daily rollups (activation rate, paid conversion)
+- Source of truth for state: user_state_history + user_state_logs
+- BI export: JSON to CSV for weekly reporting
+
+32) Security & Privacy Baseline
+- PII protection: emails/phones only in users table
+- AI logs should not store raw sensitive fields (mask phone/email)
+- Access control: admin routes behind admin role check
+- Rate limiting: auth + AI endpoints
+- File uploads: validate MIME and size
+
+33) Error Handling & Resilience
+- All API routes return { success, data?, error? }
+- On AI failure: fallback message + record history
+- On DB read/write failure: log error + return 500
+- Retry external calls with exponential backoff (max 3)
+
+34) Environment & Config
+- env.example defines:
+  - OPENAI_API_KEY
+  - PAYMENT_PROVIDER_KEY/WEBHOOK_SECRET
+  - YOUTUBE_API_KEY
+  - ADMIN_EMAILS
+  - ANALYTICS_WRITE_KEY
+- Feature flags:
+  - ENABLE_PAYMENTS
+  - ENABLE_LEARNING_HUB_SYNC
+
+35) Deployment & Ops Notes
+- Build: Next.js (server + API routes)
+- Runtime: Node.js
+- Cron: external scheduler (GitHub Actions/Cloud Scheduler)
+- Logs: stderr + admin DB history
+
+36) Testing Strategy
+- Unit: user-state resolver, main_skill resolver
+- API: mock requests for register/login/resume
+- Integration: payment webhook idempotency
+- Regression: admin DB table view
+
+37) Risk Register (Mitigation)
+- Missing frontend events → wrong state: add QA checklist
+- Payment mismatch → credit errors: enforce idempotency + audit log
+- Seed drift → inconsistent dev: regenerate data-seed quarterly
+
+38) Open Items (Implementation Backlog)
+- Add frontend analytics emission
+- Add scheduled state evaluator
+- Implement payment webhooks + credits updates
