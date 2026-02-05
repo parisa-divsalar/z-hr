@@ -177,9 +177,9 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep }) => {
               <MuiButton variant='outlined' color='secondary' onClick={handleEditResume}>
                 Edit
               </MuiButton>
-              <MuiButton variant='contained' color='secondary'>
-                Download
-              </MuiButton>
+              {/*<MuiButton variant='contained' color='secondary'>*/}
+              {/*  Download*/}
+              {/*</MuiButton>*/}
             </Stack>
           </Stack>
         </Grid>
