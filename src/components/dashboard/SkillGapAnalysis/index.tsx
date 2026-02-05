@@ -45,7 +45,7 @@ const SkillCard = ({ items }: SkillCardProps) => {
             )}
           </Stack>
         ))}
-        <Stack direction='row' alignItems='center' justifyContent='cnter' gap={1}>
+        <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
           <MuiButton
             color='secondary'
             size='medium'

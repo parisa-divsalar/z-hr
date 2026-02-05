@@ -45,7 +45,7 @@ const UpcomingInterview = () => {
                                 color='white'
                                 sx={{
                                     bgcolor: 'warning.main',
-                                    Radius: '8px',
+                                    borderRadius: '8px',
                                     height: '26px',
                                     width: '85px',
                                 }}
