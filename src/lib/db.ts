@@ -5,6 +5,7 @@ import crypto from 'crypto';
 // Simple file-based database using JSON files (project-root ./data by default)
 // NOTE: In this repo the data folder is at <projectRoot>/data, so default to that.
 const defaultDataDir = path.resolve(process.cwd(), 'data');
+const seedDataDir = path.resolve(process.cwd(), 'data-seed');
 const dataDir = process.env.DATABASE_PATH ? path.dirname(process.env.DATABASE_PATH) : defaultDataDir;
 
 const usersFile = path.join(dataDir, 'users.json');
@@ -286,6 +287,17 @@ const readFile = <T>(filePath: string, defaultValue: T[]): T[] => {
         if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf-8');
             return JSON.parse(content);
+        }
+        const seedPath = path.join(seedDataDir, path.basename(filePath));
+        if (fs.existsSync(seedPath)) {
+            const content = fs.readFileSync(seedPath, 'utf-8');
+            const parsed = JSON.parse(content);
+            try {
+                writeFile(filePath, parsed);
+            } catch {
+                // ignore seed copy errors
+            }
+            return parsed;
         }
     } catch (error) {
         console.error(`Error reading ${filePath}:`, error);
@@ -674,6 +686,7 @@ export const db = {
             const row = {
                 id: newId,
                 ...data,
+                main_skill: data?.main_skill ?? null,
                 is_active: data.is_active !== false,
                 created_at: now,
                 updated_at: now,
@@ -688,13 +701,29 @@ export const db = {
             let maxId = all.length > 0 ? Math.max(...all.map((j: any) => j.id || 0)) : 0;
             const now = new Date().toISOString();
             let added = 0;
+            let updated = 0;
             for (const item of items) {
                 const sourceUrl = item.sourceUrl || item.source_url || item.applicationUrl;
-                if (!sourceUrl || all.some((j: any) => (j.sourceUrl || j.source_url) === sourceUrl)) continue;
+                if (!sourceUrl) continue;
+                const existingIndex = all.findIndex((j: any) => (j.sourceUrl || j.source_url) === sourceUrl);
+                if (existingIndex !== -1) {
+                    const existing = all[existingIndex];
+                    const nextMainSkill = item?.main_skill ?? null;
+                    if (nextMainSkill && existing?.main_skill !== nextMainSkill) {
+                        all[existingIndex] = {
+                            ...existing,
+                            main_skill: nextMainSkill,
+                            updated_at: new Date().toISOString(),
+                        };
+                        updated += 1;
+                    }
+                    continue;
+                }
                 maxId += 1;
                 all.push({
                     id: maxId,
                     ...item,
+                    main_skill: item?.main_skill ?? null,
                     is_active: true,
                     created_at: now,
                     updated_at: now,
@@ -702,7 +731,7 @@ export const db = {
                 });
                 added += 1;
             }
-            if (added > 0) writeFile(jobPositionsFile, all);
+            if (added > 0 || updated > 0) writeFile(jobPositionsFile, all);
             return added;
         },
         update: (id: number, data: Partial<any>) => {

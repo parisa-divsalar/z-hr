@@ -1,0 +1,1148 @@
+[
+  {
+    "id": 1,
+    "name": "ASP.NET Core",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.757Z"
+  },
+  {
+    "id": 2,
+    "name": "React",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 3,
+    "name": "Angular",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 4,
+    "name": "Vue.js",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 5,
+    "name": "Node.js",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 6,
+    "name": "Django",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 7,
+    "name": "Flask",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 8,
+    "name": "Spring Boot",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 9,
+    "name": "Laravel",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 10,
+    "name": "Ruby on Rails",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 11,
+    "name": "Express.js",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 12,
+    "name": "Next.js",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 13,
+    "name": "Svelte",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 14,
+    "name": "Nuxt.js",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 15,
+    "name": "Gatsby",
+    "category": "Web Frameworks",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 16,
+    "name": "JavaScript",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 17,
+    "name": "TypeScript",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 18,
+    "name": "Python",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 19,
+    "name": "Java",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 20,
+    "name": "C#",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 21,
+    "name": "C++",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 22,
+    "name": "C",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 23,
+    "name": "Go",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 24,
+    "name": "Rust",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 25,
+    "name": "Swift",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 26,
+    "name": "Kotlin",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 27,
+    "name": "PHP",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 28,
+    "name": "Ruby",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 29,
+    "name": "Scala",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 30,
+    "name": "R",
+    "category": "Programming Languages",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 31,
+    "name": "HTML5",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 32,
+    "name": "CSS3",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 33,
+    "name": "SASS/SCSS",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 34,
+    "name": "Bootstrap",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 35,
+    "name": "Tailwind CSS",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 36,
+    "name": "Material-UI",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 37,
+    "name": "Responsive Design",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 38,
+    "name": "RESTful APIs",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 39,
+    "name": "GraphQL",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 40,
+    "name": "Webpack",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 41,
+    "name": "Vite",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 42,
+    "name": "jQuery",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 43,
+    "name": "AJAX",
+    "category": "Web Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 44,
+    "name": "React Native",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 45,
+    "name": "Flutter",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 46,
+    "name": "Swift (iOS)",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 47,
+    "name": "Kotlin (Android)",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 48,
+    "name": "Ionic",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 49,
+    "name": "Xamarin",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 50,
+    "name": "NativeScript",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 51,
+    "name": "Cordova",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 52,
+    "name": "App Store",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 53,
+    "name": "Google Play",
+    "category": "Mobile Development",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 54,
+    "name": "MySQL",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 55,
+    "name": "PostgreSQL",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 56,
+    "name": "MongoDB",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 57,
+    "name": "Redis",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 58,
+    "name": "SQLite",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 59,
+    "name": "Oracle",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 60,
+    "name": "SQL Server",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 61,
+    "name": "Cassandra",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 62,
+    "name": "Elasticsearch",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 63,
+    "name": "DynamoDB",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 64,
+    "name": "Firebase",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 65,
+    "name": "Supabase",
+    "category": "Database",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 66,
+    "name": "AWS",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 67,
+    "name": "Azure",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 68,
+    "name": "Google Cloud",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 69,
+    "name": "Docker",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 70,
+    "name": "Kubernetes",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 71,
+    "name": "Terraform",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 72,
+    "name": "Serverless",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 73,
+    "name": "Lambda",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 74,
+    "name": "EC2",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 75,
+    "name": "S3",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 76,
+    "name": "CloudFormation",
+    "category": "Cloud Computing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 77,
+    "name": "CI/CD",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 78,
+    "name": "Jenkins",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 79,
+    "name": "GitLab CI",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 80,
+    "name": "GitHub Actions",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 81,
+    "name": "Ansible",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 82,
+    "name": "Chef",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 83,
+    "name": "Puppet",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 84,
+    "name": "Nagios",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 85,
+    "name": "Prometheus",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 86,
+    "name": "Grafana",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 87,
+    "name": "ELK Stack",
+    "category": "DevOps",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 88,
+    "name": "Pandas",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 89,
+    "name": "NumPy",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 90,
+    "name": "Matplotlib",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 91,
+    "name": "Seaborn",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 92,
+    "name": "Jupyter",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 93,
+    "name": "R",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 94,
+    "name": "SQL",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 95,
+    "name": "Data Analysis",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 96,
+    "name": "Data Visualization",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 97,
+    "name": "ETL",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 98,
+    "name": "Apache Spark",
+    "category": "Data Science",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 99,
+    "name": "TensorFlow",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 100,
+    "name": "PyTorch",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 101,
+    "name": "Scikit-learn",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 102,
+    "name": "Keras",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 103,
+    "name": "Neural Networks",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 104,
+    "name": "Deep Learning",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 105,
+    "name": "NLP",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 106,
+    "name": "Computer Vision",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 107,
+    "name": "OpenCV",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 108,
+    "name": "XGBoost",
+    "category": "Machine Learning",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 109,
+    "name": "Figma",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 110,
+    "name": "Adobe XD",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 111,
+    "name": "Sketch",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 112,
+    "name": "Photoshop",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 113,
+    "name": "Illustrator",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 114,
+    "name": "InDesign",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 115,
+    "name": "UI/UX Design",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 116,
+    "name": "Prototyping",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 117,
+    "name": "Wireframing",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 118,
+    "name": "User Research",
+    "category": "Design",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 119,
+    "name": "SEO",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 120,
+    "name": "SEM",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 121,
+    "name": "Google Analytics",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 122,
+    "name": "Social Media Marketing",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 123,
+    "name": "Content Marketing",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 124,
+    "name": "Email Marketing",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 125,
+    "name": "PPC",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 126,
+    "name": "Marketing Automation",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 127,
+    "name": "HubSpot",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 128,
+    "name": "Salesforce Marketing Cloud",
+    "category": "Marketing",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 129,
+    "name": "CRM",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 130,
+    "name": "Salesforce",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 131,
+    "name": "HubSpot",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 132,
+    "name": "Lead Generation",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 133,
+    "name": "Sales Funnel",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 134,
+    "name": "Negotiation",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 135,
+    "name": "Account Management",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 136,
+    "name": "B2B Sales",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 137,
+    "name": "B2C Sales",
+    "category": "Sales",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 138,
+    "name": "Project Management",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 139,
+    "name": "Agile",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 140,
+    "name": "Scrum",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 141,
+    "name": "Kanban",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 142,
+    "name": "Jira",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 143,
+    "name": "Trello",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 144,
+    "name": "Asana",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 145,
+    "name": "Team Leadership",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 146,
+    "name": "Strategic Planning",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 147,
+    "name": "Budget Management",
+    "category": "Management",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 148,
+    "name": "Financial Analysis",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 149,
+    "name": "Accounting",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 150,
+    "name": "QuickBooks",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 151,
+    "name": "Excel",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 152,
+    "name": "Financial Modeling",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 153,
+    "name": "Risk Management",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 154,
+    "name": "Investment Analysis",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 155,
+    "name": "Tax Planning",
+    "category": "Finance",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 156,
+    "name": "HIPAA",
+    "category": "Healthcare",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 157,
+    "name": "Electronic Health Records",
+    "category": "Healthcare",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 158,
+    "name": "Medical Coding",
+    "category": "Healthcare",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 159,
+    "name": "Patient Care",
+    "category": "Healthcare",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 160,
+    "name": "Healthcare IT",
+    "category": "Healthcare",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 161,
+    "name": "Telemedicine",
+    "category": "Healthcare",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 162,
+    "name": "Curriculum Development",
+    "category": "Education",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 163,
+    "name": "E-Learning",
+    "category": "Education",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 164,
+    "name": "LMS",
+    "category": "Education",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 165,
+    "name": "Instructional Design",
+    "category": "Education",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 166,
+    "name": "Student Assessment",
+    "category": "Education",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 167,
+    "name": "Educational Technology",
+    "category": "Education",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 168,
+    "name": "CAD",
+    "category": "Engineering",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 169,
+    "name": "SolidWorks",
+    "category": "Engineering",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 170,
+    "name": "AutoCAD",
+    "category": "Engineering",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 171,
+    "name": "Mechanical Engineering",
+    "category": "Engineering",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 172,
+    "name": "Electrical Engineering",
+    "category": "Engineering",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 173,
+    "name": "Civil Engineering",
+    "category": "Engineering",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 174,
+    "name": "Systems Engineering",
+    "category": "Engineering",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 175,
+    "name": "Problem Solving",
+    "category": "Other",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 176,
+    "name": "Communication",
+    "category": "Other",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 177,
+    "name": "Teamwork",
+    "category": "Other",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 178,
+    "name": "Leadership",
+    "category": "Other",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 179,
+    "name": "Time Management",
+    "category": "Other",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 180,
+    "name": "Critical Thinking",
+    "category": "Other",
+    "created_at": "2026-01-06T12:16:13.758Z"
+  },
+  {
+    "id": 181,
+    "name": "Nuxt",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 182,
+    "name": "SvelteKit",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 183,
+    "name": "Remix",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 184,
+    "name": "NestJS",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 185,
+    "name": "Fastify",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 186,
+    "name": "Koa",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 187,
+    "name": "Meteor",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 188,
+    "name": "FastAPI",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 189,
+    "name": "Symfony",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.868Z"
+  },
+  {
+    "id": 190,
+    "name": "Phoenix",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.869Z"
+  },
+  {
+    "id": 191,
+    "name": "Play Framework",
+    "category": "Web Frameworks",
+    "created_at": "2026-02-03T12:19:34.869Z"
+  }
+]

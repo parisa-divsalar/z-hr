@@ -103,6 +103,23 @@ export default function DatabasePage() {
   const [userStateAuditError, setUserStateAuditError] = useState<string | null>(null);
   const [userStateBefore, setUserStateBefore] = useState<any | null>(null);
 
+  const tableColumns = useMemo(() => {
+    if (!activeTable || !data?.tables?.[activeTable]) return [] as string[];
+    if (activeTable === 'user_states') return ['id', 'name', 'slug', 'order', 'description'];
+    const rows = data.tables[activeTable] as unknown[];
+    if (!Array.isArray(rows) || rows.length === 0) return [] as string[];
+    const cols: string[] = [];
+    const addCols = (row: any) => {
+      if (!row || typeof row !== 'object') return;
+      for (const key of Object.keys(row)) {
+        if (!cols.includes(key)) cols.push(key);
+      }
+    };
+    addCols(rows[0]);
+    for (let i = 1; i < rows.length; i += 1) addCols(rows[i]);
+    return cols;
+  }, [activeTable, data]);
+
   const fetchDb = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
     setError(null);
@@ -878,7 +895,7 @@ export default function DatabasePage() {
                           <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">description</th>
                         </>
                       ) : (
-                        (Object.keys((data.tables[activeTable] as unknown[])[0] as object) as string[]).map((col) => (
+                        tableColumns.map((col) => (
                           <th key={col} className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                             {col}
                           </th>
@@ -909,11 +926,15 @@ export default function DatabasePage() {
                               </td>
                             </>
                           ) : (
-                            Object.entries(row as object).map(([k, v]) => (
-                              <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
-                                {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '—')}
-                              </td>
-                            ))
+                            tableColumns.map((k) => {
+                              const v = (row as any)?.[k];
+                              const display = v == null ? 'null' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+                              return (
+                                <td key={k} className="px-4 py-2 text-gray-600 dark:text-gray-400 max-w-md break-words whitespace-pre-wrap align-top text-xs">
+                                  {display}
+                                </td>
+                              );
+                            })
                           )}
                           <td
                             className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap align-top"

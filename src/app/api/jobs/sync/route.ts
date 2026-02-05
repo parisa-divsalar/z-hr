@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 import { fetchAdzunaJobsMultiplePages } from '@/services/jobs/fetchJobs';
+import { getMainSkillResolverFromDb } from '@/services/jobs/main-skill';
 
 const SYNC_INTERVAL_MINUTES = 5;
 
@@ -18,6 +19,8 @@ const corsHeaders = {
  */
 export async function GET() {
   try {
+    const pickMainSkill = getMainSkillResolverFromDb();
+
     const jobs = await fetchAdzunaJobsMultiplePages({
       location: 'New York',
       resultsPerPage: 50,
@@ -34,6 +37,7 @@ export async function GET() {
       description: j.description,
       requirements: j.requirements,
       techStack: j.techStack,
+      main_skill: pickMainSkill(j),
       salaryMin: j.salaryMin,
       salaryMax: j.salaryMax,
       salaryCurrency: j.salaryCurrency,
