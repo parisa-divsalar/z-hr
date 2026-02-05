@@ -3,13 +3,16 @@
     "id": 1,
     "email": "saleh@gmail.com",
     "password_hash": "$2a$10$wljL6TuWQq/0HzvK7nwN4uxpBBU8d5IjoKF7MIw7EJ9RstgJxw/6O",
-    "name": null,
+    "name": "dee",
     "coin": 0,
     "created_at": "2026-01-06T11:34:34.823Z",
-    "updated_at": "2026-02-04T22:35:15.588Z",
+    "updated_at": "2026-02-05T18:53:19.076Z",
     "user_state": "Free – Activated (Exploring)",
     "user_state_reason": "free_activated",
-    "user_state_updated_at": "2026-02-04T22:35:15.587Z"
+    "user_state_updated_at": "2026-02-05T18:53:19.074Z",
+    "intro_completed_at": "2026-02-05T18:51:13.234Z",
+    "main_skill": "Programming Languages",
+    "date_of_birth": "12/12/1998"
   },
   {
     "id": 2,

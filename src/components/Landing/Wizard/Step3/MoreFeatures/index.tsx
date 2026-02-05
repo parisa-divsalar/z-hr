@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 
 import { Typography, Grid, Box, Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,12 @@ import ResumeTemplatesRight, {
 } from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
 import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
+import {
+  featureKeyFromTitle,
+  readMoreFeaturesSelection,
+  type MoreFeaturesSelection,
+  writeMoreFeaturesSelection,
+} from '@/utils/moreFeaturesSelection';
 
 interface MoreFeaturesProps {
   setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES') => void;
@@ -22,6 +28,21 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const [suggestions, setSuggestions] = useState<MoreFeatureSuggestion[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
+  const [selection, setSelection] = useState<MoreFeaturesSelection>(() => readMoreFeaturesSelection(requestId));
+
+  useEffect(() => {
+    setSelection(readMoreFeaturesSelection(requestId));
+  }, [requestId]);
+
+  const toggleSuggestion = (suggestion: Pick<MoreFeatureSuggestion, 'id' | 'title'>, checked: boolean) => {
+    const key = featureKeyFromTitle(suggestion.title) || String(suggestion.id ?? '').trim();
+    if (!key) return;
+    setSelection((prev) => {
+      const next = { ...prev, [key]: checked };
+      writeMoreFeaturesSelection(requestId, { [key]: checked });
+      return next;
+    });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -52,6 +73,20 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const leftSuggestions = suggestions.slice(0, 3);
   const rightSuggestions = suggestions.slice(3, 6);
 
+  const leftWithSelection = useMemo(() => {
+    return leftSuggestions.map((s) => {
+      const key = featureKeyFromTitle(s.title) || String(s.id ?? '').trim();
+      return { ...s, __featureKey: key, __checked: key ? Boolean(selection[key]) : false };
+    });
+  }, [leftSuggestions, selection]);
+
+  const rightWithSelection = useMemo(() => {
+    return rightSuggestions.map((s) => {
+      const key = featureKeyFromTitle(s.title) || String(s.id ?? '').trim();
+      return { ...s, __featureKey: key, __checked: key ? Boolean(selection[key]) : false };
+    });
+  }, [rightSuggestions, selection]);
+
   return (
     <>
       <Stack textAlign='center' mt={2} mb={2}>
@@ -72,17 +107,26 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
             <Typography variant='subtitle2' color='error'>
               {suggestionsError}
             </Typography>
-          ) : leftSuggestions.length === 0 ? (
+          ) : leftWithSelection.length === 0 ? (
             <Typography variant='subtitle2' color='text.secondary'>
               No feature suggestions available.
             </Typography>
           ) : (
-            leftSuggestions.map((suggestion, index) =>
+            leftWithSelection.map((suggestion, index) =>
               index === 0 ? (
-                <ResumeMoreTemplates key={suggestion.id} suggestion={suggestion} />
+                <ResumeMoreTemplates
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  checked={Boolean((suggestion as any).__checked)}
+                  onCheckedChange={(checked) => toggleSuggestion(suggestion, checked)}
+                />
               ) : (
                 <Box key={suggestion.id} mt={2.5}>
-                  <ResumeMoreTemplates suggestion={suggestion} />
+                  <ResumeMoreTemplates
+                    suggestion={suggestion}
+                    checked={Boolean((suggestion as any).__checked)}
+                    onCheckedChange={(checked) => toggleSuggestion(suggestion, checked)}
+                  />
                 </Box>
               ),
             )
@@ -98,7 +142,14 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
               {suggestionsError}
             </Typography>
           ) : (
-            <ResumeTemplatesRight suggestions={rightSuggestions} />
+            <ResumeTemplatesRight
+              suggestions={rightWithSelection as any}
+              getChecked={(s) => {
+                const key = featureKeyFromTitle((s as any)?.title) || String((s as any)?.id ?? '').trim();
+                return key ? Boolean(selection[key]) : false;
+              }}
+              onToggle={(s, checked) => toggleSuggestion(s as any, checked)}
+            />
           )}
         </Grid>
       </Grid>
