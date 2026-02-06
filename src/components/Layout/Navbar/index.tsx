@@ -147,7 +147,9 @@ const Navbar = () => {
                     85 Credit
                   </Typography>
                 </Stack>
-                <MuiButton color='secondary'>Create New</MuiButton>
+                <MuiButton color='secondary' onClick={() => router.push(PublicRoutes.landing)}>
+                  Create New
+                </MuiButton>
 
                 <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
 
@@ -303,7 +305,14 @@ const Navbar = () => {
               </Typography>
             </Stack>
 
-            <MuiButton color='secondary' fullWidth>
+            <MuiButton
+              color='secondary'
+              fullWidth
+              onClick={() => {
+                router.push(PublicRoutes.landing);
+                closeMenu();
+              }}
+            >
               Create New
             </MuiButton>
 

@@ -4,6 +4,7 @@ import { FC } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import Link from 'next/link';
 import Image, { StaticImageData } from 'next/image';
 
 import AITextImage from '@/assets/images/main/ai-text.png';
@@ -11,6 +12,7 @@ import ATSImage from '@/assets/images/main/ats.png';
 import JobOpportunityImage from '@/assets/images/main/job-opportunity.png';
 import MiddleEastImage from '@/assets/images/main/middle-east.png';
 import QuickResumeImage from '@/assets/images/main/quick-resume.png';
+import { PublicRoutes } from '@/config/routes';
 
 interface Benefit {
     title: string;
@@ -113,7 +115,14 @@ const KeyBenefits: FC = () => {
                         markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.
                     </Typography>
 
-                    <Button variant='contained' color='secondary' size='medium'>
+                    <Button
+                        variant='contained'
+                        color='secondary'
+                        size='medium'
+                        component={Link}
+                        href={PublicRoutes.landing}
+                        sx={{ textDecoration: 'none' }}
+                    >
                         Get Started Free
                     </Button>
                 </Box>

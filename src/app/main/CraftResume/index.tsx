@@ -6,8 +6,10 @@ import { useEffect, useState } from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 import TypewriterText from '@/components/UI/TypewriterText';
+import { PublicRoutes } from '@/config/routes';
 
 const HeroWrapper = styled(Box)(({ theme }) => ({
     textAlign: 'center',
@@ -81,7 +83,14 @@ const CraftResume: FC = () => {
                 </motion.div>
 
                 <motion.div variants={itemVariants}>
-                    <Button variant='contained' color='secondary' size='large' sx={{ marginTop: '3rem' }}>
+                    <Button
+                        variant='contained'
+                        color='secondary'
+                        size='large'
+                        component={Link}
+                        href={PublicRoutes.landing}
+                        sx={{ marginTop: '3rem', textDecoration: 'none' }}
+                    >
                         Get Started Free
                     </Button>
                 </motion.div>
