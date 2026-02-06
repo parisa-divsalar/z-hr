@@ -25,13 +25,14 @@ async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
 
 export async function POST(request: NextRequest) {
     try {
-        const { position, cvData, userId, isFinalStep } = await request.json();
+        const { position, cvData, userId, isFinalStep, jobDescription } = await request.json();
         const authedUserId = await getUserIdFromAuth(request);
         const finalUserId = authedUserId || (userId ? String(userId) : null);
 
-        if (!position || !cvData) {
+        // cvData is required, position is optional (will be inferred if not provided)
+        if (!cvData) {
             return NextResponse.json(
-                { error: 'Position and CV data are required' },
+                { error: 'CV data is required' },
                 { status: 400 }
             );
         }
@@ -40,6 +41,8 @@ export async function POST(request: NextRequest) {
         if (!isFinalStep) {
             return NextResponse.json({
                 sessionId: null,
+                inferredPosition: null,
+                positionRationale: null,
                 questions: [],
                 message: 'Interview questions will be available in final step',
             });
@@ -62,7 +65,14 @@ export async function POST(request: NextRequest) {
         const logContext = finalUserId
             ? { userId: finalUserId, endpoint: '/api/interview/questions', action: 'generateInterviewQuestions' }
             : undefined;
-        const questions = await ChatGPTService.generateInterviewQuestions(position, cvData, undefined, logContext);
+        
+        // Pass position as null if not provided - service will infer from CV
+        const result = await ChatGPTService.generateInterviewQuestions(
+            position || null,
+            cvData,
+            jobDescription,
+            logContext
+        );
 
         // Save to database if userId provided
         let sessionId = null;
@@ -70,7 +80,7 @@ export async function POST(request: NextRequest) {
             const session = db.interviewSessions.create({
                 user_id: parseInt(finalUserId),
                 type: 'chat',
-                questions: JSON.stringify(questions),
+                questions: JSON.stringify(result),
                 status: 'active',
             });
             sessionId = session.id;
@@ -80,7 +90,9 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             sessionId,
-            questions,
+            inferredPosition: result.inferredPosition,
+            positionRationale: result.positionRationale,
+            questions: result.questions,
         });
     } catch (error: any) {
         console.error('Error generating interview questions:', error);

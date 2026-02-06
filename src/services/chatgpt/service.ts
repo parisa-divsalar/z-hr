@@ -3,6 +3,7 @@
  * Keep this header so it isn't removed accidentally.
  */
 import { db } from '@/lib/db';
+import pdfParse from 'pdf-parse';
 import { getOpenAIClient } from './client';
 import { PROMPTS } from './prompts';
 
@@ -100,6 +101,21 @@ export interface SkillGapAnalysis {
     missingSkills: string[];
     recommendations: string[];
     matchPercentage: number;
+}
+
+export interface InterviewQuestion {
+    id: number;
+    question: string;
+    category: 'technical' | 'behavioral' | 'situational' | 'career';
+    skillsTested: string[];
+    suggestedAnswer: string;
+    answerTips: string;
+}
+
+export interface InterviewQuestionsResult {
+    inferredPosition: string;
+    positionRationale: string;
+    questions: InterviewQuestion[];
 }
 
 export type ResumeImproveMode = 'analysis' | 'sections_text' | 'auto';
@@ -809,10 +825,16 @@ export class ChatGPTService {
     }
 
     /**
-     * Generate interview questions
-     * Enhanced: Now accepts optional jobDescription for better context
+     * Generate interview questions with suggested answers
+     * Enhanced: Returns structured questions with answers based on CV data
+     * If position is null/empty, will infer the best position from CV
      */
-    static async generateInterviewQuestions(position: string, cvData: any, jobDescription?: string, logContext?: AiLogContext): Promise<string[]> {
+    static async generateInterviewQuestions(
+        position: string | null,
+        cvData: any,
+        jobDescription?: string,
+        logContext?: AiLogContext
+    ): Promise<InterviewQuestionsResult> {
         const openai = getOpenAIClient();
         try {
             const response = await openai.chat.completions.create({
@@ -820,7 +842,9 @@ export class ChatGPTService {
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are an expert interviewer specializing in technical and behavioral assessments. Always respond with valid JSON.',
+                        content: `You are an expert interviewer and career coach specializing in technical and behavioral assessments.
+Your task is to generate interview questions WITH suggested answers based on the candidate's actual resume data.
+Always respond with valid JSON matching the exact structure requested.`,
                     },
                     {
                         role: 'user',
@@ -837,17 +861,70 @@ export class ChatGPTService {
             }
 
             const parsed = JSON.parse(content);
-            const questions =
-                Array.isArray(parsed) ? parsed : (parsed?.questions && Array.isArray(parsed.questions) ? parsed.questions : []);
-            if (!Array.isArray(parsed) && !parsed?.questions && parsed && Object.keys(parsed).length > 0) {
-                console.warn('Unexpected response format from generateInterviewQuestions:', parsed);
+            
+            // Handle both old format (just questions array) and new format (full structure)
+            const result: InterviewQuestionsResult = {
+                inferredPosition: parsed.inferredPosition || position || 'Unknown Position',
+                positionRationale: parsed.positionRationale || '',
+                questions: [],
+            };
+
+            // Parse questions - support both old and new formats
+            if (Array.isArray(parsed.questions)) {
+                result.questions = parsed.questions.map((q: any, idx: number) => {
+                    // If it's a string (old format), convert to new format
+                    if (typeof q === 'string') {
+                        return {
+                            id: idx + 1,
+                            question: q,
+                            category: 'behavioral' as const,
+                            skillsTested: [],
+                            suggestedAnswer: '',
+                            answerTips: '',
+                        };
+                    }
+                    // New format
+                    return {
+                        id: q.id || idx + 1,
+                        question: q.question || '',
+                        category: q.category || 'behavioral',
+                        skillsTested: Array.isArray(q.skillsTested) ? q.skillsTested : [],
+                        suggestedAnswer: q.suggestedAnswer || '',
+                        answerTips: q.answerTips || '',
+                    };
+                });
+            } else if (Array.isArray(parsed)) {
+                // Handle case where response is just an array
+                result.questions = parsed.map((q: any, idx: number) => ({
+                    id: idx + 1,
+                    question: typeof q === 'string' ? q : q.question || '',
+                    category: typeof q === 'string' ? 'behavioral' : (q.category || 'behavioral'),
+                    skillsTested: typeof q === 'string' ? [] : (Array.isArray(q.skillsTested) ? q.skillsTested : []),
+                    suggestedAnswer: typeof q === 'string' ? '' : (q.suggestedAnswer || ''),
+                    answerTips: typeof q === 'string' ? '' : (q.answerTips || ''),
+                }));
             }
-            logAiInteraction(logContext, 'generateInterviewQuestions', { position, cvData, jobDescription }, questions);
-            return questions;
+
+            logAiInteraction(logContext, 'generateInterviewQuestions', { position, cvData, jobDescription }, result);
+            return result;
         } catch (error) {
             console.error('Error generating interview questions:', error);
             throw new Error('Failed to generate interview questions');
         }
+    }
+
+    /**
+     * Generate interview questions (legacy format)
+     * Returns just an array of question strings for backward compatibility
+     */
+    static async generateInterviewQuestionsLegacy(
+        position: string,
+        cvData: any,
+        jobDescription?: string,
+        logContext?: AiLogContext
+    ): Promise<string[]> {
+        const result = await this.generateInterviewQuestions(position, cvData, jobDescription, logContext);
+        return result.questions.map(q => q.question);
     }
 
     /**
@@ -915,9 +992,15 @@ export class ChatGPTService {
         try {
             const fileType = file.type.toLowerCase();
             const fileName = file.name.toLowerCase();
+            const isImage =
+                fileType.startsWith('image/') ||
+                /\.(png|jpe?g|jfif|pjpeg|pjp|webp|avif|gif|bmp|svg|ico|apng|tiff?|heic|heif)$/i.test(fileName);
+            const isPdf = fileType === 'application/pdf' || fileName.endsWith('.pdf');
+            const isAudio = fileType.startsWith('audio/') || /\.(mp3|wav|m4a|aac|flac|ogg|opus|m4b)$/i.test(fileName);
+            const isVideo = fileType.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogv|avi|mkv)$/i.test(fileName);
 
             // Handle images using Vision API
-            if (fileType.startsWith('image/') || /\.(png|jpe?g|jfif|pjpeg|pjp|webp|avif|gif|bmp|svg|ico|apng|tiff?|heic|heif)$/i.test(fileName)) {
+            if (isImage) {
                 const arrayBuffer = await file.arrayBuffer();
                 const base64 = Buffer.from(arrayBuffer).toString('base64');
                 const dataUrl = `data:${fileType};base64,${base64}`;
@@ -930,7 +1013,10 @@ export class ChatGPTService {
                             content: [
                                 {
                                     type: 'text',
-                                    text: 'Extract all text content from this image. Return only the extracted text without any explanations or formatting.',
+                                    text: PROMPTS.extractTextFromImage({
+                                        fileName: file.name,
+                                        fileType: file.type,
+                                    }),
                                 },
                                 {
                                     type: 'image_url',
@@ -950,23 +1036,39 @@ export class ChatGPTService {
             }
 
             // Handle PDF files - convert to image first or use text extraction
-            if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-                // For PDF, we'll need to convert pages to images and use Vision API
-                // For now, return a message indicating PDF support needs implementation
-                // TODO: Implement PDF text extraction using pdf.js or similar
-                throw new Error('PDF text extraction is not yet implemented. Please convert PDF to images first.');
+            if (isPdf) {
+                const arrayBuffer = await file.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
+                const parsed = await pdfParse(buffer);
+                const text = (parsed.text || '').trim();
+                logAiInteraction(
+                    logContext,
+                    'extractTextFromFile',
+                    { fileName: file.name, fileType: file.type, method: 'pdf-parse' },
+                    text
+                );
+                return text;
+            }
+
+            // Handle audio/video files - use Whisper transcription
+            if (isAudio || isVideo) {
+                const response = await openai.audio.transcriptions.create({
+                    file,
+                    model: 'whisper-1',
+                });
+                const out = response.text || '';
+                logAiInteraction(
+                    logContext,
+                    'extractTextFromFile',
+                    { fileName: file.name, fileType: file.type, method: 'whisper-1' },
+                    out
+                );
+                return out;
             }
 
             // Handle text files - read directly
             if (fileType.startsWith('text/') || /\.(txt|md|json|xml|html|css|js|ts|jsx|tsx)$/i.test(fileName)) {
                 return await file.text();
-            }
-
-            // Handle video files - use Whisper API for transcription
-            if (fileType.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogv|avi|mkv)$/i.test(fileName)) {
-                // Convert video to audio and use Whisper
-                // For now, return a message indicating video support needs implementation
-                throw new Error('Video transcription is not yet implemented. Please extract audio first.');
             }
 
             // For other file types, try to read as text
@@ -978,6 +1080,46 @@ export class ChatGPTService {
         } catch (error) {
             console.error('Error extracting text from file:', error);
             throw error instanceof Error ? error : new Error('Failed to extract text from file');
+        }
+    }
+
+    /**
+     * Merge user-provided text with extracted file text
+     */
+    static async mergeUserTextWithFileText(
+        params: { userText: string; extractedText: string; fileName: string; fileType: string },
+        logContext?: AiLogContext
+    ): Promise<string> {
+        const openai = getOpenAIClient();
+        try {
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Return valid JSON only. No markdown, no explanations.',
+                    },
+                    {
+                        role: 'user',
+                        content: PROMPTS.mergeUserTextWithFileText(params),
+                    },
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.2,
+            });
+
+            const content = response.choices[0]?.message?.content;
+            if (!content) {
+                throw new Error('No response from ChatGPT');
+            }
+
+            const parsed = JSON.parse(content);
+            const mergedText = typeof parsed?.mergedText === 'string' ? parsed.mergedText : '';
+            logAiInteraction(logContext, 'mergeUserTextWithFileText', params, mergedText);
+            return mergedText;
+        } catch (error) {
+            console.error('Error merging user text with file text:', error);
+            throw new Error('Failed to merge user and file text');
         }
     }
 }
