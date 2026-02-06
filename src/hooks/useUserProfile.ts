@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import type { AxiosError } from 'axios';
+
 import { apiClientClient } from '@/services/api-client';
 import { useAuthStore } from '@/store/auth';
 
@@ -17,16 +19,20 @@ export interface UserProfile {
 let cachedProfile: UserProfile | null = null;
 let profileRequest: Promise<UserProfile | null> | null = null;
 let lastAccessToken: string | null = null;
+let didTryCookieSessionProfile = false;
 
 const fetchCurrentUserProfile = async (): Promise<UserProfile | null> => {
     const response = await apiClientClient.get('users/me');
     return response?.data?.data ?? null;
 };
 
-export const useUserProfile = () => {
+export const useUserProfile = (options?: { enabled?: boolean }) => {
+    const enabled = options?.enabled ?? true;
     const accessToken = useAuthStore((state) => state.accessToken);
     const [profile, setProfile] = useState<UserProfile | null>(cachedProfile);
-    const [isLoading, setIsLoading] = useState(!cachedProfile && Boolean(accessToken));
+    const [isLoading, setIsLoading] = useState(
+        !cachedProfile && enabled && (Boolean(accessToken) || !didTryCookieSessionProfile),
+    );
     const [error, setError] = useState<string | null>(null);
     const isMounted = useRef(true);
 
@@ -38,15 +44,18 @@ export const useUserProfile = () => {
     }, []);
 
     const refreshProfile = useCallback(async (): Promise<UserProfile | null> => {
-        if (!accessToken) {
-            cachedProfile = null;
-            profileRequest = null;
+        if (!enabled) {
+            if (isMounted.current) setIsLoading(false);
+            return cachedProfile;
+        }
+
+        // We can fetch profile either via Bearer token (accessToken) or via cookie session (withCredentials).
+        // To avoid hammering `/users/me` for guests, we only try cookie-session once until auth state changes.
+        if (!accessToken && didTryCookieSessionProfile) {
             if (isMounted.current) {
-                setProfile(null);
-                setError(null);
                 setIsLoading(false);
             }
-            return null;
+            return cachedProfile;
         }
 
         setIsLoading(true);
@@ -61,15 +70,28 @@ export const useUserProfile = () => {
             if (!isMounted.current) {
                 return result;
             }
+            didTryCookieSessionProfile = true;
             cachedProfile = result;
             setProfile(result);
             setError(null);
             return result;
-        } catch {
+        } catch (e) {
             if (profileRequest === request) {
                 profileRequest = null;
             }
             if (!isMounted.current) return null;
+
+            didTryCookieSessionProfile = true;
+            const err = e as AxiosError;
+            const status = err?.response?.status;
+
+            // If the user isn't authenticated, this is expected—don't surface an error.
+            if (status === 401) {
+                setProfile(null);
+                setError(null);
+                return null;
+            }
+
             setProfile(null);
             setError('Failed to load user profile');
             return null;
@@ -78,20 +100,19 @@ export const useUserProfile = () => {
                 setIsLoading(false);
             }
         }
-    }, [accessToken]);
+    }, [accessToken, enabled]);
 
     useEffect(() => {
+        if (!enabled) {
+            setIsLoading(false);
+            return;
+        }
+
         if (lastAccessToken !== accessToken) {
             lastAccessToken = accessToken;
             cachedProfile = null;
             profileRequest = null;
-        }
-
-        if (!accessToken) {
-            setProfile(null);
-            setIsLoading(false);
-            setError(null);
-            return;
+            didTryCookieSessionProfile = false;
         }
 
         if (cachedProfile) {
@@ -102,7 +123,7 @@ export const useUserProfile = () => {
         }
 
         void refreshProfile();
-    }, [accessToken, refreshProfile]);
+    }, [accessToken, enabled, refreshProfile]);
 
     return { profile, isLoading, error, refreshProfile };
 };

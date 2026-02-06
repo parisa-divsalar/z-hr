@@ -41,7 +41,24 @@ import {
   PublicRoutes,
 } from '@/config/routes';
 import { useAuthSession } from '@/hooks/useAuthSession';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useThemeStore } from '@/store/common';
+
+function getInitials(nameOrEmail: string): string {
+  const value = (nameOrEmail ?? '').trim();
+  if (!value) return 'U';
+
+  // If it's an email, use local-part.
+  const local = value.includes('@') ? value.split('@')[0] : value;
+  const parts = local
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) return local.slice(0, 2).toUpperCase();
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
 
 const Navbar = () => {
   const { mode, setMode } = useThemeStore();
@@ -54,6 +71,7 @@ const Navbar = () => {
 
   // If we have a cookie-based session but no accessToken in store, we still consider the user logged in.
   const showAuthedUI = isAuthenticated && !isAuthLoading;
+  const { profile, isLoading: isProfileLoading } = useUserProfile({ enabled: showAuthedUI });
 
   const isHomeActive = pathname === '/' || pathname === '/(public)';
   const showSidebarItems = isSidebarVisible(pathname);
@@ -74,13 +92,26 @@ const Navbar = () => {
     // Public/unauthenticated navbar (matches the marketing top nav).
     return [
       { label: 'Home', href: '/' },
-      { label: 'CV/Resume Builder', href: PublicRoutes.resumeGenerator },
+      { label: 'CV/Resume Builder', href: PublicRoutes.landing },
       { label: 'Pricing', href:  PublicRoutes.pricing },
       { label: 'Blog', href: PublicRoutes.blog },
       { label: 'FAQ', href: '/#faq' },
       { label: 'Contact Us', href: '/#contact' },
     ];
   }, [showAuthedUI]);
+
+  const userInitials = useMemo(() => {
+    if (profile?.name?.trim()) return getInitials(profile.name);
+    if (profile?.email?.trim()) return getInitials(profile.email);
+    return 'U';
+  }, [profile?.email, profile?.name]);
+
+  const creditsText = useMemo(() => {
+    if (!showAuthedUI) return '';
+    if (isProfileLoading) return '...';
+    const credits = Number(profile?.coin ?? 0);
+    return `${Number.isFinite(credits) ? credits : 0} Credit`;
+  }, [isProfileLoading, profile?.coin, showAuthedUI]);
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
   const openMenu = useCallback(() => setIsMenuOpen(true), []);
@@ -144,7 +175,7 @@ const Navbar = () => {
                 <Stack direction='row' gap={0.5} alignItems='center'>
                   <CoinIcon />
                   <Typography color='secondary.main' variant='subtitle2'>
-                    85 Credit
+                    {creditsText}
                   </Typography>
                 </Stack>
                 <MuiButton color='secondary' onClick={() => router.push(PublicRoutes.landing)}>
@@ -157,15 +188,15 @@ const Navbar = () => {
                   <NotifyIcon />
                 </Stack>
 
-                <Stack className={classes.themeContainer}>
-                  <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
-                    {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
-                  </IconButton>
-                </Stack>
+                {/*<Stack className={classes.themeContainer}>*/}
+                {/*  <IconButton color='inherit' onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>*/}
+                {/*    {mode === 'dark' ? <SunIcon /> : <MoonIcon />}*/}
+                {/*  </IconButton>*/}
+                {/*</Stack>*/}
 
                 <MuiAvatar size='medium' color='primary'>
                   <Typography variant='subtitle2' fontWeight='bold'>
-                    ZA
+                    {userInitials}
                   </Typography>
                 </MuiAvatar>
               </Stack>
@@ -301,7 +332,7 @@ const Navbar = () => {
             <Stack direction='row' gap={0.75} alignItems='center' sx={{ px: 1 }}>
               <CoinIcon />
               <Typography color='secondary.main' variant='subtitle2'>
-                85 Credit
+                {creditsText}
               </Typography>
             </Stack>
 
@@ -327,7 +358,7 @@ const Navbar = () => {
               </Box>
               <MuiAvatar size='medium' color='primary'>
                 <Typography variant='subtitle2' fontWeight='bold'>
-                  ZA
+                  {userInitials}
                 </Typography>
               </MuiAvatar>
             </Stack>

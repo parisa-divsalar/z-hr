@@ -8,6 +8,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import { Box, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 
+import { PublicRoutes } from '@/config/routes';
 import {
     BottomNote,
     ColumnItem,
@@ -56,9 +57,11 @@ const FooterMain: FC = () => {
                         <TopNavItem fontWeight='400' variant='subtitle2'>
                             About Us
                         </TopNavItem>
-                        <TopNavItem fontWeight='400' variant='subtitle2'>
-                            Our Plans
-                        </TopNavItem>
+                        <Link href={PublicRoutes.pricing} style={{ textDecoration: 'none' }}>
+                            <TopNavItem fontWeight='400' variant='subtitle2'>
+                                Our Plans
+                            </TopNavItem>
+                        </Link>
                         <TopNavItem fontWeight='400' variant='subtitle2'>
                             Contact Us
                         </TopNavItem>
