@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { db } from '@/lib/db';
 import { ChatGPTService } from '@/services/chatgpt/service';
 import { recordUserStateTransition } from '@/lib/user-state';
+import { consumeCredit } from '@/lib/credits';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -106,6 +107,20 @@ export async function POST(request: NextRequest) {
         const userId = await getUserId(request);
         const userIdNum = userId != null && String(userId).trim() ? Number(userId) : null;
         const safeUserIdNum = Number.isFinite(userIdNum as any) ? (userIdNum as number) : null;
+
+        // Deduct 1 credit for cover letter generation
+        if (userId) {
+            const creditResult = await consumeCredit(userId, 1, 'cover_letter');
+            if (!creditResult.success) {
+                return NextResponse.json(
+                    { 
+                        error: creditResult.error || 'Failed to consume credit',
+                        remainingCredits: creditResult.remainingCredits,
+                    },
+                    { status: 402 }
+                );
+            }
+        }
 
         const logContext = userId ? { userId, endpoint: '/api/cv/cover-letter', action: 'generateCoverLetter' } : undefined;
         const companyName = normalize(cvData?.companyName ?? body?.companyName);

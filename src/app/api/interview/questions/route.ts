@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ChatGPTService } from '@/services/chatgpt/service';
 import { db } from '@/lib/db';
 import { recordUserStateTransition } from '@/lib/user-state';
+import { consumeCredit } from '@/lib/credits';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -42,6 +43,20 @@ export async function POST(request: NextRequest) {
                 questions: [],
                 message: 'Interview questions will be available in final step',
             });
+        }
+
+        // Deduct 1 credit for interview questions generation
+        if (finalUserId) {
+            const creditResult = await consumeCredit(finalUserId, 1, 'interview_questions');
+            if (!creditResult.success) {
+                return NextResponse.json(
+                    { 
+                        error: creditResult.error || 'Failed to consume credit',
+                        remainingCredits: creditResult.remainingCredits,
+                    },
+                    { status: 402 }
+                );
+            }
         }
 
         const logContext = finalUserId

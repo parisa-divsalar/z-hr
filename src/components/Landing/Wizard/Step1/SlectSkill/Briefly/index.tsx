@@ -266,8 +266,8 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
 
     const { guardAction, planDialog } = usePlanGate();
 
-    const handleAttachClick = () => guardAction(onOpenFileDialog);
-    const handleRecordClick = () => guardAction(onShowVoiceRecorder);
+    const handleAttachClick = () => guardAction(onOpenFileDialog, 'file_upload');
+    const handleRecordClick = () => guardAction(onShowVoiceRecorder, 'voice_recording');
 
     const hasBackgroundText = backgroundText.trim() !== '';
     const hasDraft = hasBackgroundText || uploadedFiles.length > 0 || voiceRecordings.length > 0;

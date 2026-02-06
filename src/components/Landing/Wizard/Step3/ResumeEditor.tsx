@@ -4,6 +4,10 @@ import { type FunctionComponent, type MutableRefObject, useEffect, useState } fr
 
 import { CardContent } from '@mui/material';
 
+import { trackEvent } from '@/lib/analytics';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useWizardStore } from '@/store/wizard';
+
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
@@ -51,6 +55,8 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
     disableAutoPoll,
 }) => {
     const c = useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
+    const { profile } = useUserProfile();
+    const requestId = useWizardStore((state) => state.requestId);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
     const sectionLabels: Record<SectionKey, string> = {
         summary: 'Summary',
@@ -73,6 +79,18 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
         if (mode === 'preview') return;
         setIsRefreshWarningOpen(true);
     }, [mode]);
+
+    const handleSubmit = () => {
+        // Only track completion if no errors present
+        if (!c.cvError && !c.saveError) {
+            trackEvent('resume_completed', {
+                user_id: profile?.id,
+                resume_id: requestId,
+                timestamp: new Date().toISOString(),
+            });
+        }
+        setStage('MORE_FEATURES');
+    };
 
     return (
         <ResumeContainer>
@@ -137,7 +155,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
                 downloadProgress={c.downloadProgress}
                 cvError={c.cvError}
                 onDownloadPdf={() => void c.handleDownloadPdf()}
-                onSubmit={() => setStage('MORE_FEATURES')}
+                onSubmit={handleSubmit}
             />
         </ResumeContainer>
     );

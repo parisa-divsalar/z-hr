@@ -1,8 +1,8 @@
 import { apiClientClient } from '@/services/api-client';
 
 export type ListCoverLettersParams = {
-    /** Resume requestId */
-    cvRequestId: string;
+    /** Resume requestId (optional). If omitted, API will list current user's cover letters (requires login). */
+    cvRequestId?: string | null;
 };
 
 export type CoverLetterListItem = {
@@ -18,13 +18,13 @@ export type CoverLetterListItem = {
 };
 
 export async function listCoverLetters(params: ListCoverLettersParams) {
-    const { data } = await apiClientClient.get('cv/cover-letter/list', {
-        params: {
-            cvRequestId: String(params.cvRequestId),
-        },
-    });
+    const qp: Record<string, string> = {};
+    const cvRequestId = params?.cvRequestId != null ? String(params.cvRequestId).trim() : '';
+    if (cvRequestId) qp.cvRequestId = cvRequestId;
 
-    return data as { cvRequestId: string; items: CoverLetterListItem[] };
+    const { data } = await apiClientClient.get('cv/cover-letter/list', { params: qp });
+
+    return data as { cvRequestId?: string | null; scope?: 'resume' | 'user'; items: CoverLetterListItem[] };
 }
 
 

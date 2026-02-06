@@ -478,8 +478,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
         fileInputRef.current?.click();
     };
 
-    const handleProtectedFileDialog = () => guardAction(handleOpenFileDialog);
-    const handleProtectedVoiceRecorder = () => guardAction(handleShowVoiceRecorder);
+    const handleProtectedFileDialog = () => guardAction(handleOpenFileDialog, 'file_upload');
+    const handleProtectedVoiceRecorder = () => guardAction(handleShowVoiceRecorder, 'voice_recording');
 
     const ensureFileWithId = (file: File) => {
         const f = file as File & { id?: string };

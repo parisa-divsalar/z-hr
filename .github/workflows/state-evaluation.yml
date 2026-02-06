@@ -1,0 +1,25 @@
+name: Nightly State Evaluation
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Run at 2 AM UTC daily
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  evaluate-states:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate Dormant Users
+        run: |
+          curl -X GET "${{ secrets.APP_URL }}/api/user-states/evaluate" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}"
+      
+      - name: Check Verification Reminders
+        run: |
+          curl -X GET "${{ secrets.APP_URL }}/api/auth/verification/check" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}"
+      
+      - name: Sync Learning Hub
+        run: |
+          curl -X GET "${{ secrets.APP_URL }}/api/learning-hub/sync" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}"

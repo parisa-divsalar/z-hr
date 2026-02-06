@@ -27,17 +27,39 @@ export async function GET(request: NextRequest) {
     const userIdNum = userId != null && String(userId).trim() ? Number(userId) : null;
     const safeUserIdNum = Number.isFinite(userIdNum as any) ? (userIdNum as number) : null;
     const { searchParams } = new URL(request.url);
-    const cvRequestId = normalize(searchParams.get('cvRequestId') ?? searchParams.get('resumeRequestId') ?? searchParams.get('requestId'));
-    if (!cvRequestId) return NextResponse.json({ error: 'cvRequestId is required' }, { status: 400 });
+    const cvRequestId = normalize(
+        searchParams.get('cvRequestId') ?? searchParams.get('resumeRequestId') ?? searchParams.get('requestId'),
+    );
 
-    const rows =
-        safeUserIdNum == null
-            ? // Guest mode: list only rows with missing user_id (so users don't see each other's data).
-              db.coverLetters.findByCvRequestId(cvRequestId).filter((r: any) => r?.user_id == null)
-            : db.coverLetters.findByCvRequestIdAndUserId(cvRequestId, safeUserIdNum);
+    const sortByNewest = (rows: any[]) =>
+        rows.slice().sort((a: any, b: any) => {
+            const ta = String(a?.created_at ?? a?.updated_at ?? '');
+            const tb = String(b?.created_at ?? b?.updated_at ?? '');
+            return tb.localeCompare(ta);
+        });
+
+    let rows: any[] = [];
+
+    if (cvRequestId) {
+        rows =
+            safeUserIdNum == null
+                ? // Guest mode: list only rows with missing user_id (so users don't see each other's data).
+                  db.coverLetters.findByCvRequestId(cvRequestId).filter((r: any) => r?.user_id == null)
+                : db.coverLetters.findByCvRequestIdAndUserId(cvRequestId, safeUserIdNum);
+    } else {
+        // No cvRequestId provided: only allow listing when authenticated.
+        if (safeUserIdNum == null) {
+            return NextResponse.json(
+                { error: 'Unauthorized. Provide cvRequestId or login to list your cover letters.' },
+                { status: 401 },
+            );
+        }
+        rows = sortByNewest(db.coverLetters.findAll().filter((r: any) => Number(r?.user_id) === Number(safeUserIdNum)));
+    }
 
     return NextResponse.json({
-        cvRequestId,
+        cvRequestId: cvRequestId || null,
+        scope: cvRequestId ? 'resume' : 'user',
         items: rows.map((row: any) => ({
             requestId: row.request_id,
             cvRequestId: row.cv_request_id,
