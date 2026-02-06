@@ -15,6 +15,8 @@ type Testimonial = {
     quote: string;
 };
 
+const MotionBox = motion(Box);
+
 const TESTIMONIALS: Testimonial[] = [
     {
         id: 'pavel-1',
@@ -75,8 +77,6 @@ const Testimonials: FC = () => {
                   transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
               },
           };
-
-    const MotionBox = motion(Box);
 
     return (
         <Container sx={{ mt: '5rem' }}>

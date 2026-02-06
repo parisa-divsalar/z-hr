@@ -1,5 +1,5 @@
-import { resolveUserState, ResolveStateInput } from '../user-state';
 import { db } from '../db';
+import { resolveUserState, ResolveStateInput } from '../user-state';
 
 // Mock the db module
 jest.mock('../db', () => ({

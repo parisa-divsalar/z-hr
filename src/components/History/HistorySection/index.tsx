@@ -557,7 +557,7 @@ const HistorySection = () => {
                 </Stack>
             </SectionHeader>
 
-            {displayedItems.map((channel, index) => (
+            {displayedItems.map((channel) => (
                 <HistoryCard
                     key={channel.id}
                     {...channel}

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 

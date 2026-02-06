@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { recordUserStateTransition } from '@/lib/user-state';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { db } from '@/lib/db';
+import { recordUserStateTransition } from '@/lib/user-state';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 

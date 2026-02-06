@@ -276,7 +276,7 @@ const CoverLetter = () => {
     useEffect(() => {
         setHasFetchedOnce(false);
         void fetchCoverLetters(resumeRequestId ? { cvRequestId: resumeRequestId } : undefined);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [resumeRequestId]);
 
     const startEdit = (id: string) => {

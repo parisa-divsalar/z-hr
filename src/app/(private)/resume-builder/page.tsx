@@ -8,8 +8,8 @@ import { useSearchParams } from 'next/navigation';
 import IntroDialog from '@/components/Landing/IntroDialog';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
-import { useWizardStore } from '@/store/wizard';
 import { trackEvent } from '@/lib/analytics';
+import { useWizardStore } from '@/store/wizard';
 
 import { ResumeBuilderRoot } from './styled';
 

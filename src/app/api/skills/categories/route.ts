@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ChatGPTService } from '@/services/chatgpt/service';
-
 // Common skill categories - can be extended
 const COMMON_CATEGORIES = [
     'Web Frameworks',
@@ -23,7 +21,7 @@ const COMMON_CATEGORIES = [
     'Other',
 ];
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         // Return common categories
         // In the future, can use ChatGPT to generate dynamic categories

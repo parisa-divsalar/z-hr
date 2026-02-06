@@ -7,10 +7,10 @@ import JobDescription from '@/components/Landing/Wizard/Step1/JobDescription';
 import Questions from '@/components/Landing/Wizard/Step1/Questions';
 import SKillInput from '@/components/Landing/Wizard/Step1/SKillInput';
 import SelectSkill from '@/components/Landing/Wizard/Step1/SlectSkill';
-import { buildWizardSerializable, useWizardStore } from '@/store/wizard';
 import { apiClientClient } from '@/services/api-client';
 import { improveResume } from '@/services/cv/improve-resume';
 import { useAuthStore } from '@/store/auth';
+import { buildWizardSerializable, useWizardStore } from '@/store/wizard';
 import { clearWizardTextOnlySession, saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
 
 interface Step1Props {

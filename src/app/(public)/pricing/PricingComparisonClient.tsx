@@ -3,6 +3,8 @@
 import type { ComponentProps } from 'react';
 import { useEffect, useState } from 'react';
 
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import {
     Box,
     Card,
@@ -18,8 +20,6 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 
 import MuiButton from '@/components/UI/MuiButton';
 

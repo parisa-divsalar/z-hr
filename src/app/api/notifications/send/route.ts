@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db } from '@/lib/db';
 import { sendNotification } from '@/lib/notifications';
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET endpoint to find abandoned resumes and trigger notifications
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);

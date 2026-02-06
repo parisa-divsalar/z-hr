@@ -3,12 +3,11 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { editCV } from '@/services/cv/edit-cv';
 import { deleteResumeSection } from '@/services/cv/delete-section';
+import { editCV } from '@/services/cv/edit-cv';
 import { getCV } from '@/services/cv/get-cv';
-import { getImproved } from '@/services/cv/get-improved';
-import { postImproved } from '@/services/cv/post-improved';
 import { improveResume } from '@/services/cv/improve-resume';
+import { postImproved } from '@/services/cv/post-improved';
 import { useAuthStore } from '@/store/auth';
 import { buildWizardSerializable, useWizardStore } from '@/store/wizard';
 import { exportElementToPdf } from '@/utils/exportToPdf';
@@ -22,7 +21,7 @@ import {
     normalizeVisaStatusValue,
     saveWizardProfileSession,
 } from '../profileSession';
-import { extractImprovedText, extractPollingRequestId, pollCvAnalysisAndCreateCv } from '../services';
+import { pollCvAnalysisAndCreateCv } from '../services';
 import {
     applyEducationEditText,
     applyCertificateEditText,

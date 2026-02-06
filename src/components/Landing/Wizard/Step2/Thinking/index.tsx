@@ -40,7 +40,7 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
              *
              * Backend contract varies between environments; sending both covers both cases.
              */
-            const { zipBlob, serializable: bodyOfResume } = await buildWizardZipBlob(wizardData);
+            const { zipBlob: _zipBlob, serializable: bodyOfResume } = await buildWizardZipBlob(wizardData);
 
             /**
              * Persist a **serializable** version of the wizard payload into sessionStorage.

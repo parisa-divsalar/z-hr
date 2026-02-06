@@ -177,7 +177,7 @@ export async function fetchJobsFromJSearchAPI(params: {
  * Fetch jobs from public RSS feeds (as last resort)
  * Some job boards provide RSS feeds that we can parse
  */
-async function fetchJobsFromPublicSources(params: {
+async function fetchJobsFromPublicSources(_params: {
   query?: string;
   location?: string;
   limit?: number;

@@ -1,3 +1,5 @@
+import { useCallback, useMemo, useState } from 'react';
+
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import {
@@ -17,7 +19,6 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
 
 import CoinIcon from '@/assets/images/design/coin.svg';
 import MoonIcon from '@/assets/images/icons/moon.svg';
@@ -28,6 +29,10 @@ import logo from '@/assets/images/logo/logo.png';
 import { AppImage } from '@/components/AppImage';
 import classes from '@/components/Layout/layout.module.css';
 import { MainNavbarContainer, MainNavbarContent } from '@/components/Layout/Navbar/styled';
+import {
+  sidebarMenuItems,
+  isSidebarMenuItemActive,
+} from '@/components/Layout/SideBar/menu';
 import MuiAvatar from '@/components/UI/MuiAvatar';
 import MuiButton from '@/components/UI/MuiButton';
 import {
@@ -35,17 +40,11 @@ import {
   isSidebarVisible,
   PublicRoutes,
 } from '@/config/routes';
-import { useAuthStore } from '@/store/auth';
-import { useThemeStore } from '@/store/common';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import {
-  sidebarMenuItems,
-  isSidebarMenuItemActive,
-} from '@/components/Layout/SideBar/menu';
+import { useThemeStore } from '@/store/common';
 
 const Navbar = () => {
   const { mode, setMode } = useThemeStore();
-  const { accessToken } = useAuthStore();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuthSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -59,7 +58,7 @@ const Navbar = () => {
   const isHomeActive = pathname === '/' || pathname === '/(public)';
   const showSidebarItems = isSidebarVisible(pathname);
 
-  if (!isLayoutVisible(pathname)) return null;
+  const isLayoutActive = isLayoutVisible(pathname);
 
   const navItems = useMemo(() => {
     if (showAuthedUI) {
@@ -85,6 +84,8 @@ const Navbar = () => {
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
   const openMenu = useCallback(() => setIsMenuOpen(true), []);
+
+  if (!isLayoutActive) return null;
 
   return (
     <MainNavbarContainer>

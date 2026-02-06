@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+
 import { ChatGPTService } from '@/services/chatgpt/service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';

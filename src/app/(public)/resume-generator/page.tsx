@@ -10,8 +10,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
 import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
 import ArrowRightIcon from '@/assets/images/icons/links.svg';
-import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import type { MoreFeatureSuggestion } from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
+import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { useWizardStore } from '@/store/wizard';
@@ -125,7 +125,7 @@ const ResumeGeneratorPage = () => {
 
             setPreviewSrc(dataUrl);
         } catch (e) {
-            // eslint-disable-next-line no-console
+             
             console.error('Failed to render resume thumbnail', e);
             setPreviewError('Failed to render PDF preview.');
             setPreviewSrc(null);

@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Typography } from '@mui/material';
 
 import FrameFeaturesSvg from '@/assets/images/bg/frameFeatures.svg';
-import MuiCheckbox from '@/components/UI/MuiCheckbox';
 import { MoreFeatureSuggestion } from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
+import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import { Container, LeftSection, TitleSection, RightSection, FrameFeaturesImage } from './styled';
 

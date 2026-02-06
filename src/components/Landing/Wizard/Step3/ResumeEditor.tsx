@@ -4,14 +4,14 @@ import { type FunctionComponent, type MutableRefObject, useEffect, useState } fr
 
 import { CardContent } from '@mui/material';
 
-import { trackEvent } from '@/lib/analytics';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { trackEvent } from '@/lib/analytics';
 import { useWizardStore } from '@/store/wizard';
 
-import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
-import ResumeFooter from './ResumeEditor/components/ResumeFooter';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
+import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
+import ResumeFooter from './ResumeEditor/components/ResumeFooter';
 import { useResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import AdditionalInfoSection from './ResumeEditor/sections/AdditionalInfoSection';
@@ -23,6 +23,7 @@ import SelectedProjectsSection from './ResumeEditor/sections/SelectedProjectsSec
 import SkillsSection from './ResumeEditor/sections/SkillsSection';
 import SummarySection from './ResumeEditor/sections/SummarySection';
 import { MainCardContainer, ResumeContainer } from './ResumeEditor/styled';
+
 import type { SectionKey } from './ResumeEditor/types';
 
 interface ResumeEditorProps {

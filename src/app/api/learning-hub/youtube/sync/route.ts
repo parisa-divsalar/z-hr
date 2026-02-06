@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
-import { fetchCoursesFromYouTube } from '@/services/learningHub/youtube';
 import { fetchYouTubePlaylistCourses } from '@/services/learningHub/fetchYouTubeCourses';
+import { fetchCoursesFromYouTube } from '@/services/learningHub/youtube';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

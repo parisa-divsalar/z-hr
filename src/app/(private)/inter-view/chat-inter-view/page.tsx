@@ -1,20 +1,29 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { fetchInterviewQuestions } from '@/services/interview/get-questions';
 
 import InterviewReadyStep from './InterviewReadyStep';
 import SkillInputStep from './SkillInputStep';
 import { ChatInterViewContent, ChatInterViewGrid, ChatInterViewRoot, CenterGrayBox } from './styled';
 
+import type { InterviewQuestionItem } from './QuestionsList';
+
 export default function ChatInterView() {
     const router = useRouter();
+    const { profile } = useUserProfile();
     const [step, setStep] = useState<'intro' | 'skill-input' | 'ready' | 'repeat-skill-input'>('intro');
     const [skillAnswer, setSkillAnswer] = useState('');
+    const [questions, setQuestions] = useState<InterviewQuestionItem[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const lastRequestKeyRef = useRef<string | null>(null);
 
     const handleStartClick = () => {
         setStep('skill-input');
@@ -44,6 +53,51 @@ export default function ChatInterView() {
     const handleStartInterview = () => {
         router.push('/inter-view');
     };
+
+    useEffect(() => {
+        if (step !== 'ready') return;
+
+        const requestKey = `chat:${profile?.id ?? 'anon'}`;
+        if (lastRequestKeyRef.current === requestKey) return;
+
+        let isActive = true;
+        setIsLoading(true);
+        setError(null);
+
+        const run = async () => {
+            try {
+                const data = await fetchInterviewQuestions({
+                    isFinalStep: true,
+                    mode: 'chat',
+                    userId: profile?.id ?? null,
+                });
+
+                if (!isActive) return;
+
+                const mapped: InterviewQuestionItem[] = (data.questions ?? []).map((question, index) => ({
+                    number: index + 1,
+                    question: question.question,
+                    answer: question.suggestedAnswer,
+                    name: question.category ? `${question.category} interview` : undefined,
+                    meta: question.category ? [{ title: 'Category', label: question.category }] : undefined,
+                }));
+
+                setQuestions(mapped);
+                lastRequestKeyRef.current = requestKey;
+            } catch (err: any) {
+                if (!isActive) return;
+                setError(err?.response?.data?.error || 'Failed to load interview questions');
+            } finally {
+                if (isActive) setIsLoading(false);
+            }
+        };
+
+        void run();
+
+        return () => {
+            isActive = false;
+        };
+    }, [profile?.id, step]);
 
     return (
         <ChatInterViewRoot>
@@ -110,6 +164,9 @@ export default function ChatInterView() {
                             onBack={handleBackToSkill}
                             onStart={handleStartInterview}
                             onRepeat={handleRepeatClick}
+                            items={questions}
+                            isLoading={isLoading}
+                            error={error}
                         />
                     )}
                 </ChatInterViewContent>
