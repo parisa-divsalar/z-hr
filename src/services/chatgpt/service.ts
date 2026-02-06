@@ -1122,5 +1122,31 @@ Always respond with valid JSON matching the exact structure requested.`,
             throw new Error('Failed to merge user and file text');
         }
     }
+
+    /**
+     * Generate TTS audio (base64) for interview questions
+     */
+    static async generateSpeechAudioBase64(
+        text: string,
+        options?: { voice?: string; model?: string },
+        logContext?: AiLogContext
+    ): Promise<string> {
+        const openai = getOpenAIClient();
+        try {
+            const response = await openai.audio.speech.create({
+                model: options?.model ?? 'gpt-4o-mini-tts',
+                voice: options?.voice ?? 'alloy',
+                input: text,
+            });
+
+            const arrayBuffer = await response.arrayBuffer();
+            const base64 = Buffer.from(arrayBuffer).toString('base64');
+            logAiInteraction(logContext, 'generateSpeechAudioBase64', { text, options }, '[base64-audio]');
+            return base64;
+        } catch (error) {
+            console.error('Error generating TTS audio:', error);
+            throw new Error('Failed to generate TTS audio');
+        }
+    }
 }
 
