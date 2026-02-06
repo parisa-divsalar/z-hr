@@ -6,10 +6,9 @@ import { useEffect, useState } from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 
 import TypewriterText from '@/components/UI/TypewriterText';
-import { PublicRoutes } from '@/config/routes';
+import { useGetStartedFree } from '@/hooks/useGetStartedFree';
 
 const HeroWrapper = styled(Box)(({ theme }) => ({
     textAlign: 'center',
@@ -50,6 +49,7 @@ const itemVariants = {
 
 const CraftResume: FC = () => {
     const [isActiveOnce, setIsActiveOnce] = useState(false);
+    const { onGetStartedFree, isRouting } = useGetStartedFree();
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -87,8 +87,8 @@ const CraftResume: FC = () => {
                         variant='contained'
                         color='secondary'
                         size='large'
-                        component={Link}
-                        href={PublicRoutes.landing}
+                        onClick={onGetStartedFree}
+                        disabled={isRouting}
                         sx={{ marginTop: '3rem', textDecoration: 'none' }}
                     >
                         Get Started Free

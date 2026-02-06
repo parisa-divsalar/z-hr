@@ -3,7 +3,6 @@
 import { FC } from 'react';
 
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
-import Link from 'next/link';
 import Image, { StaticImageData } from 'next/image';
 
 import AIBulletImage from '@/assets/images/main/ai-bullet.png';
@@ -11,7 +10,7 @@ import ATSScoreImage from '@/assets/images/main/ats-score.png';
 import KeywordImage from '@/assets/images/main/keyword.png';
 import ModernATSImage from '@/assets/images/main/modern-ats.png';
 import OneClickImage from '@/assets/images/main/one-click.png';
-import { PublicRoutes } from '@/config/routes';
+import { useGetStartedFree } from '@/hooks/useGetStartedFree';
 
 interface Feature {
     title: string;
@@ -19,6 +18,8 @@ interface Feature {
     image: StaticImageData;
 }
 const ProductFeatures: FC = () => {
+    const { onGetStartedFree, isRouting } = useGetStartedFree();
+
     const featureCardSx = {
         position: 'relative',
         gap: '12px',
@@ -183,8 +184,8 @@ const ProductFeatures: FC = () => {
                     variant='contained'
                     color='secondary'
                     size='medium'
-                    component={Link}
-                    href={PublicRoutes.landing}
+                    onClick={onGetStartedFree}
+                    disabled={isRouting}
                     sx={{ textDecoration: 'none' }}
                 >
                     Get Started Free

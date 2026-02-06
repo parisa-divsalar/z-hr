@@ -4,10 +4,9 @@ import { FC } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
 import { motion, useReducedMotion } from 'framer-motion';
-import Link from 'next/link';
 
 import { HeroWrapper, StepBadge, StepCard, StepsRow } from './styled';
-import { PublicRoutes } from '@/config/routes';
+import { useGetStartedFree } from '@/hooks/useGetStartedFree';
 
 const AnimatedWords: FC<{
     text: string;
@@ -61,6 +60,8 @@ const AnimatedWords: FC<{
 };
 
 const HeroSection: FC = () => {
+    const { onGetStartedFree, isRouting } = useGetStartedFree();
+
     return (
         <HeroWrapper>
             <Container maxWidth='md'>
@@ -110,8 +111,8 @@ const HeroSection: FC = () => {
                     variant='contained'
                     color='secondary'
                     size='large'
-                    component={Link}
-                    href={PublicRoutes.landing}
+                    onClick={onGetStartedFree}
+                    disabled={isRouting}
                     sx={{
                         marginTop: { xs: '2rem', sm: '3rem', lg: '2rem' },
                         px: { xs: 3, sm: 4 },
