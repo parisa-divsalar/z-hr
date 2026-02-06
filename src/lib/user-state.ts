@@ -132,7 +132,6 @@ export function resolveUserState(input: ResolveStateInput) {
   if (planStatus === 'paid') {
     if (justConverted) return { state: 'Paid – Just Converted', reason: 'just_converted' };
     if (credits != null && credits <= 0) return { state: 'Paid – Credit Exhausted', reason: 'credits_exhausted' };
-    if (planStatus === 'expired') return { state: 'Paid – Expired Plan', reason: 'plan_expired' };
     if (advancedUsage) return { state: 'Paid – Power User', reason: 'power_user' };
     return { state: 'Paid – Active', reason: 'paid_active' };
   }
@@ -176,7 +175,9 @@ export function recordUserStateTransition(
   return resolved;
 }
 
-export function normalizeResolveInput(params: Record<string, string | string[] | undefined>) {
+export function normalizeResolveInput(
+  params: Record<string, string | string[] | undefined>
+): Omit<ResolveStateInput, 'userId'> {
   const get = (key: string) => (Array.isArray(params[key]) ? params[key]?.[0] : params[key]);
   return {
     isVerified: toBool(get('isVerified')),
@@ -188,5 +189,5 @@ export function normalizeResolveInput(params: Record<string, string | string[] |
     lastActiveAt: get('lastActiveAt') ?? null,
     paymentFailed: toBool(get('paymentFailed')),
     usageDecline: toBool(get('usageDecline')),
-  } as ResolveStateInput;
+  };
 }

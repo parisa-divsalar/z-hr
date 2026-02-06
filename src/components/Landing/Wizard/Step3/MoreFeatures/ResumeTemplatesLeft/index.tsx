@@ -10,9 +10,11 @@ import { Container, LeftSection, TitleSection, RightSection, FrameFeaturesImage 
 
 interface ResumeMoreTemplatesProps {
   suggestion: Pick<MoreFeatureSuggestion, 'title' | 'description' | 'coin'>;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
-const ResumeMoreTemplates: React.FC<ResumeMoreTemplatesProps> = ({ suggestion }) => {
+const ResumeMoreTemplates: React.FC<ResumeMoreTemplatesProps> = ({ suggestion, checked, onCheckedChange }) => {
   const [offset, setOffset] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
@@ -51,6 +53,8 @@ const ResumeMoreTemplates: React.FC<ResumeMoreTemplatesProps> = ({ suggestion })
       <LeftSection>
         <TitleSection mt={1}>
           <MuiCheckbox
+            checked={checked}
+            onChange={(_, next) => onCheckedChange?.(next)}
             label={
               <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
                 {suggestion.title}

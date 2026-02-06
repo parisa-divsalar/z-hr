@@ -47,6 +47,8 @@
     ".next/dev/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "admin-dashboard",
+    "free-nextjs-admin-dashboard"
   ]
 }

@@ -33,9 +33,11 @@ export type MoreFeatureSuggestion = {
 
 interface ResumeTemplatesRightProps {
   suggestions: MoreFeatureSuggestion[];
+  getChecked?: (suggestion: MoreFeatureSuggestion) => boolean;
+  onToggle?: (suggestion: MoreFeatureSuggestion, checked: boolean) => void;
 }
 
-const ResumeTemplatesRight: FunctionComponent<ResumeTemplatesRightProps> = ({ suggestions }) => {
+const ResumeTemplatesRight: FunctionComponent<ResumeTemplatesRightProps> = ({ suggestions, getChecked, onToggle }) => {
   if (!suggestions || suggestions.length === 0) {
     return (
       <Typography variant='subtitle2' color='text.secondary'>
@@ -52,6 +54,8 @@ const ResumeTemplatesRight: FunctionComponent<ResumeTemplatesRightProps> = ({ su
             <JobSuggestionsLeft>
               <JobSuggestionsHeader>
                 <MuiCheckbox
+                  checked={getChecked?.(suggestion)}
+                  onChange={(_, checked) => onToggle?.(suggestion, checked)}
                   label={
                     <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
                       {suggestion.title}

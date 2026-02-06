@@ -411,7 +411,7 @@ export const normalizeSelectedProjects = (raw: any[]): string[] => {
             const link = String(entry.link ?? entry.url ?? '').trim();
             const lines = [name, summary].filter(Boolean);
             if (tech.length) lines.push(`Tech: ${tech.join(', ')}`);
-            if (bullets.length) lines.push(...bullets.map((b) => `- ${b}`));
+            if (bullets.length) lines.push(...bullets.map((b: string) => `- ${b}`));
             if (link) lines.push(`Link: ${link}`);
             return lines.join('\n').trim();
         })

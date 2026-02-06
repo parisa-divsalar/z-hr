@@ -172,7 +172,7 @@ export const InputContent = forwardRef<HTMLTextAreaElement, InputContentProps>(f
         value,
         rows: rows ?? 1,
         ref: setRef,
-        onInput: (e: React.FormEvent<HTMLTextAreaElement>) => {
+        onInput: (e: React.InputEvent<HTMLTextAreaElement>) => {
             onInput?.(e);
             resizeTextarea(e.currentTarget);
         },

@@ -118,8 +118,8 @@ function buildSectionOutputFromWizardData(sectionKey: SectionKeyType, wizardData
         });
     }
 
-    // Fallback
-    return SectionSchemas[sectionKey].parse({});
+
+    throw new Error('Unsupported sectionKey');
 }
 
 export async function generateSectionFromWizardData(params: {

@@ -120,11 +120,9 @@ async function runSync() {
   } catch (error) {
     console.error('Error in /api/learning-hub/sync:', error);
 
-    // Dev-friendly fallback: if API key is missing and DB is empty, seed demo courses
-    // so the admin panel table doesn't stay at 0 during local development.
     const msg = error instanceof Error ? error.message : 'Sync failed';
     if (totalBefore === 0 && msg.toLowerCase().includes('rapidapi_key is missing')) {
-      const seeded = db.learningHubCourses.addMany(SEED_COURSES as any[]);
+      const seeded = db.learningHubCourses.addMany([...SEED_COURSES]);
       const total = db.learningHubCourses.findAll().length;
       return NextResponse.json(
         {
