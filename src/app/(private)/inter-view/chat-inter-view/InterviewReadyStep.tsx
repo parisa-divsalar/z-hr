@@ -1,7 +1,7 @@
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
-import QuestionsList from './QuestionsList';
+import QuestionsList, { InterviewQuestionItem } from './QuestionsList';
 import { ScoreSards } from './styled';
 
 interface InterviewReadyStepProps {
@@ -9,9 +9,14 @@ interface InterviewReadyStepProps {
     onBack?: () => void;
     onStart?: () => void;
     onRepeat?: () => void;
+    items?: InterviewQuestionItem[];
+    isLoading?: boolean;
+    error?: string | null;
 }
 
-const InterviewReadyStep = (_props: InterviewReadyStepProps) => {
+const InterviewReadyStep = ({ items, isLoading, error }: InterviewReadyStepProps) => {
+    const hasItems = Boolean(items && items.length > 0);
+
     return (
         <Stack width='100%' sx={{ alignSelf: 'stretch' }}>
             <Grid container width='100%'>
@@ -50,7 +55,22 @@ const InterviewReadyStep = (_props: InterviewReadyStepProps) => {
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                    <QuestionsList />
+                    {isLoading && (
+                        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+                            Generating interview questions...
+                        </Typography>
+                    )}
+                    {error && (
+                        <Typography variant='body2' color='error.main' sx={{ mb: 2 }}>
+                            {error}
+                        </Typography>
+                    )}
+                    {!isLoading && !error && hasItems && <QuestionsList items={items} />}
+                    {!isLoading && !error && !hasItems && (
+                        <Typography variant='body2' color='text.secondary'>
+                            No interview questions available yet.
+                        </Typography>
+                    )}
                 </Grid>
             </Grid>
         </Stack>

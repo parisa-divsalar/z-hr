@@ -14,6 +14,7 @@ import TrashIcon from '@/assets/images/dashboard/trash-01.svg';
 import VideoIcon from '@/assets/images/dashboard/video.svg';
 import VoiceIcon from '@/assets/images/dashboard/voice.svg';
 import { HistoryImage, StyledDivider, TagPill } from '@/components/History/styled';
+import { THistoryChannel } from '@/components/History/type';
 import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
@@ -21,7 +22,6 @@ import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
 import { PreviewEditeRoot } from '../styled';
-import { THistoryChannel } from '@/components/History/type';
 
 interface PreviewEditeProps {
     setActiveStep?: (step: number) => void;
@@ -90,7 +90,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                 preOpenWindow: false,
             });
         } catch (error) {
-            // eslint-disable-next-line no-console
+             
             console.error('Failed to export PDF', error);
             setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
         } finally {

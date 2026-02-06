@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+
 import { PublicRoutes, normalizeRoute } from '@/config/routes';
 
 function isPublicPath(pathname: string) {

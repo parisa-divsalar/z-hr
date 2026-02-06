@@ -1,7 +1,8 @@
 import Link from 'next/link';
 
-import styles from './BlogPage.module.css';
 import { BlogArticle } from '@shared/blog/repository';
+
+import styles from './BlogPage.module.css';
 
 type ArticleCardProps = {
     article: BlogArticle;

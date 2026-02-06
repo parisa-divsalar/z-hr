@@ -17,6 +17,9 @@ interface Benefit {
     description: string;
     image: StaticImageData;
 }
+
+const MotionBox = motion(Box);
+
 const KeyBenefits: FC = () => {
     const shouldReduceMotion = useReducedMotion();
 
@@ -42,8 +45,6 @@ const KeyBenefits: FC = () => {
                   transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
               },
           };
-
-    const MotionBox = motion(Box);
 
     const rotateImageOnHoverSx = {
         display: 'inline-flex',

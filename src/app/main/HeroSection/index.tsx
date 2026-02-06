@@ -37,7 +37,7 @@ const AnimatedWords: FC<{
         >
             {words.map((word, idx) => (
                 <motion.span
-                    // eslint-disable-next-line react/no-array-index-key
+                     
                     key={`${word}-${idx}`}
                     aria-hidden='true'
                     variants={{

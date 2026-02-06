@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { consumeCredit } from '@/lib/credits';
 import { ChatGPTService } from '@/services/chatgpt/service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -41,6 +43,21 @@ export async function POST(request: NextRequest) {
         }
 
         const userId = await getUserId(request);
+        
+        // Deduct 1 credit for skill gap analysis
+        if (userId) {
+            const creditResult = await consumeCredit(userId, 1, 'skill_gap');
+            if (!creditResult.success) {
+                return NextResponse.json(
+                    { 
+                        error: creditResult.error || 'Failed to consume credit',
+                        remainingCredits: creditResult.remainingCredits,
+                    },
+                    { status: 402 }
+                );
+            }
+        }
+
         const logContext = userId ? { userId, endpoint: '/api/skills/analyze-gap', action: 'analyzeSkillGap' } : undefined;
         const analysis = await ChatGPTService.analyzeSkillGap(cvData, jobDescription, logContext);
 

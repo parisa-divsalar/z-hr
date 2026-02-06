@@ -7,9 +7,9 @@ import Grid from '@mui/material/Grid';
 import { useSearchParams } from 'next/navigation';
 
 import { HistoryEditeRoot } from '@/app/(private)/history-edite/styled';
+import { THistoryChannel } from '@/components/History/type';
 import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
-import { THistoryChannel } from '@/components/History/type';
 import { useAuthStore } from '@/store/auth';
 import { useWizardStore } from '@/store/wizard';
 

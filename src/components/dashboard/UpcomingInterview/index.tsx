@@ -7,54 +7,61 @@ import { CardBaseiNTER, SectionHeader } from '@/components/dashboard/styled';
 import { useInterviewDialog } from '@/components/interview/StartInterviewDialogProvider';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
+import { usePlanGate } from '@/hooks/usePlanGate';
 
 const UpcomingInterview = () => {
     const { openStartDialog } = useInterviewDialog();
+    const { guardAction, planDialog } = usePlanGate();
+
+    const handleContinue = () => guardAction(() => openStartDialog('chat'), 'interview_chat');
 
     return (
-        <CardBaseiNTER>
-            <SectionHeader>
-                <Typography color='text.primary' variant='subtitle1' fontWeight='500'>
-                    Interview
-                </Typography>
-                <MuiButton
-                    text='Continue'
-                    color='secondary'
-                    variant='contained'
-                    endIcon={<ArrowRightIcon />}
-                    onClick={() => openStartDialog('chat')}
-                />
-            </SectionHeader>
+        <>
+            {planDialog}
+            <CardBaseiNTER>
+                <SectionHeader>
+                    <Typography color='text.primary' variant='subtitle1' fontWeight='500'>
+                        Interview
+                    </Typography>
+                    <MuiButton
+                        text='Continue'
+                        color='secondary'
+                        variant='contained'
+                        endIcon={<ArrowRightIcon />}
+                        onClick={handleContinue}
+                    />
+                </SectionHeader>
 
-            <Stack>
-                <Stack gap={1}>
-                    <Stack direction='row' gap={1.5} alignItems='center'>
-                        <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                            Chat Interview
-                        </Typography>
-                        <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                            09/09/2025
-                        </Typography>
-                        <Typography variant='subtitle2' color='text.secondary' fontWeight='500'>
-                            9/2
-                        </Typography>
+                <Stack>
+                    <Stack gap={1}>
+                        <Stack direction='row' gap={1.5} alignItems='center'>
+                            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                                Chat Interview
+                            </Typography>
+                            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                                09/09/2025
+                            </Typography>
+                            <Typography variant='subtitle2' color='text.secondary' fontWeight='500'>
+                                9/2
+                            </Typography>
 
-                        <Stack mb={1}>
-                            <MuiChips
-                                label='7 Steps'
-                                color='white'
-                                sx={{
-                                    bgcolor: 'warning.main',
-                                    borderRadius: '8px',
-                                    height: '26px',
-                                    width: '85px',
-                                }}
-                            />
+                            <Stack mb={1}>
+                                <MuiChips
+                                    label='7 Steps'
+                                    color='white'
+                                    sx={{
+                                        bgcolor: 'warning.main',
+                                        borderRadius: '8px',
+                                        height: '26px',
+                                        width: '85px',
+                                    }}
+                                />
+                            </Stack>
                         </Stack>
                     </Stack>
                 </Stack>
-            </Stack>
-        </CardBaseiNTER>
+            </CardBaseiNTER>
+        </>
     );
 };
 

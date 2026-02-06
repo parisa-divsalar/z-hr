@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db } from '@/lib/db';
 import { SKILLS_BY_CATEGORY } from '@/lib/skills-catalog';
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
+import { fetchYouTubePlaylistCourses } from '@/services/learningHub/fetchYouTubeCourses';
 import { fetchCoursesFromYouTube } from '@/services/learningHub/youtube';
 
 const corsHeaders = {
@@ -26,15 +27,24 @@ export async function POST(request: NextRequest) {
 async function runSync(request: NextRequest) {
   try {
     const params = request.nextUrl.searchParams;
-    const maxCategories = parseIntSafe(params.get('maxCategories'), 6);
-    const maxSkillsPerCategory = parseIntSafe(params.get('maxSkillsPerCategory'), 3);
-    const maxPerSkill = parseIntSafe(params.get('maxPerSkill'), 5);
+    const usePlaylistsOnly = params.get('playlists') === 'true';
 
-    const courses = await fetchCoursesFromYouTube({
-      maxCategories,
-      maxSkillsPerCategory,
-      maxPerSkill,
-    });
+    let courses;
+    if (usePlaylistsOnly) {
+      // Fetch YouTube playlists only
+      courses = await fetchYouTubePlaylistCourses();
+    } else {
+      // Fetch YouTube videos (existing behavior)
+      const maxCategories = parseIntSafe(params.get('maxCategories'), 6);
+      const maxSkillsPerCategory = parseIntSafe(params.get('maxSkillsPerCategory'), 3);
+      const maxPerSkill = parseIntSafe(params.get('maxPerSkill'), 5);
+
+      courses = await fetchCoursesFromYouTube({
+        maxCategories,
+        maxSkillsPerCategory,
+        maxPerSkill,
+      });
+    }
 
     const added = db.learningHubCourses.addMany(courses);
     const total = db.learningHubCourses.findAll().length;
@@ -45,7 +55,8 @@ async function runSync(request: NextRequest) {
         added,
         total,
         fetched: courses.length,
-        message: `YouTube sync complete. ${added} new course(s) added.`
+        message: `YouTube sync complete. ${added} new course(s) added.`,
+        source: usePlaylistsOnly ? 'playlists' : 'videos'
       },
       { headers: corsHeaders }
     );

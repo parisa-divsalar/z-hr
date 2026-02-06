@@ -35,6 +35,38 @@ function calcInactiveDays(lastActiveAt?: string | null): number | null {
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
+function evaluateChurnRisk(userId: number, lastActiveAt?: string | null): boolean {
+  const activityLogs = db.userStateLogs.findAll().filter((log: any) => Number(log?.user_id) === Number(userId));
+  
+  const now = new Date();
+  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  
+  // Get last 7 days activity
+  const last7Days = activityLogs.filter((log: any) => {
+    const logDate = new Date(log.created_at);
+    return (now.getTime() - logDate.getTime()) <= sevenDaysMs;
+  });
+  
+  // Get previous 7 days activity (days 8-14)
+  const prev7Days = activityLogs.filter((log: any) => {
+    const logDate = new Date(log.created_at);
+    const daysAgo = (now.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24);
+    return daysAgo > 7 && daysAgo <= 14;
+  });
+  
+  // Check usage decline >= 60%
+  if (prev7Days.length > 0) {
+    const decline = ((prev7Days.length - last7Days.length) / prev7Days.length) * 100;
+    if (decline >= 60) return true;
+  }
+  
+  // Check inactivity >= 14 days
+  const daysSinceActive = calcInactiveDays(lastActiveAt);
+  if (daysSinceActive != null && daysSinceActive >= 14) return true;
+  
+  return false;
+}
+
 export function resolveUserState(input: ResolveStateInput) {
   const user = db.users.findById(input.userId);
   if (!user) return { state: 'Guest', reason: 'user_not_found' };
@@ -86,10 +118,11 @@ export function resolveUserState(input: ResolveStateInput) {
 
   if (paymentFailed || planStatus === 'failed') return { state: 'Payment Failed', reason: 'payment_failed' };
 
-  if (inactiveDays != null) {
-    if (inactiveDays >= 30) return { state: 'Dormant User', reason: `inactive_${inactiveDays}_days` };
-    if (inactiveDays >= 14 || input.usageDecline) return { state: 'Churn-risk User', reason: 'churn_risk' };
-  }
+  // Check churn-risk before dormant (preventive detection)
+  const isChurnRisk = evaluateChurnRisk(input.userId, input.lastActiveAt ?? (user as any)?.last_active_at ?? null);
+  if (isChurnRisk) return { state: 'Churn-risk User', reason: 'churn_risk' };
+
+  if (inactiveDays != null && inactiveDays >= 30) return { state: 'Dormant User', reason: `inactive_${inactiveDays}_days` };
 
   if (isVerified === false) return { state: 'Registered – Not Verified', reason: 'not_verified' };
 
@@ -99,7 +132,6 @@ export function resolveUserState(input: ResolveStateInput) {
   if (planStatus === 'paid') {
     if (justConverted) return { state: 'Paid – Just Converted', reason: 'just_converted' };
     if (credits != null && credits <= 0) return { state: 'Paid – Credit Exhausted', reason: 'credits_exhausted' };
-    if (planStatus === 'expired') return { state: 'Paid – Expired Plan', reason: 'plan_expired' };
     if (advancedUsage) return { state: 'Paid – Power User', reason: 'power_user' };
     return { state: 'Paid – Active', reason: 'paid_active' };
   }
@@ -143,7 +175,9 @@ export function recordUserStateTransition(
   return resolved;
 }
 
-export function normalizeResolveInput(params: Record<string, string | string[] | undefined>) {
+export function normalizeResolveInput(
+  params: Record<string, string | string[] | undefined>
+): Omit<ResolveStateInput, 'userId'> {
   const get = (key: string) => (Array.isArray(params[key]) ? params[key]?.[0] : params[key]);
   return {
     isVerified: toBool(get('isVerified')),
@@ -155,5 +189,5 @@ export function normalizeResolveInput(params: Record<string, string | string[] |
     lastActiveAt: get('lastActiveAt') ?? null,
     paymentFailed: toBool(get('paymentFailed')),
     usageDecline: toBool(get('usageDecline')),
-  } as ResolveStateInput;
+  };
 }

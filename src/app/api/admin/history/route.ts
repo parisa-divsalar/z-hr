@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+
+import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     const rowToUpsert = {
+      ...(typeof body === 'object' && body ? body : {}),
       id,
       user_id: userId,
       name: String(body?.name ?? ''),
@@ -74,10 +76,6 @@ export async function POST(request: NextRequest) {
       deleted_at: body?.deleted_at ?? null,
       created_at: body?.created_at ?? now,
       updated_at: body?.updated_at ?? now,
-      // allow extra fields
-      ...(typeof body === 'object' && body ? body : {}),
-      id,
-      user_id: userId,
     };
 
     const saved = db.history.upsert(rowToUpsert as any);

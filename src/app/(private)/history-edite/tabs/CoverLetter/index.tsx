@@ -12,6 +12,7 @@ import EditIcon from '@/assets/images/icons/edit.svg';
 import RefreshIcon from '@/assets/images/icons/refresh.svg';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { usePlanGate } from '@/hooks/usePlanGate';
 import { getCoverLetter } from '@/services/cv/get-cover-letter';
 import { listCoverLetters } from '@/services/cv/list-cover-letters';
 import { updateCoverLetter } from '@/services/cv/update-cover-letter';
@@ -159,6 +160,7 @@ const CoverLetter = () => {
     const searchParams = useSearchParams();
     const storedRequestId = useWizardStore((s) => s.requestId);
     const setStoredRequestId = useWizardStore((s) => s.setRequestId);
+    const { guardAction, planDialog } = usePlanGate();
 
     // This is the resume requestId (cvRequestId).
     const resumeRequestId = useMemo(() => {
@@ -274,7 +276,7 @@ const CoverLetter = () => {
     useEffect(() => {
         setHasFetchedOnce(false);
         void fetchCoverLetters(resumeRequestId ? { cvRequestId: resumeRequestId } : undefined);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [resumeRequestId]);
 
     const startEdit = (id: string) => {
@@ -359,6 +361,8 @@ const CoverLetter = () => {
         setIsCreateOpen(true);
     };
 
+    const handleProtectedAddNew = () => guardAction(handleAddNew, 'cover_letter');
+
     const handleCreated = (args: {
         values: CreateCoverLetterValues;
         coverLetterText: string;
@@ -431,6 +435,7 @@ const CoverLetter = () => {
 
     return (
         <Stack gap={2}>
+            {planDialog}
             {fetchError && <MuiAlert severity='error' message={fetchError} hideDismissButton />}
 
             {!resumeRequestId && !isFetching && !fetchError && (
@@ -451,7 +456,7 @@ const CoverLetter = () => {
 
             <Stack direction='row' justifyContent='flex-end'>
                 <MuiButton
-                    onClick={handleAddNew}
+                    onClick={handleProtectedAddNew}
                     text='Add New'
                     variant='outlined'
                     color='secondary'

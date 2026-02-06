@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import IntroDialog from '@/components/Landing/IntroDialog';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
+import { trackEvent } from '@/lib/analytics';
 import { useWizardStore } from '@/store/wizard';
 
 import { ResumeBuilderRoot } from './styled';
@@ -38,6 +39,12 @@ export default function ResumeBuilderPage() {
         const normalized = trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1).trim() : trimmed;
         if (normalized) setRequestId(normalized);
     }, [searchParams, setRequestId]);
+
+    useEffect(() => {
+        trackEvent('resume_started', {
+            timestamp: new Date().toISOString(),
+        });
+    }, []);
 
     const layoutHeight =
         'calc(max(var(--app-height), 100vh) - var(--navbar-height) - var(--footer-height) - 2 * var(--children-padding))';

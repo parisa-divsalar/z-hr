@@ -1,7 +1,8 @@
+import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db } from '@/lib/db';
 import { recordUserStateTransition } from '@/lib/user-state';
-import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
     try {

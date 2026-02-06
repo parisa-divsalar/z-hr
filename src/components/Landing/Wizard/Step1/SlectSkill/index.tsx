@@ -32,8 +32,8 @@ import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiChips from '@/components/UI/MuiChips';
 import { SelectOption } from '@/components/UI/MuiSelectOptions';
-import { apiClientClient } from '@/services/api-client';
 import { usePlanGate } from '@/hooks/usePlanGate';
+import { apiClientClient } from '@/services/api-client';
 import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
@@ -478,8 +478,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
         fileInputRef.current?.click();
     };
 
-    const handleProtectedFileDialog = () => guardAction(handleOpenFileDialog);
-    const handleProtectedVoiceRecorder = () => guardAction(handleShowVoiceRecorder);
+    const handleProtectedFileDialog = () => guardAction(handleOpenFileDialog, 'file_upload');
+    const handleProtectedVoiceRecorder = () => guardAction(handleShowVoiceRecorder, 'voice_recording');
 
     const ensureFileWithId = (file: File) => {
         const f = file as File & { id?: string };

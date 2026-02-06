@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 import { Mic } from '@mui/icons-material';

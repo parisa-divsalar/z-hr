@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { getOrCreateDraft, saveSectionOutput, setResumeDirty } from '@/server/resumeAiRepo';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+
 import { SectionKeyType } from '@/lib/ai/outputSchemas';
+import { getOrCreateDraft, saveSectionOutput, setResumeDirty } from '@/server/resumeAiRepo';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -18,7 +19,7 @@ async function getUserId(request: NextRequest): Promise<string | null> {
             try {
                 const decoded = jwt.verify(token, JWT_SECRET) as any;
                 return decoded.userId?.toString() || null;
-            } catch (error) {
+            } catch {
                 // Token invalid
             }
         }
@@ -29,13 +30,13 @@ async function getUserId(request: NextRequest): Promise<string | null> {
             try {
                 const decoded = jwt.verify(token, JWT_SECRET) as any;
                 return decoded.userId?.toString() || null;
-            } catch (error) {
+            } catch {
                 // Token invalid
             }
         }
         
         return null;
-    } catch (error) {
+    } catch {
         return null;
     }
 }

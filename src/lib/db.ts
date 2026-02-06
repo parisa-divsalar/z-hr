@@ -1,6 +1,6 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
 
 // Simple file-based database using JSON files (project-root ./data by default)
 // NOTE: In this repo the data folder is at <projectRoot>/data, so default to that.
@@ -282,7 +282,8 @@ if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const readFile = <T>(filePath: string, defaultValue: T[]): T[] => {
+
+const readFile = (filePath: string, defaultValue: any[] = []): any[] => {
     try {
         if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf-8');
@@ -305,7 +306,7 @@ const readFile = <T>(filePath: string, defaultValue: T[]): T[] => {
     return defaultValue;
 };
 
-const writeFile = <T>(filePath: string, data: T[]): void => {
+const writeFile = (filePath: string, data: any[]): void => {
     try {
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
     } catch (error) {
@@ -813,17 +814,17 @@ export const db = {
     },
 
     learningHubBookmarks: {
-        findAll: () => readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []),
+        findAll: () => readFile(learningHubBookmarksFile, []),
         findByUserId: (userId: number) => {
-            const rows = readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []);
+            const rows = readFile(learningHubBookmarksFile, []);
             return rows.filter((r: any) => Number(r?.user_id) === Number(userId));
         },
         isBookmarked: (userId: number, courseId: number) => {
-            const rows = readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []);
+            const rows = readFile(learningHubBookmarksFile, []);
             return rows.some((r: any) => Number(r?.user_id) === Number(userId) && Number(r?.course_id) === Number(courseId));
         },
         toggle: (userId: number, courseId: number, isBookmarked?: boolean) => {
-            const rows = readFile<LearningHubBookmarkRow>(learningHubBookmarksFile, []);
+            const rows = readFile(learningHubBookmarksFile, []);
             const uid = Number(userId);
             const cid = Number(courseId);
             if (!Number.isFinite(uid) || !Number.isFinite(cid)) return null;
@@ -922,18 +923,18 @@ export const db = {
         findAll: () => readFile(plansFile, defaultPlans),
     },
     history: {
-        findAll: (): HistoryRow[] => readFile<HistoryRow>(historyFile, []),
+        findAll: (): HistoryRow[] => readFile(historyFile, []),
         findByUserId: (userId: number): HistoryRow[] => {
-            const rows = readFile<HistoryRow>(historyFile, []);
+            const rows = readFile(historyFile, []);
             return rows.filter((r: any) => Number(r.user_id) === Number(userId));
         },
         findByUserIdAndId: (userId: number, id: string): HistoryRow | null => {
-            const rows = readFile<HistoryRow>(historyFile, []);
+            const rows = readFile(historyFile, []);
             const row = rows.find((r: any) => r.id === id && Number(r.user_id) === Number(userId));
             return row ?? null;
         },
         upsert: (row: Omit<HistoryRow, 'created_at' | 'updated_at'> & Partial<Pick<HistoryRow, 'created_at' | 'updated_at'>>) => {
-            const rows = readFile<HistoryRow>(historyFile, []);
+            const rows = readFile(historyFile, []);
             const idx = rows.findIndex((r: any) => r.id === row.id && Number(r.user_id) === Number(row.user_id));
             const now = new Date().toISOString();
             if (idx === -1) {
@@ -952,7 +953,7 @@ export const db = {
             return rows[idx];
         },
         update: (userId: number, id: string, patch: Partial<HistoryRow>) => {
-            const rows = readFile<HistoryRow>(historyFile, []);
+            const rows = readFile(historyFile, []);
             const idx = rows.findIndex((r: any) => r.id === id && Number(r.user_id) === Number(userId));
             if (idx === -1) return null;
             rows[idx] = { ...rows[idx], ...(patch as any), updated_at: new Date().toISOString() };
@@ -960,7 +961,7 @@ export const db = {
             return rows[idx];
         },
         toggleBookmark: (userId: number, id: string, isBookmarked?: boolean): HistoryRow | null => {
-            const rows = readFile<HistoryRow>(historyFile, []);
+            const rows = readFile(historyFile, []);
             const idx = rows.findIndex((r: any) => r.id === id && Number(r.user_id) === Number(userId));
             if (idx === -1) return null;
             const next = typeof isBookmarked === 'boolean' ? isBookmarked : !Boolean(rows[idx].is_bookmarked);
@@ -969,7 +970,7 @@ export const db = {
             return rows[idx];
         },
         markDeleted: (userId: number, id: string): boolean => {
-            const rows = readFile<HistoryRow>(historyFile, []);
+            const rows = readFile(historyFile, []);
             const idx = rows.findIndex((r: any) => r.id === id && Number(r.user_id) === Number(userId));
             if (idx === -1) return false;
             rows[idx] = { ...rows[idx], deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() };
@@ -977,7 +978,7 @@ export const db = {
             return true;
         },
         deleteHard: (userId: number, id: string): boolean => {
-            const rows = readFile<HistoryRow>(historyFile, []);
+            const rows = readFile(historyFile, []);
             const before = rows.length;
             const next = rows.filter((r: any) => !(r.id === id && Number(r.user_id) === Number(userId)));
             if (next.length === before) return false;

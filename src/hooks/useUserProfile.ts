@@ -65,7 +65,7 @@ export const useUserProfile = () => {
             setProfile(result);
             setError(null);
             return result;
-        } catch (fetchError) {
+        } catch {
             if (profileRequest === request) {
                 profileRequest = null;
             }

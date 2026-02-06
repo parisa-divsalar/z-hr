@@ -5,6 +5,8 @@ const tsPlugin = require('@typescript-eslint/eslint-plugin');
 const tsParser = require('@typescript-eslint/parser');
 const prettier = require('eslint-config-prettier');
 const importPlugin = require('eslint-plugin-import');
+const reactPlugin = require('eslint-plugin-react');
+const reactHooksPlugin = require('eslint-plugin-react-hooks');
 const unusedImportsPlugin = require('eslint-plugin-unused-imports');
 
 /** @type {import("eslint").Linter.FlatConfig[]} */
@@ -55,6 +57,8 @@ module.exports = [
         plugins: {
             '@typescript-eslint': tsPlugin,
             import: importPlugin,
+            react: reactPlugin,
+            'react-hooks': reactHooksPlugin,
             'unused-imports': unusedImportsPlugin,
         },
         settings: {
@@ -62,11 +66,16 @@ module.exports = [
                 typescript: true,
                 node: true,
             },
+            react: {
+                version: 'detect',
+            },
         },
         rules: {
             ...(tsPlugin.configs.recommended?.rules ?? {}),
             ...(importPlugin.configs.recommended?.rules ?? {}),
             ...(importPlugin.configs.typescript?.rules ?? {}),
+            ...(reactPlugin.configs.recommended?.rules ?? {}),
+            ...(reactHooksPlugin.configs.recommended?.rules ?? {}),
             ...(prettier?.rules ?? {}),
 
             // Project overrides (from `.eslintrc.cjs`)
@@ -85,6 +94,20 @@ module.exports = [
                 },
             ],
             'import/newline-after-import': ['error', { count: 1 }],
+
+            // React 17+ JSX transform does not require React in scope
+            'react/react-in-jsx-scope': 'off',
+            'react/jsx-uses-react': 'off',
+            // TypeScript handles props typing
+            'react/prop-types': 'off',
+
+            // Existing codebase uses refs/state in ways this rule flags
+            'react-hooks/refs': 'off',
+            'react-hooks/set-state-in-effect': 'off',
+            'react-hooks/preserve-manual-memoization': 'off',
+
+            // Allow literal quotes/apostrophes in JSX text
+            'react/no-unescaped-entities': 'off',
 
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/ban-ts-comment': 'off',

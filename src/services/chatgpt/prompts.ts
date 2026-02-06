@@ -404,13 +404,17 @@ CONTENT RULES:
     },
 
     /**
-     * Interview questions generation
-     * Enhanced with structured CV data and job description context
+     * Interview questions generation with answers
+     * Enhanced with structured CV data, job description context, and suggested answers
+     * If position is not provided, infers the best matching position from resume data
      */
-    generateInterviewQuestions: (position: string, cvData: any, jobDescription?: string) => `
-You are an expert interviewer specializing in technical and behavioral assessments.
+    generateInterviewQuestions: (position: string | null, cvData: any, jobDescription?: string) => `
+You are an expert interviewer and career coach specializing in technical and behavioral assessments.
 
-POSITION: ${position}
+YOUR TASK:
+Generate interview questions WITH suggested answers based on the candidate's actual resume data.
+
+${position ? `TARGET POSITION: ${position}` : `TARGET POSITION: Not specified - you must INFER the most suitable position based on the candidate's skills, experience, and background from their CV data.`}
 
 ${jobDescription ? `JOB DESCRIPTION:
 ${jobDescription}
@@ -418,24 +422,58 @@ ${jobDescription}
 ` : ''}CANDIDATE CV DATA (structured):
 ${JSON.stringify(cvData, null, 2)}
 
-GENERATE 5-7 interview questions that:
-1. Assess technical skills relevant to the position and job description
-2. Evaluate specific experience and achievements from the CV
-3. Test problem-solving abilities related to the role
-4. Understand motivation and cultural fit
-5. Probe areas where the candidate's experience aligns with job requirements
+ANALYSIS INSTRUCTIONS:
+1. First, analyze the CV to understand the candidate's:
+   - Technical skills and proficiency levels
+   - Work experience and key achievements
+   - Education and certifications
+   - Projects and their impact
+   - Career progression and goals
+
+2. ${position ? 'Use the provided position' : 'Infer the most suitable job position based on their background (e.g., "Senior Front-End Developer", "Full-Stack Engineer", "React Developer")'}
+
+3. Generate 5-7 interview questions that:
+   - Are SPECIFIC to this candidate's actual experience mentioned in CV
+   - Test both technical depth and soft skills
+   - Cover different aspects: technical skills, behavioral, situational, and career goals
+   - Are relevant to the target position
+
+4. For each question, provide a SUGGESTED ANSWER that:
+   - Is based ONLY on information from the candidate's CV
+   - References specific experiences, projects, or skills from their background
+   - Demonstrates how the candidate could effectively answer using their real experience
+   - Uses STAR method (Situation, Task, Action, Result) where applicable
+
+QUESTION CATEGORIES:
+- "technical": Questions about specific technologies, tools, or technical concepts from their CV
+- "behavioral": Questions about past behavior and experiences (Tell me about a time when...)
+- "situational": Hypothetical scenarios related to their role
+- "career": Questions about career goals, motivation, and growth
 
 OUTPUT FORMAT:
-Return a JSON object with this structure:
+Return a JSON object with this EXACT structure:
 {
-    "questions": ["question1", "question2", "question3", "question4", "question5", "question6", "question7"]
+    "inferredPosition": "string - the position used (either provided or inferred from CV)",
+    "positionRationale": "string - brief explanation of why this position fits the candidate (especially if inferred)",
+    "questions": [
+        {
+            "id": 1,
+            "question": "The interview question text",
+            "category": "technical | behavioral | situational | career",
+            "skillsTested": ["skill1", "skill2"],
+            "suggestedAnswer": "A detailed suggested answer based on the candidate's CV data, referencing their specific experience",
+            "answerTips": "Brief tips on how to improve the answer"
+        }
+    ]
 }
 
-Each question should be:
-- Specific to the candidate's background
-- Relevant to the position requirements
-- Professional and appropriate
-- Designed to assess both technical and soft skills
+IMPORTANT RULES:
+- Generate exactly 5-7 questions with a good mix of categories
+- EVERY answer must reference REAL data from the candidate's CV
+- Do NOT fabricate or assume information not present in the CV
+- If CV data is limited for a particular question, note this in answerTips
+- Questions should progress from easier to more challenging
+- Make questions specific enough that generic answers won't work
 `,
 
     /**
@@ -472,6 +510,48 @@ IMPORTANT:
 - Provide actionable recommendations
 - Match percentage should be calculated based on required vs. present skills
 - Consider both explicit skills and implied skills from experience
+`,
+    /**
+     * Extract text from images (OCR)
+     */
+    extractTextFromImage: (params: { fileName: string; fileType: string }) => `
+You are an OCR engine. Extract all readable text from the image.
+
+FILE NAME: ${params.fileName}
+FILE TYPE: ${params.fileType}
+
+RULES:
+- Return ONLY the extracted text.
+- Preserve line breaks and basic spacing.
+- Do not add explanations, labels, or markdown.
+- If no readable text exists, return an empty string.
+`,
+    /**
+     * Merge user-provided text with extracted file text
+     */
+    mergeUserTextWithFileText: (params: { userText: string; extractedText: string; fileName: string; fileType: string }) => `
+You are a data preparation assistant. Merge user-provided text with extracted file text into a single input.
+
+FILE NAME: ${params.fileName}
+FILE TYPE: ${params.fileType}
+
+USER TEXT:
+${params.userText}
+
+FILE TEXT:
+${params.extractedText}
+
+OUTPUT FORMAT:
+Return a JSON object with this exact structure:
+{
+    "mergedText": "USER_TEXT:\n...\n\nFILE_TEXT:\n..."
+}
+
+RULES:
+- Do not invent or summarize content.
+- Keep the original wording and order.
+- Always include both sections, even if one is empty.
+- Use the exact section headers: "USER_TEXT:" and "FILE_TEXT:".
 `,
     deleteResumeSection: (params: { resume: unknown; section: string }) => `
 You are an expert ATS resume editor.

@@ -14,7 +14,8 @@ export type UserStateEvent =
   | 'learning_hub_view'
   | 'history_view'
   | 'profile_view'
-  | 'profile_update';
+  | 'profile_update'
+  | 'credit_exhausted';
 
 export const USER_STATE_EVENTS: Array<{ event: UserStateEvent; description: string }> = [
   { event: 'register', description: 'User completed registration.' },
@@ -33,6 +34,7 @@ export const USER_STATE_EVENTS: Array<{ event: UserStateEvent; description: stri
   { event: 'history_view', description: 'User viewed resume history.' },
   { event: 'profile_view', description: 'User viewed profile details.' },
   { event: 'profile_update', description: 'User updated profile details.' },
+  { event: 'credit_exhausted', description: 'User ran out of credits.' },
 ];
 
 export const ADVANCED_USAGE_EVENTS = new Set<UserStateEvent>([

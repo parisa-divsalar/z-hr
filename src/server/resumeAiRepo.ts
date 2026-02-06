@@ -1,5 +1,5 @@
-import { db } from '@/lib/db';
 import { SectionKeyType } from '@/lib/ai/outputSchemas';
+import { db } from '@/lib/db';
 
 /**
  * Get or create draft for a requestId

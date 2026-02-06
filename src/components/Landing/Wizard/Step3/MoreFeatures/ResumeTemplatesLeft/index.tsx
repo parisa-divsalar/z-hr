@@ -3,16 +3,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Typography } from '@mui/material';
 
 import FrameFeaturesSvg from '@/assets/images/bg/frameFeatures.svg';
-import MuiCheckbox from '@/components/UI/MuiCheckbox';
 import { MoreFeatureSuggestion } from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
+import MuiCheckbox from '@/components/UI/MuiCheckbox';
 
 import { Container, LeftSection, TitleSection, RightSection, FrameFeaturesImage } from './styled';
 
 interface ResumeMoreTemplatesProps {
   suggestion: Pick<MoreFeatureSuggestion, 'title' | 'description' | 'coin'>;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
-const ResumeMoreTemplates: React.FC<ResumeMoreTemplatesProps> = ({ suggestion }) => {
+const ResumeMoreTemplates: React.FC<ResumeMoreTemplatesProps> = ({ suggestion, checked, onCheckedChange }) => {
   const [offset, setOffset] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
@@ -51,6 +53,8 @@ const ResumeMoreTemplates: React.FC<ResumeMoreTemplatesProps> = ({ suggestion })
       <LeftSection>
         <TitleSection mt={1}>
           <MuiCheckbox
+            checked={checked}
+            onChange={(_, next) => onCheckedChange?.(next)}
             label={
               <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
                 {suggestion.title}

@@ -3,9 +3,9 @@
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
-import { motion } from 'framer-motion';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { motion } from 'framer-motion';
 
 import TypewriterText from '@/components/UI/TypewriterText';
 

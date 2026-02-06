@@ -1,5 +1,4 @@
 import { db } from './db';
-
 import { SKILLS_BY_CATEGORY } from './skills-catalog';
 
 export function seedSkills() {

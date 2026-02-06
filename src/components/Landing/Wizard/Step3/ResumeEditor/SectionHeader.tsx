@@ -7,6 +7,7 @@ import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 
 import { SectionHeaderContainer, SectionTitle, SectionActions } from './styled';
+
 import type { ImproveOption } from './types';
 
 interface SectionHeaderProps {
