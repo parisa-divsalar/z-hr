@@ -45,6 +45,10 @@
     padding-block: var(--children-padding);
 }
 
+.noBottomPadding {
+    padding-bottom: 0;
+}
+
 .homeChildren {
     --children-padding: 0px;
 }
