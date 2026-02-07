@@ -8,6 +8,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import { Box, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 
+import { AppImage } from '@/components/AppImage';
 import { PublicRoutes } from '@/config/routes';
 import {
     BottomNote,
@@ -24,7 +25,6 @@ import {
     TopRow,
 } from '@/app/main/FooterMain/styled';
 import logo from '@/assets/images/logo/logo.png';
-import { AppImage } from '@/components/AppImage';
 
 const COLUMNS: { title: string; items: string[] }[] = [
     { title: 'Title', items: ['Item', 'Item', 'Item', 'Item', 'Item'] },

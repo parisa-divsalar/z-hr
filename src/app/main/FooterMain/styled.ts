@@ -2,7 +2,16 @@ import { Box, Stack, Typography } from '@mui/material';
 import { alpha, styled } from '@mui/material/styles';
 
 export const FooterWrapper = styled(Box)(({ theme }) => ({
-    width: '100%',
+    /**
+     * Full-bleed footer: this page is sometimes rendered inside a centered/maxWidth layout container.
+     * These styles break out of that container and span the full viewport width.
+     */
+    width: '100vw',
+    maxWidth: '100vw',
+    marginLeft: 'calc(50% - 50vw)',
+    marginRight: 'calc(50% - 50vw)',
+    position: 'relative',
+    overflowX: 'hidden',
     background: 'radial-gradient(1200px 520px at 28% -10%, rgba(77,73,252,0.18), transparent 60%), #111113',
     color: theme.palette.common.white,
     paddingTop: theme.spacing(7),
