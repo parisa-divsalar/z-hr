@@ -3,11 +3,11 @@
 import { useMemo, useState } from 'react';
 
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import { Box, Divider, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Divider, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 
 import PricingComparison from '@/app/main/Pricing/PricingComparison';
+import DeleteIcon from '@/assets/images/icons/clean.svg';
+import EditIcon from '@/assets/images/icons/edit.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
 type PlanLineItem = {
@@ -29,6 +29,8 @@ function CustomPlanSection() {
     const [coinOrItem, setCoinOrItem] = useState('');
     const [selectedItem, setSelectedItem] = useState<string>('');
     const [qty, setQty] = useState<string>('');
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editQty, setEditQty] = useState<string>('');
 
     const [items, setItems] = useState<PlanLineItem[]>([
         { id: 'job-description-match', label: 'Job Description Match', qty: 2, unitPriceAed: 20 },
@@ -44,6 +46,24 @@ function CustomPlanSection() {
     }, [coinOrItem, qty, selectedItem]);
 
     const handleDelete = (id: string) => setItems((prev) => prev.filter((x) => x.id !== id));
+    const handleStartEdit = (id: string) => {
+        const it = items.find((x) => x.id === id);
+        if (!it) return;
+        setEditingId(id);
+        setEditQty(String(it.qty));
+    };
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setEditQty('');
+    };
+    const handleSaveEdit = () => {
+        if (!editingId) return;
+        const nextQty = Number(editQty);
+        if (!Number.isFinite(nextQty) || nextQty <= 0) return;
+        setItems((prev) => prev.map((x) => (x.id === editingId ? { ...x, qty: nextQty } : x)));
+        setEditingId(null);
+        setEditQty('');
+    };
 
     const handleAdd = () => {
         const label = (selectedItem || coinOrItem).trim();
@@ -98,6 +118,19 @@ function CustomPlanSection() {
                         SelectProps={{
                             displayEmpty: true,
                             renderValue: (value) => (value ? String(value) : 'Choose an item...'),
+                            MenuProps: {
+                                PaperProps: {
+                                    sx: {
+                                        py: 1,
+                                        bgcolor: 'grey.50',
+                                        '& .MuiMenu-list': { py: 0.5 },
+                                        '& .MuiMenuItem-root:hover': { bgcolor: 'grey.100' },
+                                        '& .MuiMenuItem-root.Mui-selected': { bgcolor: 'grey.100' },
+                                        '& .MuiMenuItem-root.Mui-selected:hover': { bgcolor: 'grey.100' },
+                                        '& .MuiMenuItem-root.Mui-focusVisible': { bgcolor: 'grey.100' },
+                                    },
+                                },
+                            },
                         }}
                     >
                         <MenuItem value='' disabled>
@@ -163,40 +196,66 @@ function CustomPlanSection() {
                                     </Typography>
 
                                     <Box sx={{ width: 56, flex: '0 0 auto', display: 'flex', justifyContent: 'center' }}>
-                                        <Typography variant='body2' color='text.primary' fontWeight={600} sx={{ textAlign: 'center' }}>
-                                            {it.qty}
-                                        </Typography>
+                                        {editingId === it.id ? (
+                                            <TextField
+                                                size='small'
+                                                value={editQty}
+                                                onChange={(e) => {
+                                                    const next = e.target.value;
+                                                    if (next === '' || /^\d+$/.test(next)) setEditQty(next);
+                                                }}
+                                                inputMode='numeric'
+                                                sx={{
+                                                    width: 56,
+                                                    '& .MuiOutlinedInput-root': { borderRadius: 1.5 },
+                                                    '& input': { textAlign: 'center', py: 0.5 },
+                                                }}
+                                            />
+                                        ) : (
+                                            <Typography
+                                                variant='body2'
+                                                color='text.primary'
+                                                fontWeight={600}
+                                                sx={{ textAlign: 'center' }}
+                                            >
+                                                {it.qty}
+                                            </Typography>
+                                        )}
                                     </Box>
 
                                     <Stack direction='row' gap={1} sx={{ flex: '0 0 auto' }}>
-                                        <IconButton
-                                            aria-label='edit'
-                                            size='small'
-                                            sx={{
-                                                border: `1px solid ${OUTER_BORDER}`,
-                                                borderRadius: 2,
-                                                width: 34,
-                                                height: 34,
-                                            }}
-                                            onClick={() => {
-                                                // UI-only section for now
-                                            }}
-                                        >
-                                            <EditOutlinedIcon fontSize='small' />
-                                        </IconButton>
-                                        <IconButton
-                                            aria-label='delete'
-                                            size='small'
-                                            sx={{
-                                                border: `1px solid ${OUTER_BORDER}`,
-                                                borderRadius: 2,
-                                                width: 34,
-                                                height: 34,
-                                            }}
-                                            onClick={() => handleDelete(it.id)}
-                                        >
-                                            <DeleteOutlineRoundedIcon fontSize='small' />
-                                        </IconButton>
+                                        {editingId === it.id ? (
+                                            <>
+                                                <Button
+                                                    size='small'
+                                                    variant='text'
+                                                    color='inherit'
+                                                    onClick={handleCancelEdit}
+                                                    sx={{ minWidth: 0, px: 0.75 }}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button
+                                                    size='small'
+                                                    variant='contained'
+                                                    color='primary'
+                                                    onClick={handleSaveEdit}
+                                                    disabled={!editQty || Number(editQty) <= 0}
+                                                    sx={{ minWidth: 0, px: 1.25, borderRadius: 1.5 }}
+                                                >
+                                                    Save
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <IconButton size='small' aria-label='edit' onClick={() => handleStartEdit(it.id)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                                <IconButton size='small' aria-label='delete' onClick={() => handleDelete(it.id)}>
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </>
+                                        )}
                                     </Stack>
                                 </Stack>
                                 {idx !== items.length - 1 ? <Divider /> : null}
