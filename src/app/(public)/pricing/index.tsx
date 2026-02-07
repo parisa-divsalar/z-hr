@@ -19,6 +19,12 @@ type PlanLineItem = {
 
 const OUTER_BORDER = '#EAEAEA';
 
+const ITEM_PRICES_AED: Record<string, number> = {
+    'Job Description Match': 20,
+    'Wizard Edit': 12,
+    'Cover Letter': 15,
+};
+
 function CustomPlanSection() {
     const [coinOrItem, setCoinOrItem] = useState('');
     const [selectedItem, setSelectedItem] = useState<string>('');
@@ -31,7 +37,36 @@ function CustomPlanSection() {
 
     const totalAed = useMemo(() => items.reduce((sum, it) => sum + it.qty * it.unitPriceAed, 0), [items]);
 
+    const canAdd = useMemo(() => {
+        const label = (selectedItem || coinOrItem).trim();
+        const n = Number(qty);
+        return Boolean(label) && Number.isFinite(n) && n > 0;
+    }, [coinOrItem, qty, selectedItem]);
+
     const handleDelete = (id: string) => setItems((prev) => prev.filter((x) => x.id !== id));
+
+    const handleAdd = () => {
+        const label = (selectedItem || coinOrItem).trim();
+        const n = Number(qty);
+        if (!label || !Number.isFinite(n) || n <= 0) return;
+
+        const unitPriceAed = ITEM_PRICES_AED[label] ?? 0;
+        const newId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+
+        setItems((prev) => {
+            const existingIdx = prev.findIndex((x) => x.label === label);
+            if (existingIdx === -1) return [...prev, { id: newId, label, qty: n, unitPriceAed }];
+
+            const next = [...prev];
+            const existing = next[existingIdx];
+            next[existingIdx] = { ...existing, qty: existing.qty + n };
+            return next;
+        });
+
+        setCoinOrItem('');
+        setSelectedItem('');
+        setQty('');
+    };
 
     return (
         <Box sx={{ width: '100%', mt: { xs: 4, md: 6 }, px: { xs: 2, md: 0 } }}>
@@ -87,6 +122,7 @@ function CustomPlanSection() {
 
                     <IconButton
                         aria-label='add item'
+                        disabled={!canAdd}
                         sx={{
                             border: `1px solid ${OUTER_BORDER}`,
                             borderRadius: 2,
@@ -95,9 +131,9 @@ function CustomPlanSection() {
                             flex: '0 0 auto',
                             bgcolor: '#fff',
                             '&:hover': { bgcolor: 'grey.50' },
+                            '&.Mui-disabled': { opacity: 0.5, borderColor: OUTER_BORDER },
                         }}
-                        onClick={() => {
-                        }}
+                        onClick={handleAdd}
                     >
                         <AddRoundedIcon />
                     </IconButton>
@@ -126,14 +162,11 @@ function CustomPlanSection() {
                                         {it.label}
                                     </Typography>
 
-                                    <Typography
-                                        variant='body2'
-                                        color='text.primary'
-                                        fontWeight={600}
-                                        sx={{ width: 28, textAlign: 'center', flex: '0 0 auto' }}
-                                    >
-                                        {it.qty}
-                                    </Typography>
+                                    <Box sx={{ width: 56, flex: '0 0 auto', display: 'flex', justifyContent: 'center' }}>
+                                        <Typography variant='body2' color='text.primary' fontWeight={600} sx={{ textAlign: 'center' }}>
+                                            {it.qty}
+                                        </Typography>
+                                    </Box>
 
                                     <Stack direction='row' gap={1} sx={{ flex: '0 0 auto' }}>
                                         <IconButton
@@ -180,14 +213,15 @@ function CustomPlanSection() {
                         gap={2}
                         sx={{ px: { xs: 2, md: 2 }, py: 2 }}
                     >
-                        <Typography variant='body2' color='text.primary' fontWeight={600}>
+                        <Typography variant='body2' color='text.primary' fontWeight={600} sx={{ flex: { xs: '0 0 auto', md: '0 0 auto' } }}>
                             Total price
                         </Typography>
 
                         <Stack
                             direction='column'
-                            alignItems={{ xs: 'flex-start', md: 'flex-end' }}
-                            sx={{ flex: 1 }}
+                            alignItems='center'
+                            justifyContent='center'
+                            sx={{ flex: 1, textAlign: 'center' }}
                         >
                             <Typography variant='h5' fontWeight={700} color='info.main' sx={{ whiteSpace: 'nowrap' }}>
                                 {totalAed} AED
@@ -197,11 +231,7 @@ function CustomPlanSection() {
                             </Typography>
                         </Stack>
 
-                        <MuiButton
-                            color='secondary'
-                            variant='contained'
-                            sx={{ px: 3, borderRadius: 2, width: { xs: '100%', md: 'auto' } }}
-                        >
+                        <MuiButton color='secondary' variant='contained' sx={{ px: 3, borderRadius: 2, width: { xs: '100%', md: 'auto' } }}>
                             Upgrade Now
                         </MuiButton>
                     </Stack>
