@@ -84,7 +84,7 @@ const Navbar = () => {
         { label: 'Home', href: '/' },
         // TODO: Wire these up to real routes/anchors when available.
         { label: 'About Us', href: '/#about' },
-        { label: 'Our Plans', href: '/#plans' },
+        { label: 'Our Plans', href: PublicRoutes.pricing },
         { label: 'Contact Us', href: '/#contact' },
       ];
     }
