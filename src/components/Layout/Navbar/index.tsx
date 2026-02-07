@@ -85,7 +85,7 @@ const Navbar = () => {
         // TODO: Wire these up to real routes/anchors when available.
         { label: 'About Us', href: '/#about' },
         { label: 'Our Plans', href: PublicRoutes.pricing },
-        { label: 'Contact Us', href: '/#contact' },
+        { label: 'Contact Us', href: PublicRoutes.contactUs },
       ];
     }
 
@@ -96,7 +96,7 @@ const Navbar = () => {
       { label: 'Pricing', href:  PublicRoutes.pricing },
       { label: 'Blog', href: PublicRoutes.blog },
       { label: 'FAQ', href: '/#faq' },
-      { label: 'Contact Us', href: '/#contact' },
+      { label: 'Contact Us', href: PublicRoutes.contactUs },
     ];
   }, [showAuthedUI]);
 

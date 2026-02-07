@@ -62,9 +62,11 @@ const FooterMain: FC = () => {
                                 Our Plans
                             </TopNavItem>
                         </Link>
-                        <TopNavItem fontWeight='400' variant='subtitle2'>
-                            Contact Us
-                        </TopNavItem>
+                        <Link href={PublicRoutes.contactUs} style={{ textDecoration: 'none' }}>
+                            <TopNavItem fontWeight='400' variant='subtitle2'>
+                                Contact Us
+                            </TopNavItem>
+                        </Link>
                     </TopNav>
                 </TopRow>
 
