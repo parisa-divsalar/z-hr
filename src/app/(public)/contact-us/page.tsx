@@ -5,8 +5,12 @@ import { useMemo, useState } from 'react';
 import { Box, Breadcrumbs, Button, Link as MuiLink, Stack, TextField, Typography } from '@mui/material';
 import Link from 'next/link';
 
+import FooterMain from '@/app/main/FooterMain';
 import { ContainerSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/styled';
 import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
+
+
+
 
 export default function ContactUsPage() {
   const [form, setForm] = useState({
@@ -205,6 +209,10 @@ export default function ContactUsPage() {
             }}
           />
         </Box>
+      </Box>
+
+      <Box id='contact'>
+        <FooterMain />
       </Box>
     </Box>
   );
