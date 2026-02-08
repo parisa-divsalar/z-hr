@@ -7,6 +7,7 @@ export const normalizeRoute = (value?: string | null) => {
 export const PublicRoutes = {
     landing: '/landing',
     contactUs: '/contact-us',
+    faq: '/faq',
     login: '/auth/login',
     forgetPassword: '/auth/reset-password',
     newPassword: '/auth/new-password',
@@ -37,6 +38,7 @@ export const VisibilityLayout: string[] = [
     '/',
     PublicRoutes.landing,
     PublicRoutes.contactUs,
+    PublicRoutes.faq,
     PublicRoutes.blog,
     PublicRoutes.pricing,
     PrivateRoutes.dashboard,

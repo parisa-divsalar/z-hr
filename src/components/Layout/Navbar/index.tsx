@@ -81,11 +81,20 @@ const Navbar = () => {
   const navItems = useMemo(() => {
     if (showAuthedUI) {
       return [
-        { label: 'Home', href: '/' },
-        // TODO: Wire these up to real routes/anchors when available.
-        { label: 'About Us', href: '/#about' },
-        { label: 'Our Plans', href: PublicRoutes.pricing },
-        { label: 'Contact Us', href: PublicRoutes.contactUs },
+        // { label: 'Home', href: '/' },
+        // // TODO: Wire these up to real routes/anchors when available.
+        // { label: 'About Us', href: '/#about' },
+        // { label: 'Our Plans', href: PublicRoutes.pricing },
+        //   { label: 'FAQ', href: PublicRoutes.faq },
+        //   { label: 'Blog', href: PublicRoutes.blog },
+        //
+        //   { label: 'Contact Us', href: PublicRoutes.contactUs },
+          { label: 'Home', href: '/' },
+          { label: 'CV/Resume Builder', href: PublicRoutes.landing },
+          { label: 'Pricing', href:  PublicRoutes.pricing },
+          { label: 'Blog', href: PublicRoutes.blog },
+          { label: 'FAQ', href: PublicRoutes.faq },
+          { label: 'Contact Us', href: PublicRoutes.contactUs },
       ];
     }
 
@@ -95,7 +104,7 @@ const Navbar = () => {
       { label: 'CV/Resume Builder', href: PublicRoutes.landing },
       { label: 'Pricing', href:  PublicRoutes.pricing },
       { label: 'Blog', href: PublicRoutes.blog },
-      { label: 'FAQ', href: '/#faq' },
+      { label: 'FAQ', href: PublicRoutes.faq },
       { label: 'Contact Us', href: PublicRoutes.contactUs },
     ];
   }, [showAuthedUI]);
