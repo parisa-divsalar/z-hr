@@ -7,7 +7,6 @@ export const faqPublicSx: SxMap = {
   root: {
     width: '100%',
     direction: 'ltr',
-    bgcolor: '#F9F9FE',
     minHeight: '100vh',
   },
 
@@ -73,7 +72,9 @@ export const faqPublicSx: SxMap = {
 
   contentSection: {
     width: '100%',
-    position: 'relative',
+      bgcolor: '#F9F9FE',
+
+      position: 'relative',
     pt: { xs: 5, sm: 6, md: 7 },
     pb: { xs: 6, sm: 7, md: 9 },
     overflow: 'hidden',
