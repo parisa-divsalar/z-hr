@@ -1,14 +1,7 @@
 'use client';
 
-
-import { Box} from '@mui/material';
+import FaqPublic from '@/app/(public)/faq/FaqPublic';
 
 export default function FaqPage() {
-
-
-  return (
-    <Box>
-    faq
-    </Box>
-  );
+  return <FaqPublic />;
 }
