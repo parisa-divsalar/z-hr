@@ -131,11 +131,23 @@ const Navbar = () => {
     <MainNavbarContainer>
       <MainNavbarContent direction='row'>
         <Stack direction='row' alignItems='center' gap={{ xs: 1.25, sm: 2 }}>
-          <AppImage src={logo} width={24} height={34} />
-
-          <Typography variant='h4' fontWeight='700' color='text.primary'>
-            Z-CV
-          </Typography>
+          <Link
+            href='/'
+            aria-label='Go to home'
+            style={{
+              textDecoration: 'none',
+              color: 'inherit',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
+          >
+            <Stack direction='row' alignItems='center' gap={{ xs: 1.25, sm: 2 }}>
+              <AppImage src={logo} width={24} height={34} />
+              <Typography variant='h4' fontWeight='700' color='text.primary'>
+                Z-CV
+              </Typography>
+            </Stack>
+          </Link>
 
           <Typography
             variant='subtitle2'
@@ -257,10 +269,24 @@ const Navbar = () => {
       >
         <Stack direction='row' alignItems='center' justifyContent='space-between' mb={1}>
           <Stack direction='row' alignItems='center' gap={1.25}>
-            <AppImage src={logo} width={22} height={30} />
-            <Typography variant='subtitle1' fontWeight={700}>
-              Z-CV
-            </Typography>
+            <Link
+              href='/'
+              aria-label='Go to home'
+              onClick={closeMenu}
+              style={{
+                textDecoration: 'none',
+                color: 'inherit',
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+            >
+              <Stack direction='row' alignItems='center' gap={1.25}>
+                <AppImage src={logo} width={22} height={30} />
+                <Typography variant='subtitle1' fontWeight={700}>
+                  Z-CV
+                </Typography>
+              </Stack>
+            </Link>
           </Stack>
           <IconButton aria-label='Close menu' onClick={closeMenu}>
             <CloseIcon />
