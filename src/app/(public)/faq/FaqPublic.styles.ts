@@ -157,10 +157,13 @@ export const faqPublicSx: SxMap = {
     bgcolor: 'common.white',
     border: '1px solid',
     borderColor: 'rgba(16, 24, 40, 0.08)',
-    boxShadow: '0px 10px 30px rgba(16, 24, 40, 0.06)',
     overflow: 'hidden',
     '&:before': { display: 'none' },
-    '&.MuiAccordion-root.Mui-expanded': { margin: 0 },
+    '&.MuiAccordion-root.Mui-expanded': { margin: 0, borderRadius: '24px' },
+    '&.MuiAccordion-root:first-of-type': { borderRadius: '24px' },
+    '&.MuiAccordion-root:last-of-type': { borderRadius: '24px' },
+    '&.MuiAccordion-root.Mui-expanded:first-of-type': { borderRadius: '24px' },
+    '&.MuiAccordion-root.Mui-expanded:last-of-type': { borderRadius: '24px' },
   },
 
   summary: {
@@ -207,7 +210,7 @@ export const faqPublicSx: SxMap = {
   expandIconBubble: {
     width: 36,
     height: 36,
-    borderRadius: 999,
+    borderRadius: '24px',
     display: 'grid',
     placeItems: 'center',
     border: '1px solid rgba(16, 24, 40, 0.12)',
@@ -217,7 +220,7 @@ export const faqPublicSx: SxMap = {
   chip: {
     mt: 1.5,
     alignSelf: 'flex-start',
-    borderRadius: 999,
+    borderRadius: '24px',
     height: 26,
     fontWeight: 600,
     fontSize: 12,
