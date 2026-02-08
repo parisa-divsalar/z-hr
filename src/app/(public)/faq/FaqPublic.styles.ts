@@ -7,6 +7,8 @@ export const faqPublicSx: SxMap = {
   root: {
     width: '100%',
     direction: 'ltr',
+    bgcolor: '#F9F9FE',
+    minHeight: '100vh',
   },
 
   hero: {
@@ -72,7 +74,6 @@ export const faqPublicSx: SxMap = {
   contentSection: {
     width: '100%',
     position: 'relative',
-    bgcolor: '#F9F9FE',
     pt: { xs: 5, sm: 6, md: 7 },
     pb: { xs: 6, sm: 7, md: 9 },
     overflow: 'hidden',
@@ -104,19 +105,35 @@ export const faqPublicSx: SxMap = {
     mt: { xs: 3, sm: 3.5 },
     display: 'flex',
     justifyContent: 'center',
+    width: '100%',
   },
 
   tabsScroller: {
     display: 'flex',
     gap: 1,
+    flexWrap: 'nowrap',
     overflowX: 'auto',
     overflowY: 'hidden',
     pb: 1,
-    px: 0.5,
+    pl: 0.5,
+    pr: 2,
+    width: '100%',
+    minWidth: 0,
     maxWidth: '100%',
     WebkitOverflowScrolling: 'touch',
-    scrollbarWidth: 'none',
-    '&::-webkit-scrollbar': { display: 'none' },
+    scrollbarWidth: 'thin',
+    scrollbarColor: 'rgba(16, 24, 40, 0.22) transparent',
+    // WebKit (Chrome/Edge/Safari): keep it very thin, but grow a bit on hover to make the handle easy to grab.
+    '&::-webkit-scrollbar': { height: 2 },
+    '&:hover::-webkit-scrollbar': { height: 4 },
+    '&::-webkit-scrollbar-track': { background: 'transparent' },
+    '&::-webkit-scrollbar-thumb': {
+      background: 'rgba(16, 24, 40, 0.18)',
+      borderRadius: 999,
+      // Makes the thumb *look* slimmer on Windows where the OS may enforce a minimum scrollbar thickness.
+      border: '1px solid transparent',
+      backgroundClip: 'padding-box',
+    },
   },
 
   tabPill: {
