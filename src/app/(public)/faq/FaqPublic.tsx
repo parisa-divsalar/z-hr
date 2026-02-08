@@ -22,6 +22,7 @@ import {
 import Link from 'next/link';
 
 import { faqPublicSx } from '@/app/(public)/faq/FaqPublic.styles';
+import FooterMain from '@/app/main/FooterMain';
 
 type FaqTabId = 'resume' | 'ats' | 'pricing' | 'formats' | 'interview';
 
@@ -303,6 +304,10 @@ export default function FaqPublic() {
           </Stack>
         </Box>
       </Box>
+
+      <div id='contact'>
+        <FooterMain />
+      </div>
     </Box>
   );
 }
