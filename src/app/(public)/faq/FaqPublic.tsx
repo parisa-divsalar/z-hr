@@ -305,9 +305,9 @@ export default function FaqPublic() {
         </Box>
       </Box>
 
-      <div id='contact'>
+      <Box id='contact' sx={{ mb: 'calc(-1 * var(--children-padding))' }}  mt={5}>
         <FooterMain />
-      </div>
+      </Box>
     </Box>
   );
 }
