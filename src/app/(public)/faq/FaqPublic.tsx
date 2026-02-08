@@ -171,7 +171,7 @@ export default function FaqPublic() {
         </Box>
       </Box>
 
-      <Box sx={faqPublicSx.dividerDotted} />
+      <Box/>
 
       {/* Content */}
       <Box component='section' sx={faqPublicSx.contentSection}>

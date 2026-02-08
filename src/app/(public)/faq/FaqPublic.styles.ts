@@ -68,15 +68,11 @@ export const faqPublicSx: SxMap = {
     '& input::placeholder': { opacity: 0.7 },
   },
 
-  dividerDotted: {
-    width: '100%',
-    height: 0,
-  },
 
   contentSection: {
     width: '100%',
     position: 'relative',
-    bgcolor: '#F6F7FB',
+    bgcolor: '#F9F9FE',
     pt: { xs: 5, sm: 6, md: 7 },
     pb: { xs: 6, sm: 7, md: 9 },
     overflow: 'hidden',
