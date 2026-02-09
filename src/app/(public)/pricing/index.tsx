@@ -1,336 +1,346 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import FacebookIcon from '@mui/icons-material/FacebookRounded';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import XIcon from '@mui/icons-material/X';
+import { Box, Divider, IconButton, Stack, Typography } from '@mui/material';
+import Link from 'next/link';
 
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { Box, Button, Divider, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
-
-import PricingComparison from '@/app/main/Pricing/PricingComparison';
-import DeleteIcon from '@/assets/images/icons/clean.svg';
-import EditIcon from '@/assets/images/icons/edit.svg';
+import logo from '@/assets/images/logo/logo.png';
+import { AppImage } from '@/components/AppImage';
 import MuiButton from '@/components/UI/MuiButton';
 
-type PlanLineItem = {
-    id: string;
-    label: string;
-    qty: number;
-    unitPriceAed: number;
+type PlanCard = {
+    id: 'pro' | 'career-plus' | 'elite';
+    title: string;
+    badge?: string;
+    coins: number;
+    subtitle: string;
+    features: string[];
+    ctaText: string;
+    highlighted?: boolean;
 };
 
-const OUTER_BORDER = '#EAEAEA';
+const PLANS: PlanCard[] = [
+    {
+        id: 'pro',
+        title: 'Pro',
+        badge: 'Popular',
+        coins: 500,
+        subtitle: 'For advanced users',
+        features: [
+            'Search Boost',
+            'Eye-Catching Design',
+            'Multilingual Support',
+            'Anytime Access',
+            'Key Metrics',
+            'Trend Insights',
+            'User Engagement',
+            'Mobile Access',
+            'Content Strategy',
+            'Social Media',
+        ],
+        ctaText: '100 AED / Upgrade Now',
+        highlighted: true,
+    },
+    {
+        id: 'career-plus',
+        title: 'Carrer Plus',
+        coins: 1000,
+        subtitle: 'For power users',
+        features: [
+            'Collaborative Tools',
+            'Integration Options',
+            'Brand Customization',
+            'Revision History',
+            'Data Security',
+            'Team Communication',
+            'Project Management',
+            'Cloud Access',
+            'User Permissions',
+            'Feedback Loops',
+        ],
+        ctaText: '250 AED / Upgrade Now',
+    },
+    {
+        id: 'elite',
+        title: 'Elite',
+        coins: 1000,
+        subtitle: 'For power users',
+        features: [
+            'Collaborative Tools',
+            'Integration Options',
+            'Brand Customization',
+            'Revision History',
+            'Data Security',
+            'Team Communication',
+            'Project Management',
+            'Cloud Access',
+            'User Permissions',
+            'Feedback Loops',
+        ],
+        ctaText: '500 AED / Upgrade Now',
+    },
+];
 
-const ITEM_PRICES_AED: Record<string, number> = {
-    'Job Description Match': 20,
-    'Wizard Edit': 12,
-    'Cover Letter': 15,
-};
-
-function CustomPlanSection() {
-    const [coinOrItem, setCoinOrItem] = useState('');
-    const [selectedItem, setSelectedItem] = useState<string>('');
-    const [qty, setQty] = useState<string>('');
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editQty, setEditQty] = useState<string>('');
-
-    const [items, setItems] = useState<PlanLineItem[]>([
-        { id: 'job-description-match', label: 'Job Description Match', qty: 2, unitPriceAed: 20 },
-        { id: 'wizard-edit', label: 'Wizard Edit', qty: 5, unitPriceAed: 12 },
-    ]);
-
-    const totalAed = useMemo(() => items.reduce((sum, it) => sum + it.qty * it.unitPriceAed, 0), [items]);
-
-    const canAdd = useMemo(() => {
-        const label = (selectedItem || coinOrItem).trim();
-        const n = Number(qty);
-        return Boolean(label) && Number.isFinite(n) && n > 0;
-    }, [coinOrItem, qty, selectedItem]);
-
-    const handleDelete = (id: string) => setItems((prev) => prev.filter((x) => x.id !== id));
-    const handleStartEdit = (id: string) => {
-        const it = items.find((x) => x.id === id);
-        if (!it) return;
-        setEditingId(id);
-        setEditQty(String(it.qty));
-    };
-    const handleCancelEdit = () => {
-        setEditingId(null);
-        setEditQty('');
-    };
-    const handleSaveEdit = () => {
-        if (!editingId) return;
-        const nextQty = Number(editQty);
-        if (!Number.isFinite(nextQty) || nextQty <= 0) return;
-        setItems((prev) => prev.map((x) => (x.id === editingId ? { ...x, qty: nextQty } : x)));
-        setEditingId(null);
-        setEditQty('');
-    };
-
-    const handleAdd = () => {
-        const label = (selectedItem || coinOrItem).trim();
-        const n = Number(qty);
-        if (!label || !Number.isFinite(n) || n <= 0) return;
-
-        const unitPriceAed = ITEM_PRICES_AED[label] ?? 0;
-        const newId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-
-        setItems((prev) => {
-            const existingIdx = prev.findIndex((x) => x.label === label);
-            if (existingIdx === -1) return [...prev, { id: newId, label, qty: n, unitPriceAed }];
-
-            const next = [...prev];
-            const existing = next[existingIdx];
-            next[existingIdx] = { ...existing, qty: existing.qty + n };
-            return next;
-        });
-
-        setCoinOrItem('');
-        setSelectedItem('');
-        setQty('');
-    };
+function PlanCardView({ plan }: { plan: PlanCard }) {
+    const highlighted = Boolean(plan.highlighted);
 
     return (
-        <Box sx={{ width: '100%', mt: { xs: 4, md: 6 }, px: { xs: 2, md: 0 } }}>
-            <Box sx={{ width: '100%', maxWidth: 920, mx: 'auto' }}>
-                <Typography variant='body2' color='text.secondary' sx={{ mb: 2, textAlign: 'center' }}>
-                    Do you want to create your own plan?
+        <Box
+            sx={{
+                flex: '1 1 0',
+                minWidth: { xs: '100%', md: 0 },
+                borderRadius: 3,
+                bgcolor: '#fff',
+                border: highlighted ? '2px solid #4D49FC' : '1px solid #EEF0F6',
+                boxShadow: 'none',
+                px: 3,
+                pt: 3,
+                pb: 2.5,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+            }}
+        >
+            <Stack direction='row' alignItems='center' justifyContent='space-between' gap={1}>
+                <Typography variant='h6' fontWeight={800} color='text.primary'>
+                    {plan.title}
                 </Typography>
-
-                <Stack
-                    direction={{ xs: 'column', md: 'row' }}
-                    gap={2}
-                    alignItems={{ xs: 'stretch', md: 'center' }}
-                    sx={{ width: '100%' }}
-                >
-                    <TextField
-                        size='large'
-                        placeholder='Coin or item'
-                        value={coinOrItem}
-                        onChange={(e) => setCoinOrItem(e.target.value)}
-                        sx={{ flex: 1 }}
-                    />
-
-                    <TextField
-                        size='large'
-                        select
-                        value={selectedItem}
-                        onChange={(e) => setSelectedItem(String(e.target.value))}
-                        sx={{ flex: 1 }}
-                        SelectProps={{
-                            displayEmpty: true,
-                            renderValue: (value) => (value ? String(value) : 'Choose an item...'),
-                            MenuProps: {
-                                PaperProps: {
-                                    sx: {
-                                        py: 1,
-                                        bgcolor: 'grey.50',
-                                        '& .MuiMenu-list': { py: 0.5 },
-                                        '& .MuiMenuItem-root:hover': { bgcolor: 'grey.100' },
-                                        '& .MuiMenuItem-root.Mui-selected': { bgcolor: 'grey.100' },
-                                        '& .MuiMenuItem-root.Mui-selected:hover': { bgcolor: 'grey.100' },
-                                        '& .MuiMenuItem-root.Mui-focusVisible': { bgcolor: 'grey.100' },
-                                    },
-                                },
-                            },
-                        }}
-                    >
-                        <MenuItem value='' disabled>
-                            Choose an item...
-                        </MenuItem>
-                        <MenuItem value='Job Description Match'>Job Description Match</MenuItem>
-                        <MenuItem value='Wizard Edit'>Wizard Edit</MenuItem>
-                        <MenuItem value='Cover Letter'>Cover Letter</MenuItem>
-                    </TextField>
-
-                    <TextField
-                        size='large'
-                        placeholder='Number'
-                        value={qty}
-                        onChange={(e) => {
-                            const next = e.target.value;
-                            if (next === '' || /^\d+$/.test(next)) setQty(next);
-                        }}
-                        inputMode='numeric'
-                        sx={{ width: { xs: '100%', md: 180 } }}
-                    />
-
-                    <IconButton
-                        aria-label='add item'
-                        disabled={!canAdd}
+                {plan.badge ? (
+                    <Box
                         sx={{
-                            border: `1px solid ${OUTER_BORDER}`,
-                            borderRadius: 2,
-                            width: 52,
-                            height: 52,
-                            flex: '0 0 auto',
-                            bgcolor: '#fff',
-                            '&:hover': { bgcolor: 'grey.50' },
-                            '&.Mui-disabled': { opacity: 0.5, borderColor: OUTER_BORDER },
+                            px: 1.25,
+                            py: 0.5,
+                            borderRadius: 99,
+                            background: 'linear-gradient(90deg, #FF3D6E 0%, #9B3DFF 100%)',
+                            color: '#fff',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            lineHeight: 1,
+                            whiteSpace: 'nowrap',
                         }}
-                        onClick={handleAdd}
                     >
-                        <AddRoundedIcon />
-                    </IconButton>
-                </Stack>
-
-                <Box
-                    sx={{
-                        mt: 2.5,
-                        bgcolor: '#fff',
-                        border: `1px solid ${OUTER_BORDER}`,
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                        textAlign: 'left',
-                    }}
-                >
-                    <Box sx={{ px: { xs: 1.5, md: 2 }, py: 1 }}>
-                        {items.map((it, idx) => (
-                            <Box key={it.id}>
-                                <Stack
-                                    direction='row'
-                                    alignItems='center'
-                                    gap={1.5}
-                                    sx={{ py: 1.25, px: 0.5 }}
-                                >
-                                    <Typography variant='body2' color='text.primary' fontWeight={492} sx={{ flex: 1, minWidth: 0 }}>
-                                        {it.label}
-                                    </Typography>
-
-                                    <Box sx={{ width: 56, flex: '0 0 auto', display: 'flex', justifyContent: 'center' }}>
-                                        {editingId === it.id ? (
-                                            <TextField
-                                                size='small'
-                                                value={editQty}
-                                                onChange={(e) => {
-                                                    const next = e.target.value;
-                                                    if (next === '' || /^\d+$/.test(next)) setEditQty(next);
-                                                }}
-                                                inputMode='numeric'
-                                                sx={{
-                                                    width: 56,
-                                                    '& .MuiOutlinedInput-root': { borderRadius: 1.5 },
-                                                    '& input': { textAlign: 'center', py: 0.5 },
-                                                }}
-                                            />
-                                        ) : (
-                                            <Typography
-                                                variant='body2'
-                                                color='text.primary'
-                                                fontWeight={600}
-                                                sx={{ textAlign: 'center' }}
-                                            >
-                                                {it.qty}
-                                            </Typography>
-                                        )}
-                                    </Box>
-
-                                    <Stack direction='row' gap={1} sx={{ flex: '0 0 auto' }}>
-                                        {editingId === it.id ? (
-                                            <>
-                                                <Button
-                                                    size='small'
-                                                    variant='text'
-                                                    color='inherit'
-                                                    onClick={handleCancelEdit}
-                                                    sx={{ minWidth: 0, px: 0.75 }}
-                                                >
-                                                    Cancel
-                                                </Button>
-                                                <Button
-                                                    size='small'
-                                                    variant='contained'
-                                                    color='primary'
-                                                    onClick={handleSaveEdit}
-                                                    disabled={!editQty || Number(editQty) <= 0}
-                                                    sx={{ minWidth: 0, px: 1.25, borderRadius: 1.5 }}
-                                                >
-                                                    Save
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <IconButton size='small' aria-label='edit' onClick={() => handleStartEdit(it.id)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton size='small' aria-label='delete' onClick={() => handleDelete(it.id)}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </>
-                                        )}
-                                    </Stack>
-                                </Stack>
-                                {idx !== items.length - 1 ? <Divider /> : null}
-                            </Box>
-                        ))}
+                        {plan.badge}
                     </Box>
+                ) : null}
+            </Stack>
 
-                    <Divider />
+            <Stack direction='row' alignItems='baseline' gap={1}>
+                <Typography
+                    variant='h3'
+                    fontWeight={900}
+                    color='text.primary'
+                    sx={{ letterSpacing: -0.5, lineHeight: 1 }}
+                >
+                    {plan.coins}
+                </Typography>
+                <Typography variant='subtitle2' color='text.secondary' fontWeight={600}>
+                    Coins
+                </Typography>
+            </Stack>
 
-                    <Stack
-                        direction={{ xs: 'column', md: 'row' }}
-                        alignItems={{ xs: 'stretch', md: 'center' }}
-                        justifyContent='space-between'
-                        gap={2}
-                        sx={{ px: { xs: 2, md: 2 }, py: 2 }}
-                    >
-                        <Typography variant='body2' color='text.primary' fontWeight={600} sx={{ flex: { xs: '0 0 auto', md: '0 0 auto' } }}>
-                            Total price
+            <Typography variant='body2' color='text.secondary' sx={{ mt: -0.5 }}>
+                {plan.subtitle}
+            </Typography>
+
+            <Box sx={{ flex: '1 1 auto', pt: 0.5 }}>
+                <Stack component='ul' sx={{ listStyle: 'disc', pl: 2.25, m: 0 }} gap={1}>
+                    {plan.features.map((f) => (
+                        <Typography key={f} component='li' variant='body2' color='text.primary' sx={{ opacity: 0.9 }}>
+                            {f}
                         </Typography>
-
-                        <Stack
-                            direction='column'
-                            alignItems='center'
-                            justifyContent='center'
-                            sx={{ flex: 1, textAlign: 'center' }}
-                        >
-                            <Typography variant='h5' fontWeight={700} color='info.main' sx={{ whiteSpace: 'nowrap' }}>
-                                {totalAed} AED
-                            </Typography>
-                            <Typography variant='caption' color='text.secondary'>
-                                With 9% Tax
-                            </Typography>
-                        </Stack>
-
-                        <MuiButton color='secondary' variant='contained' sx={{ px: 3, borderRadius: 2, width: { xs: '100%', md: 'auto' } }}>
-                            Upgrade Now
-                        </MuiButton>
-                    </Stack>
-                </Box>
+                    ))}
+                </Stack>
             </Box>
+
+            <MuiButton
+                text={plan.ctaText}
+                variant={highlighted ? 'contained' : 'outlined'}
+                color='inherit'
+                fullWidth
+                sx={{
+                    height: 44,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    boxShadow: 'none',
+                    fontWeight: 700,
+                    bgcolor: highlighted ? '#111827' : '#fff',
+                    color: highlighted ? '#fff' : '#111827',
+                    border: highlighted ? '1px solid #111827' : '1px solid #EEF0F6',
+                    '&:hover': {
+                        bgcolor: highlighted ? '#0B1220' : 'grey.50',
+                        boxShadow: 'none',
+                        borderColor: highlighted ? '#0B1220' : '#E6EAF2',
+                    },
+                }}
+            />
         </Box>
     );
 }
 
-const Pricing = () => {
+export default function Pricing() {
     return (
-        <Stack
-            sx={(theme) => ({
-                pt: { xs: 4, md: 6 },
-                backgroundColor: theme.palette.secondary.contrastText,
-            })}
-            justifyContent='center'
-            alignItems='center'
-            width='100%'
-            textAlign='center'
-            gap={2}
-            mt={5}
+        <Box
+            sx={{
+                minHeight: 'var(--app-height)',
+                width: '100%',
+                bgcolor: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                px: 2,
+                py: 6,
+            }}
         >
-            <Typography variant='h2' color='secondary.main' fontWeight={'700'}>
-                Our Plans
-            </Typography>
+            <Box
+                sx={{
+                    width: 'min(92vw, 1040px)',
+                    borderRadius: 4,
+                    border: '1px solid #E8E8EE',
+                    overflow: 'hidden',
+                    bgcolor: '#fff',
+                    boxShadow: '0px 12px 40px rgba(17, 24, 39, 0.08)',
+                }}
+            >
+                {/* Header */}
+                <Stack
+                    direction='row'
+                    alignItems='center'
+                    justifyContent='space-between'
+                    sx={{
+                        px: 3,
+                        py: 2,
+                        bgcolor: '#FAFAFC',
+                    }}
+                >
+                    <Stack direction='row' alignItems='center' gap={1.5} sx={{ minWidth: 0 }}>
+                        <Box
+                            sx={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                bgcolor: 'rgba(77, 73, 252, 0.10)',
+                                border: '1px solid rgba(77, 73, 252, 0.16)',
+                                flex: '0 0 auto',
+                            }}
+                        >
+                            <AppImage src={logo} width={18} height={24} alt='Z-CV logo' />
+                        </Box>
 
-            <Typography variant='body1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
-                Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-            </Typography>
-            <Typography variant='body1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
-                Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                intelligence.
-            </Typography>
+                        <Stack sx={{ minWidth: 0 }}>
+                            <Typography variant='subtitle1' fontWeight={800} color='text.primary' lineHeight={1.1} noWrap>
+                                Z-CV
+                            </Typography>
+                            <Typography variant='caption' color='text.secondary' lineHeight={1.1} noWrap>
+                                AI Resume Maker
+                            </Typography>
+                        </Stack>
+                    </Stack>
 
-            <PricingComparison />
+                    <Link
+                        href='/'
+                        style={{
+                            textDecoration: 'none',
+                            color: 'inherit',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontWeight: 600,
+                        }}
+                    >
+                        <Typography variant='subtitle2' fontWeight={600} color='text.primary'>
+                            Website
+                        </Typography>
+                        <ArrowForwardIcon sx={{ fontSize: 18 }} />
+                    </Link>
+                </Stack>
 
-            <CustomPlanSection />
-        </Stack>
+                <Divider />
+
+                {/* Body */}
+                <Stack
+                    alignItems='center'
+                    justifyContent='center'
+                    sx={{
+                        px: { xs: 2, md: 4 },
+                        pt: 5,
+                        pb: 4,
+                    }}
+                >
+                    <Typography variant='h5' fontWeight={800} color='text.primary' textAlign='center' sx={{ mb: 0.75 }}>
+                        Our Plans
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary' textAlign='center' sx={{ mb: 3 }}>
+                        You can purchase our plans to take advantage of our features.
+                    </Typography>
+
+                    <Stack
+                        direction={{ xs: 'column', md: 'row' }}
+                        gap={3}
+                        alignItems='stretch'
+                        justifyContent='center'
+                        sx={{ width: '100%' }}
+                    >
+                        {PLANS.map((p) => (
+                            <PlanCardView key={p.id} plan={p} />
+                        ))}
+                    </Stack>
+                </Stack>
+
+                <Divider />
+
+                {/* Footer */}
+                <Stack
+                    direction='row'
+                    alignItems='center'
+                    justifyContent='space-between'
+                    sx={{
+                        px: 3,
+                        py: 2,
+                        bgcolor: '#FAFAFC',
+                    }}
+                >
+                    <Typography variant='subtitle1' fontWeight={800} color='text.primary'>
+                        Z-CV
+                    </Typography>
+
+                    <Typography variant='caption' color='text.secondary' sx={{ textAlign: 'center' }}>
+                        All rights reserved. &nbsp; © 2025
+                    </Typography>
+
+                    <Stack direction='row' gap={0.5}>
+                        {[
+                            { label: 'Facebook', icon: <FacebookIcon sx={{ fontSize: 18 }} /> },
+                            { label: 'LinkedIn', icon: <LinkedInIcon sx={{ fontSize: 18 }} /> },
+                            { label: 'Instagram', icon: <InstagramIcon sx={{ fontSize: 18 }} /> },
+                            { label: 'X', icon: <XIcon sx={{ fontSize: 18 }} /> },
+                        ].map((item) => (
+                            <IconButton
+                                key={item.label}
+                                aria-label={item.label}
+                                size='small'
+                                sx={{
+                                    width: 34,
+                                    height: 34,
+                                    borderRadius: 2,
+                                    bgcolor: '#fff',
+                                    border: '1px solid #EEF0F6',
+                                    color: 'text.secondary',
+                                    '&:hover': { bgcolor: 'grey.50' },
+                                }}
+                            >
+                                {item.icon}
+                            </IconButton>
+                        ))}
+                    </Stack>
+                </Stack>
+            </Box>
+        </Box>
     );
-};
-
-export default Pricing;
+}

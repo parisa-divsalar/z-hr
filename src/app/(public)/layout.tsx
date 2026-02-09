@@ -1,12 +1,7 @@
 import { ReactNode } from 'react';
 
-import Layout from '@/components/Layout';
-import AnimateTransition from '@/providers/transition';
+import PublicLayoutShell from '@/app/(public)/public-layout-shell';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
-  return (
-    <Layout>
-      <AnimateTransition>{children}</AnimateTransition>
-    </Layout>
-  );
+  return <PublicLayoutShell>{children}</PublicLayoutShell>;
 }

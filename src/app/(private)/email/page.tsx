@@ -10,27 +10,36 @@ const EmailPage = () => {
   const router = useRouter();
 
   return (
- <Box>
+    <Box>
 
-     <MuiButton
-         color='secondary'
-         variant='text'
-         fullWidth
-         onClick={() => router.push(PublicRoutes.activateSubscription)}
-     >
-   send Email
-     </MuiButton>
+      <MuiButton
+        color='secondary'
+        variant='text'
+        fullWidth
+        onClick={() => router.push(PublicRoutes.activateSubscription)}
+      >
+        send Email
+      </MuiButton>
 
-     <MuiButton
-         color='secondary'
-         variant='text'
-         fullWidth
-         onClick={() => router.push(PublicRoutes.activateSubscription)}
-     >
-         50 free coins
-     </MuiButton>
+      <MuiButton
+        color='secondary'
+        variant='text'
+        fullWidth
+        onClick={() => router.push(PublicRoutes.activateSubscription)}
+      >
+        50 free coins
+      </MuiButton>
 
- </Box>
+      <MuiButton
+        color='secondary'
+        variant='text'
+        fullWidth
+        onClick={() => router.push(PublicRoutes.pricing)}
+      >
+        Our Plans
+      </MuiButton>
+
+    </Box>
   );
 };
 
