@@ -1,15 +1,18 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Divider, IconButton, Stack, Typography } from '@mui/material';
+import { CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { useSearchParams } from 'next/navigation';
 
 import Box1Icon from '@/assets/images/dashboard/box1.svg';
 import LocationIcon from '@/assets/images/dashboard/location.svg';
 import { SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import MuiAlert from '@/components/UI/MuiAlert';
+import { useAuthStore } from '@/store/auth';
 
 type SuggestedPosition = {
   id: string;
@@ -20,6 +23,7 @@ type SuggestedPosition = {
   techStack: string;
   fitPercent: number;
   isBookmarked: boolean;
+  applicationUrl?: string;
 };
 
 const BookmarkSvg = ({ filled }: { filled: boolean }) => {
@@ -94,38 +98,113 @@ const PositionCard = ({
           <BookmarkSvg filled={position.isBookmarked} />
         </IconButton>
 
-        <MuiButton text='Apply' size='medium' color='secondary' sx={{ minWidth: 92, px: 2.5 }} />
+        <MuiButton
+          text='Apply'
+          size='medium'
+          color='secondary'
+          sx={{ minWidth: 92, px: 2.5 }}
+          disabled={!position.applicationUrl}
+          onClick={() => {
+            if (!position.applicationUrl) return;
+            window.open(position.applicationUrl, '_blank', 'noopener,noreferrer');
+          }}
+        />
       </Stack>
     </SuggestedJobCardItem>
   );
 };
 
+type ApiSuggestedJob = {
+  id: string;
+  title: string;
+  company?: string;
+  location?: string;
+  locationType?: string;
+  postedDate?: string;
+  description?: string;
+  techStack?: string[];
+  applicationUrl?: string;
+  fitScore: number;
+  matchedResumeName: string;
+};
+
+function toMMDDYYYY(value: string | undefined) {
+  const d = new Date(String(value ?? ''));
+  if (Number.isNaN(d.getTime())) return '';
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = String(d.getFullYear());
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function locationTypeLabel(locationType?: string) {
+  const s = String(locationType ?? '').trim().toLowerCase();
+  if (!s) return '';
+  if (s === 'remote') return 'Remote';
+  if (s === 'hybrid') return 'Hybrid';
+  if (s === 'onsite' || s === 'on-site' || s === 'on site') return 'Onsite';
+  return s;
+}
+
 const PositionsTabContent = () => {
+  const searchParams = useSearchParams();
+  const requestId = useMemo(() => String(searchParams.get('id') ?? '').trim(), [searchParams]);
+  const accessToken = useAuthStore((s) => s.accessToken);
+
   const [bookmarksOnly, setBookmarksOnly] = useState(false);
-  const [positions, setPositions] = useState<SuggestedPosition[]>([
-    {
-      id: 'pos-1',
-      title: 'Front end Developer',
-      dateLabel: '09/09/2025 · Remote',
-      locationLabel: 'Dubai',
-      description:
-        'Build and maintain web applications using React.js.\nWork with designers and backend developers to implement features.\nEnsure apps are fast, scalable, and user-friendly.',
-      techStack: 'React, Next, Vue, Nuxt, Angular, Ionic, Svelte, Sapper, Ember, Octane',
-      fitPercent: 89,
-      isBookmarked: false,
-    },
-    {
-      id: 'pos-2',
-      title: 'Front end Developer',
-      dateLabel: '09/09/2025 · Remote',
-      locationLabel: 'Dubai',
-      description:
-        'Build and maintain web applications using React.js.\nWork with designers and backend developers to implement features.\nEnsure apps are fast, scalable, and user-friendly.',
-      techStack: 'React, Next, Vue, Nuxt, Angular, Ionic, Svelte, Sapper, Ember, Octane',
-      fitPercent: 89,
-      isBookmarked: true,
-    },
-  ]);
+  const [positions, setPositions] = useState<SuggestedPosition[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!requestId) {
+      setPositions([]);
+      setError('Missing resume id.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const qs = new URLSearchParams();
+    qs.set('requestId', requestId);
+    qs.set('max', '20');
+
+    fetch(`/api/positions/suggested?${qs.toString()}`, {
+      cache: 'no-store',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((json) => {
+        const jobs = Array.isArray(json?.data) ? (json.data as ApiSuggestedJob[]) : [];
+        const mapped: SuggestedPosition[] = jobs.map((job) => {
+          const date = toMMDDYYYY(job.postedDate);
+          const type = locationTypeLabel(job.locationType);
+          const dateLabel = [date, type].filter(Boolean).join(' · ') || '—';
+
+          return {
+            id: String(job.id),
+            title: String(job.title ?? '').trim() || 'Untitled position',
+            dateLabel,
+            locationLabel: String(job.location ?? '').trim() || '—',
+            description: String(job.description ?? '').trim() || '—',
+            techStack:
+              Array.isArray(job.techStack) && job.techStack.length > 0
+                ? `Tech stack: ${job.techStack.join(', ')}`
+                : 'Tech stack: —',
+            fitPercent: Math.max(0, Math.min(100, Number(job.fitScore) || 0)),
+            isBookmarked: false,
+            applicationUrl: String(job.applicationUrl ?? '').trim() || undefined,
+          };
+        });
+        setPositions(mapped);
+      })
+      .catch(() => {
+        setPositions([]);
+        setError('Failed to load suggested positions.');
+      })
+      .finally(() => setIsLoading(false));
+  }, [requestId, accessToken]);
 
   const filteredPositions = useMemo(() => {
     if (!bookmarksOnly) return positions;
@@ -156,9 +235,22 @@ const PositionsTabContent = () => {
         </Stack>
 
         <Stack gap={2}>
-          {filteredPositions.map((position) => (
-            <PositionCard key={position.id} position={position} onToggleBookmark={handleToggleBookmark} />
-          ))}
+          {error && <MuiAlert severity='error' message={error} />}
+          {isLoading ? (
+            <Stack direction='row' justifyContent='center' sx={{ py: 2 }}>
+              <CircularProgress size={24} />
+            </Stack>
+          ) : filteredPositions.length > 0 ? (
+            filteredPositions.map((position) => (
+              <PositionCard key={position.id} position={position} onToggleBookmark={handleToggleBookmark} />
+            ))
+          ) : (
+            <SuggestedJobCardItem sx={{ p: 2, boxShadow: 1 }}>
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                No suggested positions yet.
+              </Typography>
+            </SuggestedJobCardItem>
+          )}
         </Stack>
       </Grid>
     </Grid>

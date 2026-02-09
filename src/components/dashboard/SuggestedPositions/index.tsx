@@ -3,6 +3,7 @@
 import { Stack, Typography, Divider } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
 import ArrowRightIcon from '@/assets/images/dashboard/arrow-right.svg';
 import Box1Icon from '@/assets/images/dashboard/box1.svg';
@@ -12,6 +13,8 @@ import HeadIcon from '@/assets/images/dashboard/head.svg';
 import Location from '@/assets/images/dashboard/location.svg';
 import { SectionHeader, SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
+import MuiAlert from '@/components/UI/MuiAlert';
+import { useAuthStore } from '@/store/auth';
 
 type SuggestedJob = {
   id: string;
@@ -125,8 +128,38 @@ const SuggestedJobCard = ({ job }: { job: SuggestedJob }) => {
   );
 };
 
-const SuggestedPositions = ({ suggestedJobs = [] }: { suggestedJobs?: SuggestedJob[] }) => {
+const SuggestedPositions = ({ suggestedJobs }: { suggestedJobs?: SuggestedJob[] | null }) => {
   const router = useRouter();
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const [internalJobs, setInternalJobs] = useState<SuggestedJob[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const jobs = useMemo(() => {
+    // If parent passes jobs (even empty array), trust it.
+    if (Array.isArray(suggestedJobs)) return suggestedJobs;
+    return internalJobs;
+  }, [suggestedJobs, internalJobs]);
+
+  useEffect(() => {
+    if (Array.isArray(suggestedJobs)) return;
+    setIsLoading(true);
+    setError(null);
+    fetch(`/api/positions/suggested?max=2`, {
+      cache: 'no-store',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((json) => {
+        const rows = Array.isArray(json?.data) ? (json.data as SuggestedJob[]) : [];
+        setInternalJobs(rows);
+      })
+      .catch(() => {
+        setInternalJobs([]);
+        setError('Failed to load suggested positions.');
+      })
+      .finally(() => setIsLoading(false));
+  }, [suggestedJobs, accessToken]);
 
   const navigateToHistory = () => {
     router.push('/history');
@@ -149,8 +182,12 @@ const SuggestedPositions = ({ suggestedJobs = [] }: { suggestedJobs?: SuggestedJ
         />
       </SectionHeader>
       <Grid container spacing={2}>
-        {suggestedJobs.length > 0 ? (
-          suggestedJobs.map((job) => (
+        {error ? (
+          <Grid size={{ xs: 12 }}>
+            <MuiAlert severity='error' message={error} />
+          </Grid>
+        ) : jobs.length > 0 ? (
+          jobs.map((job) => (
             <Grid key={job.id} size={{ xs: 12, md: 6 }}>
               <SuggestedJobCard job={job} />
             </Grid>
@@ -159,7 +196,7 @@ const SuggestedPositions = ({ suggestedJobs = [] }: { suggestedJobs?: SuggestedJ
           <Grid size={{ xs: 12 }}>
             <SuggestedJobCardItem sx={{ p: 2, boxShadow: 1 }}>
               <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                No suggested positions yet.
+                {isLoading ? 'Loading suggested positions…' : 'No suggested positions yet.'}
               </Typography>
             </SuggestedJobCardItem>
           </Grid>
