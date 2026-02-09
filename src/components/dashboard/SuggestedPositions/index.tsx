@@ -13,22 +13,66 @@ import Location from '@/assets/images/dashboard/location.svg';
 import { SectionHeader, SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 
-const SuggestedJobCard = () => {
+type SuggestedJob = {
+  id: string;
+  title: string;
+  company?: string;
+  location?: string;
+  locationType?: string;
+  postedDate?: string;
+  description?: string;
+  techStack?: string[];
+  applicationUrl?: string;
+  fitScore: number;
+  matchedResumeName: string;
+};
+
+function toMMDDYYYY(value: string | undefined) {
+  const d = new Date(String(value ?? ''));
+  if (Number.isNaN(d.getTime())) return '';
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = String(d.getFullYear());
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function locationTypeLabel(locationType?: string) {
+  const s = String(locationType ?? '').trim().toLowerCase();
+  if (!s) return '';
+  if (s === 'remote') return 'Remote';
+  if (s === 'hybrid') return 'Hybrid';
+  if (s === 'onsite' || s === 'on-site' || s === 'on site') return 'Onsite';
+  return s;
+}
+
+function possessive(name: string) {
+  const n = String(name ?? '').trim();
+  if (!n) return 'Your Resume';
+  const endsWithS = n.toLowerCase().endsWith('s');
+  return `${n}${endsWithS ? '’' : '’s'} Resume`;
+}
+
+const SuggestedJobCard = ({ job }: { job: SuggestedJob }) => {
+  const date = toMMDDYYYY(job.postedDate);
+  const type = locationTypeLabel(job.locationType);
+  const subtitle = [date, type].filter(Boolean).join(' · ');
+  const resumeLabel = possessive(job.matchedResumeName);
+
   return (
     <SuggestedJobCardItem>
       <SectionJob bgcolor='gray.200'>
         <Typography variant='subtitle1' color='text.primary' fontWeight='400'>
-          Front end Developer
+          {job.title}
         </Typography>
       </SectionJob>
       <Stack direction='row' alignItems='center' justifyContent='space-between' px={2} p={2}>
         <Typography variant='subtitle2' color='text.primary' fontWeight='400'>
-          09/09/2025 · Remote
+          {subtitle || '—'}
         </Typography>
         <Stack direction='row'>
           <Location style={{ marginTop: 4 }} />
           <Typography variant='subtitle2' color='text.primary' fontWeight='400' pl={1}>
-            Dubai
+            {job.location || '—'}
           </Typography>
         </Stack>
       </Stack>
@@ -36,18 +80,18 @@ const SuggestedJobCard = () => {
       <Divider sx={{ borderColor: 'grey.100', marginX: '8px' }} />
 
       <Typography variant='subtitle2' color='text.primary' fontWeight='400' px={2} pt={1}>
-        Join a product-focused team to build modern, responsive web interfaces. You will work closely with designers and
-        backend engineers to deliver pixel-perfect experiences and smooth user journeys.
+        {job.description || '—'}
       </Typography>
 
       <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={1} px={2}>
-        Tech stack: React, Next.js, TypeScript, TailwindCSS, REST APIs TypeScript, TailwindCSS, REST APIs
+        Tech stack:{' '}
+        {Array.isArray(job.techStack) && job.techStack.length > 0 ? job.techStack.join(', ') : '—'}
       </Typography>
 
       <Stack direction='row' gap={1} alignItems='center' px={2} mt={2}>
         <Box1Icon />
         <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
-          98%{' '}
+          {Math.max(0, Math.min(100, Number(job.fitScore) || 0))}%{' '}
         </Typography>
         <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
           Fit with this Position
@@ -56,7 +100,7 @@ const SuggestedJobCard = () => {
       <Stack direction='row' gap={1} alignItems='center' px={2} mt={2}>
         <Box2Icon />
         <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
-          Zayd Al-Mansoori’s Resume
+          {resumeLabel}
         </Typography>
       </Stack>
 
@@ -65,13 +109,23 @@ const SuggestedJobCard = () => {
           <BoxIcon />
         </Stack>
 
-        <MuiButton text='Apply' size='medium' color='secondary' sx={{ width: 247 }} />
+        <MuiButton
+          text='Apply'
+          size='medium'
+          color='secondary'
+          sx={{ width: 247 }}
+          disabled={!job.applicationUrl}
+          onClick={() => {
+            if (!job.applicationUrl) return;
+            window.open(job.applicationUrl, '_blank', 'noopener,noreferrer');
+          }}
+        />
       </Stack>
     </SuggestedJobCardItem>
   );
 };
 
-const SuggestedPositions = () => {
+const SuggestedPositions = ({ suggestedJobs = [] }: { suggestedJobs?: SuggestedJob[] }) => {
   const router = useRouter();
 
   const navigateToHistory = () => {
@@ -95,12 +149,21 @@ const SuggestedPositions = () => {
         />
       </SectionHeader>
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SuggestedJobCard />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SuggestedJobCard />
-        </Grid>
+        {suggestedJobs.length > 0 ? (
+          suggestedJobs.map((job) => (
+            <Grid key={job.id} size={{ xs: 12, md: 6 }}>
+              <SuggestedJobCard job={job} />
+            </Grid>
+          ))
+        ) : (
+          <Grid size={{ xs: 12 }}>
+            <SuggestedJobCardItem sx={{ p: 2, boxShadow: 1 }}>
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                No suggested positions yet.
+              </Typography>
+            </SuggestedJobCardItem>
+          </Grid>
+        )}
       </Grid>
     </Stack>
   );
