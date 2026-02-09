@@ -62,12 +62,13 @@ const OurFeatures = () => {
         >
             <Container>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75, alignItems: 'center' }}>
-                    <Typography variant='h2' color='secondary.main' fontWeight={700}>
+                    <Typography variant='h3' color='secondary.main' fontWeight={700}>
                         Our Features
                     </Typography>
 
                     <Typography
                         variant='subtitle1'
+                        mt={3}
                         color='secondary.main'
                         fontWeight={492}
                         textAlign='center'
