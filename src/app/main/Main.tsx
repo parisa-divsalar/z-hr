@@ -14,6 +14,7 @@ import KeyBenefits from '@/app/main/KeyBenefits';
 import Pricing from '@/app/main/Pricing';
 import ProductFeatures from '@/app/main/ProductFeatures';
 import Testimonials from '@/app/main/Testimonials';
+import OurFeatures from '@/app/main/OurFeatures';
 
 const easeOutBezier: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -84,7 +85,9 @@ export default function MinaComponent() {
                 <HoverRevealSection>
                     <KeyBenefits />
                 </HoverRevealSection>
-
+                <HoverRevealSection>
+                    <OurFeatures />
+                </HoverRevealSection>
                 <HoverRevealSection>
                     <CraftResume />
                 </HoverRevealSection>
