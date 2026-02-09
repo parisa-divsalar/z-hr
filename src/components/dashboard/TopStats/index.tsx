@@ -18,8 +18,8 @@ type TopStatsProps = {
 export default function TopStats({
   cvsCount,
   shouldShowResumesCreatedCard,
-  creditsRemaining = 83,
-  interviewPractices = 3,
+  creditsRemaining = 0,
+  interviewPractices = 0,
 }: TopStatsProps) {
   const mdColSize = shouldShowResumesCreatedCard ? 4 : 6;
 

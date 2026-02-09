@@ -1,11 +1,81 @@
 'use client';
 
 import { Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import { ResumeBuilderCardRoot } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
+import { PrivateRoutes } from '@/config/routes';
 
-const ResumeBuilderCard = () => {
+type ResumeInProgress = {
+  requestId: string;
+  updatedAt: string;
+  step?: string;
+  completedSections: number;
+  totalSections: number;
+};
+
+type Props = {
+  resumeInProgress?: ResumeInProgress | null;
+  creditsRemaining?: number;
+};
+
+function toMMDDYYYY(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = String(d.getFullYear());
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function formatStepLabel(step?: string) {
+  const raw = String(step ?? '').trim();
+  if (!raw) return 'In progress';
+  const lower = raw.toLowerCase();
+  if (lower === 'completed') return 'Final step';
+  if (lower.includes('step') || lower.includes('completed') || lower.includes('incomplete')) {
+    return raw.replace(/_/g, ' ');
+  }
+  // e.g. "1" / "2" / "3"
+  if (/^\d+$/.test(raw)) return `Step ${raw}`;
+  return raw.replace(/_/g, ' ');
+}
+
+const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) => {
+  const router = useRouter();
+  const hasDraft = Boolean(resumeInProgress?.requestId);
+  const isBlockedByCredits = hasDraft && Number(creditsRemaining) <= 0;
+
+  const meta = hasDraft
+    ? {
+        stepLabel: formatStepLabel(resumeInProgress?.step),
+        date: toMMDDYYYY(String(resumeInProgress?.updatedAt ?? '')),
+        progress: `${Math.max(0, Number(resumeInProgress?.completedSections ?? 0))}/${Math.max(
+          1,
+          Number(resumeInProgress?.totalSections ?? 8),
+        )}`,
+      }
+    : null;
+
+  const handleClick = () => {
+    if (!hasDraft) {
+      router.push(PrivateRoutes.resumeBuilder);
+      return;
+    }
+
+    if (isBlockedByCredits) {
+      router.push(PrivateRoutes.payment);
+      return;
+    }
+
+    const qs = new URLSearchParams();
+    const shouldOpenEditor = Number(resumeInProgress?.completedSections ?? 0) > 0;
+    qs.set('step', shouldOpenEditor ? '3' : '1');
+    qs.set('requestId', String(resumeInProgress?.requestId ?? ''));
+    router.push(`${PrivateRoutes.resumeBuilder}?${qs.toString()}`);
+  };
+
   return (
     <ResumeBuilderCardRoot>
       <Stack
@@ -19,27 +89,45 @@ const ResumeBuilderCard = () => {
             Resume Builder
           </Typography>
 
-          <Stack direction='row' gap={2} alignItems='center' sx={{ flexWrap: 'wrap' }}>
+          {meta ? (
+            <Stack direction='row' gap={2} alignItems='center' sx={{ flexWrap: 'wrap' }}>
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                {isBlockedByCredits ? 'Paused' : meta.stepLabel}
+              </Typography>
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                •
+              </Typography>
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                {meta.date || '—'}
+              </Typography>
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                •
+              </Typography>
+              <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                {meta.progress}
+              </Typography>
+              {isBlockedByCredits ? (
+                <>
+                  <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                    •
+                  </Typography>
+                  <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                    Credits finished
+                  </Typography>
+                </>
+              ) : null}
+            </Stack>
+          ) : (
             <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-              First Step
+              Start building your first resume
             </Typography>
-            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-              •
-            </Typography>
-            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-              09/09/2025
-            </Typography>
-            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-              •
-            </Typography>
-            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-              2/9
-            </Typography>
-          </Stack>
+          )}
         </Stack>
 
         <MuiButton
-          text='Continue'
+          text={
+            !hasDraft ? 'Start' : isBlockedByCredits ? 'Recharge & continue' : 'Continue'
+          }
           color='secondary'
           sx={{
             height: 40,
@@ -48,6 +136,7 @@ const ResumeBuilderCard = () => {
             alignSelf: { xs: 'stretch', sm: 'center' },
             minWidth: { xs: '100%', sm: 130 },
           }}
+          onClick={handleClick}
         />
       </Stack>
     </ResumeBuilderCardRoot>
