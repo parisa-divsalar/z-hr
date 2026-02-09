@@ -1,3 +1,5 @@
+'use client';
+
 import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
@@ -6,10 +8,24 @@ import Frame2Icon from '@/assets/images/dashboard/Frame2.svg';
 import Frame3Icon from '@/assets/images/dashboard/Frame3.svg';
 import { SmallCardBase, StatValueRow } from '@/components/dashboard/styled';
 
-const TopStats = () => {
+type TopStatsProps = {
+  cvsCount: number;
+  shouldShowResumesCreatedCard: boolean;
+  creditsRemaining?: number;
+  interviewPractices?: number;
+};
+
+export default function TopStats({
+  cvsCount,
+  shouldShowResumesCreatedCard,
+  creditsRemaining = 83,
+  interviewPractices = 3,
+}: TopStatsProps) {
+  const mdColSize = shouldShowResumesCreatedCard ? 4 : 6;
+
   return (
     <Grid container spacing={3} width='100%'>
-      <Grid size={{ xs: 12, md: 4 }}>
+      <Grid size={{ xs: 12, md: mdColSize }}>
         <SmallCardBase>
           <StatValueRow>
             <Frame1Icon />
@@ -18,30 +34,32 @@ const TopStats = () => {
                 Credits Remaining
               </Typography>
               <Typography variant='h5' fontWeight='500' color='text.primary'>
-                83
+                {creditsRemaining}
               </Typography>
             </Stack>
           </StatValueRow>
         </SmallCardBase>
       </Grid>
 
-      <Grid size={{ xs: 12, md: 4 }}>
-        <SmallCardBase>
-          <StatValueRow>
-            <Frame2Icon />
-            <Stack direction='column' spacing={0.5} ml={1}>
-              <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                Resumes Created
-              </Typography>
-              <Typography variant='h5' fontWeight='500' color='text.primary'>
-                3
-              </Typography>
-            </Stack>
-          </StatValueRow>
-        </SmallCardBase>
-      </Grid>
+      {shouldShowResumesCreatedCard && (
+        <Grid size={{ xs: 12, md: 4 }}>
+          <SmallCardBase>
+            <StatValueRow>
+              <Frame2Icon />
+              <Stack direction='column' spacing={0.5} ml={1}>
+                <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
+                  Resumes Created
+                </Typography>
+                <Typography variant='h5' fontWeight='500' color='text.primary'>
+                  {cvsCount}
+                </Typography>
+              </Stack>
+            </StatValueRow>
+          </SmallCardBase>
+        </Grid>
+      )}
 
-      <Grid size={{ xs: 12, md: 4 }}>
+      <Grid size={{ xs: 12, md: mdColSize }}>
         <SmallCardBase>
           <StatValueRow>
             <Frame3Icon />
@@ -51,7 +69,7 @@ const TopStats = () => {
               </Typography>
               <StatValueRow>
                 <Typography variant='h5' fontWeight='500' color='text.primary'>
-                  3
+                  {interviewPractices}
                 </Typography>
               </StatValueRow>
             </Stack>
@@ -60,6 +78,4 @@ const TopStats = () => {
       </Grid>
     </Grid>
   );
-};
-
-export default TopStats;
+}
