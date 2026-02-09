@@ -51,8 +51,16 @@ const OurFeatures = () => {
     ];
 
     return (
-        <Box component='section' sx={{ width: '100%', direction: 'ltr' }}>
-            <Container sx={{ mt: { xs: 7, sm: 9, md: 11 } }}>
+        <Box
+            component='section'
+            sx={{
+                width: '100%',
+                direction: 'ltr',
+                bgcolor: 'common.white',
+                pt: { xs: 7, sm: 9, md: 11 },
+            }}
+        >
+            <Container>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75, alignItems: 'center' }}>
                     <Typography variant='h2' color='secondary.main' fontWeight={700}>
                         Our Features
@@ -125,9 +133,10 @@ const OurFeatures = () => {
                                         borderRadius: '18px',
                                         overflow: 'hidden',
                                         bgcolor: 'common.white',
-                                        aspectRatio: { xs: '16 / 10', sm: '16 / 9', md: '16 / 10' },
+                                        aspectRatio: '396 / 333',
                                         display: 'grid',
-                                        placeItems: 'stretch',
+                                        placeItems: 'center',
+                                        p: '4px',
                                     }}
                                 >
                                     <Box
@@ -138,8 +147,8 @@ const OurFeatures = () => {
                                         sx={{
                                             width: '100%',
                                             height: '100%',
-                                            objectFit: 'cover',
-                                            objectPosition: 'top',
+                                            objectFit: 'contain',
+                                            objectPosition: 'center',
                                             display: 'block',
                                         }}
                                     />
