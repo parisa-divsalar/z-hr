@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import ResumeIcon from '@/assets/images/dashboard/resume.svg';
 import MuiButton from '@/components/UI/MuiButton';
-import { PrivateRoutes } from '@/config/routes';
+import { PublicRoutes } from '@/config/routes';
 
 export default function CreditsDepletedBanner() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function CreditsDepletedBanner() {
             minWidth: { xs: '100%', sm: 140 },
             flex: '0 0 auto',
           }}
-          onClick={() => router.push(PrivateRoutes.payment)}
+          onClick={() => router.push(PublicRoutes.pricing)}
         />
       </Stack>
     </Box>

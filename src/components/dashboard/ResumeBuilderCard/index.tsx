@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { ResumeBuilderCardRoot } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
-import { PrivateRoutes } from '@/config/routes';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
 
 type ResumeInProgress = {
   requestId: string;
@@ -68,7 +68,7 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
     }
 
     if (isBlockedByCredits) {
-      router.push(PrivateRoutes.payment);
+      router.push(PublicRoutes.pricing);
       return;
     }
 
@@ -90,7 +90,7 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
     }
 
     if (isBlockedByCredits) {
-      router.push(PrivateRoutes.payment);
+      router.push(PublicRoutes.pricing);
       return;
     }
 

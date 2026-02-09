@@ -38,14 +38,15 @@ export default function DashboardClient({ topStats, resumeInProgress }: Dashboar
         Dashboard
       </Typography>
 
-      {shouldShowCreditsDepletedBanner && <CreditsDepletedBanner />}
-
       <TopStats
         cvsCount={topStats.cvsCount}
         shouldShowResumesCreatedCard={topStats.shouldShowResumesCreatedCard}
         creditsRemaining={creditsRemaining}
         interviewPractices={topStats.interviewPractices}
       />
+
+      {shouldShowCreditsDepletedBanner && <CreditsDepletedBanner />}
+
       <ResumeBuilderCard resumeInProgress={resumeInProgress} creditsRemaining={creditsRemaining} />
       <SuggestedPositions />
       <CoverLetterSection />
