@@ -98,6 +98,13 @@ export const CardBaseiNTER = styled(Box)(({ theme }) => ({
     boxSizing: 'border-box',
 }));
 
+export const ResumeBuilderCardRoot = styled(CardBase)(({ theme }) => ({
+    borderRadius: 8,
+    backgroundColor: '#F4FEF4',
+    border: '1px solid #25BC2D',
+    boxShadow: theme.shadows[0],
+}));
+
 export const SmallCardBase = styled(CardBase)(({ theme }) => ({
     borderRadius: 8,
     padding: 16,

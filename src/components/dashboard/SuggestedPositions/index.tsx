@@ -8,6 +8,7 @@ import ArrowRightIcon from '@/assets/images/dashboard/arrow-right.svg';
 import Box1Icon from '@/assets/images/dashboard/box1.svg';
 import Box2Icon from '@/assets/images/dashboard/box2.svg';
 import BoxIcon from '@/assets/images/dashboard/boxIcon.svg';
+import HeadIcon from '@/assets/images/dashboard/head.svg';
 import Location from '@/assets/images/dashboard/location.svg';
 import { SectionHeader, SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
@@ -77,16 +78,16 @@ const SuggestedPositions = () => {
     router.push('/history');
   };
   return (
-    <Stack gap={2} mt={5}>
+    <Stack gap={2}>
       <SectionHeader>
         <Stack direction='row' gap={1} alignItems='center'>
-          <Box2Icon />
+          <HeadIcon />
           <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
             Suggested Positions
           </Typography>
         </Stack>
         <MuiButton
-          text='more'
+          text='More'
           color='secondary'
           variant='text'
           endIcon={<ArrowRightIcon />}

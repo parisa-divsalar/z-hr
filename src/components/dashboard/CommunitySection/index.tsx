@@ -48,7 +48,7 @@ const CommunityCard = ({ icon, title, subtitle }: { icon: 'tel' | 'insta'; title
 
 const CommunitySection = () => {
   return (
-    <Stack gap={2} mt={5}>
+    <Stack gap={2}>
       <SectionHeader>
         <Stack direction='row' gap={1} alignItems='center'>
           <HeadIcon />
@@ -56,7 +56,7 @@ const CommunitySection = () => {
             Community
           </Typography>
         </Stack>
-        <MuiButton text='more' color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
+        <MuiButton text='More' color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
       </SectionHeader>
       <Stack gap={2}>
         <CommunityCard icon='tel' title='Front end channel!' subtitle='Telegram — 2,638 Members' />
