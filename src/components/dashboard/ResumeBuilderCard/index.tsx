@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
@@ -44,6 +46,7 @@ function formatStepLabel(step?: string) {
 
 const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) => {
   const router = useRouter();
+  const [isStartingNew, setIsStartingNew] = useState(false);
   const hasDraft = Boolean(resumeInProgress?.requestId);
   const isBlockedByCredits = hasDraft && Number(creditsRemaining) <= 0;
 
@@ -58,7 +61,7 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
       }
     : null;
 
-  const handleClick = () => {
+  const handleContinue = () => {
     if (!hasDraft) {
       router.push(PrivateRoutes.resumeBuilder);
       return;
@@ -70,10 +73,46 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
     }
 
     const qs = new URLSearchParams();
+    const rawStep = String(resumeInProgress?.step ?? '').trim();
+    const parsedStep = Number.parseInt(rawStep, 10);
+    const explicitWizardStep =
+      Number.isFinite(parsedStep) && parsedStep >= 1 && parsedStep <= 3 ? String(parsedStep) : null;
     const shouldOpenEditor = Number(resumeInProgress?.completedSections ?? 0) > 0;
-    qs.set('step', shouldOpenEditor ? '3' : '1');
+    qs.set('step', explicitWizardStep ?? (shouldOpenEditor ? '3' : '1'));
     qs.set('requestId', String(resumeInProgress?.requestId ?? ''));
     router.push(`${PrivateRoutes.resumeBuilder}?${qs.toString()}`);
+  };
+
+  const handleStartNew = async () => {
+    if (!hasDraft) {
+      router.push(`${PrivateRoutes.resumeBuilder}?step=1&new=1`);
+      return;
+    }
+
+    if (isBlockedByCredits) {
+      router.push(PrivateRoutes.payment);
+      return;
+    }
+
+    const ok = window.confirm(
+      'Start a new resume? This will discard your current in-progress resume draft.',
+    );
+    if (!ok) return;
+
+    setIsStartingNew(true);
+    try {
+      await fetch('/api/resume/discard-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: String(resumeInProgress?.requestId ?? '').trim() }),
+      });
+    } catch {
+      // If discard fails, still allow starting fresh client-side.
+    } finally {
+      setIsStartingNew(false);
+    }
+
+    router.push(`${PrivateRoutes.resumeBuilder}?step=1&new=1`);
   };
 
   return (
@@ -124,20 +163,39 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
           )}
         </Stack>
 
-        <MuiButton
-          text={
-            !hasDraft ? 'Start' : isBlockedByCredits ? 'Recharge & continue' : 'Continue'
-          }
-          color='secondary'
-          sx={{
-            height: 40,
-            px: 3,
-            borderRadius: 2,
-            alignSelf: { xs: 'stretch', sm: 'center' },
-            minWidth: { xs: '100%', sm: 130 },
-          }}
-          onClick={handleClick}
-        />
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          gap={1}
+          sx={{ width: { xs: '100%', sm: 'auto' }, alignSelf: { xs: 'stretch', sm: 'center' } }}
+        >
+          <MuiButton
+            text={!hasDraft ? 'Start' : isBlockedByCredits ? 'Recharge & continue' : 'Continue'}
+            color='secondary'
+            sx={{
+              height: 40,
+              px: 3,
+              borderRadius: 2,
+              minWidth: { xs: '100%', sm: 150 },
+            }}
+            onClick={handleContinue}
+          />
+
+          {hasDraft && !isBlockedByCredits ? (
+            <MuiButton
+              text='Start new'
+              variant='outlined'
+              color='secondary'
+              loading={isStartingNew}
+              sx={{
+                height: 40,
+                px: 3,
+                borderRadius: 2,
+                minWidth: { xs: '100%', sm: 150 },
+              }}
+              onClick={handleStartNew}
+            />
+          ) : null}
+        </Stack>
       </Stack>
     </ResumeBuilderCardRoot>
   );

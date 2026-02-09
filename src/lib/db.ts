@@ -558,6 +558,14 @@ export const db = {
             const wizardData = readFile(wizardDataFile, []);
             return wizardData.find((w: any) => w.user_id === userId && w.request_id === requestId);
         },
+        deleteByUserIdAndRequestId: (userId: number, requestId: string) => {
+            const wizardData = readFile(wizardDataFile, []);
+            const before = wizardData.length;
+            const next = wizardData.filter((w: any) => !(Number(w?.user_id) === Number(userId) && String(w?.request_id) === String(requestId)));
+            if (next.length === before) return 0;
+            writeFile(wizardDataFile, next);
+            return before - next.length;
+        },
         upsert: (data: any) => {
             const wizardData = readFile(wizardDataFile, []);
             const existing = wizardData.find((w: any) => w.user_id === data.user_id && w.request_id === data.request_id);
@@ -589,6 +597,14 @@ export const db = {
         findByRequestId: (requestId: string) => {
             const drafts = readFile(resumeDraftsFile, []);
             return drafts.find((d: any) => d.request_id === requestId);
+        },
+        deleteByUserIdAndRequestId: (userId: number, requestId: string) => {
+            const drafts = readFile(resumeDraftsFile, []);
+            const before = drafts.length;
+            const next = drafts.filter((d: any) => !(Number(d?.user_id) === Number(userId) && String(d?.request_id) === String(requestId)));
+            if (next.length === before) return 0;
+            writeFile(resumeDraftsFile, next);
+            return before - next.length;
         },
         create: (data: any) => {
             const drafts = readFile(resumeDraftsFile, []);
@@ -626,6 +642,14 @@ export const db = {
         findByDraftIdAndSection: (draftId: number, sectionKey: string) => {
             const outputs = readFile(resumeSectionOutputsFile, []);
             return outputs.find((o: any) => o.draft_id === draftId && o.section_key === sectionKey);
+        },
+        deleteByDraftId: (draftId: number) => {
+            const outputs = readFile(resumeSectionOutputsFile, []);
+            const before = outputs.length;
+            const next = outputs.filter((o: any) => Number(o?.draft_id) !== Number(draftId));
+            if (next.length === before) return 0;
+            writeFile(resumeSectionOutputsFile, next);
+            return before - next.length;
         },
         findByInputHash: (inputHash: string) => {
             const outputs = readFile(resumeSectionOutputsFile, []);

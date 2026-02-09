@@ -69,20 +69,15 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
             const serializableWizard = buildWizardSerializable(wizardData);
             const isAuthenticated = Boolean(accessToken);
             const fallbackRequestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            /**
-             * Important:
-             * Each final submit should create a **new resume** (new row in `cvs.json`),
-             * so we must NOT reuse a previously stored requestId (sessionStorage).
-             * Otherwise, the next resume overwrites the previous one and admin shows only 1.
-             */
-            let finalRequestId = fallbackRequestId;
+            const existingRequestId = state.requestId;
+            let finalRequestId = existingRequestId || fallbackRequestId;
             let analysisResult: unknown = null;
 
             if (isAuthenticated) {
                 try {
                     const saveRes = await apiClientClient.post('wizard/save', {
                         requestId: finalRequestId,
-                        wizardData: serializableWizard,
+                        wizardData: { ...serializableWizard, step: '1' },
                     });
                     const savedRequestId = saveRes?.data?.data?.requestId;
                     if (typeof savedRequestId === 'string' && savedRequestId.trim()) {

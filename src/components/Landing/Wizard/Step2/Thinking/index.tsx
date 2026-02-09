@@ -50,7 +50,9 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
             saveWizardTextOnlySession(bodyOfResume as any);
 
             const cvDataJson = JSON.stringify(bodyOfResume);
-            const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const existingRequestId = useWizardStore.getState().requestId;
+            const requestId = existingRequestId || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            if (!existingRequestId) setRequestId(requestId);
 
             const res = await apiClientClient.post('cv/analyze', {
                 cvText: cvDataJson,
