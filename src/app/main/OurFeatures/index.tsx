@@ -43,7 +43,7 @@ const OurFeatures = () => {
             reverse: true,
         },
         {
-            title: 'Check out our awesome features!',
+            title: 'Use the features in the Dashboard',
             description,
             media: '/images/main/main4.svg',
         },
@@ -96,7 +96,8 @@ const OurFeatures = () => {
                                 key={item.title}
                                 sx={{
                                     display: 'grid',
-                                    gridTemplateColumns: { xs: '1fr', md: '1fr 460px' },
+                                    // md+: 12-col feel -> text 8 / media 4 (and keep the ratio when reversed)
+                                    gridTemplateColumns: { xs: '1fr', md: reverse ? '4fr 8fr' : '8fr 4fr' },
                                     gridTemplateAreas: {
                                         xs: `"text" "media"`,
                                         md: reverse ? `"media text"` : `"text media"`,
@@ -108,7 +109,7 @@ const OurFeatures = () => {
                             >
                                 <Box sx={{ gridArea: 'text' }}>
                                     <Typography
-                                        variant='h5'
+                                        variant='h4'
                                         color='secondary.main'
                                         fontWeight={700}
                                         sx={{ mb: 1.25, lineHeight: 1.25 }}
@@ -119,7 +120,11 @@ const OurFeatures = () => {
                                         variant='subtitle1'
                                         color='secondary.main'
                                         fontWeight={492}
-                                        sx={{ maxWidth: 540, opacity: 0.9, lineHeight: 1.75 }}
+                                        sx={{
+                                            maxWidth: { xs: 540, md: 'none' },
+                                            opacity: 0.9,
+                                            lineHeight: 1.75,
+                                        }}
                                     >
                                         {item.description}
                                     </Typography>
