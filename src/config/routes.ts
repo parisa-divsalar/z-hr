@@ -18,10 +18,12 @@ export const PublicRoutes = {
     main: '/main',
     blog: '/blog',
     pricing: '/pricing',
+    activateSubscription: '/activate-subscription',
 };
 
 export const PrivateRoutes = {
     dashboard: '/dashboard',
+    email: '/email',
     history: '/history',
     historyEdite: '/history-edite',
     payment: '/payment',
@@ -42,6 +44,7 @@ export const VisibilityLayout: string[] = [
     PublicRoutes.blog,
     PublicRoutes.pricing,
     PrivateRoutes.dashboard,
+    PrivateRoutes.email,
     PrivateRoutes.history,
     PrivateRoutes.support,
     PrivateRoutes.historyEdite,
@@ -59,6 +62,7 @@ export const VisibilityLayout: string[] = [
 
 export const VisibilitySideBar: string[] = [
     PrivateRoutes.dashboard,
+    PrivateRoutes.email,
     PrivateRoutes.history,
     PrivateRoutes.historyEdite,
     PrivateRoutes.payment,
