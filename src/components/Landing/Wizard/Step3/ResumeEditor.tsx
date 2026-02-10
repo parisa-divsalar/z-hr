@@ -12,7 +12,7 @@ import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
-import { useResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
+import { useResumeEditorController, type ResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
 import ProfileHeader from './ResumeEditor/ProfileHeader';
 import AdditionalInfoSection from './ResumeEditor/sections/AdditionalInfoSection';
 import CertificatesSection from './ResumeEditor/sections/CertificatesSection';
@@ -29,6 +29,10 @@ import type { SectionKey } from './ResumeEditor/types';
 interface ResumeEditorProps {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
     setActiveStep: (activeStep: number) => void;
+    /**
+     * Optional controller override to avoid re-fetching when switching templates.
+     */
+    controller?: ResumeEditorController;
     /**
      * When set to 'preview', edit/improve actions and footer buttons are hidden.
      * Useful for pages that only need the rendered resume + PDF export.
@@ -49,13 +53,14 @@ interface ResumeEditorProps {
 
 const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
     setStage,
+    controller,
     mode = 'editor',
     pdfTargetRef,
     apiUserId,
     requestIdOverride,
     disableAutoPoll,
 }) => {
-    const c = useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
+    const c = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');

@@ -39,6 +39,7 @@ import { extractEmailAndPhone } from './ResumeEditor/utils';
 type Props = {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
     setActiveStep: (activeStep: number) => void;
+    controller?: ResumeEditorController;
     mode?: ResumeEditorMode;
     pdfTargetRef?: MutableRefObject<HTMLDivElement | null>;
     apiUserId?: string | null;
@@ -755,13 +756,14 @@ function DetailsCardT2({ c }: { c: ResumeEditorController }) {
 
 const ResumeEditorTemplate2: FunctionComponent<Props> = ({
     setStage,
+    controller,
     mode = 'editor',
     pdfTargetRef,
     apiUserId,
     requestIdOverride,
     disableAutoPoll,
 }) => {
-    const c = useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
+    const c = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
@@ -804,7 +806,6 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
             sx={{
                 maxWidth: 920,
                 // Give a subtle background so the card border/shadow is visible on white pages.
-                backgroundColor: 'grey.100',
                 borderRadius: { xs: 2, sm: 3 },
                 px: { xs: 1.25, sm: 2 },
                 py: { xs: 1.25, sm: 2 },

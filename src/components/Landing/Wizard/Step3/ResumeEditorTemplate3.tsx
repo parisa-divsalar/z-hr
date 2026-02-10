@@ -21,7 +21,7 @@ import { useWizardStore } from '@/store/wizard';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
-import { useResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
+import { useResumeEditorController, type ResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
 import { MainCardContainer, ResumeContainer } from './ResumeEditor/styled';
 import type { ResumeLanguage } from './ResumeEditor/types';
 import { extractEmailAndPhone } from './ResumeEditor/utils';
@@ -29,6 +29,7 @@ import { extractEmailAndPhone } from './ResumeEditor/utils';
 type Props = {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
     setActiveStep: (activeStep: number) => void;
+    controller?: ResumeEditorController;
     mode?: ResumeEditorMode;
     pdfTargetRef?: MutableRefObject<HTMLDivElement | null>;
     apiUserId?: string | null;
@@ -92,7 +93,7 @@ function SectionTitle({ title, accentColor }: { title: string; accentColor: stri
             <Typography
                 sx={{
                     fontFamily: T3.fontFamily,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: 800,
                     letterSpacing: '0.06em',
                     color: accentColor,
@@ -121,7 +122,7 @@ function ContactRow({
             <Typography
                 sx={{
                     fontFamily: T3.fontFamily,
-                    fontSize: 12,
+                    fontSize: 13,
                     color: T3.text,
                     lineHeight: 1.45,
                     overflowWrap: 'anywhere',
@@ -148,7 +149,7 @@ function LanguageRow({
     const dots = levelToDots(cleanText(lang.level));
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.text, fontWeight: 600 }}>
+            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.text, fontWeight: 600 }}>
                 {name}
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.75 }}>
@@ -170,6 +171,7 @@ function LanguageRow({
 
 const ResumeEditorTemplate3: FunctionComponent<Props> = ({
     setStage,
+    controller,
     mode = 'editor',
     pdfTargetRef,
     apiUserId,
@@ -183,7 +185,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
     const accentSoft2 = alpha(accent, 0.32);
     const divider = theme.palette.divider || T3.rule;
 
-    const c = useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
+    const c = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
@@ -239,7 +241,6 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
         <ResumeContainer
             sx={{
                 maxWidth: 920,
-                backgroundColor: 'grey.100',
                 borderRadius: { xs: 2, sm: 3 },
                 px: { xs: 1.25, sm: 2 },
                 py: { xs: 1.25, sm: 2 },
@@ -299,7 +300,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                     <Typography
                                         sx={{
                                             fontFamily: T3.fontFamily,
-                                            fontSize: 34,
+                                            fontSize: 36,
                                             fontWeight: 900,
                                             lineHeight: 1.05,
                                         }}
@@ -309,7 +310,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                     <Typography
                                         sx={{
                                             fontFamily: T3.fontFamily,
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: 600,
                                             opacity: 0.95,
                                             mt: 0.5,
@@ -321,7 +322,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                     <Typography
                                         sx={{
                                             fontFamily: T3.fontFamily,
-                                            fontSize: 12,
+                                            fontSize: 13,
                                             lineHeight: 1.55,
                                             mt: 1.5,
                                             maxWidth: 640,
@@ -388,13 +389,13 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                         backgroundColor: accent,
                                                                         color: accentContrast,
                                                                         fontFamily: T3.fontFamily,
-                                                                        fontSize: 12,
+                                                                    fontSize: 13,
                                                                         fontWeight: 700,
                                                                     }}
                                                                 />
                                                             ))
                                                         ) : (
-                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
+                                                        <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
                                                                 No competencies found.
                                                             </Typography>
                                                         )}
@@ -416,7 +417,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                 />
                                                             ))
                                                         ) : (
-                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
+                                                        <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
                                                                 No languages found.
                                                             </Typography>
                                                         )}
@@ -436,7 +437,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                 <Typography
                                                                     sx={{
                                                                         fontFamily: T3.fontFamily,
-                                                                        fontSize: 12,
+                                                                        fontSize: 13,
                                                                         color: T3.text,
                                                                         lineHeight: 1.45,
                                                                         overflowWrap: 'anywhere',
@@ -447,7 +448,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                             </Box>
                                                         ))
                                                     ) : (
-                                                        <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
+                                                        <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
                                                             No interests found.
                                                         </Typography>
                                                     )}
@@ -476,7 +477,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                     <Typography
                                                                         sx={{
                                                                             fontFamily: T3.fontFamily,
-                                                                            fontSize: 12,
+                                                                            fontSize: 13,
                                                                             color: T3.text,
                                                                             lineHeight: 1.6,
                                                                             whiteSpace: 'pre-line',
@@ -488,7 +489,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                 </Box>
                                                             ))
                                                         ) : (
-                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
+                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
                                                                 No skills summary found.
                                                             </Typography>
                                                         )}
@@ -506,7 +507,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                     key={idx}
                                                                     sx={{
                                                                         fontFamily: T3.fontFamily,
-                                                                        fontSize: 12,
+                                                                        fontSize: 13,
                                                                         color: T3.text,
                                                                         lineHeight: 1.6,
                                                                         overflowWrap: 'anywhere',
@@ -516,7 +517,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                 </Typography>
                                                             ))
                                                         ) : (
-                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
+                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
                                                                 No certificates found.
                                                             </Typography>
                                                         )}
@@ -534,7 +535,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                     key={idx}
                                                                     sx={{
                                                                         fontFamily: T3.fontFamily,
-                                                                        fontSize: 12,
+                                                                        fontSize: 13,
                                                                         color: T3.text,
                                                                         lineHeight: 1.6,
                                                                         overflowWrap: 'anywhere',
@@ -544,7 +545,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                 </Typography>
                                                             ))
                                                         ) : (
-                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
+                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
                                                                 No education found.
                                                             </Typography>
                                                         )}
@@ -568,7 +569,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                         <Typography
                                                                             sx={{
                                                                                 fontFamily: T3.fontFamily,
-                                                                                fontSize: 13,
+                                                                                fontSize: 14,
                                                                                 fontWeight: 800,
                                                                                 color: T3.text,
                                                                                 lineHeight: 1.35,
@@ -581,7 +582,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                             <Typography
                                                                                 sx={{
                                                                                     fontFamily: T3.fontFamily,
-                                                                                    fontSize: 12,
+                                                                                    fontSize: 13,
                                                                                     color: T3.text,
                                                                                     lineHeight: 1.6,
                                                                                     whiteSpace: 'pre-line',
@@ -594,7 +595,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                     </Box>
                                                                 ))
                                                         ) : (
-                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
+                                                            <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
                                                                 No experience found.
                                                             </Typography>
                                                         )}
@@ -609,7 +610,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                         sx={{
                                                             mt: 1.5,
                                                             fontFamily: T3.fontFamily,
-                                                            fontSize: 12,
+                                                            fontSize: 13,
                                                             color: T3.text,
                                                             lineHeight: 1.6,
                                                             whiteSpace: 'pre-line',
