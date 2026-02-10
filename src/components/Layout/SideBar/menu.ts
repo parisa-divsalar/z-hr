@@ -60,11 +60,11 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
         route: PrivateRoutes.support,
         icon: HeadphonesRoundedIcon,
     },
-    {
-        label: 'Email',
-        route: PrivateRoutes.email,
-        icon: HeadphonesRoundedIcon,
-    },
+    // {
+    //     label: 'Email',
+    //     route: PrivateRoutes.email,
+    //     icon: HeadphonesRoundedIcon,
+    // },
 ];
 
 export const isSidebarMenuItemActive = (item: SidebarMenuItem, pathname?: string | null) => {
