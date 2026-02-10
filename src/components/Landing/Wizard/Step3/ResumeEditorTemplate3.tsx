@@ -12,6 +12,7 @@ import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined';
 import { Box, CardContent, Chip, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { trackEvent } from '@/lib/analytics';
@@ -39,8 +40,6 @@ const T3 = {
     pageWidthPx: 794, // A4 @ 96dpi
     pageMinHeightPx: 1123, // A4 @ 96dpi
     pagePaddingPx: 36,
-    teal: '#22B7A7',
-    tealDark: '#169C90',
     text: '#111827',
     subtle: '#6B7280',
     rule: '#E5E7EB',
@@ -87,7 +86,7 @@ function interestIcon(label: string) {
     return <LanguageOutlinedIcon fontSize='small' />;
 }
 
-function SectionTitle({ title }: { title: string }) {
+function SectionTitle({ title, accentColor }: { title: string; accentColor: string }) {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
             <Typography
@@ -96,12 +95,12 @@ function SectionTitle({ title }: { title: string }) {
                     fontSize: 14,
                     fontWeight: 800,
                     letterSpacing: '0.06em',
-                    color: T3.teal,
+                    color: accentColor,
                 }}
             >
                 {title.toUpperCase()}
             </Typography>
-            <Box sx={{ height: 2, width: '100%', backgroundColor: T3.teal }} />
+            <Box sx={{ height: 2, width: '100%', backgroundColor: accentColor }} />
         </Box>
     );
 }
@@ -109,14 +108,16 @@ function SectionTitle({ title }: { title: string }) {
 function ContactRow({
     icon,
     text,
+    accentColor,
 }: {
     icon: ReactNode;
     text: string;
+    accentColor: string;
 }) {
     if (!cleanText(text)) return null;
     return (
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-            <Box sx={{ mt: '2px', color: T3.teal }}>{icon}</Box>
+            <Box sx={{ mt: '2px', color: accentColor }}>{icon}</Box>
             <Typography
                 sx={{
                     fontFamily: T3.fontFamily,
@@ -133,7 +134,15 @@ function ContactRow({
     );
 }
 
-function LanguageRow({ lang }: { lang: ResumeLanguage }) {
+function LanguageRow({
+    lang,
+    accentColor,
+    inactiveColor,
+}: {
+    lang: ResumeLanguage;
+    accentColor: string;
+    inactiveColor: string;
+}) {
     const name = cleanText(lang.name);
     if (!name) return null;
     const dots = levelToDots(cleanText(lang.level));
@@ -150,7 +159,7 @@ function LanguageRow({ lang }: { lang: ResumeLanguage }) {
                             width: 14,
                             height: 14,
                             borderRadius: 3,
-                            backgroundColor: idx < dots ? T3.teal : '#BFE9E4',
+                            backgroundColor: idx < dots ? accentColor : inactiveColor,
                         }}
                     />
                 ))}
@@ -167,6 +176,13 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
     requestIdOverride,
     disableAutoPoll,
 }) => {
+    const theme = useTheme();
+    const accent = theme.palette.primary.main;
+    const accentContrast = theme.palette.primary.contrastText ?? '#fff';
+    const accentSoft = alpha(accent, 0.22);
+    const accentSoft2 = alpha(accent, 0.32);
+    const divider = theme.palette.divider || T3.rule;
+
     const c = useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
@@ -272,11 +288,12 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                 {/* Header */}
                                 <Box
                                     sx={{
-                                        backgroundColor: T3.teal,
-                                        color: '#fff',
+                                        backgroundColor: accent,
+                                        color: accentContrast,
                                         px: { xs: 3, md: `${T3.pagePaddingPx}px` },
-                                        pt: { xs: 3, md: `${T3.pagePaddingPx}px` },
-                                        pb: { xs: 2.5, md: 26 },
+                                        // Reduce header height vs previous version.
+                                        pt: { xs: 2, md: 2.5 },
+                                        pb: { xs: 1.75, md: 2 },
                                     }}
                                 >
                                     <Typography
@@ -343,22 +360,22 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                         <Box
                                             sx={{
                                                 pr: { md: 3 },
-                                                borderRight: { md: `1px solid ${T3.rule}` },
+                                                borderRight: { md: `1px solid ${divider}` },
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 gap: 3,
                                             }}
                                         >
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                                                <ContactRow icon={<EmailOutlinedIcon fontSize='small' />} text={parsedContact.email} />
-                                                <ContactRow icon={<PhoneOutlinedIcon fontSize='small' />} text={parsedContact.phone} />
-                                                <ContactRow icon={<LocationOnOutlinedIcon fontSize='small' />} text={parsedContact.address} />
-                                                <ContactRow icon={<LinkedInIcon fontSize='small' />} text={parsedContact.linkedin} />
+                                                <ContactRow icon={<EmailOutlinedIcon fontSize='small' />} text={parsedContact.email} accentColor={accent} />
+                                                <ContactRow icon={<PhoneOutlinedIcon fontSize='small' />} text={parsedContact.phone} accentColor={accent} />
+                                                <ContactRow icon={<LocationOnOutlinedIcon fontSize='small' />} text={parsedContact.address} accentColor={accent} />
+                                                <ContactRow icon={<LinkedInIcon fontSize='small' />} text={parsedContact.linkedin} accentColor={accent} />
                                             </Box>
 
                                             {!c.isSectionHidden('skills') ? (
                                                 <Box>
-                                                    <SectionTitle title='Competencies' />
+                                                    <SectionTitle title='Competencies' accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                                         {competencyChips.length ? (
                                                             competencyChips.map((label) => (
@@ -368,8 +385,8 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                     size='small'
                                                                     sx={{
                                                                         borderRadius: 999,
-                                                                        backgroundColor: T3.teal,
-                                                                        color: '#fff',
+                                                                        backgroundColor: accent,
+                                                                        color: accentContrast,
                                                                         fontFamily: T3.fontFamily,
                                                                         fontSize: 12,
                                                                         fontWeight: 700,
@@ -387,10 +404,17 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('languages') ? (
                                                 <Box>
-                                                    <SectionTitle title='Languages' />
+                                                    <SectionTitle title='Languages' accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1.75 }}>
                                                         {c.languages.length ? (
-                                                            c.languages.map((lang) => <LanguageRow key={lang.id} lang={lang} />)
+                                                            c.languages.map((lang) => (
+                                                                <LanguageRow
+                                                                    key={lang.id}
+                                                                    lang={lang}
+                                                                    accentColor={accent}
+                                                                    inactiveColor={accentSoft2}
+                                                                />
+                                                            ))
                                                         ) : (
                                                             <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 12, color: T3.subtle }}>
                                                                 No languages found.
@@ -401,12 +425,12 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                             ) : null}
 
                                             <Box>
-                                                <SectionTitle title='Interests' />
+                                                <SectionTitle title='Interests' accentColor={accent} />
                                                 <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                     {interests.length ? (
                                                         interests.map((x, idx) => (
                                                             <Box key={`${x}-${idx}`} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                                                                <Box sx={{ mt: '2px', color: T3.teal }}>
+                                                                <Box sx={{ mt: '2px', color: accent }}>
                                                                     {interestIcon(x)}
                                                                 </Box>
                                                                 <Typography
@@ -435,7 +459,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                             {!c.isSectionHidden('selectedProjects') ? (
                                                 <Box>
-                                                    <SectionTitle title='Skills Summary' />
+                                                    <SectionTitle title='Skills Summary' accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                         {c.selectedProjects.length ? (
                                                             c.selectedProjects.map((line, idx) => (
@@ -446,7 +470,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                             width: 6,
                                                                             height: 6,
                                                                             borderRadius: 999,
-                                                                            backgroundColor: T3.teal,
+                                                                            backgroundColor: accent,
                                                                         }}
                                                                     />
                                                                     <Typography
@@ -474,7 +498,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('certificates') ? (
                                                 <Box>
-                                                    <SectionTitle title='Certificates' />
+                                                    <SectionTitle title='Certificates' accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                         {c.certificates.length ? (
                                                             c.certificates.map((line, idx) => (
@@ -502,7 +526,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('education') ? (
                                                 <Box>
-                                                    <SectionTitle title='Education' />
+                                                    <SectionTitle title='Education' accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                                                         {c.education.length ? (
                                                             c.education.map((line, idx) => (
@@ -530,7 +554,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('experience') ? (
                                                 <Box>
-                                                    <SectionTitle title='Professional Experience' />
+                                                    <SectionTitle title='Professional Experience' accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                                                         {c.experiences.filter((exp) =>
                                                             [exp.company, exp.position, exp.description].some((v) => cleanText(v)),
@@ -580,7 +604,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('additionalInfo') ? (
                                                 <Box>
-                                                    <SectionTitle title='Additional Information' />
+                                                    <SectionTitle title='Additional Information' accentColor={accent} />
                                                     <Typography
                                                         sx={{
                                                             mt: 1.5,
