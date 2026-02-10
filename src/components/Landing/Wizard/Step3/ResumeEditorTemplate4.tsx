@@ -147,7 +147,6 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
     requestIdOverride,
     disableAutoPoll,
 }) => {
-    const theme = useTheme();
 
     // Force Template 4 to use the project's configured LIGHT palette so the resume stays
     // print/PDF-friendly even when the app is in dark mode.
@@ -162,7 +161,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
     const darkBlock = p.secondary.main;
     const darkText = p.secondary.contrastText;
 
-    const c = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
+    const c   = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
@@ -289,7 +288,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                             <Typography
                                                 sx={{
                                                     fontFamily: T4.fontFamily,
-                                                    fontSize: 44,
+                                                    fontSize: 24,
                                                     fontWeight: 800,
                                                     letterSpacing: '0.02em',
                                                     lineHeight: 1.02,
