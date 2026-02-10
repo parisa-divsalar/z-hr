@@ -78,10 +78,6 @@ const ResumeEditorStage: FunctionComponent<{
                     mt: 1.5,
                     mb: 1.5,
                     p: 0.75,
-                    borderRadius: 999,
-                    backgroundColor: pillBg,
-                    border: '1px solid',
-                    borderColor: pillBorder,
                 }}
             >
                 <Stack direction='row' spacing={1}>
