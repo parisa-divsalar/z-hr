@@ -30,8 +30,8 @@ export default function AuthLayout({
                   />
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Free and Open-Source Tailwind CSS Admin Dashboard Template
-                </p>
+                  "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
+                  Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.             </p>
               </div>
             </div>
           </div>
