@@ -268,6 +268,7 @@ function SummaryCardT2({ c }: { c: ResumeEditorController }) {
 
 function SkillsCardT2({ c }: { c: ResumeEditorController }) {
     const isEditing = !c.isPreview && c.editingSection === 'skills';
+    const visibleSkills = useMemo(() => c.skills.map((s) => String(s ?? '').trim()).filter(Boolean), [c.skills]);
     const hasContent = c.skills.some((skill) => String(skill ?? '').trim().length > 0);
     if (!shouldShowSection({ c, section: 'skills', hasContent })) return null;
 
@@ -292,7 +293,7 @@ function SkillsCardT2({ c }: { c: ResumeEditorController }) {
                     <SkeletonParagraph lines={3} />
                 ) : c.isAutoPipelineMode && c.shouldSkeletonSection('skills') ? (
                     <SkeletonParagraph lines={3} />
-                ) : c.skills.length === 0 ? (
+                ) : visibleSkills.length === 0 ? (
                     <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
                         No skills found.
                     </Typography>
@@ -308,19 +309,35 @@ function SkillsCardT2({ c }: { c: ResumeEditorController }) {
                         ))}
                     </SkillsContainer>
                 ) : (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                        {c.skills.map((skill, index) => (
-                            <Typography
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0.75 }}>
+                        {visibleSkills.map((skill, index) => (
+                            <Box
                                 key={`${skill}-${index}`}
+                                component='span'
                                 sx={{
-                                    fontFamily: T2.fontFamily,
-                                    fontSize: `${T2.bodySizePx}px`,
-                                    color: T2.ruleStrong,
-                                    lineHeight: 1.5,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    border: `1px solid ${T2.rule}`,
+                                    borderRadius: 999,
+                                    px: 1,
+                                    py: 0.25,
+                                    backgroundColor: '#F9FAFB',
+                                    maxWidth: '100%',
                                 }}
                             >
-                                {skill}
-                            </Typography>
+                                <Typography
+                                    component='span'
+                                    sx={{
+                                        fontFamily: T2.fontFamily,
+                                        fontSize: `${T2.bodySizePx}px`,
+                                        color: T2.ruleStrong,
+                                        lineHeight: 1.35,
+                                        overflowWrap: 'anywhere',
+                                    }}
+                                >
+                                    {skill}
+                                </Typography>
+                            </Box>
                         ))}
                     </Box>
                 )}
@@ -787,7 +804,7 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
             sx={{
                 maxWidth: 920,
                 // Give a subtle background so the card border/shadow is visible on white pages.
-                backgroundColor: 'grey.50',
+                backgroundColor: 'grey.100',
                 borderRadius: { xs: 2, sm: 3 },
                 px: { xs: 1.25, sm: 2 },
                 py: { xs: 1.25, sm: 2 },
