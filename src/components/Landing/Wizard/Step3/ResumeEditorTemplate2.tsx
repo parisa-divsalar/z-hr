@@ -1,14 +1,15 @@
 'use client';
 
-import { type FunctionComponent, type MutableRefObject, useEffect, useMemo, useState } from 'react';
+import { type FunctionComponent, type MutableRefObject, useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
 
-import { Box, Button, CardContent, IconButton, Typography } from '@mui/material';
+import { Box, Button, CardContent, CircularProgress, IconButton, Menu, MenuItem, Skeleton, Typography } from '@mui/material';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { trackEvent } from '@/lib/analytics';
 import { useWizardStore } from '@/store/wizard';
 
 import DeleteIcon from '@/assets/images/icons/clean.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
+import StarIcon from '@/assets/images/icons/star.svg';
 
 import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
@@ -32,6 +33,7 @@ import {
 } from './ResumeEditor/styled';
 
 import type { SectionKey } from './ResumeEditor/types';
+import type { ImproveOption } from './ResumeEditor/types';
 import { extractEmailAndPhone } from './ResumeEditor/utils';
 
 type Props = {
@@ -60,6 +62,8 @@ const T2 = {
     ruleStrong: '#111827',
 };
 
+const DEFAULT_IMPROVE_OPTIONS: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
+
 function T2SectionHeader({
     title,
     c,
@@ -70,6 +74,10 @@ function T2SectionHeader({
     onSave,
     onCancel,
     hideActions,
+    showImproveIcon = true,
+    improveEnabled = false,
+    improveOptions,
+    actionsSkeleton,
 }: {
     title: string;
     c: ResumeEditorController;
@@ -80,8 +88,33 @@ function T2SectionHeader({
     onSave?: () => void;
     onCancel?: () => void;
     hideActions?: boolean;
+    showImproveIcon?: boolean;
+    improveEnabled?: boolean;
+    improveOptions?: ImproveOption[];
+    actionsSkeleton?: boolean;
 }) {
-    const shouldShowActions = !hideActions && !c.isExporting && !c.isPreview;
+    const shouldShowActions = (!hideActions || Boolean(actionsSkeleton)) && !c.isExporting && !c.isPreview;
+    const isImprovingThisSection = !c.isPreview && c.improvingSection === section;
+    const improveDisabled =
+        !improveEnabled || (Boolean(c.improvingSection) && c.improvingSection !== section) || Boolean(c.isSaving) || Boolean(c.isDeletingSection);
+    const shouldUseImproveMenu = Boolean(improveOptions?.length);
+
+    const [improveAnchor, setImproveAnchor] = useState<null | HTMLElement>(null);
+    const improveMenuOpen = Boolean(improveAnchor);
+
+    const handleOpenImproveMenu = (event: ReactMouseEvent<HTMLElement>) => {
+        if (improveDisabled || Boolean(c.improvingSection) || !shouldUseImproveMenu) return;
+        setImproveAnchor(event.currentTarget);
+    };
+
+    const handleCloseImproveMenu = () => {
+        setImproveAnchor(null);
+    };
+
+    const handleSelectImproveOption = (option: ImproveOption) => {
+        handleCloseImproveMenu();
+        void c.handleImprove(section, option);
+    };
 
     return (
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
@@ -112,16 +145,57 @@ function T2SectionHeader({
                     </Box>
                 ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <IconButton size='small' onClick={onEdit} disabled={Boolean(c.improvingSection)}>
-                            <EditIcon />
-                        </IconButton>
-                        <IconButton
-                            size='small'
-                            onClick={onDelete}
-                            disabled={Boolean(c.improvingSection) || Boolean(c.isDeletingSection) || !onDelete}
-                        >
-                            <DeleteIcon />
-                        </IconButton>
+                        {actionsSkeleton ? (
+                            <>
+                                <Skeleton variant='circular' width={28} height={28} />
+                                {showImproveIcon ? <Skeleton variant='circular' width={28} height={28} /> : null}
+                            </>
+                        ) : (
+                            <>
+                                <IconButton size='small' onClick={onEdit} disabled={Boolean(c.improvingSection)}>
+                                    <EditIcon />
+                                </IconButton>
+                                <IconButton
+                                    size='small'
+                                    onClick={onDelete}
+                                    disabled={Boolean(c.improvingSection) || Boolean(c.isDeletingSection) || Boolean(c.isSaving) || !onDelete}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+
+                                {showImproveIcon ? (
+                                    <IconButton
+                                        size='small'
+                                        onClick={
+                                            shouldUseImproveMenu ? handleOpenImproveMenu : () => void c.handleImprove(section)
+                                        }
+                                        disabled={improveDisabled || Boolean(c.improvingSection)}
+                                    >
+                                        {isImprovingThisSection ? <CircularProgress size={16} /> : <StarIcon />}
+                                    </IconButton>
+                                ) : null}
+
+                                {shouldUseImproveMenu ? (
+                                    <Menu
+                                        anchorEl={improveAnchor}
+                                        open={improveMenuOpen}
+                                        onClose={handleCloseImproveMenu}
+                                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                    >
+                                        {(improveOptions ?? []).map((option) => (
+                                            <MenuItem
+                                                key={option}
+                                                disabled={improveDisabled || Boolean(c.improvingSection)}
+                                                onClick={() => handleSelectImproveOption(option)}
+                                            >
+                                                {option.charAt(0).toUpperCase() + option.slice(1)}
+                                            </MenuItem>
+                                        ))}
+                                    </Menu>
+                                ) : null}
+                            </>
+                        )}
                     </Box>
                 )
             ) : null}
@@ -165,11 +239,14 @@ function SummaryCardT2({ c }: { c: ResumeEditorController }) {
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('summary')}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
+                improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                improveOptions={DEFAULT_IMPROVE_OPTIONS}
                 hideActions={
                     c.isExporting ||
                     c.isPreview ||
                     (c.isAutoPipelineMode && !Boolean(c.autoImproved.summary) && !Boolean(c.improveError))
                 }
+                actionsSkeleton={c.shouldSkeletonActions('summary')}
             />
 
             <Box mt={1.5}>
@@ -205,7 +282,9 @@ function SkillsCardT2({ c }: { c: ResumeEditorController }) {
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('skills')}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
+                showImproveIcon={false}
                 hideActions={c.isExporting || c.isPreview || c.shouldBlockBelowSummary}
+                actionsSkeleton={c.shouldBlockBelowSummary}
             />
 
             <Box sx={{ mt: 1.5 }}>
@@ -282,12 +361,15 @@ function TextListCardT2({
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection(section)}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
+                improveEnabled={improveEnabled}
+                improveOptions={DEFAULT_IMPROVE_OPTIONS}
                 hideActions={
                     c.isExporting ||
                     c.isPreview ||
                     c.shouldBlockBelowSummary ||
                     (c.isAutoPipelineMode && !Boolean((c.autoImproved as any)[section]) && !Boolean(c.improveError))
                 }
+                actionsSkeleton={c.shouldBlockBelowSummary || c.shouldSkeletonActions(section)}
             />
 
             <Box mt={1.5}>
@@ -338,7 +420,9 @@ function LanguagesCardT2({ c }: { c: ResumeEditorController }) {
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('languages')}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
+                showImproveIcon={false}
                 hideActions={c.isExporting || c.isPreview || c.shouldBlockBelowSummary}
+                actionsSkeleton={c.shouldBlockBelowSummary}
             />
 
             <Box mt={1.5}>
@@ -395,12 +479,15 @@ function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('experience')}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
+                improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                improveOptions={DEFAULT_IMPROVE_OPTIONS}
                 hideActions={
                     c.isExporting ||
                     c.isPreview ||
                     c.shouldBlockBelowSummary ||
                     (c.isAutoPipelineMode && !Boolean(c.autoImproved.experience) && !Boolean(c.improveError))
                 }
+                actionsSkeleton={c.shouldBlockBelowSummary || c.shouldSkeletonActions('experience')}
             />
 
             <Box mt={1.5}>
@@ -498,12 +585,15 @@ function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('additionalInfo')}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
+                improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                improveOptions={DEFAULT_IMPROVE_OPTIONS}
                 hideActions={
                     c.isExporting ||
                     c.isPreview ||
                     c.shouldBlockBelowSummary ||
                     (c.isAutoPipelineMode && !Boolean(c.autoImproved.additionalInfo) && !Boolean(c.improveError))
                 }
+                actionsSkeleton={c.shouldBlockBelowSummary || c.shouldSkeletonActions('additionalInfo')}
             />
 
             <Box mt={1.5}>
@@ -599,7 +689,9 @@ function DetailsCardT2({ c }: { c: ResumeEditorController }) {
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('contactWays')}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
+                showImproveIcon={false}
                 hideActions={c.isExporting || c.isPreview || c.shouldBlockBelowSummary}
+                actionsSkeleton={c.shouldBlockBelowSummary}
             />
 
             <Box mt={1.5}>
@@ -691,7 +783,16 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
     };
 
     return (
-        <ResumeContainer sx={{ maxWidth: 920 }}>
+        <ResumeContainer
+            sx={{
+                maxWidth: 920,
+                // Give a subtle background so the card border/shadow is visible on white pages.
+                backgroundColor: 'grey.50',
+                borderRadius: { xs: 2, sm: 3 },
+                px: { xs: 1.25, sm: 2 },
+                py: { xs: 1.25, sm: 2 },
+            }}
+        >
             <RefreshDataLossDialog open={isRefreshWarningOpen} onClose={() => setIsRefreshWarningOpen(false)} />
             <DeleteSectionDialog
                 open={Boolean(c.pendingDeleteSection)}
@@ -701,23 +802,39 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                 onConfirm={() => void c.confirmDeleteSection()}
             />
 
-            <MainCardContainer
-                ref={c.pdfRef}
-                sx={{
-                    minWidth: 'unset',
-                    maxWidth: 920,
-                    mx: 'auto',
-                    overflow: 'hidden',
-                    backgroundColor: '#fff',
-                    boxShadow: 'none',
-                    borderRadius: 0,
-                }}
-            >
-                <CardContent
+            <Box sx={{ maxWidth: 920, mx: 'auto', overflow: 'visible' }}>
+                <Box
                     sx={{
-                        p: 0,
+                        overflow: 'hidden',
+                        borderRadius: { xs: 2, sm: 3 },
+                        boxShadow: {
+                            xs: '0 10px 28px rgba(15, 23, 42, 0.12)',
+                            sm: '0 18px 60px rgba(15, 23, 42, 0.14)',
+                        },
+                        border: '1px solid',
+                        // Force visible border even on very light themes.
+                        borderColor: 'rgba(15, 23, 42, 0.12)',
+                        backgroundColor: '#fff',
                     }}
                 >
+                    <MainCardContainer
+                        ref={c.pdfRef}
+                        sx={{
+                            minWidth: 'unset',
+                            maxWidth: 'unset',
+                            mx: 0,
+                            overflow: 'hidden',
+                            backgroundColor: '#fff',
+                            boxShadow: 'none',
+                            borderRadius: 0,
+                            mb: 0,
+                        }}
+                    >
+                    <CardContent
+                        sx={{
+                            p: 0,
+                        }}
+                    >
                     <Box
                         sx={{
                             width: '100%',
@@ -839,8 +956,10 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                             </Box>
                         </Box>
                     </Box>
-                </CardContent>
-            </MainCardContainer>
+                        </CardContent>
+                    </MainCardContainer>
+                </Box>
+            </Box>
 
             <ResumeFooter
                 isPreview={c.isPreview}

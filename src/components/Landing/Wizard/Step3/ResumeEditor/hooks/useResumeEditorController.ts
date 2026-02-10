@@ -1088,7 +1088,11 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
                 const rawSummary = extractSummary(payload) || extractSummary(record);
                 const detectedSummary = cleanSummaryText(rawSummary);
-                const detectedSkills = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
+                const wizardSeededSkills = Array.isArray((wizardData as any)?.skills)
+                    ? (wizardData as any).skills.map((s: any) => String(s ?? '').trim()).filter(Boolean)
+                    : [];
+                const detectedSkillsFromApi = extractSkills(payload).length ? extractSkills(payload) : extractSkills(record);
+                const detectedSkills = detectedSkillsFromApi.length ? detectedSkillsFromApi : wizardSeededSkills;
                 const detectedContactWays =
                     extractContactWays(payload).length > 0 ? extractContactWays(payload) : extractContactWays(record);
                 const detectedLanguages =
@@ -1143,7 +1147,7 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
                 setHasCvLoadedOnce(true);
             }
         },
-        [requestId, apiUserId, isSessionSeeded],
+        [requestId, apiUserId, isSessionSeeded, wizardData],
     );
 
     // Poll analysis/create then load CV once.
