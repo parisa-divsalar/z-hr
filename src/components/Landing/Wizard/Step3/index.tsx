@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 import { usePathname } from 'next/navigation';
 
 import ResumeBuilderMoreFeatures from '@/app/(private)/resume-builder/MoreFeatures';
@@ -8,6 +8,7 @@ import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeGenerator
 import WizardMoreFeatures from '@/components/Landing/Wizard/Step3/MoreFeatures';
 
 import ResumeEditor from './ResumeEditor';
+import ResumeEditorTemplate2 from './ResumeEditorTemplate2';
 
 interface Step3Props {
     setActiveStep: (activeStep: number) => void;
@@ -15,6 +16,7 @@ interface Step3Props {
 
 const Step3: FunctionComponent<Step3Props> = ({ setActiveStep }) => {
     const [stage, setStage] = useState<'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME'>('RESUME_EDITOR');
+    const [activeTemplate, setActiveTemplate] = useState<'template1' | 'template2'>('template1');
     const pathname = usePathname();
 
     const handleSubmitMoreFeatures = () => {
@@ -32,7 +34,35 @@ const Step3: FunctionComponent<Step3Props> = ({ setActiveStep }) => {
                     You can view and edit resume
                 </Typography>
 
-                <ResumeEditor setStage={setStage} setActiveStep={setActiveStep} />
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={1}
+                    width='100%'
+                    maxWidth={748}
+                    mt={1.5}
+                    mb={1.5}
+                >
+                    <Button
+                        fullWidth
+                        variant={activeTemplate === 'template1' ? 'contained' : 'outlined'}
+                        onClick={() => setActiveTemplate('template1')}
+                    >
+                        Template 1
+                    </Button>
+                    <Button
+                        fullWidth
+                        variant={activeTemplate === 'template2' ? 'contained' : 'outlined'}
+                        onClick={() => setActiveTemplate('template2')}
+                    >
+                        Template 2
+                    </Button>
+                </Stack>
+
+                {activeTemplate === 'template1' ? (
+                    <ResumeEditor setStage={setStage} setActiveStep={setActiveStep} />
+                ) : (
+                    <ResumeEditorTemplate2 setStage={setStage} setActiveStep={setActiveStep} />
+                )}
             </Stack>
         );
 
