@@ -5,11 +5,45 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
+const ADMIN_AUTH_COOKIE = "zcv_admin_auth";
+const ADMIN_EMAIL = "Zenon@saleh.com";
+const ADMIN_PASSWORD = "Saleh123";
+const PERSIST_DAYS = 30;
+
 export default function SignInForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const setAuthCookie = (persist: boolean) => {
+    const maxAge = persist ? `; Max-Age=${PERSIST_DAYS * 24 * 60 * 60}` : "";
+    document.cookie = `${ADMIN_AUTH_COOKIE}=1; Path=/; SameSite=Lax${maxAge}`;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    const okEmail = email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const okPassword = password === ADMIN_PASSWORD;
+
+    if (!okEmail || !okPassword) {
+      setError("Invalid email or password.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    setAuthCookie(isChecked);
+    router.replace("/");
+  };
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
@@ -35,13 +69,18 @@ export default function SignInForm() {
               </div>
 
             </div>
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div>
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="info@gmail.com" type="email" />
+                  <Input
+                    placeholder="Zenon@saleh.com"
+                    type="email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    error={Boolean(error)}
+                  />
                 </div>
                 <div>
                   <Label>
@@ -51,6 +90,8 @@ export default function SignInForm() {
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      onChange={(e) => setPassword(e.target.value)}
+                      error={Boolean(error)}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -73,8 +114,13 @@ export default function SignInForm() {
                   </div>
 
                 </div>
+                {error && (
+                  <div className="text-sm text-error-600 dark:text-error-400">
+                    {error}
+                  </div>
+                )}
                 <div>
-                  <Button className="w-full" size="sm">
+                  <Button className="w-full" size="sm" disabled={isSubmitting}>
                     Sign in
                   </Button>
                 </div>
