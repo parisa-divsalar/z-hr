@@ -6,7 +6,6 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import EnergySavingsLeafOutlinedIcon from '@mui/icons-material/EnergySavingsLeafOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import MemoryOutlinedIcon from '@mui/icons-material/MemoryOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
@@ -370,7 +369,6 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                                                 <ContactRow icon={<EmailOutlinedIcon fontSize='small' />} text={parsedContact.email} accentColor={accent} />
                                                 <ContactRow icon={<PhoneOutlinedIcon fontSize='small' />} text={parsedContact.phone} accentColor={accent} />
-                                                <ContactRow icon={<LocationOnOutlinedIcon fontSize='small' />} text={parsedContact.address} accentColor={accent} />
                                                 <ContactRow icon={<LinkedInIcon fontSize='small' />} text={parsedContact.linkedin} accentColor={accent} />
                                             </Box>
 
