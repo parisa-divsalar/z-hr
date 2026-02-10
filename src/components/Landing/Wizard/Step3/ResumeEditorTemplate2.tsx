@@ -2,20 +2,19 @@
 
 import { type FunctionComponent, type MutableRefObject, useEffect, useMemo, useState } from 'react';
 
-import { Box, CardContent, Grid, Typography } from '@mui/material';
-
-import MuiChips from '@/components/UI/MuiChips';
+import { Box, Button, CardContent, IconButton, Typography } from '@mui/material';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { trackEvent } from '@/lib/analytics';
 import { useWizardStore } from '@/store/wizard';
+
+import DeleteIcon from '@/assets/images/icons/clean.svg';
+import EditIcon from '@/assets/images/icons/edit.svg';
 
 import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
 import { useResumeEditorController, type ResumeEditorMode, type ResumeEditorController } from './ResumeEditor/hooks/useResumeEditorController';
-import ProfileHeader from './ResumeEditor/ProfileHeader';
-import SectionHeader from './ResumeEditor/SectionHeader';
 import SkeletonParagraph from './ResumeEditor/components/SkeletonParagraph';
 import {
     CompanyName,
@@ -32,7 +31,8 @@ import {
     SummaryText,
 } from './ResumeEditor/styled';
 
-import type { ImproveOption, SectionKey } from './ResumeEditor/types';
+import type { SectionKey } from './ResumeEditor/types';
+import { extractEmailAndPhone } from './ResumeEditor/utils';
 
 type Props = {
     setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES' | 'RESUME_GENERATOR_FRAME') => void;
@@ -44,23 +44,87 @@ type Props = {
     disableAutoPoll?: boolean;
 };
 
-function SectionCard({
-    children,
+const T2 = {
+    pageWidthPx: 794, // A4 @ 96dpi
+    pageMinHeightPx: 1123, // A4 @ 96dpi
+    pagePaddingPx: 40,
+    fontFamily:
+        // Keep it close to system sans; prefer Inter if present in the app theme/fonts.
+        'Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"',
+    headerNameSizePx: 34,
+    headerRoleSizePx: 12,
+    sectionTitleSizePx: 12,
+    bodySizePx: 12,
+    subtleText: '#6B7280',
+    rule: '#D1D5DB',
+    ruleStrong: '#111827',
+};
+
+function T2SectionHeader({
+    title,
+    c,
+    section,
+    isEditing,
+    onEdit,
+    onDelete,
+    onSave,
+    onCancel,
+    hideActions,
 }: {
-    children: React.ReactNode;
+    title: string;
+    c: ResumeEditorController;
+    section: SectionKey;
+    isEditing: boolean;
+    onEdit?: () => void;
+    onDelete?: () => void;
+    onSave?: () => void;
+    onCancel?: () => void;
+    hideActions?: boolean;
 }) {
+    const shouldShowActions = !hideActions && !c.isExporting && !c.isPreview;
+
     return (
-        <Box
-            sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
-                px: { xs: 2, sm: 2.5 },
-                py: { xs: 1.75, sm: 2.25 },
-            }}
-        >
-            {children}
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+            <Box>
+                <Typography
+                    sx={{
+                        fontFamily: T2.fontFamily,
+                        fontSize: `${T2.sectionTitleSizePx}px`,
+                        letterSpacing: '0.08em',
+                        fontWeight: 700,
+                        color: T2.ruleStrong,
+                    }}
+                >
+                    {title.toUpperCase()}
+                </Typography>
+                <Box sx={{ width: 22, height: 2, backgroundColor: T2.ruleStrong, mt: 0.75 }} />
+            </Box>
+
+            {shouldShowActions ? (
+                isEditing ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Button size='small' variant='text' color='inherit' onClick={onCancel} disabled={Boolean(c.isSaving)}>
+                            Cancel
+                        </Button>
+                        <Button size='small' variant='contained' color='primary' onClick={onSave} disabled={Boolean(c.isSaving) || !onSave}>
+                            Save
+                        </Button>
+                    </Box>
+                ) : (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <IconButton size='small' onClick={onEdit} disabled={Boolean(c.improvingSection)}>
+                            <EditIcon />
+                        </IconButton>
+                        <IconButton
+                            size='small'
+                            onClick={onDelete}
+                            disabled={Boolean(c.improvingSection) || Boolean(c.isDeletingSection) || !onDelete}
+                        >
+                            <DeleteIcon />
+                        </IconButton>
+                    </Box>
+                )
+            ) : null}
         </Box>
     );
 }
@@ -85,28 +149,20 @@ function shouldShowSection({
 }
 
 function SummaryCardT2({ c }: { c: ResumeEditorController }) {
-    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const hasContent = c.summary.trim().length > 0;
     const isEditing = !c.isPreview && c.editingSection === 'summary';
     const shouldRender = !c.isPreview || hasContent || isEditing || c.isPreCvLoading || c.shouldBlockBelowSummary;
     if (!shouldRender) return null;
 
     return (
-        <SectionCard>
-            <SectionHeader
+        <Box>
+            <T2SectionHeader
                 title='Summary'
+                c={c}
+                section='summary'
+                isEditing={isEditing}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('summary')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('summary')}
-                onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('summary')}
-                onImproveOption={
-                    c.isPreview || c.isTextOnlyMode ? undefined : (option) => void c.handleImprove('summary', option)
-                }
-                improveOptions={improveOptions}
-                isEditing={isEditing}
-                isImproving={!c.isPreview && c.improvingSection === 'summary'}
-                improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'summary'}
-                deleteDisabled={c.isSaving || c.isDeletingSection}
-                isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
                 hideActions={
@@ -114,7 +170,6 @@ function SummaryCardT2({ c }: { c: ResumeEditorController }) {
                     c.isPreview ||
                     (c.isAutoPipelineMode && !Boolean(c.autoImproved.summary) && !Boolean(c.improveError))
                 }
-                actionsSkeleton={c.shouldSkeletonActions('summary')}
             />
 
             <Box mt={1.5}>
@@ -123,12 +178,14 @@ function SummaryCardT2({ c }: { c: ResumeEditorController }) {
                 ) : c.isPreCvLoading && !c.summary.trim() ? (
                     <SkeletonParagraph lines={5} />
                 ) : !c.summary.trim() ? (
-                    <SummaryText sx={{ color: 'text.secondary' }}>No summary found.</SummaryText>
+                    <SummaryText sx={{ color: T2.subtleText, fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>
+                        No summary found.
+                    </SummaryText>
                 ) : (
-                    <SummaryText>{c.summary}</SummaryText>
+                    <SummaryText sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>{c.summary}</SummaryText>
                 )}
             </Box>
-        </SectionCard>
+        </Box>
     );
 }
 
@@ -138,47 +195,58 @@ function SkillsCardT2({ c }: { c: ResumeEditorController }) {
     if (!shouldShowSection({ c, section: 'skills', hasContent })) return null;
 
     return (
-        <SectionCard>
-            <SectionHeader
-                title='Technical Skills'
+        <Box>
+            <T2SectionHeader
+                title='Skills'
+                c={c}
+                section='skills'
+                isEditing={isEditing}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('skills')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('skills')}
-                onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('skills')}
-                isEditing={isEditing}
-                isImproving={!c.isPreview && c.improvingSection === 'skills'}
-                improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'skills'}
-                deleteDisabled={c.isSaving || c.isDeletingSection}
-                isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
-                showImproveIcon={false}
                 hideActions={c.isExporting || c.isPreview || c.shouldBlockBelowSummary}
-                actionsSkeleton={c.shouldBlockBelowSummary}
             />
 
-            <SkillsContainer sx={{ mt: 1.5 }}>
+            <Box sx={{ mt: 1.5 }}>
                 {c.shouldBlockBelowSummary ? (
                     <SkeletonParagraph lines={3} />
                 ) : c.isAutoPipelineMode && c.shouldSkeletonSection('skills') ? (
                     <SkeletonParagraph lines={3} />
                 ) : c.skills.length === 0 ? (
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
                         No skills found.
                     </Typography>
                 ) : !c.isPreview && c.editingSection === 'skills' ? (
-                    c.skills.map((skill, index) => (
-                        <SkillTextField
-                            key={index}
-                            value={skill}
-                            onChange={(e) => c.handleSkillsChange(index, e.target.value)}
-                            size='small'
-                        />
-                    ))
+                    <SkillsContainer sx={{ mt: 0 }}>
+                        {c.skills.map((skill, index) => (
+                            <SkillTextField
+                                key={index}
+                                value={skill}
+                                onChange={(e) => c.handleSkillsChange(index, e.target.value)}
+                                size='small'
+                            />
+                        ))}
+                    </SkillsContainer>
                 ) : (
-                    c.skills.map((skill, index) => <MuiChips key={`${skill}-${index}`} label={skill} sx={{ mt: 0 }} />)
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                        {c.skills.map((skill, index) => (
+                            <Typography
+                                key={`${skill}-${index}`}
+                                sx={{
+                                    fontFamily: T2.fontFamily,
+                                    fontSize: `${T2.bodySizePx}px`,
+                                    color: T2.ruleStrong,
+                                    lineHeight: 1.5,
+                                }}
+                            >
+                                {skill}
+                            </Typography>
+                        ))}
+                    </Box>
                 )}
-            </SkillsContainer>
-        </SectionCard>
+            </Box>
+        </Box>
     );
 }
 
@@ -199,27 +267,19 @@ function TextListCardT2({
     onEditValueChange: (v: string) => void;
     improveEnabled: boolean;
 }) {
-    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === section;
     const hasContent = value.some((entry) => String(entry ?? '').trim().length > 0);
     if (!shouldShowSection({ c, section, hasContent })) return null;
 
     return (
-        <SectionCard>
-            <SectionHeader
+        <Box>
+            <T2SectionHeader
                 title={title}
+                c={c}
+                section={section}
+                isEditing={isEditing}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit(section)}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection(section)}
-                onImprove={!improveEnabled ? undefined : () => void c.handleImprove(section)}
-                onImproveOption={
-                    !improveEnabled ? undefined : (option) => void c.handleImprove(section, option)
-                }
-                improveOptions={improveOptions}
-                isEditing={isEditing}
-                isImproving={!c.isPreview && c.improvingSection === section}
-                improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== section}
-                deleteDisabled={c.isSaving || c.isDeletingSection}
-                isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
                 hideActions={
@@ -228,8 +288,6 @@ function TextListCardT2({
                     c.shouldBlockBelowSummary ||
                     (c.isAutoPipelineMode && !Boolean((c.autoImproved as any)[section]) && !Boolean(c.improveError))
                 }
-                actionsSkeleton={c.shouldBlockBelowSummary || c.shouldSkeletonActions(section)}
-                showImproveIcon={improveEnabled}
             />
 
             <Box mt={1.5}>
@@ -240,20 +298,27 @@ function TextListCardT2({
                 ) : !c.isPreview && c.editingSection === section ? (
                     <ExperienceTextareaAutosize value={editValue} onChange={(e) => onEditValueChange(e.target.value)} />
                 ) : value.length === 0 ? (
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
                         {`No ${title.toLowerCase()} found.`}
                     </Typography>
                 ) : (
                     <Box>
                         {value.map((text, idx) => (
-                            <SummaryText key={idx} sx={{ mt: idx === 0 ? 0 : 1.25 }}>
+                            <SummaryText
+                                key={idx}
+                                sx={{
+                                    mt: idx === 0 ? 0 : 1.25,
+                                    fontFamily: T2.fontFamily,
+                                    fontSize: `${T2.bodySizePx}px`,
+                                }}
+                            >
                                 {text}
                             </SummaryText>
                         ))}
                     </Box>
                 )}
             </Box>
-        </SectionCard>
+        </Box>
     );
 }
 
@@ -263,22 +328,17 @@ function LanguagesCardT2({ c }: { c: ResumeEditorController }) {
     if (!shouldShowSection({ c, section: 'languages', hasContent })) return null;
 
     return (
-        <SectionCard>
-            <SectionHeader
+        <Box>
+            <T2SectionHeader
                 title='Languages'
+                c={c}
+                section='languages'
+                isEditing={isEditing}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('languages')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('languages')}
-                onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('languages')}
-                isEditing={isEditing}
-                isImproving={!c.isPreview && c.improvingSection === 'languages'}
-                improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'languages'}
-                deleteDisabled={c.isSaving || c.isDeletingSection}
-                isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
-                showImproveIcon={false}
                 hideActions={c.isExporting || c.isPreview || c.shouldBlockBelowSummary}
-                actionsSkeleton={c.shouldBlockBelowSummary}
             />
 
             <Box mt={1.5}>
@@ -287,31 +347,36 @@ function LanguagesCardT2({ c }: { c: ResumeEditorController }) {
                 ) : c.isAutoPipelineMode && c.shouldSkeletonSection('languages') ? (
                     <SkeletonParagraph lines={3} />
                 ) : !c.isPreview && c.editingSection === 'languages' ? (
-                    <ExperienceTextareaAutosize
-                        value={c.languagesEditText}
-                        onChange={(e) => c.setLanguagesEditText(e.target.value)}
-                    />
+                    <ExperienceTextareaAutosize value={c.languagesEditText} onChange={(e) => c.setLanguagesEditText(e.target.value)} />
                 ) : c.languages.length === 0 ? (
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
                         No languages found.
                     </Typography>
                 ) : (
-                    <Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                         {c.languages.map((lang, idx) => (
-                            <SummaryText key={lang.id} sx={{ mt: idx === 0 ? 0 : 1.25 }}>
+                            <Typography
+                                key={lang.id}
+                                sx={{
+                                    mt: idx === 0 ? 0 : 0,
+                                    fontFamily: T2.fontFamily,
+                                    fontSize: `${T2.bodySizePx}px`,
+                                    color: T2.ruleStrong,
+                                    lineHeight: 1.5,
+                                }}
+                            >
                                 {lang.name}
                                 {lang.level ? ` - ${lang.level}` : ''}
-                            </SummaryText>
+                            </Typography>
                         ))}
                     </Box>
                 )}
             </Box>
-        </SectionCard>
+        </Box>
     );
 }
 
 function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
-    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === 'experience';
     const visibleExperiences = c.experiences.filter((exp) =>
         [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
@@ -320,21 +385,14 @@ function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
     if (!shouldShowSection({ c, section: 'experience', hasContent })) return null;
 
     return (
-        <SectionCard>
-            <SectionHeader
-                title='Professional Experience'
+        <Box>
+            <T2SectionHeader
+                title='Experience'
+                c={c}
+                section='experience'
+                isEditing={isEditing}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('experience')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('experience')}
-                onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('experience')}
-                onImproveOption={
-                    c.isPreview || c.isTextOnlyMode ? undefined : (option) => void c.handleImprove('experience', option)
-                }
-                improveOptions={improveOptions}
-                isEditing={isEditing}
-                isImproving={!c.isPreview && c.improvingSection === 'experience'}
-                improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'experience'}
-                deleteDisabled={c.isSaving || c.isDeletingSection}
-                isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
                 hideActions={
@@ -343,7 +401,6 @@ function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
                     c.shouldBlockBelowSummary ||
                     (c.isAutoPipelineMode && !Boolean(c.autoImproved.experience) && !Boolean(c.improveError))
                 }
-                actionsSkeleton={c.shouldBlockBelowSummary || c.shouldSkeletonActions('experience')}
             />
 
             <Box mt={1.5}>
@@ -352,49 +409,76 @@ function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
                 ) : c.isAutoPipelineMode && c.shouldSkeletonSection('experience') ? (
                     <SkeletonParagraph lines={5} />
                 ) : !c.isPreview && c.editingSection === 'experience' ? (
-                    <ExperienceTextareaAutosize
-                        value={c.experienceEditText}
-                        onChange={(e) => c.setExperienceEditText(e.target.value)}
-                    />
+                    <ExperienceTextareaAutosize value={c.experienceEditText} onChange={(e) => c.setExperienceEditText(e.target.value)} />
+                ) : visibleExperiences.length === 0 ? (
+                    <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
+                        No professional experience found.
+                    </Typography>
                 ) : (
-                    (() => {
-                        if (visibleExperiences.length === 0) {
-                            return (
-                                <Typography variant='body2' color='text.secondary'>
-                                    No professional experience found.
-                                </Typography>
-                            );
-                        }
+                    visibleExperiences.map((experience, index) => {
+                        const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
+                        const parts = String(experience.position ?? '')
+                            .split('•')
+                            .map((p) => p.trim())
+                            .filter(Boolean);
+                        const title = parts[0] ?? '';
+                        const period = parts.length >= 2 ? parts[1] ?? '' : '';
+                        const location = parts.length >= 3 ? parts[2] ?? '' : '';
 
-                        return visibleExperiences.map((experience, index) => {
-                            const Wrapper = index === 0 ? ExperienceItem : ExperienceItemSmall;
-                            return (
-                                <Wrapper key={experience.id}>
-                                    {(experience.company || experience.position) && (
-                                        <Box mb={1}>
-                                            {experience.company && <CompanyName variant='h6'>{experience.company}</CompanyName>}
-                                            {experience.position && (
-                                                <JobDetails variant='body2'>{experience.position}</JobDetails>
-                                            )}
+                        return (
+                            <Wrapper key={experience.id} sx={{ mt: index === 0 ? 0 : 2, mb: 0 }}>
+                                {(experience.company || experience.position) && (
+                                    <Box mb={0.75}>
+                                        <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 2 }}>
+                                            {experience.company ? (
+                                                <CompanyName
+                                                    variant='h6'
+                                                    sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, fontWeight: 700 }}
+                                                >
+                                                    {experience.company}
+                                                </CompanyName>
+                                            ) : null}
+                                            {location ? (
+                                                <Typography
+                                                    sx={{
+                                                        fontFamily: T2.fontFamily,
+                                                        fontSize: `${T2.bodySizePx}px`,
+                                                        color: T2.subtleText,
+                                                        whiteSpace: 'nowrap',
+                                                    }}
+                                                >
+                                                    {location}
+                                                </Typography>
+                                            ) : null}
                                         </Box>
-                                    )}
-                                    {experience.description && (
-                                        <ExperienceDescription variant='body2'>
-                                            {experience.description}
-                                        </ExperienceDescription>
-                                    )}
-                                </Wrapper>
-                            );
-                        });
-                    })()
+                                        {(title || period) ? (
+                                            <JobDetails
+                                                variant='body2'
+                                                sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.ruleStrong }}
+                                            >
+                                                {[title, period].filter(Boolean).join(' ')}
+                                            </JobDetails>
+                                        ) : null}
+                                    </Box>
+                                )}
+                                {experience.description ? (
+                                    <ExperienceDescription
+                                        variant='body2'
+                                        sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.ruleStrong }}
+                                    >
+                                        {experience.description}
+                                    </ExperienceDescription>
+                                ) : null}
+                            </Wrapper>
+                        );
+                    })
                 )}
             </Box>
-        </SectionCard>
+        </Box>
     );
 }
 
 function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
-    const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const shouldRender =
         !c.isPreview ||
         c.shouldBlockBelowSummary ||
@@ -404,23 +488,14 @@ function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
     if (!shouldRender) return null;
 
     return (
-        <SectionCard>
-            <SectionHeader
+        <Box>
+            <T2SectionHeader
                 title='Additional Information'
+                c={c}
+                section='additionalInfo'
+                isEditing={!c.isPreview && c.editingSection === 'additionalInfo'}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('additionalInfo')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('additionalInfo')}
-                isEditing={!c.isPreview && c.editingSection === 'additionalInfo'}
-                onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('additionalInfo')}
-                onImproveOption={
-                    c.isPreview || c.isTextOnlyMode
-                        ? undefined
-                        : (option) => void c.handleImprove('additionalInfo', option)
-                }
-                improveOptions={improveOptions}
-                isImproving={!c.isPreview && c.improvingSection === 'additionalInfo'}
-                improveDisabled={Boolean(c.improvingSection) && c.improvingSection !== 'additionalInfo'}
-                deleteDisabled={c.isSaving || c.isDeletingSection}
-                isSaving={c.isSaving}
                 onSave={c.isPreview ? undefined : c.handleSave}
                 onCancel={c.isPreview ? undefined : c.handleCancel}
                 hideActions={
@@ -429,7 +504,6 @@ function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
                     c.shouldBlockBelowSummary ||
                     (c.isAutoPipelineMode && !Boolean(c.autoImproved.additionalInfo) && !Boolean(c.improveError))
                 }
-                actionsSkeleton={c.shouldBlockBelowSummary || c.shouldSkeletonActions('additionalInfo')}
             />
 
             <Box mt={1.5}>
@@ -438,19 +512,135 @@ function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
                 ) : c.isAutoPipelineMode && c.shouldSkeletonSection('additionalInfo') ? (
                     <SkeletonParagraph lines={4} />
                 ) : !c.isPreview && c.editingSection === 'additionalInfo' ? (
-                    <ExperienceTextareaAutosize
-                        value={c.additionalInfoEditText}
-                        onChange={(e) => c.setAdditionalInfoEditText(e.target.value)}
-                    />
+                    <ExperienceTextareaAutosize value={c.additionalInfoEditText} onChange={(e) => c.setAdditionalInfoEditText(e.target.value)} />
                 ) : !c.additionalInfo.trim() ? (
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
                         No additional information found.
                     </Typography>
                 ) : (
-                    <SummaryText sx={{ whiteSpace: 'pre-line' }}>{c.additionalInfo}</SummaryText>
+                    <SummaryText sx={{ whiteSpace: 'pre-line', fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>
+                        {c.additionalInfo}
+                    </SummaryText>
                 )}
             </Box>
-        </SectionCard>
+        </Box>
+    );
+}
+
+function DetailsCardT2({ c }: { c: ResumeEditorController }) {
+    const isEditing = !c.isPreview && c.editingSection === 'contactWays';
+    const hasContent = c.contactWays.some((v) => String(v ?? '').trim().length > 0) || Boolean(c.resolvedEmail) || Boolean(c.resolvedPhone);
+    if (!shouldShowSection({ c, section: 'contactWays', hasContent })) return null;
+
+    const parsed = useMemo(() => {
+        const ways = Array.isArray(c.contactWays) ? c.contactWays : [];
+        const { email, phone } = extractEmailAndPhone(ways);
+        const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+        const phoneRegex = /(\+?\d[\d\s\-().]{6,}\d)/;
+        const clean = (raw: string) =>
+            String(raw ?? '')
+                .trim()
+                .replace(/^mailto:/i, '')
+                .replace(/^tel:/i, '')
+                .replace(/^(email|e-mail)\s*:\s*/i, '')
+                .replace(/^(phone|mobile|tel)\s*:\s*/i, '')
+                .trim();
+
+        const others = ways
+            .map(clean)
+            .filter(Boolean)
+            .filter((x) => !(emailRegex.test(x) || phoneRegex.test(x)));
+
+        const addressCandidate =
+            others.find((x) => /road|rd\.?|street|st\.?|avenue|ave\.?|boulevard|blvd\.?|lane|ln\.?|drive|dr\.?/i.test(x)) ??
+            others.find((x) => /\d{5}(-\d{4})?/.test(x)) ??
+            others[0] ??
+            '';
+
+        const addressLines = addressCandidate
+            ? addressCandidate
+                  .split(/,\s*/)
+                  .map((x) => x.trim())
+                  .filter(Boolean)
+            : [];
+
+        return {
+            phone: String(c.resolvedPhone ?? phone ?? '').trim(),
+            email: String(c.resolvedEmail ?? email ?? '').trim(),
+            addressLines,
+        };
+    }, [c.contactWays, c.resolvedEmail, c.resolvedPhone]);
+
+    const rowLabelSx = {
+        fontFamily: T2.fontFamily,
+        fontSize: '10px',
+        letterSpacing: '0.08em',
+        fontWeight: 700,
+        color: T2.ruleStrong,
+    } as const;
+
+    const rowValueSx = {
+        fontFamily: T2.fontFamily,
+        fontSize: `${T2.bodySizePx}px`,
+        color: T2.ruleStrong,
+        lineHeight: 1.5,
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+    } as const;
+
+    return (
+        <Box>
+            <T2SectionHeader
+                title='Details'
+                c={c}
+                section='contactWays'
+                isEditing={isEditing}
+                onEdit={c.isPreview ? undefined : () => c.handleEdit('contactWays')}
+                onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('contactWays')}
+                onSave={c.isPreview ? undefined : c.handleSave}
+                onCancel={c.isPreview ? undefined : c.handleCancel}
+                hideActions={c.isExporting || c.isPreview || c.shouldBlockBelowSummary}
+            />
+
+            <Box mt={1.5}>
+                {c.shouldBlockBelowSummary ? (
+                    <SkeletonParagraph lines={4} />
+                ) : c.isAutoPipelineMode && c.shouldSkeletonSection('contactWays') ? (
+                    <SkeletonParagraph lines={4} />
+                ) : !c.isPreview && c.editingSection === 'contactWays' ? (
+                    <ExperienceTextareaAutosize value={c.contactWaysEditText} onChange={(e) => c.setContactWaysEditText(e.target.value)} />
+                ) : (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {parsed.addressLines.length ? (
+                            <Box>
+                                <Typography sx={rowLabelSx}>ADDRESS</Typography>
+                                <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                    {parsed.addressLines.map((line, idx) => (
+                                        <Typography key={idx} sx={rowValueSx}>
+                                            {line}
+                                        </Typography>
+                                    ))}
+                                </Box>
+                            </Box>
+                        ) : null}
+
+                        {parsed.phone ? (
+                            <Box>
+                                <Typography sx={rowLabelSx}>PHONE</Typography>
+                                <Typography sx={{ ...rowValueSx, mt: 0.5 }}>{parsed.phone}</Typography>
+                            </Box>
+                        ) : null}
+
+                        {parsed.email ? (
+                            <Box>
+                                <Typography sx={rowLabelSx}>EMAIL</Typography>
+                                <Typography sx={{ ...rowValueSx, mt: 0.5 }}>{parsed.email}</Typography>
+                            </Box>
+                        ) : null}
+                    </Box>
+                )}
+            </Box>
+        </Box>
     );
 }
 
@@ -518,42 +708,56 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                     maxWidth: 920,
                     mx: 'auto',
                     overflow: 'hidden',
+                    backgroundColor: '#fff',
+                    boxShadow: 'none',
+                    borderRadius: 0,
                 }}
             >
                 <CardContent
                     sx={{
-                        px: { xs: 2, sm: 3 },
-                        py: { xs: 2.5, sm: 3 },
+                        p: 0,
                     }}
                 >
                     <Box
                         sx={{
-                            mb: 2,
-                            borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            background:
-                                'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(16,185,129,0.06))',
+                            width: '100%',
+                            maxWidth: `${T2.pageWidthPx}px`,
+                            minHeight: { xs: 'unset', md: `${T2.pageMinHeightPx}px` },
+                            mx: 'auto',
+                            px: { xs: 2.5, md: `${T2.pagePaddingPx}px` },
+                            py: { xs: 3, md: `${T2.pagePaddingPx}px` },
+                            boxSizing: 'border-box',
+                            fontFamily: T2.fontFamily,
                         }}
                     >
-                        <ProfileHeader
-                            fullName={c.profile.fullName}
-                            dateOfBirth={c.profile.dateOfBirth}
-                            visaStatus={c.resolvedVisaStatus}
-                            mainSkill={c.resolvedMainSkill}
-                            phone={c.resolvedPhone}
-                            email={c.resolvedEmail}
-                            isEditing={!c.isPreview && c.editingSection === 'profile'}
-                            onEdit={c.isPreview ? undefined : () => c.handleEdit('profile')}
-                            onSave={c.isPreview ? undefined : c.handleSave}
-                            onCancel={c.isPreview ? undefined : c.handleCancel}
-                            isSaving={c.isSaving}
-                            editText={c.profileEditText}
-                            onEditTextChange={c.isPreview ? undefined : c.setProfileEditText}
-                            showImproveIcon={false}
-                            hideActions={c.isExporting || c.isPreview}
-                        />
-                    </Box>
+                        {/* Header */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                            <Typography
+                                sx={{
+                                    fontFamily: T2.fontFamily,
+                                    fontSize: `${T2.headerNameSizePx}px`,
+                                    fontWeight: 800,
+                                    letterSpacing: '0.02em',
+                                    lineHeight: 1.05,
+                                    textTransform: 'uppercase',
+                                    color: '#000',
+                                }}
+                            >
+                                {String(c.profile.fullName ?? '').trim() || '—'}
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontFamily: T2.fontFamily,
+                                    fontSize: `${T2.headerRoleSizePx}px`,
+                                    color: T2.subtleText,
+                                    fontWeight: 500,
+                                }}
+                            >
+                                {String(c.resolvedMainSkill ?? '').trim() || ' '}
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ height: 1, backgroundColor: T2.rule, mt: 2.5, mb: 2.5 }} />
 
                     <ResumeAlerts
                         isCvLoading={c.isCvLoading}
@@ -566,40 +770,37 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                         onDismissDownloadError={c.clearDownloadError}
                     />
 
-                    <Grid container spacing={2} alignItems='stretch'>
-                        <Grid item xs={12} md={4}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                {!c.isSectionHidden('summary') ? <SummaryCardT2 c={c} /> : null}
+                        {/* Body */}
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr', md: '260px 1px 1fr' },
+                                columnGap: { xs: 0, md: 3.5 },
+                                rowGap: { xs: 3, md: 0 },
+                                alignItems: 'start',
+                            }}
+                        >
+                            {/* Left column */}
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                {!c.isSectionHidden('contactWays') ? <DetailsCardT2 c={c} /> : null}
                                 {!c.isSectionHidden('skills') ? <SkillsCardT2 c={c} /> : null}
                                 {!c.isSectionHidden('languages') ? <LanguagesCardT2 c={c} /> : null}
-                                {!c.isSectionHidden('certificates') ? (
-                                    <TextListCardT2
-                                        c={c}
-                                        title='Certificates'
-                                        section='certificates'
-                                        value={c.certificates}
-                                        editValue={c.certificatesEditText}
-                                        onEditValueChange={c.setCertificatesEditText}
-                                        improveEnabled={!c.isPreview && !c.isTextOnlyMode}
-                                    />
-                                ) : null}
                             </Box>
-                        </Grid>
 
-                        <Grid item xs={12} md={8}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {/* Vertical divider */}
+                            <Box
+                                sx={{
+                                    display: { xs: 'none', md: 'block' },
+                                    width: 1,
+                                    backgroundColor: T2.rule,
+                                    alignSelf: 'stretch',
+                                }}
+                            />
+
+                            {/* Right column */}
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                {!c.isSectionHidden('summary') ? <SummaryCardT2 c={c} /> : null}
                                 {!c.isSectionHidden('experience') ? <ExperienceCardT2 c={c} /> : null}
-                                {!c.isSectionHidden('selectedProjects') ? (
-                                    <TextListCardT2
-                                        c={c}
-                                        title='Selected Projects'
-                                        section='selectedProjects'
-                                        value={c.selectedProjects}
-                                        editValue={c.selectedProjectsEditText}
-                                        onEditValueChange={c.setSelectedProjectsEditText}
-                                        improveEnabled={!c.isPreview && !c.isTextOnlyMode}
-                                    />
-                                ) : null}
                                 {!c.isSectionHidden('education') ? (
                                     <TextListCardT2
                                         c={c}
@@ -611,10 +812,33 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                                         improveEnabled={!c.isPreview && !c.isTextOnlyMode}
                                     />
                                 ) : null}
+                                {/* Render extra sections only if user has content; keeps screenshot-like output for typical data */}
+                                {!c.isSectionHidden('certificates') ? (
+                                    <TextListCardT2
+                                        c={c}
+                                        title='Certificates'
+                                        section='certificates'
+                                        value={c.certificates}
+                                        editValue={c.certificatesEditText}
+                                        onEditValueChange={c.setCertificatesEditText}
+                                        improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                                    />
+                                ) : null}
+                                {!c.isSectionHidden('selectedProjects') ? (
+                                    <TextListCardT2
+                                        c={c}
+                                        title='Selected Projects'
+                                        section='selectedProjects'
+                                        value={c.selectedProjects}
+                                        editValue={c.selectedProjectsEditText}
+                                        onEditValueChange={c.setSelectedProjectsEditText}
+                                        improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                                    />
+                                ) : null}
                                 {!c.isSectionHidden('additionalInfo') ? <AdditionalInfoCardT2 c={c} /> : null}
                             </Box>
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
                 </CardContent>
             </MainCardContainer>
 
