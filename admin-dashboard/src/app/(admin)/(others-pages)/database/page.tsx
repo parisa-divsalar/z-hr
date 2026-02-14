@@ -76,6 +76,7 @@ const TABLE_LABELS: Record<string, string> = {
   plans: 'Plans',
   resume_feature_pricing: 'Resume Feature Pricing',
   coin: 'Coin',
+  coin_packages: 'Coin Packages',
   history: 'History',
 };
 
@@ -332,6 +333,8 @@ export default function DatabasePage() {
     const t = getCrudTable(activeTable);
     if (!t) return;
     if (activeTable === 'plans' && plansView === 'matrix') return;
+    // coin_packages might be a "static" helper view if backend isn't providing rows yet.
+    if (activeTable === 'coin_packages' && !(data?.tables as any)?.coin_packages) return;
     setRowMode('add');
     setRowEditingWhere(null);
     setRowActionError(null);
@@ -380,7 +383,7 @@ export default function DatabasePage() {
       setRowJson(JSON.stringify({}, null, 2));
     }
     setRowModalOpen(true);
-  }, [activeTable, getCrudTable, plansView]);
+  }, [activeTable, data?.tables, getCrudTable, plansView]);
 
   const openEditRow = useCallback(
     (table: string, row: any, idx: number) => {
@@ -404,6 +407,7 @@ export default function DatabasePage() {
     const tableForCrud = getCrudTable(activeTable);
     if (!tableForCrud) return;
     if (activeTable === 'plans' && plansView === 'matrix') return;
+    if (activeTable === 'coin_packages' && !(data?.tables as any)?.coin_packages) return;
 
     setRowSaving(true);
     setRowActionError(null);
@@ -460,7 +464,7 @@ export default function DatabasePage() {
     } finally {
       setRowSaving(false);
     }
-  }, [activeTable, fetchDb, getCrudTable, plansView, rowEditingWhere, rowJson, rowMode, userStateBefore]);
+  }, [activeTable, data?.tables, fetchDb, getCrudTable, plansView, rowEditingWhere, rowJson, rowMode, userStateBefore]);
 
   const deleteRow = useCallback(
     async (table: string, row: any, idx: number) => {
@@ -724,6 +728,23 @@ export default function DatabasePage() {
     { feature: 'Price', starter: '0', pro: '100 AED', plus: '250 AED', elite: '500 AED' },
     { feature: 'coin', starter: '', pro: '', plus: '', elite: '' },
   ];
+  const coinPackagesSeedRows = [
+    { package_name: 'Mini Pack', coin_amount: 10, price_aed: 75, aed_per_coin: 7.5, calculator_value_aed: 80, user_saving_percent: 6 },
+    { package_name: 'Starter Pack', coin_amount: 20, price_aed: 140, aed_per_coin: 7, calculator_value_aed: 160, user_saving_percent: 13 },
+    { package_name: 'Pro Pack', coin_amount: 35, price_aed: 227.5, aed_per_coin: 6.5, calculator_value_aed: 280, user_saving_percent: 19 },
+    { package_name: 'Elite Pack', coin_amount: 55, price_aed: 330, aed_per_coin: 6, calculator_value_aed: 440, user_saving_percent: 25 },
+  ];
+  const coinPackagesInsertSql = `INSERT INTO coin_packages
+(package_name, coin_amount, price_aed, aed_per_coin, calculator_value_aed, user_saving_percent)
+VALUES
+('Mini Pack', 10, 75, 7.5, 80, 6),
+('Starter Pack', 20, 140, 7, 160, 13),
+('Pro Pack', 35, 227.5, 6.5, 280, 19),
+('Elite Pack', 55, 330, 6, 440, 25);`;
+  const coinPackagesHasLiveTable = Boolean((data.tables as any)?.coin_packages);
+  const coinPackagesCount = coinPackagesHasLiveTable
+    ? (((data.tables as any)?.coin_packages as unknown[]) ?? []).length
+    : coinPackagesSeedRows.length;
 
   return (
     <div>
@@ -776,6 +797,19 @@ export default function DatabasePage() {
               >
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{TABLE_LABELS.coin}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">{coinActiveCount}</p>
+              </div>
+            )}
+            {!('coin_packages' in data.summary) && (
+              <div
+                className={`rounded-lg border p-3 cursor-pointer transition-colors ${
+                  activeTable === 'coin_packages'
+                    ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                    : 'border-gray-200 bg-gray-50 dark:border-strokedark dark:bg-meta-4'
+                }`}
+                onClick={() => setActiveTable('coin_packages')}
+              >
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{TABLE_LABELS.coin_packages}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{coinPackagesCount}</p>
               </div>
             )}
           </div>
@@ -841,6 +875,49 @@ export default function DatabasePage() {
           </div>
         )}
 
+        {activeTable === 'coin_packages' && !coinPackagesHasLiveTable && (
+          <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
+            <div className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+              <h3 className="font-semibold text-gray-900 dark:text-white">Coin Packages</h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Seed preview (static). When backend exposes the table, live rows will be shown automatically.
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-100 dark:bg-meta-4">
+                  <tr>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">package_name</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">coin_amount</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">price_aed</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">aed_per_coin</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">calculator_value_aed</th>
+                    <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">user_saving_percent</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {coinPackagesSeedRows.map((row) => (
+                    <tr key={row.package_name} className="border-t border-stroke dark:border-strokedark">
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{row.package_name}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.coin_amount}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.price_aed}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.aed_per_coin}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.calculator_value_aed}</td>
+                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.user_saving_percent}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-stroke px-4 py-4 dark:border-strokedark">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white mb-2">SQL seed</div>
+              <pre className="text-xs whitespace-pre overflow-auto rounded border border-stroke bg-gray-50 p-3 text-gray-800 dark:border-strokedark dark:bg-meta-4/40 dark:text-gray-200">
+                {coinPackagesInsertSql}
+              </pre>
+            </div>
+          </div>
+        )}
+
         {activeTable === 'plans' && plansView === 'matrix' && (
           <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-4 py-3 dark:border-strokedark">
@@ -883,7 +960,7 @@ export default function DatabasePage() {
           </div>
         )}
 
-        {activeTable !== 'coin' && (activeTable !== 'plans' || plansView === 'rows') && (
+        {activeTable !== 'coin' && (activeTable !== 'plans' || plansView === 'rows') && (activeTable !== 'coin_packages' || coinPackagesHasLiveTable) && (
           <div className="rounded-lg border border-stroke bg-white overflow-hidden dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-4 py-3 dark:border-strokedark flex items-center justify-between gap-2">
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -903,7 +980,10 @@ export default function DatabasePage() {
                     </Button>
                   </div>
                 )}
-                {activeTable && activeTable !== 'coin' && !(activeTable === 'plans' && plansView === 'matrix') && (
+                {activeTable &&
+                  activeTable !== 'coin' &&
+                  !(activeTable === 'plans' && plansView === 'matrix') &&
+                  !(activeTable === 'coin_packages' && !coinPackagesHasLiveTable) && (
                   <Button variant="primary" size="sm" onClick={openAddRow} disabled={rowSaving}>
                     Add row
                   </Button>
