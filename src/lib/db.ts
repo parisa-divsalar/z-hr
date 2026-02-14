@@ -29,6 +29,7 @@ const historyFile = path.join(dataDir, 'history.json');
 const userStatesFile = path.join(dataDir, 'user_states.json');
 const userStateHistoryFile = path.join(dataDir, 'user_state_history.json');
 const userStateLogsFile = path.join(dataDir, 'user_state_logs.json');
+const resumeFeaturePricingFile = path.join(dataDir, 'resume_feature_pricing.json');
 
 type HistoryRow = {
     id: string;
@@ -945,6 +946,9 @@ export const db = {
     },
     plans: {
         findAll: () => readFile(plansFile, defaultPlans),
+    },
+    resumeFeaturePricing: {
+        findAll: () => readFile(resumeFeaturePricingFile, []),
     },
     history: {
         findAll: (): HistoryRow[] => readFile(historyFile, []),

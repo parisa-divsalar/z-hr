@@ -74,6 +74,7 @@ const TABLE_LABELS: Record<string, string> = {
   user_state_history: 'User State History',
   user_state_logs: 'User State Logs',
   plans: 'Plans',
+  resume_feature_pricing: 'Resume Feature Pricing',
   coin: 'Coin',
   history: 'History',
 };
@@ -106,6 +107,22 @@ export default function DatabasePage() {
   const tableColumns = useMemo(() => {
     if (!activeTable || !data?.tables?.[activeTable]) return [] as string[];
     if (activeTable === 'user_states') return ['id', 'name', 'slug', 'order', 'description'];
+    if (activeTable === 'resume_feature_pricing')
+      return [
+        'id',
+        'feature_name',
+        'cost_percentage',
+        'cost_per_action_aed',
+        'coin_per_action',
+        'price_per_action_aed',
+        'cost_per_coin_aed',
+        'price_per_coin_aed',
+        'target_margin_percent',
+        'total_cost_per_user_aed',
+        'target_ltv_aed',
+        'created_at',
+        'updated_at',
+      ];
     const rows = data.tables[activeTable] as unknown[];
     if (!Array.isArray(rows) || rows.length === 0) return [] as string[];
     const cols: string[] = [];
@@ -335,6 +352,25 @@ export default function DatabasePage() {
             Video: '',
             description: '',
             is_bookmarked: false,
+          },
+          null,
+          2
+        )
+      );
+    } else if (t === 'resume_feature_pricing') {
+      setRowJson(
+        JSON.stringify(
+          {
+            feature_name: '',
+            cost_percentage: 0,
+            cost_per_action_aed: 0,
+            coin_per_action: 0,
+            price_per_action_aed: 0,
+            cost_per_coin_aed: 5,
+            price_per_coin_aed: 8,
+            target_margin_percent: 40,
+            total_cost_per_user_aed: 161,
+            target_ltv_aed: 268,
           },
           null,
           2
