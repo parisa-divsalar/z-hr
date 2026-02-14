@@ -3,9 +3,10 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { Box, ButtonBase, Divider, Stack, Typography } from '@mui/material';
 
+import CoinIcon from '@/assets/images/design/coin.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
-type TabKey = 'asset' | 'features';
+type TabKey = 'asset' | 'features' | 'coin';
 
 type PricingListItem = {
   id: string;
@@ -30,6 +31,15 @@ const FEATURE_ITEMS: PricingListItem[] = [
   { id: 'voice_interview_practice', label: 'Voice Interview Practice', initialQty: 0 },
   { id: 'video_interview', label: 'Video Interview', initialQty: 0 },
   { id: 'cover_letter', label: 'Cover Letter', initialQty: 0 },
+];
+
+type CoinPack = { id: string; label: string; coins: number };
+
+const COIN_PACKS: CoinPack[] = [
+  { id: 'mini', label: 'Mini Pack', coins: 10 },
+  { id: 'starter', label: 'Starter Pack', coins: 20 },
+  { id: 'pro', label: 'Pro Pack', coins: 35 },
+  { id: 'elite', label: 'Elite Pack', coins: 55 },
 ];
 
 const TabButton = memo(function TabButton({
@@ -60,6 +70,90 @@ const TabButton = memo(function TabButton({
     >
       {label}
     </Box>
+  );
+});
+
+const CoinPackList = memo(function CoinPackList({
+  selectedId,
+  onSelect,
+}: {
+  selectedId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <Stack spacing={1.25} sx={{ width: '100%' }}>
+      {COIN_PACKS.map((pack) => {
+        const selected = pack.id === selectedId;
+        return (
+          <ButtonBase
+            key={pack.id}
+            onClick={() => onSelect(pack.id)}
+            disableRipple
+            sx={{
+              width: '100%',
+              borderRadius: 2,
+              py: 0.25,
+              '&:hover': { backgroundColor: '#F7F7FB' },
+            }}
+          >
+            <Box
+              sx={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 1.25,
+                px: 0.5,
+              }}
+            >
+              <Stack direction='row' alignItems='center' spacing={1.25} sx={{ minWidth: 0 }}>
+                <Box
+                  aria-hidden
+                  sx={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    border: `2px solid ${selected ? '#4C5FFF' : '#D8D8DA'}`,
+                    display: 'grid',
+                    placeItems: 'center',
+                    flex: '0 0 auto',
+                  }}
+                >
+                  {selected ? (
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4C5FFF' }} />
+                  ) : null}
+                </Box>
+
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    color: '#111827',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {pack.label}
+                </Typography>
+              </Stack>
+
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  color: '#111827',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  flex: '0 0 auto',
+                }}
+              >
+                {pack.coins} Coins
+              </Typography>
+            </Box>
+          </ButtonBase>
+        );
+      })}
+    </Stack>
   );
 });
 
@@ -151,10 +245,8 @@ const PricingList = memo(function PricingList({
           >
             <Stack direction='row' alignItems='center' spacing={1} sx={{ minWidth: 0 }}>
               <Typography
+                  variant='subtitle2' color='text.primary' fontWeight='400'
                 sx={{
-                  fontSize: 14,
-                  color: '#111827',
-                  fontWeight: 500,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -284,10 +376,12 @@ const PricingFooter = memo(function PricingFooter({
 type CoinPricingCardProps = {
   onPayment?: () => void;
   onOurPlans?: () => void;
+  coinCount?: number;
 };
 
-export default function CoinPricingCard({ onPayment, onOurPlans }: CoinPricingCardProps) {
+export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: CoinPricingCardProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('asset');
+  const [selectedPackId, setSelectedPackId] = useState<string>('mini');
 
   const [assetQty, setAssetQty] = useState<Record<string, number>>(() =>
     Object.fromEntries(ASSET_ITEMS.map((i) => [i.id, i.initialQty])),
@@ -296,8 +390,13 @@ export default function CoinPricingCard({ onPayment, onOurPlans }: CoinPricingCa
     Object.fromEntries(FEATURE_ITEMS.map((i) => [i.id, i.initialQty])),
   );
 
-  const items = useMemo(() => (activeTab === 'asset' ? ASSET_ITEMS : FEATURE_ITEMS), [activeTab]);
-  const quantities = activeTab === 'asset' ? assetQty : featureQty;
+  const qtyItems = useMemo(() => {
+    if (activeTab === 'asset') return ASSET_ITEMS;
+    if (activeTab === 'features') return FEATURE_ITEMS;
+    return null;
+  }, [activeTab]);
+
+  const quantities = activeTab === 'asset' ? assetQty : activeTab === 'features' ? featureQty : null;
 
   const handleChangeQty = useCallback(
     (id: string, next: number) => {
@@ -305,24 +404,47 @@ export default function CoinPricingCard({ onPayment, onOurPlans }: CoinPricingCa
         setAssetQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
         return;
       }
-      setFeatureQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
+      if (activeTab === 'features') {
+        setFeatureQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
+      }
     },
     [activeTab],
   );
 
   const handleSetAssetTab = useCallback(() => setActiveTab('asset'), []);
   const handleSetFeaturesTab = useCallback(() => setActiveTab('features'), []);
+  const handleSetCoinTab = useCallback(() => setActiveTab('coin'), []);
+
+  const safeCoinCount = Number.isFinite(Number(coinCount)) ? Number(coinCount) : 0;
+  const handleSelectPack = useCallback((id: string) => setSelectedPackId(id), []);
 
   return (
     <>
-      <Box role='tablist' aria-label='Pricing tabs' sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>Your Coin</Typography>
+        <Stack direction='row' alignItems='center' spacing={0.75}>
+          <CoinIcon />
+          <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{safeCoinCount} Coin</Typography>
+        </Stack>
+      </Box>
+
+      <Box
+        role='tablist'
+        aria-label='Pricing tabs'
+        sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mt: 0.25 }}
+      >
         <TabButton label='Asset' active={activeTab === 'asset'} onClick={handleSetAssetTab} />
         <TabButton label='Features' active={activeTab === 'features'} onClick={handleSetFeaturesTab} />
+        <TabButton label='Coin' active={activeTab === 'coin'} onClick={handleSetCoinTab} />
       </Box>
 
       <Divider sx={{ borderColor: '#F0F0F2' }} />
 
-      <PricingList items={items} quantities={quantities} onChangeQty={handleChangeQty} />
+      {activeTab === 'coin' ? (
+        <CoinPackList selectedId={selectedPackId} onSelect={handleSelectPack} />
+      ) : qtyItems && quantities ? (
+        <PricingList items={qtyItems} quantities={quantities} onChangeQty={handleChangeQty} />
+      ) : null}
 
       <Divider sx={{ borderColor: '#F0F0F2' }} />
 

@@ -3,7 +3,7 @@ import { alpha, styled } from '@mui/material/styles';
 
 export const MainNavbarContainer = styled(Stack)(({ theme }) => ({
   width: '100%',
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  // borderBottom: `1px solid ${theme.palette.divider}`,
   position: 'sticky',
   top: 0,
   // Raise z-index above other overlays to keep the fixed navbar always visible.

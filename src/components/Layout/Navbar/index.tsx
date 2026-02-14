@@ -508,7 +508,11 @@ const Navbar = () => {
           },
         }}
       >
-        <CoinPricingCard onPayment={handleGoToPayment} onOurPlans={handleGoToPlans} />
+        <CoinPricingCard
+          coinCount={Number(profile?.coin ?? 0)}
+          onPayment={handleGoToPayment}
+          onOurPlans={handleGoToPlans}
+        />
       </Popover>
     </MainNavbarContainer>
   );
