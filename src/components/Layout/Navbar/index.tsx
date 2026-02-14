@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import {
   Box,
+  ButtonBase,
   Divider,
   Drawer,
   IconButton,
@@ -14,6 +15,7 @@ import {
   ListItemText,
   Stack,
   Typography,
+  Popover,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -27,6 +29,7 @@ import SunIcon from '@/assets/images/icons/sun.svg';
 import UserPlusIcon from '@/assets/images/icons/user-plus.svg';
 import logo from '@/assets/images/logo/logo.png';
 import { AppImage } from '@/components/AppImage';
+import CoinPricingCard from '@/components/Layout/Navbar/CoinPricingCard';
 import classes from '@/components/Layout/layout.module.css';
 import { MainNavbarContainer, MainNavbarContent } from '@/components/Layout/Navbar/styled';
 import {
@@ -38,6 +41,7 @@ import MuiButton from '@/components/UI/MuiButton';
 import {
   isLayoutVisible,
   isSidebarVisible,
+  PrivateRoutes,
   PublicRoutes,
 } from '@/config/routes';
 import { useAuthSession } from '@/hooks/useAuthSession';
@@ -68,6 +72,7 @@ const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [coinAnchorEl, setCoinAnchorEl] = useState<HTMLElement | null>(null);
 
   // If we have a cookie-based session but no accessToken in store, we still consider the user logged in.
   const showAuthedUI = isAuthenticated && !isAuthLoading;
@@ -124,6 +129,28 @@ const Navbar = () => {
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
   const openMenu = useCallback(() => setIsMenuOpen(true), []);
+
+  const isCoinPopoverOpen = Boolean(coinAnchorEl);
+  const coinPopoverId = isCoinPopoverOpen ? 'coin-pricing-popover' : undefined;
+
+  const handleCoinTriggerClick = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+    const target = event.currentTarget;
+    setCoinAnchorEl((prev) => (prev ? null : target));
+  }, []);
+
+  const handleCloseCoinPopover = useCallback(() => {
+    setCoinAnchorEl(null);
+  }, []);
+
+  const handleGoToPayment = useCallback(() => {
+    handleCloseCoinPopover();
+    router.push(PrivateRoutes.payment);
+  }, [handleCloseCoinPopover, router]);
+
+  const handleGoToPlans = useCallback(() => {
+    handleCloseCoinPopover();
+    router.push(PublicRoutes.pricing);
+  }, [handleCloseCoinPopover, router]);
 
   if (!isLayoutActive) return null;
 
@@ -193,12 +220,23 @@ const Navbar = () => {
 
             {showAuthedUI ? (
               <Stack direction='row' gap={3}>
-                <Stack direction='row' gap={0.5} alignItems='center'>
-                  <CoinIcon />
-                  <Typography color='secondary.main' variant='subtitle2'>
-                    {creditsText}
-                  </Typography>
-                </Stack>
+                <ButtonBase
+                  onClick={handleCoinTriggerClick}
+                  aria-describedby={coinPopoverId}
+                  sx={{
+                    borderRadius: 2,
+                    px: 0.75,
+                    py: 0.5,
+                    '&:hover': { backgroundColor: 'action.hover' },
+                  }}
+                >
+                  <Stack direction='row' gap={0.5} alignItems='center'>
+                    <CoinIcon />
+                    <Typography color='secondary.main' variant='subtitle2'>
+                      {creditsText}
+                    </Typography>
+                  </Stack>
+                </ButtonBase>
                 <MuiButton color='secondary' onClick={() => router.push(PublicRoutes.landing)}>
                   Create New
                 </MuiButton>
@@ -364,12 +402,25 @@ const Navbar = () => {
 
         {showAuthedUI ? (
           <Stack gap={1.25}>
-            <Stack direction='row' gap={0.75} alignItems='center' sx={{ px: 1 }}>
-              <CoinIcon />
-              <Typography color='secondary.main' variant='subtitle2'>
-                {creditsText}
-              </Typography>
-            </Stack>
+            <ButtonBase
+              onClick={handleCoinTriggerClick}
+              aria-describedby={coinPopoverId}
+              sx={{
+                borderRadius: 2,
+                px: 1,
+                py: 0.75,
+                display: 'flex',
+                justifyContent: 'flex-start',
+                '&:hover': { backgroundColor: 'action.hover' },
+              }}
+            >
+              <Stack direction='row' gap={0.75} alignItems='center'>
+                <CoinIcon />
+                <Typography color='secondary.main' variant='subtitle2'>
+                  {creditsText}
+                </Typography>
+              </Stack>
+            </ButtonBase>
 
             <MuiButton
               color='secondary'
@@ -432,6 +483,33 @@ const Navbar = () => {
           </Stack>
         )}
       </Drawer>
+
+      <Popover
+        id={coinPopoverId}
+        open={isCoinPopoverOpen}
+        anchorEl={coinAnchorEl}
+        onClose={handleCloseCoinPopover}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        marginThreshold={16}
+        PaperProps={{
+          sx: {
+            width: { xs: 'min(92vw, 360px)', sm: 360 },
+            p: 2,
+            borderRadius: 3,
+            border: '1px solid #F0F0F2',
+            boxShadow: {
+              xs: '0 10px 28px rgba(15, 23, 42, 0.12)',
+              sm: '0 18px 60px rgba(15, 23, 42, 0.14)',
+            },
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+          },
+        }}
+      >
+        <CoinPricingCard onPayment={handleGoToPayment} onOurPlans={handleGoToPlans} />
+      </Popover>
     </MainNavbarContainer>
   );
 };
