@@ -74,21 +74,25 @@ const QuantityControl = memo(function QuantityControl({
 }) {
   return (
     <Stack direction='row' alignItems='center' spacing={1} sx={{ flex: '0 0 auto' }}>
-      <ButtonBase
-        aria-label='Decrease'
-        onClick={onDecrement}
-        sx={{
-          width: 22,
-          height: 22,
-          borderRadius: 1,
-          color: '#111827',
-          fontSize: 18,
-          lineHeight: 1,
-          '&:hover': { backgroundColor: '#F7F7FB' },
-        }}
-      >
-        −
-      </ButtonBase>
+      {value > 0 ? (
+        <ButtonBase
+          aria-label='Decrease'
+          onClick={onDecrement}
+          sx={{
+            width: 22,
+            height: 22,
+            borderRadius: 1,
+            color: '#111827',
+            fontSize: 18,
+            lineHeight: 1,
+            '&:hover': { backgroundColor: '#F7F7FB' },
+          }}
+        >
+          −
+        </ButtonBase>
+      ) : (
+        <Box aria-hidden sx={{ width: 22, height: 22 }} />
+      )}
 
       <Typography
         component='span'
