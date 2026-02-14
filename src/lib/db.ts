@@ -30,6 +30,7 @@ const userStatesFile = path.join(dataDir, 'user_states.json');
 const userStateHistoryFile = path.join(dataDir, 'user_state_history.json');
 const userStateLogsFile = path.join(dataDir, 'user_state_logs.json');
 const resumeFeaturePricingFile = path.join(dataDir, 'resume_feature_pricing.json');
+const coinPackagesFile = path.join(dataDir, 'coin_packages.json');
 
 type HistoryRow = {
     id: string;
@@ -277,6 +278,13 @@ const defaultPlans = [
         price_aed: 500,
         coin: null,
     },
+];
+
+const defaultCoinPackages = [
+    { id: 1, package_name: 'Mini Pack', coin_amount: 10, price_aed: 75, aed_per_coin: 7.5, calculator_value_aed: 80, user_saving_percent: 6 },
+    { id: 2, package_name: 'Starter Pack', coin_amount: 20, price_aed: 140, aed_per_coin: 7, calculator_value_aed: 160, user_saving_percent: 13 },
+    { id: 3, package_name: 'Pro Pack', coin_amount: 35, price_aed: 227.5, aed_per_coin: 6.5, calculator_value_aed: 280, user_saving_percent: 19 },
+    { id: 4, package_name: 'Elite Pack', coin_amount: 55, price_aed: 330, aed_per_coin: 6, calculator_value_aed: 440, user_saving_percent: 25 },
 ];
 
 if (!fs.existsSync(dataDir)) {
@@ -950,6 +958,9 @@ export const db = {
     resumeFeaturePricing: {
         findAll: () => readFile(resumeFeaturePricingFile, []),
     },
+    coinPackages: {
+        findAll: () => readFile(coinPackagesFile, defaultCoinPackages),
+    },
     history: {
         findAll: (): HistoryRow[] => readFile(historyFile, []),
         findByUserId: (userId: number): HistoryRow[] => {
@@ -1038,6 +1049,7 @@ if (!fs.existsSync(learningHubBookmarksFile)) writeFile(learningHubBookmarksFile
     if (!fs.existsSync(userStatesFile)) writeFile(userStatesFile, defaultUserStates);
     if (!fs.existsSync(userStateHistoryFile)) writeFile(userStateHistoryFile, []);
     if (!fs.existsSync(userStateLogsFile)) writeFile(userStateLogsFile, []);
+    if (!fs.existsSync(coinPackagesFile)) writeFile(coinPackagesFile, defaultCoinPackages);
 }
 
 initDatabase();

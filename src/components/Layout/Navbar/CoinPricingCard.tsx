@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { Box, ButtonBase, Divider, Stack, Typography } from '@mui/material';
@@ -22,25 +22,39 @@ const ASSET_ITEMS: PricingListItem[] = [
   { id: 'voice', label: 'Voice', initialQty: 0 },
 ];
 
-const FEATURE_ITEMS: PricingListItem[] = [
-  { id: 'resume_template', label: 'Resume Template', initialQty: 1 },
-  { id: 'job_position_suggestions', label: 'Job Position Suggestions', initialQty: 0 },
-  { id: 'learning_hub', label: 'Learning Hub', initialQty: 0 },
-  { id: 'interview_questions', label: 'Interview Questions', initialQty: 0 },
-  { id: 'text_interview_practice', label: 'Text Interview Practice', badge: 'Chatbot', initialQty: 0 },
-  { id: 'voice_interview_practice', label: 'Voice Interview Practice', initialQty: 0 },
-  { id: 'video_interview', label: 'Video Interview', initialQty: 0 },
-  { id: 'cover_letter', label: 'Cover Letter', initialQty: 0 },
-];
+type ResumeFeaturePricingRow = {
+  id?: number | string;
+  feature_name?: string;
+  [k: string]: unknown;
+};
+
+type CoinPackageRow = {
+  id?: number | string;
+  package_name?: string;
+  coin_amount?: number | string;
+  [k: string]: unknown;
+};
 
 type CoinPack = { id: string; label: string; coins: number };
 
-const COIN_PACKS: CoinPack[] = [
-  { id: 'mini', label: 'Mini Pack', coins: 10 },
-  { id: 'starter', label: 'Starter Pack', coins: 20 },
-  { id: 'pro', label: 'Pro Pack', coins: 35 },
-  { id: 'elite', label: 'Elite Pack', coins: 55 },
-];
+type ApiListResponse<T> = { data?: T[]; error?: string };
+
+function safeStr(v: unknown): string {
+  return String(v ?? '').trim();
+}
+
+function slugifyId(input: string): string {
+  return safeStr(input)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function mergeQuantities(prev: Record<string, number>, items: PricingListItem[]) {
+  const next: Record<string, number> = {};
+  for (const item of items) next[item.id] = prev[item.id] ?? item.initialQty ?? 0;
+  return next;
+}
 
 const TabButton = memo(function TabButton({
   label,
@@ -74,15 +88,17 @@ const TabButton = memo(function TabButton({
 });
 
 const CoinPackList = memo(function CoinPackList({
+  packs,
   selectedId,
   onSelect,
 }: {
+  packs: CoinPack[];
   selectedId: string;
   onSelect: (id: string) => void;
 }) {
   return (
     <Stack spacing={1.25} sx={{ width: '100%' }}>
-      {COIN_PACKS.map((pack) => {
+      {packs.map((pack) => {
         const selected = pack.id === selectedId;
         return (
           <ButtonBase
@@ -381,20 +397,100 @@ type CoinPricingCardProps = {
 
 export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: CoinPricingCardProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('asset');
-  const [selectedPackId, setSelectedPackId] = useState<string>('mini');
+  const [selectedPackId, setSelectedPackId] = useState<string>('');
+
+  const [featureItems, setFeatureItems] = useState<PricingListItem[]>([]);
+  const [featureLoading, setFeatureLoading] = useState(false);
+  const [featureError, setFeatureError] = useState<string | null>(null);
+
+  const [coinPacks, setCoinPacks] = useState<CoinPack[]>([]);
+  const [coinPackLoading, setCoinPackLoading] = useState(false);
+  const [coinPackError, setCoinPackError] = useState<string | null>(null);
 
   const [assetQty, setAssetQty] = useState<Record<string, number>>(() =>
     Object.fromEntries(ASSET_ITEMS.map((i) => [i.id, i.initialQty])),
   );
-  const [featureQty, setFeatureQty] = useState<Record<string, number>>(() =>
-    Object.fromEntries(FEATURE_ITEMS.map((i) => [i.id, i.initialQty])),
-  );
+  const [featureQty, setFeatureQty] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    async function run() {
+      setFeatureLoading(true);
+      setFeatureError(null);
+      setCoinPackLoading(true);
+      setCoinPackError(null);
+
+      try {
+        const [featuresRes, coinRes] = await Promise.all([
+          fetch('/api/pricing/resume-feature-pricing', { cache: 'no-store', signal, headers: { Accept: 'application/json' } }),
+          fetch('/api/pricing/coin-packages', { cache: 'no-store', signal, headers: { Accept: 'application/json' } }),
+        ]);
+
+        const featuresJson = (await featuresRes.json().catch(() => ({}))) as ApiListResponse<ResumeFeaturePricingRow>;
+        const coinJson = (await coinRes.json().catch(() => ({}))) as ApiListResponse<CoinPackageRow>;
+
+        if (!featuresRes.ok) throw new Error(featuresJson?.error || `HTTP ${featuresRes.status} (resume-feature-pricing)`);
+        if (!coinRes.ok) throw new Error(coinJson?.error || `HTTP ${coinRes.status} (coin-packages)`);
+
+        const featureRows = Array.isArray(featuresJson?.data) ? featuresJson.data : [];
+        const nextFeatureItems: PricingListItem[] = featureRows
+          .map((row, idx) => {
+            const label = safeStr(row?.feature_name) || `Feature ${idx + 1}`;
+            const id = safeStr(row?.id) || slugifyId(label) || String(idx + 1);
+            const badge = label.toLowerCase().includes('chatbot') ? 'Chatbot' : undefined;
+            return { id, label, badge, initialQty: 0 };
+          })
+          .filter((x) => Boolean(x.id) && Boolean(x.label));
+
+        const coinRows = Array.isArray(coinJson?.data) ? coinJson.data : [];
+        const nextCoinPacks: CoinPack[] = coinRows
+          .map((row, idx) => {
+            const label = safeStr(row?.package_name) || `Package ${idx + 1}`;
+            const id = safeStr(row?.id) || slugifyId(label) || String(idx + 1);
+            const coins = Number(row?.coin_amount ?? 0);
+            return { id, label, coins: Number.isFinite(coins) ? coins : 0 };
+          })
+          .filter((x) => Boolean(x.id) && Boolean(x.label));
+
+        setFeatureItems(nextFeatureItems);
+        setCoinPacks(nextCoinPacks);
+      } catch (e) {
+        if (signal.aborted) return;
+        const msg = e instanceof Error ? e.message : 'Failed to load pricing data';
+        setFeatureError(msg);
+        setCoinPackError(msg);
+        setFeatureItems([]);
+        setCoinPacks([]);
+      } finally {
+        if (signal.aborted) return;
+        setFeatureLoading(false);
+        setCoinPackLoading(false);
+      }
+    }
+
+    run();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    setFeatureQty((prev) => mergeQuantities(prev, featureItems));
+  }, [featureItems]);
+
+  useEffect(() => {
+    if (coinPacks.length === 0) return;
+    setSelectedPackId((prev) => {
+      if (prev && coinPacks.some((p) => p.id === prev)) return prev;
+      return coinPacks[0].id;
+    });
+  }, [coinPacks]);
 
   const qtyItems = useMemo(() => {
     if (activeTab === 'asset') return ASSET_ITEMS;
-    if (activeTab === 'features') return FEATURE_ITEMS;
+    if (activeTab === 'features') return featureItems;
     return null;
-  }, [activeTab]);
+  }, [activeTab, featureItems]);
 
   const quantities = activeTab === 'asset' ? assetQty : activeTab === 'features' ? featureQty : null;
 
@@ -441,9 +537,25 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
       <Divider sx={{ borderColor: '#F0F0F2' }} />
 
       {activeTab === 'coin' ? (
-        <CoinPackList selectedId={selectedPackId} onSelect={handleSelectPack} />
+        coinPackLoading ? (
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Loading coin packages…</Typography>
+        ) : coinPackError ? (
+          <Typography sx={{ fontSize: 13, color: 'error.main' }}>{coinPackError}</Typography>
+        ) : coinPacks.length === 0 ? (
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>No coin packages found.</Typography>
+        ) : (
+          <CoinPackList packs={coinPacks} selectedId={selectedPackId} onSelect={handleSelectPack} />
+        )
       ) : qtyItems && quantities ? (
-        <PricingList items={qtyItems} quantities={quantities} onChangeQty={handleChangeQty} />
+        activeTab === 'features' && featureLoading ? (
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Loading features…</Typography>
+        ) : activeTab === 'features' && featureError ? (
+          <Typography sx={{ fontSize: 13, color: 'error.main' }}>{featureError}</Typography>
+        ) : activeTab === 'features' && featureItems.length === 0 ? (
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>No features found.</Typography>
+        ) : (
+          <PricingList items={qtyItems} quantities={quantities} onChangeQty={handleChangeQty} />
+        )
       ) : null}
 
       <Divider sx={{ borderColor: '#F0F0F2' }} />

@@ -71,6 +71,10 @@ export const API_ROUTES: ApiRoute[] = [
   { path: '/api/plans', methods: ['GET'], feature: 'plans' },
   { path: '/api/more-features', methods: ['GET'], feature: 'more-features' },
 
+  // Pricing
+  { path: '/api/pricing/resume-feature-pricing', methods: ['GET', 'OPTIONS'], feature: 'pricing' },
+  { path: '/api/pricing/coin-packages', methods: ['GET', 'OPTIONS'], feature: 'pricing' },
+
   // Jobs
   { path: '/api/jobs/sync', methods: ['GET'], feature: 'jobs' },
   { path: '/api/jobs/test', methods: ['GET'], feature: 'jobs' },

@@ -80,6 +80,7 @@ export async function GET() {
     const userStateLogs = db.userStateLogs.findAll();
     const plans = db.plans.findAll();
     const resumeFeaturePricing = db.resumeFeaturePricing.findAll();
+    const coinPackages = db.coinPackages.findAll();
     const history = db.history.findAll();
     const historyEnriched = history.map((row: any) => {
       const userId = Number(row?.user_id);
@@ -120,6 +121,7 @@ export async function GET() {
         user_state_logs: userStateLogs.length,
         plans: plans.length,
         resume_feature_pricing: resumeFeaturePricing.length,
+        coin_packages: coinPackages.length,
         history: historyEnriched.length,
       },
       tables: {
@@ -145,6 +147,7 @@ export async function GET() {
         user_state_logs: userStateLogs,
         plans,
         resume_feature_pricing: resumeFeaturePricing,
+        coin_packages: coinPackages,
         history: historyEnriched,
       },
       source: 'data/ (file-based JSON)',
