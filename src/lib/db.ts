@@ -31,6 +31,7 @@ const userStateHistoryFile = path.join(dataDir, 'user_state_history.json');
 const userStateLogsFile = path.join(dataDir, 'user_state_logs.json');
 const resumeFeaturePricingFile = path.join(dataDir, 'resume_feature_pricing.json');
 const coinPackagesFile = path.join(dataDir, 'coin_packages.json');
+const fiservTransactionsFile = path.join(dataDir, 'fiserv_transactions.json');
 
 type HistoryRow = {
     id: string;
@@ -961,6 +962,57 @@ export const db = {
     coinPackages: {
         findAll: () => readFile(coinPackagesFile, defaultCoinPackages),
     },
+    /**
+     * Fiserv transactions (payment attempts + results).
+     * Stored in `data/fiserv_transactions.json` in dev; can be migrated to SQL later.
+     */
+    fiservTransactions: {
+        findAll: () => readFile(fiservTransactionsFile, []),
+        findByUserId: (userId: number) => {
+            const rows = readFile(fiservTransactionsFile, []);
+            const uid = Number(userId);
+            if (!Number.isFinite(uid)) return [];
+            return rows.filter((r: any) => Number(r?.user_id) === uid);
+        },
+        findByOrderId: (orderId: string) => {
+            const rows = readFile(fiservTransactionsFile, []);
+            const oid = String(orderId ?? '').trim();
+            if (!oid) return null;
+            return rows.find((r: any) => String(r?.order_id ?? '') === oid) ?? null;
+        },
+        /**
+         * Upsert by `order_id` (preferred) to keep one unique record per order.
+         * If `order_id` missing, falls back to append.
+         */
+        upsert: (data: any) => {
+            const rows = readFile(fiservTransactionsFile, []);
+            const now = new Date().toISOString();
+            const orderId = String(data?.order_id ?? data?.orderId ?? '').trim();
+
+            if (orderId) {
+                const idx = rows.findIndex((r: any) => String(r?.order_id ?? '') === orderId);
+                if (idx !== -1) {
+                    rows[idx] = { ...rows[idx], ...data, order_id: orderId, updated_at: now };
+                    writeFile(fiservTransactionsFile, rows);
+                    return rows[idx];
+                }
+            }
+
+            const ids = rows.map((r: any) => Number(r?.id)).filter((n: number) => Number.isFinite(n));
+            const nextId = (ids.length ? Math.max(...ids) : 0) + 1;
+            const created_at = data?.created_at ?? now;
+            const row = {
+                id: nextId,
+                ...data,
+                ...(orderId ? { order_id: orderId } : {}),
+                created_at,
+                updated_at: now,
+            };
+            rows.push(row);
+            writeFile(fiservTransactionsFile, rows);
+            return row;
+        },
+    },
     history: {
         findAll: (): HistoryRow[] => readFile(historyFile, []),
         findByUserId: (userId: number): HistoryRow[] => {
@@ -1050,6 +1102,7 @@ if (!fs.existsSync(learningHubBookmarksFile)) writeFile(learningHubBookmarksFile
     if (!fs.existsSync(userStateHistoryFile)) writeFile(userStateHistoryFile, []);
     if (!fs.existsSync(userStateLogsFile)) writeFile(userStateLogsFile, []);
     if (!fs.existsSync(coinPackagesFile)) writeFile(coinPackagesFile, defaultCoinPackages);
+    if (!fs.existsSync(fiservTransactionsFile)) writeFile(fiservTransactionsFile, []);
 }
 
 initDatabase();

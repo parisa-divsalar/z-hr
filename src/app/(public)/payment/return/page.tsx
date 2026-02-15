@@ -36,6 +36,20 @@ export default function PaymentReturnPage() {
   );
 
   useEffect(() => {
+    // Persist the result on the server (best-effort).
+    (async () => {
+      try {
+        await fetch('/api/payment/fiserv/return', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ status, planId, orderId }),
+          cache: 'no-store',
+        });
+      } catch {
+        // ignore
+      }
+    })();
+
     // 1) BroadcastChannel (best for cross-tab, same-origin)
     try {
       const bc = new BroadcastChannel(CHANNEL_NAME);

@@ -224,6 +224,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Persist a "pending" transaction immediately (so admin can see it as soon as user clicks Payment).
+    try {
+      const user = db.users.findByEmail(email);
+      const userId = Number((user as any)?.id);
+      const checkoutId = typeof json?.checkout?.checkoutId === 'string' ? json.checkout.checkoutId : null;
+      db.fiservTransactions.upsert({
+        user_id: Number.isFinite(userId) ? userId : null,
+        order_id: orderId,
+        checkout_id: checkoutId,
+        transaction_id: null,
+        status: 'pending',
+        approval_code: null,
+        processor_reference: null,
+        amount: Number(priceAed.toFixed(2)),
+        currency: 'AED',
+        card_brand: null,
+        masked_card: null,
+        customer_email: email,
+        customer_name: `${firstName} ${lastName}`.trim(),
+        // helpful extra metadata (not part of SQL draft, but harmless in JSON storage)
+        plan_id: planId,
+      });
+    } catch (e) {
+      // Never block checkout creation due to local persistence errors
+      console.warn('Failed to persist pending Fiserv transaction:', e);
+    }
+
     return NextResponse.json(
       {
         checkoutUrl,

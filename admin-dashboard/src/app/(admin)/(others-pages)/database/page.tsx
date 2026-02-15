@@ -77,6 +77,7 @@ const TABLE_LABELS: Record<string, string> = {
   resume_feature_pricing: 'Resume Feature Pricing',
   coin: 'Coin',
   coin_packages: 'Coin Packages',
+  fiserv_transactions: 'Fiserv Transactions',
   history: 'History',
 };
 
@@ -232,6 +233,30 @@ export default function DatabasePage() {
       user_skills: filterByUserId(tables.user_skills ?? [], userId),
       interview_sessions: filterByUserId(tables.interview_sessions ?? [], userId),
       resume_drafts: filterByUserId(tables.resume_drafts ?? [], userId),
+      fiserv_transactions: (() => {
+        const all = (tables.fiserv_transactions ?? []) as any[];
+        const byUid = filterByUserId(all, userId) as any[];
+        const email = String(selectedUser?.email ?? '').trim().toLowerCase();
+        const byEmail = email
+          ? all.filter((r: any) => String(r?.customer_email ?? '').trim().toLowerCase() === email)
+          : [];
+        const merged = [...byUid, ...byEmail];
+        // Deduplicate by order_id (preferred) then by id.
+        const seen = new Set<string>();
+        const out: any[] = [];
+        for (const r of merged) {
+          const k = String(r?.order_id ?? r?.orderId ?? r?.id ?? '').trim();
+          if (!k || seen.has(k)) continue;
+          seen.add(k);
+          out.push(r);
+        }
+        // Newest first
+        return out.sort((a: any, b: any) => {
+          const ta = Date.parse(String(a?.updated_at ?? a?.created_at ?? '')) || 0;
+          const tb = Date.parse(String(b?.updated_at ?? b?.created_at ?? '')) || 0;
+          return tb - ta;
+        });
+      })(),
       history: [...history, ...derivedFromCvs],
       registration_logs: (tables.registration_logs ?? []).filter(
         (r: any) => r.email === selectedUser?.email || r.user_id === userId
@@ -1218,6 +1243,7 @@ VALUES
                 {userDetailData &&
                   [
                     { key: 'login_logs', label: 'Login logs', data: userDetailData.login_logs },
+                    { key: 'fiserv_transactions', label: 'Payments (Fiserv)', data: (userDetailData as any).fiserv_transactions ?? [] },
                     { key: 'ai_interactions', label: 'ChatGPT input/output', data: userDetailData.ai_interactions },
                     { key: 'cvs', label: 'Resumes', data: userDetailData.cvs },
                     { key: 'cover_letters', label: 'Cover letters', data: (userDetailData as any).cover_letters ?? [] },

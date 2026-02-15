@@ -51,10 +51,33 @@ CREATE TABLE IF NOT EXISTS interview_sessions (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Fiserv payment transactions (created on checkout start, updated on return/webhook)
+CREATE TABLE IF NOT EXISTS fiserv_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    order_id TEXT,
+    checkout_id TEXT,
+    transaction_id TEXT,
+    status TEXT,
+    approval_code TEXT,
+    processor_reference TEXT,
+    amount REAL,
+    currency TEXT,
+    card_brand TEXT,
+    masked_card TEXT,
+    customer_email TEXT,
+    customer_name TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_cvs_user_id ON cvs(user_id);
 CREATE INDEX IF NOT EXISTS idx_cvs_request_id ON cvs(request_id);
 CREATE INDEX IF NOT EXISTS idx_user_skills_user_id ON user_skills(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_skills_skill_id ON user_skills(skill_id);
+CREATE INDEX IF NOT EXISTS idx_fiserv_transactions_user_id ON fiserv_transactions(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_fiserv_transactions_order_id ON fiserv_transactions(order_id);
 
 
 

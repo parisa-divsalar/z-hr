@@ -79,6 +79,7 @@ const TABLES: Record<string, TableConfig> = {
   plans: { file: 'plans.json', keyFields: ['id'], allowIndexFallback: true },
   resume_feature_pricing: { file: 'resume_feature_pricing.json', keyFields: ['id'], allowIndexFallback: true },
   coin_packages: { file: 'coin_packages.json', keyFields: ['id'], allowIndexFallback: true },
+  fiserv_transactions: { file: 'fiserv_transactions.json', keyFields: ['order_id', 'id'], allowIndexFallback: true },
   history: { file: 'history.json', keyFields: ['user_id', 'id'], allowIndexFallback: true },
 };
 
