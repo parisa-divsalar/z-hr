@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
+
 import { Stack, Typography, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -9,42 +11,108 @@ import MuiTable from '@/components/UI/MuiTable';
 
 import { MobilePaymentList, MobilePaymentRow, PaymentRoot, PageTitle, TableWrapper } from './styled';
 
+type PaymentStatus = 'success' | 'pending' | 'failed' | 'cancelled';
+
 interface PaymentData {
   amount: string;
   date: string;
   plan: string;
   paymentCode: string;
-  status: 'success' | 'pending' | 'failed';
+  status: PaymentStatus;
 }
 
-function createData(
-  amount: string,
-  date: string,
-  plan: string,
-  paymentCode: string,
-  status: 'success' | 'pending' | 'failed',
-): PaymentData {
-  return { amount, date, plan, paymentCode, status };
+type ApiTransactionRow = {
+  id?: number;
+  order_id?: string;
+  orderId?: string;
+  status?: string;
+  amount?: number | string;
+  currency?: string;
+  plan_id?: string;
+  planId?: string;
+  created_at?: string;
+  createdAt?: string;
+  updated_at?: string;
+  updatedAt?: string;
+  [k: string]: unknown;
+};
+
+function normalizeStatus(raw: unknown): PaymentStatus {
+  const s = String(raw ?? '').trim().toLowerCase();
+  if (s === 'success') return 'success';
+  if (s === 'pending') return 'pending';
+  if (s === 'cancelled') return 'cancelled';
+  return 'failed';
 }
 
-const paymentData = [
-  createData('$188895', '09/09/2025', '20 Coin', 'Hk59G5f7Tp', 'success'),
-  createData('$98980985', '10/09/2025', '20 Coin', 'U3loOePkLg', 'pending'),
-  createData('$798798710', '11/09/2025', '20 Coin', 'Vb87Jq7Nm', 'failed'),
-  createData('$29088980', '12/09/2025', '50 Coin', 'Xa23Md9Klp', 'success'),
-  createData('$798798710', '13/09/2025', '20 Coin', 'Qw45Rt8Yui', 'success'),
-  createData('$8$7987710', '14/09/2025', '10 Coin', 'Zx67Cv3Bnm', 'pending'),
-  createData('$279897105', '15/09/2025', '100 Coin', 'As89Df5Ghj', 'failed'),
-  createData('$15$7998710', '16/09/2025', '20 Coin', 'Pl01Mn6Klo', 'success'),
-  createData('$$798798710', '17/09/2025', '100 Coin', 'Ty12Ui9Xvb', 'success'),
-  createData('$$798798710', '18/09/2025', '20 Coin', 'Fg34Hj7Klm', 'pending'),
-  createData('$$798798718', '19/09/2025', '50 Coin', 'Zq56Ws8Edr', 'success'),
-  createData('$$798798710', '20/09/2025', '50 Coin', 'Po78Iu6Ytr', 'failed'),
-];
+function formatMoney(amount: unknown, currency: unknown): string {
+  const c = String(currency ?? 'AED').trim() || 'AED';
+  const n = typeof amount === 'number' ? amount : Number(String(amount ?? '').replace(/,/g, '').trim());
+  if (!Number.isFinite(n)) return `${c} —`;
+  const rounded = Math.round(n * 100) / 100;
+  return `${c} ${rounded}`;
+}
+
+function formatDate(iso: unknown): string {
+  const d = new Date(String(iso ?? '').trim());
+  if (Number.isNaN(d.getTime())) return '—';
+  // Keep it simple and consistent with previous mock format: MM/DD/YYYY
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = String(d.getFullYear());
+  return `${mm}/${dd}/${yyyy}`;
+}
 
 const PaymentPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [rows, setRows] = useState<PaymentData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/payment/transactions', {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+        });
+        const json = (await res.json().catch(() => ({}))) as { data?: ApiTransactionRow[]; error?: string };
+        if (!res.ok) throw new Error(String(json?.error ?? `HTTP ${res.status}`));
+        const data = Array.isArray(json?.data) ? json.data : [];
+        const mapped = data.map((r) => {
+          const orderId = String(r?.order_id ?? r?.orderId ?? '—');
+          const plan = String(r?.plan_id ?? r?.planId ?? '').trim() || '—';
+          const dateIso = r?.created_at ?? r?.createdAt ?? r?.updated_at ?? r?.updatedAt ?? '';
+          const status = normalizeStatus(r?.status);
+          return {
+            amount: formatMoney(r?.amount, r?.currency),
+            date: formatDate(dateIso),
+            plan,
+            paymentCode: orderId,
+            status,
+          } satisfies PaymentData;
+        });
+        if (!cancelled) setRows(mapped);
+      } catch (e) {
+        if (!cancelled) {
+          setRows([]);
+          setError(e instanceof Error ? e.message : 'Failed to load payments');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const paymentData = useMemo(() => rows, [rows]);
 
   const handleViewClick = (paymentCode: string) => {
     console.log('View payment:', paymentCode);
@@ -75,9 +143,10 @@ const PaymentPage = () => {
       id: 'status',
       label: 'Status',
       sortable: true,
-      render: (value: 'success' | 'pending' | 'failed') => {
+      render: (value: PaymentStatus) => {
+        const badgeColor = value === 'cancelled' ? 'pending' : value;
         const paletteKey =
-          value === 'success' ? 'success' : value === 'pending' ? 'warning' : 'error';
+          value === 'success' ? 'success' : value === 'pending' || value === 'cancelled' ? 'warning' : 'error';
         const paletteColor = theme.palette[paletteKey];
         const backgroundColor =
           value === 'success' ? theme.palette.success.light : paletteColor.light || paletteColor.main;
@@ -85,7 +154,7 @@ const PaymentPage = () => {
         return (
           <MuiBadge
             label={value}
-            color={value}
+            color={badgeColor}
             border={`1px solid ${paletteColor.main}`}
             backgroundColor={backgroundColor}
             textColor={paletteColor.main}
@@ -119,6 +188,20 @@ const PaymentPage = () => {
           Payment history
         </Typography>
 
+        {loading ? (
+          <Typography variant="body2" color="text.secondary">
+            Loading…
+          </Typography>
+        ) : error ? (
+          <Typography variant="body2" color="error.main">
+            {error}
+          </Typography>
+        ) : paymentData.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            No payments found.
+          </Typography>
+        ) : null}
+
         {isMobile ? (
           <MobilePaymentList>
             {paymentData.map((row) => (
@@ -151,17 +234,29 @@ const PaymentPage = () => {
                   <Typography variant='body2' color='text.secondary'>
                     Status
                   </Typography>
-                  <MuiBadge
-                    label={row.status}
-                    color={row.status}
-                    border={`1px solid ${theme.palette[row.status === 'success' ? 'success' : row.status === 'pending' ? 'warning' : 'error'].main}`}
-                    backgroundColor={
+                  {(() => {
+                    const badgeColor = row.status === 'cancelled' ? 'pending' : row.status;
+                    const paletteKey =
+                      row.status === 'success'
+                        ? 'success'
+                        : row.status === 'pending' || row.status === 'cancelled'
+                          ? 'warning'
+                          : 'error';
+                    const paletteColor = theme.palette[paletteKey];
+                    const backgroundColor =
                       row.status === 'success'
                         ? theme.palette.success.light
-                        : theme.palette[row.status === 'pending' ? 'warning' : 'error'].light
-                    }
-                    textColor={theme.palette[row.status === 'success' ? 'success' : row.status === 'pending' ? 'warning' : 'error'].main}
-                  />
+                        : theme.palette[row.status === 'pending' || row.status === 'cancelled' ? 'warning' : 'error'].light;
+                    return (
+                      <MuiBadge
+                        label={row.status}
+                        color={badgeColor}
+                        border={`1px solid ${paletteColor.main}`}
+                        backgroundColor={backgroundColor}
+                        textColor={paletteColor.main}
+                      />
+                    );
+                  })()}
                 </Stack>
                 <Stack direction='row' justifyContent='flex-end'>
                   <MuiButton
