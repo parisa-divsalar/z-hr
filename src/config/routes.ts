@@ -78,6 +78,12 @@ export const VisibilitySideBar: string[] = [
 
 export const isSidebarVisible = (pathname?: string | null) => {
     const normalizedPathname = normalizeRoute(pathname);
+
+    // Checkout pages should not show the app sidebar.
+    if (normalizedPathname === '/payment/fiserv' || normalizedPathname.startsWith('/payment/fiserv/')) {
+        return false;
+    }
+
     return VisibilitySideBar.some((route) => {
         const normalizedRoute = normalizeRoute(route);
         if (normalizedRoute === '/') {

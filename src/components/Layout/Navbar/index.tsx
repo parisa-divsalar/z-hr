@@ -144,8 +144,7 @@ const Navbar = () => {
 
   const handleGoToPayment = useCallback(() => {
     handleCloseCoinPopover();
-    router.push(PrivateRoutes.payment);
-  }, [handleCloseCoinPopover, router]);
+  }, [handleCloseCoinPopover]);
 
   const handleGoToPlans = useCallback(() => {
     handleCloseCoinPopover();

@@ -527,7 +527,7 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
 
     const handleConfirmUpgrade = () => {
         const planId = selectedUpgradePlan?.id;
-        const url = planId ? `/payment/test?plan=${encodeURIComponent(planId)}` : '/payment/test';
+        const url = planId ? `/payment/fiserv?plan=${encodeURIComponent(planId)}` : '/payment/fiserv';
         window.open(url, '_blank', 'noopener,noreferrer');
         setUpgradeConfirmOpen(false);
     };

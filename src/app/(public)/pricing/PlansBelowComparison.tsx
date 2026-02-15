@@ -124,7 +124,7 @@ export default function PlansBelowComparison() {
                                     color='primary'
                                     variant={plan.cta.variant}
                                     onClick={() => {
-                                        const url = `/payment/test?plan=${encodeURIComponent(plan.id)}`;
+                                        const url = `/payment/fiserv?plan=${encodeURIComponent(plan.id)}`;
                                         window.open(url, '_blank', 'noopener,noreferrer');
                                     }}
                                 >

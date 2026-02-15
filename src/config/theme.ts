@@ -357,7 +357,7 @@ export const lightTheme = createTheme({
         },
         success: {
             main: '#106915',
-            light: '#9FFC49',
+            light: 'rgba(159,252,73,0.26)',
             dark: '#1d3408',
         },
         warning: {

@@ -72,6 +72,18 @@ function slugifyId(input: string): string {
     .replace(/^_+|_+$/g, '');
 }
 
+type PlanId = 'starter' | 'pro' | 'plus' | 'elite';
+
+function normalizePlanId(name: string | undefined): PlanId | null {
+  const n = String(name ?? '').trim().toLowerCase();
+  if (!n) return null;
+  if (n.includes('starter') || n.includes('free')) return 'starter';
+  if (n.includes('pro')) return 'pro';
+  if (n.includes('plus')) return 'plus';
+  if (n.includes('elite')) return 'elite';
+  return null;
+}
+
 function mergeQuantities(prev: Record<string, number>, items: PricingListItem[]) {
   const next: Record<string, number> = {};
   for (const item of items) next[item.id] = prev[item.id] ?? item.initialQty ?? 0;
@@ -631,6 +643,17 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
     return `AED ${rounded}`;
   }, [totalCoins, totalPriceAed]);
 
+  const handleDirectGatewayPayment = useCallback(() => {
+    // Keep existing behavior (e.g. close popover) then go directly to gateway start page.
+    onPayment?.();
+
+    const selectedLabel = coinPacks.find((p) => p.id === selectedPackId)?.label;
+    const plan = normalizePlanId(selectedLabel) ?? normalizePlanId(selectedPackId) ?? 'plus';
+
+    const url = `/payment/fiserv?plan=${encodeURIComponent(plan)}`;
+    window.location.assign(url);
+  }, [coinPacks, onPayment, selectedPackId]);
+
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
@@ -681,7 +704,7 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
         totalCoins={totalCoins}
         totalPriceLabel={totalPriceLabel}
         comparisonLabel={comparisonLabel}
-        onPayment={onPayment}
+        onPayment={handleDirectGatewayPayment}
         onOurPlans={onOurPlans}
       />
     </>
