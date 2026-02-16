@@ -157,7 +157,7 @@ function PlanCardView({
                 {plan.title}
             </Typography>
 
-            <Stack direction='row' alignItems='baseline' gap={1} py={3}>
+            <Stack direction='row' alignItems='baseline' gap={1} >
                 <Typography
                     variant='h3'
                     fontWeight={700}
@@ -176,12 +176,10 @@ function PlanCardView({
                 </Typography>
             </Stack>
 
-            <Typography variant='h6' fontWeight={492}  color='text.secondary' sx={{ mt: -0.5 }}>
-                {plan.subtitle}
-            </Typography>
+
 
             <Box
-                mt={2}
+mt={4}
                 sx={{
                     alignSelf: 'flex-start',
                     px: 1.75,
@@ -199,10 +197,7 @@ function PlanCardView({
             </Box>
 
 
-
-            <Box sx={{ flex: '1 1 auto' }} />
-
-            <Typography variant='subtitle1' fontWeight={584} color='text.primary' sx={{ fontSize: 16 }}>
+            <Typography variant='subtitle1' pt={5} fontWeight={584} color='text.primary' sx={{ fontSize: 16 }}>
                 {plan.priceText}
             </Typography>
 

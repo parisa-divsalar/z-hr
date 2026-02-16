@@ -70,7 +70,7 @@ export default function PricingFaqSection() {
                 <Grid container spacing={{ xs: 4, md: 6 }} alignItems='flex-start'>
                     <Grid size={{ xs: 12, md: 4 }}>
                         <Box sx={faqSx.stickyCol}>
-                            <Typography variant='h2' fontWeight='700' sx={faqSx.heading}>
+                            <Typography variant='h1' fontWeight='700' sx={faqSx.heading}>
                                 FAQ
                             </Typography>
 
