@@ -282,10 +282,11 @@ const defaultPlans = [
 ];
 
 const defaultCoinPackages = [
-    { id: 1, package_name: 'Mini Pack', coin_amount: 10, price_aed: 75, aed_per_coin: 7.5, calculator_value_aed: 80, user_saving_percent: 6 },
-    { id: 2, package_name: 'Starter Pack', coin_amount: 20, price_aed: 140, aed_per_coin: 7, calculator_value_aed: 160, user_saving_percent: 13 },
-    { id: 3, package_name: 'Pro Pack', coin_amount: 35, price_aed: 227.5, aed_per_coin: 6.5, calculator_value_aed: 280, user_saving_percent: 19 },
-    { id: 4, package_name: 'Elite Pack', coin_amount: 55, price_aed: 330, aed_per_coin: 6, calculator_value_aed: 440, user_saving_percent: 25 },
+    { id: 1, package_name: 'Free', coin_amount: 6, price_aed: 0, aed_per_coin: 0, calculator_value_aed: 0, user_saving_percent: 0 },
+    { id: 2, package_name: 'Mini Pack', coin_amount: 10, price_aed: 75, aed_per_coin: 7.5, calculator_value_aed: 80, user_saving_percent: 6 },
+    { id: 3, package_name: 'Starter Pack', coin_amount: 20, price_aed: 140, aed_per_coin: 7, calculator_value_aed: 160, user_saving_percent: 13 },
+    { id: 4, package_name: 'Pro Pack', coin_amount: 35, price_aed: 227.5, aed_per_coin: 6.5, calculator_value_aed: 280, user_saving_percent: 19 },
+    { id: 5, package_name: 'Elite Pack', coin_amount: 55, price_aed: 330, aed_per_coin: 6, calculator_value_aed: 440, user_saving_percent: 25 },
 ];
 
 if (!fs.existsSync(dataDir)) {

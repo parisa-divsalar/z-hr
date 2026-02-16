@@ -78,7 +78,11 @@ const TABLES: Record<string, TableConfig> = {
   user_state_logs: { file: 'user_state_logs.json', keyFields: ['id'], allowIndexFallback: true },
   plans: { file: 'plans.json', keyFields: ['id'], allowIndexFallback: true },
   resume_feature_pricing: { file: 'resume_feature_pricing.json', keyFields: ['id'], allowIndexFallback: true },
-  coin_packages: { file: 'coin_packages.json', keyFields: ['id'], allowIndexFallback: true },
+  // NOTE:
+  // - Historically coin_packages can contain duplicate numeric `id` values (manual edits / inserts).
+  // - Admin UI needs to be able to edit `id` to fix/normalize data.
+  // Therefore we treat `package_name` as the stable key and allow `id` to be edited.
+  coin_packages: { file: 'coin_packages.json', keyFields: ['package_name'], allowIndexFallback: true },
   fiserv_transactions: { file: 'fiserv_transactions.json', keyFields: ['order_id', 'id'], allowIndexFallback: true },
   history: { file: 'history.json', keyFields: ['user_id', 'id'], allowIndexFallback: true },
 };

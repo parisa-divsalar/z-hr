@@ -346,6 +346,13 @@ export default function DatabasePage() {
       if (id && Number.isFinite(user_id)) return { id, user_id };
       return { _index: idx };
     }
+    // coin_packages: use package_name as stable key so `id` remains editable.
+    if (table === 'coin_packages') {
+      const package_name = String(row?.package_name ?? '').trim();
+      if (package_name) return { package_name };
+      if (row?.id != null && String(row.id).trim() !== '') return { id: row.id };
+      return { _index: idx };
+    }
     if (row?.id != null && String(row.id).trim() !== '') return { id: row.id };
     if (row?.request_id != null && String(row.request_id).trim() !== '') return { request_id: row.request_id };
     if (row?.source_url != null && String(row.source_url).trim() !== '') return { source_url: row.source_url };
@@ -754,6 +761,7 @@ export default function DatabasePage() {
     { feature: 'coin', starter: '', pro: '', plus: '', elite: '' },
   ];
   const coinPackagesSeedRows = [
+    { package_name: 'Free', coin_amount: 6, price_aed: 0, aed_per_coin: 0, calculator_value_aed: 0, user_saving_percent: 0 },
     { package_name: 'Mini Pack', coin_amount: 10, price_aed: 75, aed_per_coin: 7.5, calculator_value_aed: 80, user_saving_percent: 6 },
     { package_name: 'Starter Pack', coin_amount: 20, price_aed: 140, aed_per_coin: 7, calculator_value_aed: 160, user_saving_percent: 13 },
     { package_name: 'Pro Pack', coin_amount: 35, price_aed: 227.5, aed_per_coin: 6.5, calculator_value_aed: 280, user_saving_percent: 19 },
@@ -762,6 +770,7 @@ export default function DatabasePage() {
   const coinPackagesInsertSql = `INSERT INTO coin_packages
 (package_name, coin_amount, price_aed, aed_per_coin, calculator_value_aed, user_saving_percent)
 VALUES
+('Free', 6, 0, 0, 0, 0),
 ('Mini Pack', 10, 75, 7.5, 80, 6),
 ('Starter Pack', 20, 140, 7, 160, 13),
 ('Pro Pack', 35, 227.5, 6.5, 280, 19),
