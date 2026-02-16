@@ -29,8 +29,21 @@ function json(data: any, init?: { status?: number }) {
 }
 
 function resolveDataDir() {
-  const defaultDataDir = path.resolve(process.cwd(), 'data');
-  return process.env.DATABASE_PATH ? path.dirname(process.env.DATABASE_PATH) : defaultDataDir;
+  if (process.env.DATABASE_PATH) return path.dirname(process.env.DATABASE_PATH);
+
+  // Match `src/lib/db.ts` behavior: allow running from subfolders (e.g. `admin-dashboard/`)
+  // while still reading/writing the repo-root `data/` directory.
+  const cwd = process.cwd();
+  const candidates = [cwd, path.resolve(cwd, '..'), path.resolve(cwd, '../..'), path.resolve(cwd, '../../..')];
+  for (const dir of candidates) {
+    try {
+      if (fs.existsSync(path.join(dir, 'data-seed'))) return path.join(dir, 'data');
+      if (fs.existsSync(path.join(dir, 'data'))) return path.join(dir, 'data');
+    } catch {
+      // ignore
+    }
+  }
+  return path.resolve(cwd, 'data');
 }
 
 function safeId() {

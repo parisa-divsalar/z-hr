@@ -124,7 +124,7 @@ const Navbar = () => {
     if (!showAuthedUI) return '';
     if (isProfileLoading) return '...';
     const credits = Number(profile?.coin ?? 0);
-    return `${Number.isFinite(credits) ? credits : 0} Credit`;
+    return `${Number.isFinite(credits) ? credits : 0} Coin `;
   }, [isProfileLoading, profile?.coin, showAuthedUI]);
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);

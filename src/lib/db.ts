@@ -2,10 +2,33 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
-// Simple file-based database using JSON files (project-root ./data by default)
-// NOTE: In this repo the data folder is at <projectRoot>/data, so default to that.
-const defaultDataDir = path.resolve(process.cwd(), 'data');
-const seedDataDir = path.resolve(process.cwd(), 'data-seed');
+// Simple file-based database using JSON files.
+//
+// IMPORTANT:
+// Some dev setups run the Next.js process from a subfolder (e.g. `admin-dashboard/`).
+// If we use `process.cwd()` blindly, we'd read/write `admin-dashboard/data/*` and fall back to defaults,
+// while the real DB files live in the repo root `data/*`.
+//
+// So we locate the repo root by walking up a few levels to find `data-seed/` (committed) or `data/`.
+function resolveRepoRootDir(): string {
+    const cwd = process.cwd();
+    const candidates = [cwd, path.resolve(cwd, '..'), path.resolve(cwd, '../..'), path.resolve(cwd, '../../..')];
+
+    for (const dir of candidates) {
+        try {
+            if (fs.existsSync(path.join(dir, 'data-seed'))) return dir;
+            if (fs.existsSync(path.join(dir, 'data'))) return dir;
+        } catch {
+            // ignore
+        }
+    }
+
+    return cwd;
+}
+
+const repoRootDir = resolveRepoRootDir();
+const defaultDataDir = path.resolve(repoRootDir, 'data');
+const seedDataDir = path.resolve(repoRootDir, 'data-seed');
 const dataDir = process.env.DATABASE_PATH ? path.dirname(process.env.DATABASE_PATH) : defaultDataDir;
 
 const usersFile = path.join(dataDir, 'users.json');

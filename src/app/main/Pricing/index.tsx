@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Box, Stack, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 
 type PlanCard = {
-    id: 'free' | 'mini' | 'starter' | 'pro' | 'elite';
+    id: string;
     title: string;
     badge?: string;
     coins: number;
@@ -19,56 +19,94 @@ type PlanCard = {
     isCurrent?: boolean;
 };
 
-const PLANS: PlanCard[] = [
-    {
-        id: 'free',
-        title: 'Free',
-        coins: 6,
-        subtitle: 'For general users',
-        saveText: 'Save 0% on features',
-        priceText: 'Free',
-        ctaText: 'Current Plan',
-        isCurrent: true,
-    },
-    {
-        id: 'mini',
-        title: 'Mini Pack',
-        coins: 10,
-        subtitle: 'For advanced users',
-        saveText: 'Save 6% on features',
-        priceText: '75 AED',
-        ctaText: 'Upgrade Now',
-    },
-    {
-        id: 'starter',
-        title: 'Starter Pack',
-        badge: 'Popular',
-        coins: 20,
-        subtitle: 'For power users',
-        saveText: 'Save 13% on features',
-        priceText: '140 AED',
-        ctaText: 'Upgrade Now',
-        highlighted: true,
-    },
-    {
-        id: 'pro',
-        title: 'Pro Pack',
-        coins: 35,
-        subtitle: 'For power users',
-        saveText: 'Save 19% on features',
-        priceText: '228 AED',
-        ctaText: 'Upgrade Now',
-    },
-    {
-        id: 'elite',
-        title: 'Elite Pack',
-        coins: 55,
-        subtitle: 'For power users',
-        saveText: 'Save 25% on features',
-        priceText: '330 AED',
-        ctaText: 'Upgrade Now',
-    },
-];
+type CoinPackageRow = {
+    id?: number | string;
+    package_name?: string;
+    coin_amount?: number | string;
+    price_aed?: number | string;
+    user_saving_percent?: number | string;
+    [k: string]: unknown;
+};
+
+type CoinPackagesApiResponse = { data?: CoinPackageRow[]; error?: string; generatedAt?: string };
+
+function safeStr(v: unknown): string {
+    return String(v ?? '').trim();
+}
+
+function toFiniteNumber(v: unknown, fallback = 0): number {
+    if (typeof v === 'number') return Number.isFinite(v) ? v : fallback;
+    if (typeof v === 'string') {
+        const n = Number(v.replace(/,/g, '').trim());
+        return Number.isFinite(n) ? n : fallback;
+    }
+    const n = Number(v as any);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function formatAed(priceAed: number): string {
+    const n = Number.isFinite(priceAed) ? priceAed : 0;
+    if (n <= 0) return 'Free';
+    const rounded = Math.round(n * 100) / 100;
+    const label = rounded % 1 === 0 ? String(rounded.toFixed(0)) : String(rounded.toFixed(2));
+    return `${label} AED`;
+}
+
+function normalizePackagesToPlans(rows: CoinPackageRow[]): PlanCard[] {
+    const safeRows = Array.isArray(rows) ? rows : [];
+
+    const paidRows = safeRows.filter((r) => toFiniteNumber(r?.price_aed, 0) > 0);
+    const popularRow =
+        paidRows.length === 0
+            ? null
+            : paidRows.reduce<CoinPackageRow | null>((best, r) => {
+                  if (!best) return r;
+                  const s1 = toFiniteNumber(best?.user_saving_percent, 0);
+                  const s2 = toFiniteNumber(r?.user_saving_percent, 0);
+                  if (s2 !== s1) return s2 > s1 ? r : best;
+                  const c1 = toFiniteNumber(best?.coin_amount, 0);
+                  const c2 = toFiniteNumber(r?.coin_amount, 0);
+                  return c2 > c1 ? r : best;
+              }, null);
+
+    const popularKey = popularRow ? safeStr(popularRow.id) || safeStr(popularRow.package_name) : '';
+
+    const plans = safeRows
+        .map((row, idx) => {
+            const title = safeStr(row?.package_name) || `Package ${idx + 1}`;
+            const id = safeStr(row?.id) || safeStr(row?.package_name) || String(idx + 1);
+            const coins = Math.max(0, Math.round(toFiniteNumber(row?.coin_amount, 0)));
+            const priceAed = toFiniteNumber(row?.price_aed, 0);
+            const saving = Math.max(0, Math.round(toFiniteNumber(row?.user_saving_percent, 0)));
+            const isCurrent = priceAed <= 0 || title.toLowerCase() === 'free';
+
+            const isPopular = Boolean(popularKey) && (safeStr(row?.id) === popularKey || safeStr(row?.package_name) === popularKey);
+
+            return {
+                id,
+                title,
+                coins,
+                subtitle: '',
+                saveText: `Save ${saving}% on features`,
+                priceText: formatAed(priceAed),
+                ctaText: isCurrent ? 'Current Plan' : 'Upgrade Now',
+                isCurrent,
+                badge: isPopular ? 'Popular' : undefined,
+                highlighted: isPopular,
+            } satisfies PlanCard;
+        })
+        .filter((p) => Boolean(p.id) && Boolean(p.title));
+
+    // Keep a stable, sensible order (by coins, with Free first if present).
+    plans.sort((a, b) => {
+        const aFree = a.priceText === 'Free' ? 1 : 0;
+        const bFree = b.priceText === 'Free' ? 1 : 0;
+        if (aFree !== bFree) return bFree - aFree; // free first
+        return a.coins - b.coins;
+    });
+
+    return plans;
+}
 
 function PlanCardView({
     plan,
@@ -227,8 +265,44 @@ mt={4}
 }
 
 const Pricing = () => {
-    const [selectedPlanId, setSelectedPlanId] = useState<PlanCard['id']>('starter');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [plans, setPlans] = useState<PlanCard[]>([]);
+
+    const defaultSelectedId = useMemo(() => plans.find((p) => p.highlighted)?.id ?? plans[0]?.id ?? '', [plans]);
+    const [selectedPlanId, setSelectedPlanId] = useState<PlanCard['id']>('');
     const handleSelect = useCallback((id: PlanCard['id']) => setSelectedPlanId(id), []);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        (async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const res = await fetch('/api/pricing/coin-packages', { headers: { Accept: 'application/json' }, cache: 'no-store', signal });
+                const json = (await res.json().catch(() => ({}))) as CoinPackagesApiResponse;
+                if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+                const rows = Array.isArray(json?.data) ? json.data : [];
+                const nextPlans = normalizePackagesToPlans(rows);
+                setPlans(nextPlans);
+            } catch (e) {
+                if (signal.aborted) return;
+                setError(e instanceof Error ? e.message : 'Failed to load coin packages');
+                setPlans([]);
+            } finally {
+                if (!signal.aborted) setLoading(false);
+            }
+        })();
+
+        return () => controller.abort();
+    }, []);
+
+    useEffect(() => {
+        if (!defaultSelectedId) return;
+        setSelectedPlanId((prev) => (prev ? prev : defaultSelectedId));
+    }, [defaultSelectedId]);
 
     return (
         <Box
@@ -242,25 +316,34 @@ const Pricing = () => {
             }}
         >
             <Box sx={{ width: 'min(95vw, 1200px)' }}>
-                <Stack
-                    direction='row'
-                    gap={2.5}
-                    alignItems='stretch'
-                    justifyContent='center'
-                    sx={{
-                        width: '100%',
-                        flexWrap: { xs: 'wrap', lg: 'nowrap' },
-                    }}
-                >
-                    {PLANS.map((p) => (
-                        <PlanCardView
-                            key={p.id}
-                            plan={p}
-                            selected={p.id === selectedPlanId}
-                            onSelect={handleSelect}
-                        />
-                    ))}
-                </Stack>
+                {loading ? (
+                    <Stack width='100%' alignItems='center' justifyContent='center' py={4}>
+                        <Typography variant='body2' color='text.secondary'>
+                            Loading plans...
+                        </Typography>
+                    </Stack>
+                ) : error || plans.length === 0 ? (
+                    <Stack width='100%' alignItems='center' justifyContent='center' py={4}>
+                        <Typography variant='body2' color='error'>
+                            Could not load coin packages from database{error ? `: ${error}` : ''}
+                        </Typography>
+                    </Stack>
+                ) : (
+                    <Stack
+                        direction='row'
+                        gap={2.5}
+                        alignItems='stretch'
+                        justifyContent='center'
+                        sx={{
+                            width: '100%',
+                            flexWrap: { xs: 'wrap', lg: 'nowrap' },
+                        }}
+                    >
+                        {plans.map((p) => (
+                            <PlanCardView key={p.id} plan={p} selected={p.id === selectedPlanId} onSelect={handleSelect} />
+                        ))}
+                    </Stack>
+                )}
             </Box>
         </Box>
     );
