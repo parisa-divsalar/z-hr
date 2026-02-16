@@ -79,7 +79,7 @@ const Testimonials: FC = () => {
           };
 
     return (
-        <Container sx={{ mt: '5rem' }}>
+        <Container maxWidth='lg' sx={{ mt: { xs: '3rem', md: '5rem' } }}>
             <Box
                 sx={{
                     display: 'flex',
@@ -89,17 +89,31 @@ const Testimonials: FC = () => {
                     gap: '1rem',
                 }}
             >
-                <Typography variant='h2' color='secondary.main' fontWeight='700'>
+                <Typography variant='h2' color='text.primary' fontWeight='800' sx={{ letterSpacing: '-0.02em' }}>
                     Testimonials
                 </Typography>
 
-                <Typography variant='subtitle1' color='secondary.main' fontWeight='492' mb={3}>
+                <Typography variant='subtitle1' color='text.secondary' fontWeight='492' mb={3} sx={{ maxWidth: 860, lineHeight: 1.8 }}>
                     "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
                     <br />
                     Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial ."
                 </Typography>
 
-                <Button variant='contained' color='secondary' size='medium' disableElevation>
+                <Button
+                    variant='contained'
+                    size='medium'
+                    disableElevation
+                    sx={{
+                        bgcolor: '#111827',
+                        color: '#fff',
+                        textTransform: 'none',
+                        borderRadius: 2.5,
+                        px: 2.5,
+                        py: 1.2,
+                        fontWeight: 700,
+                        '&:hover': { bgcolor: '#0B1220' },
+                    }}
+                >
                     Ask Your Question
                 </Button>
             </Box>
@@ -110,15 +124,12 @@ const Testimonials: FC = () => {
                     gridTemplateColumns: {
                         xs: 'minmax(0, 1fr)',
                         sm: 'repeat(2, minmax(0, 1fr))',
-                        md: '588px 262px 262px',
+                        md: 'repeat(3, minmax(0, 1fr))',
                     },
                     justifyContent: 'center',
                     gap: '1.5rem',
                     mt: '3rem',
                     px: { xs: 1, sm: 0 },
-                    '& > :nth-of-type(1)': {
-                        gridColumn: { xs: 'auto', sm: '1 / -1', md: 'auto' },
-                    },
                 }}
                 variants={containerVariants}
                 initial='hidden'
@@ -164,9 +175,7 @@ const Testimonials: FC = () => {
                         <Typography
                             variant='subtitle1'
                             color='text.secondary'
-                            fontWeight='492
-
-'
+                            fontWeight='492'
                             sx={{ mt: '-0.25rem' }}
                         >
                             {t.name}
@@ -174,7 +183,7 @@ const Testimonials: FC = () => {
 
                         <Typography
                             variant='body1'
-                            color='secondary.main'
+                            color='text.primary'
                             fontWeight='492'
                             sx={{ maxWidth: 320, opacity: 0.92, whiteSpace: 'pre-line' }}
                         >

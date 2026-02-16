@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
-import { Box, Divider, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 
