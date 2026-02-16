@@ -6,6 +6,7 @@ import Link from 'next/link';
 import PricingFaqSection from '@/app/(public)/pricing/PricingFaqSection';
 import FooterMain from '@/app/main/FooterMain';
 import CoinPlansRow from '@/app/main/Pricing';
+import PricingComparison from '@/app/main/Pricing/PricingComparison';
 import Testimonials from '@/app/main/Testimonials';
 import Navbar from '@/components/Layout/Navbar';
 import MuiButton from '@/components/UI/MuiButton';
@@ -125,6 +126,9 @@ export default function Pricing() {
 
                         <CoinPlansRow />
 
+                        <Box sx={{ mt: { xs: 2, md: 3 } }}>
+                            <PricingComparison />
+                        </Box>
                     </Container>
 
                     <Box
