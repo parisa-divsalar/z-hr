@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Box, Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
+import { PublicRoutes } from '@/config/routes';
 
 type PlanCard = {
     id: string;
@@ -29,6 +31,9 @@ type CoinPackageRow = {
 };
 
 type CoinPackagesApiResponse = { data?: CoinPackageRow[]; error?: string; generatedAt?: string };
+type MeApiResponse =
+    | { data: { id: number; email: string; coin: number; plan_status?: string | null; has_used_free_plan?: boolean } }
+    | { error: string };
 
 function safeStr(v: unknown): string {
     return String(v ?? '').trim();
@@ -112,10 +117,16 @@ function PlanCardView({
     plan,
     selected,
     onSelect,
+    ctaDisabled,
+    ctaLabel,
+    onCta,
 }: {
     plan: PlanCard;
     selected: boolean;
     onSelect: (id: PlanCard['id']) => void;
+    ctaDisabled: boolean;
+    ctaLabel: string;
+    onCta: () => void;
 }) {
     const highlighted = Boolean(plan.highlighted);
     const isCurrent = Boolean(plan.isCurrent);
@@ -240,10 +251,11 @@ mt={4}
             </Typography>
 
             <MuiButton
-                text={plan.ctaText}
+                text={ctaLabel}
                 variant={highlighted ? 'contained' : 'outlined'}
                 color='inherit'
                 fullWidth
+                disabled={ctaDisabled}
                 sx={{
                     height: 44,
                     borderRadius: 2.5,
@@ -259,19 +271,47 @@ mt={4}
                         borderColor: highlighted ? '#0B1220' : '#E6EAF2',
                     },
                 }}
+                onClick={(e: any) => {
+                    e?.stopPropagation?.();
+                    onCta();
+                }}
             />
         </Box>
     );
 }
 
 const Pricing = () => {
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [plans, setPlans] = useState<PlanCard[]>([]);
+    const [me, setMe] = useState<{ id: number; has_used_free_plan: boolean } | null>(null);
+    const [meLoading, setMeLoading] = useState(true);
+    const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
     const defaultSelectedId = useMemo(() => plans.find((p) => p.highlighted)?.id ?? plans[0]?.id ?? '', [plans]);
     const [selectedPlanId, setSelectedPlanId] = useState<PlanCard['id']>('');
     const handleSelect = useCallback((id: PlanCard['id']) => setSelectedPlanId(id), []);
+
+    const refetchMe = useCallback(async () => {
+        setMeLoading(true);
+        try {
+            const res = await fetch('/api/users/me', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            const json = (await res.json().catch(() => ({}))) as MeApiResponse;
+            if (!res.ok) {
+                // Not logged in is expected for public pricing page.
+                setMe(null);
+                return;
+            }
+            const hasUsed = Boolean((json as any)?.data?.has_used_free_plan ?? false);
+            const id = Number((json as any)?.data?.id ?? NaN);
+            setMe(Number.isFinite(id) ? { id, has_used_free_plan: hasUsed } : null);
+        } catch {
+            setMe(null);
+        } finally {
+            setMeLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -300,9 +340,60 @@ const Pricing = () => {
     }, []);
 
     useEffect(() => {
+        void refetchMe();
+    }, [refetchMe]);
+
+    useEffect(() => {
         if (!defaultSelectedId) return;
         setSelectedPlanId((prev) => (prev ? prev : defaultSelectedId));
     }, [defaultSelectedId]);
+
+    const handleClaimFree = useCallback(async () => {
+        if (!me) {
+            router.push(PublicRoutes.login);
+            return;
+        }
+        setActionLoadingId('free');
+        try {
+            const res = await fetch('/api/plan/free', { method: 'POST', headers: { Accept: 'application/json' }, cache: 'no-store' });
+            const json = await res.json().catch(() => ({} as any));
+            if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+            await refetchMe();
+        } catch (e) {
+            console.error('Free plan claim failed:', e);
+            await refetchMe();
+        } finally {
+            setActionLoadingId(null);
+        }
+    }, [me, refetchMe, router]);
+
+    const handleUpgrade = useCallback(
+        async (coinPackageId: string) => {
+            if (!me) {
+                router.push(PublicRoutes.login);
+                return;
+            }
+            setActionLoadingId(coinPackageId);
+            try {
+                const res = await fetch('/api/payment/create-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({ coinPackageId }),
+                    cache: 'no-store',
+                });
+                const json = await res.json().catch(() => ({} as any));
+                if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+                const url = String(json?.paymentUrl ?? '').trim();
+                if (!url) throw new Error('Missing paymentUrl');
+                window.location.href = url;
+            } catch (e) {
+                console.error('Upgrade create-session failed:', e);
+            } finally {
+                setActionLoadingId(null);
+            }
+        },
+        [me, router],
+    );
 
     return (
         <Box
@@ -340,7 +431,37 @@ const Pricing = () => {
                         }}
                     >
                         {plans.map((p) => (
-                            <PlanCardView key={p.id} plan={p} selected={p.id === selectedPlanId} onSelect={handleSelect} />
+                            <PlanCardView
+                                key={p.id}
+                                plan={p}
+                                selected={p.id === selectedPlanId}
+                                onSelect={handleSelect}
+                                ctaDisabled={
+                                    Boolean(actionLoadingId) ||
+                                    meLoading ||
+                                    (p.priceText === 'Free'
+                                        ? Boolean(me?.has_used_free_plan)
+                                        : false)
+                                }
+                                ctaLabel={
+                                    p.priceText === 'Free'
+                                        ? me?.has_used_free_plan
+                                            ? 'Free Plan Already Used'
+                                            : me
+                                                ? 'Claim Free Plan'
+                                                : 'Login'
+                                        : me
+                                            ? 'Upgrade Now'
+                                            : 'Login'
+                                }
+                                onCta={() => {
+                                    if (p.priceText === 'Free') {
+                                        void handleClaimFree();
+                                        return;
+                                    }
+                                    void handleUpgrade(p.id);
+                                }}
+                            />
                         ))}
                     </Stack>
                 )}

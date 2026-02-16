@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 import { recordUserStateTransition } from '@/lib/user-state';
+import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -18,23 +19,60 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
         }
 
-        // Find user in database
+        const prisma = getPrismaOrNull();
+
+        // SQL/Prisma mode
+        if (prisma) {
+            const user = await prisma.user.findUnique({
+                where: { email: userEmail },
+                select: { id: true, email: true, name: true, passwordHash: true },
+            });
+
+            if (!user) {
+                return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+            }
+
+            const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+            if (!isValidPassword) {
+                return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+            }
+
+            const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
+            const response = NextResponse.json({
+                data: {
+                    userId: user.id,
+                    email: user.email,
+                    name: user.name,
+                    token,
+                },
+            });
+
+            response.cookies.set('accessToken', token, {
+                path: '/',
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 60 * 60 * 24 * 7,
+            });
+
+            recordUserStateTransition(user.id, { isVerified: null }, { event: 'login' });
+            return response;
+        }
+
+        // JSON-db mode (dev)
         const user = db.users.findByEmail(userEmail);
 
         if (!user) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        // Verify password
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
         if (!isValidPassword) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        // Generate token
-        const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-            expiresIn: '7d',
-        });
+        const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
         const response = NextResponse.json({
             data: {

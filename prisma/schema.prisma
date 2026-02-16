@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  name            String?
+  coin            Int?     @default(0)
+  planStatus      String?  @map("plan_status")
+  hasUsedFreePlan Boolean  @default(false) @map("has_used_free_plan")
+
+  paymentFailed   Boolean? @default(false) @map("payment_failed")
+  justConverted   Boolean? @default(false) @map("just_converted")
+  lastPaymentAt   DateTime? @map("last_payment_at")
+
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  fiservTransactions FiservTransaction[]
+
+  @@map("users")
+}
+
+model CoinPackage {
+  id               Int     @id @default(autoincrement())
+  packageName      String  @map("package_name")
+  coinAmount       Int     @map("coin_amount")
+  priceAed         Decimal @map("price_aed")
+  aedPerCoin       Decimal? @map("aed_per_coin")
+  calculatorValueAed Decimal? @map("calculator_value_aed")
+  userSavingPercent Int?    @map("user_saving_percent")
+
+  fiservTransactions FiservTransaction[]
+
+  @@map("coin_packages")
+}
+
+model FiservTransaction {
+  id                Int      @id @default(autoincrement())
+  userId            Int?     @map("user_id")
+  orderId           String?  @unique @map("order_id")
+  checkoutId        String?  @map("checkout_id")
+  transactionId     String?  @map("transaction_id")
+  status            String?  // pending|success|failed|cancelled
+  planId            String?  @map("plan_id")
+  approvalCode      String?  @map("approval_code")
+  processorReference String? @map("processor_reference")
+  amount            Decimal? @db.Decimal(10, 2)
+  currency          String?  @db.VarChar(10)
+  cardBrand         String?  @map("card_brand")
+  maskedCard        String?  @map("masked_card")
+  customerEmail     String?  @map("customer_email")
+  customerName      String?  @map("customer_name")
+
+  coinPackageId     Int?     @map("coin_package_id")
+  purchasedCoinAmount Int?   @map("purchased_coin_amount")
+
+  rawWebhookEventId String?  @unique @map("raw_webhook_event_id")
+  rawWebhookPayload Json?    @map("raw_webhook_payload")
+
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  coinPackage        CoinPackage? @relation(fields: [coinPackageId], references: [id], onDelete: SetNull)
+
+  @@map("fiserv_transactions")
+}
+

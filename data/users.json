@@ -6,10 +6,10 @@
     "name": "rfrfetfgtr",
     "coin": 100,
     "created_at": "2026-01-06T11:34:34.823Z",
-    "updated_at": "2026-02-15T10:39:34.164Z",
+    "updated_at": "2026-02-16T13:04:27.559Z",
     "user_state": "Paid – Just Converted",
     "user_state_reason": "just_converted",
-    "user_state_updated_at": "2026-02-15T10:39:34.163Z",
+    "user_state_updated_at": "2026-02-16T13:04:27.558Z",
     "intro_completed_at": "2026-02-10T09:13:09.981Z",
     "main_skill": "Web Development",
     "date_of_birth": "12/12/1998",
@@ -44,5 +44,20 @@
     "intro_completed_at": "2026-02-06T13:25:00.740Z",
     "main_skill": "Programming Languages",
     "date_of_birth": "12/12/1998"
+  },
+  {
+    "id": 4,
+    "email": "tourismpari123@gmail.com",
+    "password_hash": "$2b$10$Rl.2ydsZ6IMNgzACt2qSEefiwwE08Y2r/TaHdHSl0WW9TYmCOJnte",
+    "name": "lastName lastName",
+    "fake_user_id": "fake_mlp80qi9_b6h08r",
+    "coin": 6,
+    "has_used_free_plan": true,
+    "plan_status": "FREE",
+    "created_at": "2026-02-16T13:39:24.850Z",
+    "updated_at": "2026-02-16T13:39:46.269Z",
+    "user_state": "Started Resume – Incomplete",
+    "user_state_reason": "resume_incomplete",
+    "user_state_updated_at": "2026-02-16T13:39:46.268Z"
   }
 ]

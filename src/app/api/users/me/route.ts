@@ -1,52 +1,81 @@
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-
-async function getUserIdFromAuth(request: NextRequest): Promise<number | null> {
-    try {
-        const cookieStore = await cookies();
-        const cookieToken = cookieStore.get('accessToken')?.value;
-        const header = request.headers.get('authorization');
-        const headerToken = header?.startsWith('Bearer ') ? header.slice(7) : null;
-        const token = cookieToken || headerToken;
-        if (!token) return null;
-
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        const parsedId = Number(decoded?.userId);
-        return Number.isFinite(parsedId) ? parsedId : null;
-    } catch {
-        return null;
-    }
-}
+import { getUserIdFromAuth } from '@/lib/auth/get-user-id';
+import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 export async function GET(request: NextRequest) {
     const userId = await getUserIdFromAuth(request);
 
     if (!userId) {
-        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        return NextResponse.json(
+            { error: 'Authentication required' },
+            { status: 401, headers: { 'Cache-Control': 'no-store, max-age=0' } },
+        );
+    }
+
+    const prisma = getPrismaOrNull();
+
+    if (prisma) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                coin: true,
+                planStatus: true,
+                hasUsedFreePlan: true,
+            },
+        });
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 404, headers: { 'Cache-Control': 'no-store, max-age=0' } },
+            );
+        }
+
+        return NextResponse.json(
+            {
+                data: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    coin: user.coin ?? 0,
+                    plan_status: user.planStatus ?? null,
+                    has_used_free_plan: Boolean(user.hasUsedFreePlan),
+                },
+            },
+            { headers: { 'Cache-Control': 'no-store, max-age=0' } },
+        );
     }
 
     const user = db.users.findById(userId);
 
     if (!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        return NextResponse.json(
+            { error: 'User not found' },
+            { status: 404, headers: { 'Cache-Control': 'no-store, max-age=0' } },
+        );
     }
 
-    return NextResponse.json({
-        data: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            coin: user.coin ?? 0,
-            // onboarding/profile extras (optional)
-            mainSkill: (user as any).main_skill ?? (user as any).mainSkill ?? '',
-            dateOfBirth: (user as any).date_of_birth ?? (user as any).dateOfBirth ?? '',
+    return NextResponse.json(
+        {
+            data: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                coin: user.coin ?? 0,
+                plan_status: (user as any)?.plan_status ?? null,
+                has_used_free_plan: Boolean((user as any)?.has_used_free_plan ?? false),
+                // onboarding/profile extras (optional)
+                mainSkill: (user as any).main_skill ?? (user as any).mainSkill ?? '',
+                dateOfBirth: (user as any).date_of_birth ?? (user as any).dateOfBirth ?? '',
+            },
         },
-    });
+        { headers: { 'Cache-Control': 'no-store, max-age=0' } },
+    );
 }
 
 function normalizeString(value: unknown): string {

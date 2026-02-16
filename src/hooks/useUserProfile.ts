@@ -125,6 +125,21 @@ export const useUserProfile = (options?: { enabled?: boolean }) => {
         void refreshProfile();
     }, [accessToken, enabled, refreshProfile]);
 
+    // Allow any part of the app to trigger a profile refresh (e.g. after spending coins).
+    useEffect(() => {
+        if (!enabled) return;
+        if (typeof window === 'undefined') return;
+
+        const handler = () => {
+            void refreshProfile();
+        };
+
+        window.addEventListener('zcv:profile-changed', handler);
+        return () => {
+            window.removeEventListener('zcv:profile-changed', handler);
+        };
+    }, [enabled, refreshProfile]);
+
     return { profile, isLoading, error, refreshProfile };
 };
 

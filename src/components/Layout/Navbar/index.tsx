@@ -52,7 +52,6 @@ function getInitials(nameOrEmail: string): string {
   const value = (nameOrEmail ?? '').trim();
   if (!value) return 'U';
 
-  // If it's an email, use local-part.
   const local = value.includes('@') ? value.split('@')[0] : value;
   const parts = local
     .replace(/[^a-zA-Z0-9\s]/g, ' ')
@@ -74,7 +73,6 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [coinAnchorEl, setCoinAnchorEl] = useState<HTMLElement | null>(null);
 
-  // If we have a cookie-based session but no accessToken in store, we still consider the user logged in.
   const showAuthedUI = isAuthenticated && !isAuthLoading;
   const { profile, isLoading: isProfileLoading } = useUserProfile({ enabled: showAuthedUI });
 

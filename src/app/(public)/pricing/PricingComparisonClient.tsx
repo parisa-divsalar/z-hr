@@ -448,6 +448,7 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
     const [upgradeConfirmOpen, setUpgradeConfirmOpen] = useState(false);
     const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<PricingPlan | null>(null);
     const [paymentResult, setPaymentResult] = useState<PaymentResultMessage | null>(null);
+    const [upgradeLoading, setUpgradeLoading] = useState(false);
 
     const hydratedFeatures: PricingFeature[] = features.map((f) => ({
         ...f,
@@ -497,11 +498,29 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
         setUpgradeConfirmOpen(true);
     };
 
-    const handleConfirmUpgrade = () => {
+    const handleConfirmUpgrade = async () => {
         const planId = selectedUpgradePlan?.id;
-        const url = planId ? `/payment/fiserv?plan=${encodeURIComponent(planId)}` : '/payment/fiserv';
-        window.open(url, '_blank', 'noopener,noreferrer');
-        setUpgradeConfirmOpen(false);
+        if (!planId) return;
+        setUpgradeLoading(true);
+        try {
+            const res = await fetch('/api/payment/create-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ planId }),
+                cache: 'no-store',
+            });
+            const json = await res.json().catch(() => ({} as any));
+            if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+            const url = String(json?.paymentUrl ?? '').trim();
+            if (!url) throw new Error('Missing paymentUrl');
+            setUpgradeConfirmOpen(false);
+            window.location.href = url;
+        } catch (e) {
+            console.error('Upgrade create-session failed:', e);
+            setUpgradeConfirmOpen(false);
+        } finally {
+            setUpgradeLoading(false);
+        }
     };
 
     return (
@@ -541,7 +560,7 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
                         <MuiButton fullWidth color='secondary' variant='outlined' onClick={() => setUpgradeConfirmOpen(false)}>
                             Cancel
                         </MuiButton>
-                        <MuiButton fullWidth color='primary' variant='contained' onClick={handleConfirmUpgrade}>
+                        <MuiButton fullWidth color='primary' variant='contained' onClick={handleConfirmUpgrade} disabled={upgradeLoading}>
                             Continue
                         </MuiButton>
                     </Stack>
