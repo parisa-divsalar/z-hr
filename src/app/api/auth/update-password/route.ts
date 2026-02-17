@@ -1,65 +1,86 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getUserIdFromAuth } from '@/lib/auth/get-user-id';
 import { db } from '@/lib/db';
+import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
+type ApiError = { error: { message: string } };
+type ApiSuccess = { data: { message: string } };
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+function jsonError(message: string, status: number) {
+    return NextResponse.json<ApiError>({ error: { message } }, { status });
+}
 
-async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
-    try {
-        const cookieStore = await cookies();
-        const cookieToken = cookieStore.get('accessToken')?.value;
-        const authHeader = request.headers.get('authorization');
-        const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-        const token = cookieToken || headerToken;
-        if (!token) return null;
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        return decoded.userId?.toString() || null;
-    } catch {
-        return null;
-    }
+function normalizeString(value: unknown): string {
+    return String(value ?? '').trim();
 }
 
 export async function POST(request: NextRequest) {
     try {
-        const { userId, oldPassword, newPassword } = await request.json();
+        let body: any = null;
+        try {
+            body = await request.json();
+        } catch {
+            body = null;
+        }
+
+        // Accept multiple client shapes:
+        // - { oldPassword, newPassword }
+        // - { currentPassword, password, confirmPassword }
+        // - { currentPassword, password, repeatPassword }
+        const oldPassword = normalizeString(body?.oldPassword ?? body?.currentPassword);
+        const newPassword = normalizeString(body?.newPassword ?? body?.password);
+        const confirmPassword = normalizeString(body?.confirmPassword ?? body?.repeatPassword ?? body?.confirm);
+
         const authedUserId = await getUserIdFromAuth(request);
-        const finalUserId = authedUserId || (userId ? String(userId) : null);
+        const fallbackUserId = Number(body?.userId);
+        const finalUserId = authedUserId ?? (Number.isFinite(fallbackUserId) ? fallbackUserId : null);
 
-        if (!finalUserId || !oldPassword || !newPassword) {
-            return NextResponse.json(
-                { error: 'userId, oldPassword, and newPassword are required' },
-                { status: 400 }
-            );
+        if (!finalUserId) return jsonError('Authentication required', 401);
+        if (!oldPassword || !newPassword) return jsonError('Current password and new password are required', 400);
+        if (confirmPassword && confirmPassword !== newPassword) return jsonError('Passwords do not match', 400);
+        if (newPassword.length < 8) return jsonError('Password must be at least 8 characters', 400);
+        if (oldPassword === newPassword) return jsonError('New password must be different from current password', 400);
+
+        const prisma = getPrismaOrNull();
+
+        // SQL/Prisma mode
+        if (prisma) {
+            const user = await prisma.user.findUnique({
+                where: { id: finalUserId },
+                select: { id: true, passwordHash: true },
+            });
+            if (!user) return jsonError('User not found', 404);
+
+            const isValidPassword = await bcrypt.compare(oldPassword, user.passwordHash);
+            if (!isValidPassword) return jsonError('Invalid current password', 401);
+
+            const newHash = await bcrypt.hash(newPassword, 10);
+            await prisma.user.update({
+                where: { id: finalUserId },
+                data: { passwordHash: newHash },
+                select: { id: true },
+            });
+
+            return NextResponse.json<ApiSuccess>({ data: { message: 'Password updated successfully' } });
         }
 
-        // Get user
-        const user = db.users.findById(parseInt(finalUserId));
+        // JSON-db mode (dev)
+        const user = db.users.findById(finalUserId);
+        if (!user) return jsonError('User not found', 404);
+        if (!user.password_hash) return jsonError('Password is not set for this account', 400);
 
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
-
-        // Verify old password
         const isValidPassword = await bcrypt.compare(oldPassword, user.password_hash);
-        if (!isValidPassword) {
-            return NextResponse.json({ error: 'Invalid old password' }, { status: 401 });
-        }
+        if (!isValidPassword) return jsonError('Invalid current password', 401);
 
-        // Hash new password
-        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        const newHash = await bcrypt.hash(newPassword, 10);
+        const updated = db.users.update(finalUserId, { password_hash: newHash });
+        if (!updated) return jsonError('Failed to update password', 500);
 
-        // Update password
-        db.users.update(parseInt(finalUserId), { password_hash: newPasswordHash });
-
-        return NextResponse.json({
-            message: 'Password updated successfully',
-        });
+        return NextResponse.json<ApiSuccess>({ data: { message: 'Password updated successfully' } });
     } catch (error: any) {
         console.error('Error updating password:', error);
-        return NextResponse.json({ error: 'Failed to update password' }, { status: 500 });
+        return jsonError('Failed to update password', 500);
     }
 }
