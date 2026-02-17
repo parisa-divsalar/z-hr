@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Alert, Box, Stack, Typography } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
@@ -30,12 +30,9 @@ export default function PaymentReturnPage() {
 
   const [sent, setSent] = useState(false);
 
-  const payload = useMemo<PaymentResultMessage>(
-    () => ({ type: 'payment_result', status, planId, orderId, at: Date.now() }),
-    [orderId, planId, status],
-  );
-
   useEffect(() => {
+    const payload: PaymentResultMessage = { type: 'payment_result', status, planId, orderId, at: Date.now() };
+
     // Persist the result on the server (best-effort).
     (async () => {
       try {
@@ -78,7 +75,7 @@ export default function PaymentReturnPage() {
     }, 500);
 
     return () => clearTimeout(t);
-  }, [payload]);
+  }, [orderId, planId, status]);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#fafafa', px: 2, py: 6 }}>

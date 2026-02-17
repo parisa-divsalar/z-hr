@@ -1,14 +1,16 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import { Box, Divider, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Divider, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import DeleteIcon from '@/assets/images/icons/clean.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import MuiButton from '@/components/UI/MuiButton';
+import { PublicRoutes } from '@/config/routes';
 
 type ResumeFeaturePricingRow = {
   id?: number | string;
@@ -89,9 +91,13 @@ function clampInt(n: number, min: number, max: number): number {
 }
 
 export default function CustomPlanBuilderCard() {
+  const router = useRouter();
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
+  const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
 
   const catalogById = useMemo(() => Object.fromEntries(catalog.map((x) => [x.id, x])), [catalog]);
 
@@ -188,6 +194,12 @@ export default function CustomPlanBuilderCard() {
     return Math.max(0, Math.round(total));
   }, [subtotalAedCents]);
 
+  const totalCoins = useMemo(() => {
+    let sum = 0;
+    for (const r of rowsWithComputed) sum += Math.max(0, clampInt(toFiniteNumber((r as any)?.rowCoins, 0), 0, 9_999_999));
+    return Math.max(0, Math.round(sum));
+  }, [rowsWithComputed]);
+
   const canSubmit = useMemo(() => {
     const qty = Number(qtyInput);
     return Boolean(selectedItemId) && Number.isFinite(qty) && qty > 0 && !loading;
@@ -239,6 +251,120 @@ export default function CustomPlanBuilderCard() {
     }),
     [],
   );
+
+  const startDirectGatewayForMissingCoins = useCallback(
+    async (missingCoins: number) => {
+      const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+
+      try {
+        // Find the smallest paid coin package that covers the missing amount.
+        const pkRes = await fetch('/api/pricing/coin-packages', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        const pkJson = (await pkRes.json().catch(() => ({}))) as { data?: any[]; error?: string };
+        if (!pkRes.ok) throw new Error(String(pkJson?.error ?? `HTTP ${pkRes.status}`));
+        const pkgs = Array.isArray(pkJson?.data) ? pkJson.data : [];
+
+        const normalized = pkgs
+          .map((p) => ({
+            id: Number(p?.id),
+            coinAmount: Number(p?.coin_amount ?? p?.coinAmount ?? 0),
+            priceAed: Number(p?.price_aed ?? p?.priceAed ?? 0),
+          }))
+          .filter((p) => Number.isFinite(p.id) && p.id > 0)
+          .filter((p) => Number.isFinite(p.coinAmount) && p.coinAmount > 0)
+          .filter((p) => Number.isFinite(p.priceAed) && p.priceAed > 0)
+          .sort((a, b) => a.coinAmount - b.coinAmount);
+
+        const target = normalized.find((p) => p.coinAmount >= missingCoins) ?? normalized[normalized.length - 1];
+        const coinPackageId = target?.id ?? null;
+        if (!coinPackageId) throw new Error('No paid coin package available.');
+
+        const res = await fetch('/api/payment/create-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ coinPackageId }),
+          cache: 'no-store',
+        });
+        const json = await res.json().catch(() => ({} as any));
+
+        if (res.status === 401) {
+          try {
+            popup?.close();
+          } catch {
+            // ignore
+          }
+          router.push(PublicRoutes.login);
+          return;
+        }
+
+        if (!res.ok) throw new Error(String(json?.error ?? `HTTP ${res.status}`));
+
+        const url = String(json?.paymentUrl ?? '').trim();
+        if (!url) throw new Error('Missing paymentUrl');
+
+        if (popup && !popup.closed) popup.location.href = url;
+        else window.location.assign(url);
+      } catch (e) {
+        try {
+          popup?.close();
+        } catch {
+          // ignore
+        }
+        throw e;
+      }
+    },
+    [router],
+  );
+
+  const handleUpgrade = useCallback(async () => {
+    setUpgradeError(null);
+    setUpgradeSuccess(null);
+
+    if (totalCoins <= 0) {
+      setUpgradeError('Please add at least one item to your plan.');
+      return;
+    }
+
+    setUpgradeLoading(true);
+    try {
+      const res = await fetch('/api/credits/consume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ amount: totalCoins, feature: 'custom_plan_builder' }),
+        cache: 'no-store',
+      });
+
+      const json = (await res.json().catch(() => ({}))) as any;
+
+      if (res.status === 401) {
+        router.push(PublicRoutes.login);
+        return;
+      }
+
+      if (res.status === 402) {
+        const remaining = Number(json?.remainingCredits ?? 0);
+        const required = Number(json?.requiredCredits ?? totalCoins);
+        const missing = Math.max(0, Math.round(required - remaining));
+        if (missing > 0) {
+          await startDirectGatewayForMissingCoins(missing);
+          setUpgradeSuccess(`Not enough coins. Opened direct gateway to buy at least ${missing} coins.`);
+          return;
+        }
+      }
+
+      if (!res.ok) throw new Error(String(json?.error ?? `HTTP ${res.status}`));
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('zcv:profile-changed'));
+      }
+      setUpgradeSuccess('Payment done: your coin balance has been deducted.');
+      setRows([]);
+      resetInputs();
+    } catch (e) {
+      setUpgradeError(e instanceof Error ? e.message : 'Failed to complete payment');
+    } finally {
+      setUpgradeLoading(false);
+    }
+  }, [resetInputs, router, startDirectGatewayForMissingCoins, totalCoins]);
 
   return (
     <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: { xs: 4, md: 6 } }}>
@@ -455,10 +581,13 @@ export default function CustomPlanBuilderCard() {
 
             <Box sx={{ gridColumn: '2 / span 2', textAlign: 'center' }}>
               <Stack direction='row' alignItems='baseline' justifyContent='center' spacing={1} sx={{ mt: 0.1 }}>
-                <Typography  variant='h5' color='primary.main' fontWeight='584'>
+                <Typography sx={{ fontSize: 22, color: BRAND, fontWeight: 700, textAlign: 'center' }}>
                   {formatAedFromCents(totalWithTaxAedCents)}
                 </Typography>
               </Stack>
+              <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 700, mt: 0.25, textAlign: 'center' }}>
+                {totalCoins} Coins
+              </Typography>
               <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 600, mt: -0.25, textAlign: 'center' }}>
                 With 9% Tax
               </Typography>
@@ -469,11 +598,21 @@ export default function CustomPlanBuilderCard() {
               variant='contained'
               color='secondary'
 
-              onClick={() => {
-                // no-op for now; pricing flow handled by plans comparison / gateway.
-              }}
+              disabled={upgradeLoading || rowsWithComputed.length === 0}
+              onClick={handleUpgrade}
             />
           </Box>
+
+          {upgradeError ? (
+            <Box sx={{ px: 2, pb: 2 }}>
+              <Alert severity='error'>{upgradeError}</Alert>
+            </Box>
+          ) : null}
+          {upgradeSuccess ? (
+            <Box sx={{ px: 2, pb: 2 }}>
+              <Alert severity='success'>{upgradeSuccess}</Alert>
+            </Box>
+          ) : null}
         </Box>
       </Box>
     </Box>

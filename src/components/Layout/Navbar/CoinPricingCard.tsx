@@ -86,18 +86,6 @@ function slugifyId(input: string): string {
     .replace(/^_+|_+$/g, '');
 }
 
-type PlanId = 'starter' | 'pro' | 'plus' | 'elite';
-
-function normalizePlanId(name: string | undefined): PlanId | null {
-  const n = String(name ?? '').trim().toLowerCase();
-  if (!n) return null;
-  if (n.includes('starter') || n.includes('free')) return 'starter';
-  if (n.includes('pro')) return 'pro';
-  if (n.includes('plus')) return 'plus';
-  if (n.includes('elite')) return 'elite';
-  return null;
-}
-
 function mergeQuantities(prev: Record<string, number>, items: PricingListItem[]) {
   const next: Record<string, number> = {};
   for (const item of items) next[item.id] = prev[item.id] ?? item.initialQty ?? 0;
