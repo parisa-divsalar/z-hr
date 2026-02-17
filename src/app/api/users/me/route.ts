@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { db } from '@/lib/db';
 import { getUserIdFromAuth } from '@/lib/auth/get-user-id';
+import { db } from '@/lib/db';
 import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 export async function GET(request: NextRequest) {
@@ -36,6 +36,13 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        const latestPlanTx = await prisma.fiservTransaction.findFirst({
+            where: { userId: user.id, status: 'success', planId: { not: null } },
+            orderBy: { updatedAt: 'desc' },
+            select: { planId: true },
+        });
+        const currentPlanId = latestPlanTx?.planId ?? null;
+
         return NextResponse.json(
             {
                 data: {
@@ -45,6 +52,7 @@ export async function GET(request: NextRequest) {
                     coin: user.coin ?? 0,
                     plan_status: user.planStatus ?? null,
                     has_used_free_plan: Boolean(user.hasUsedFreePlan),
+                    current_plan_id: currentPlanId,
                 },
             },
             { headers: { 'Cache-Control': 'no-store, max-age=0' } },
@@ -60,6 +68,18 @@ export async function GET(request: NextRequest) {
         );
     }
 
+    const txs = (db.fiservTransactions.findByUserId?.(userId as any) ?? []) as any[];
+    const latestPlanTx = txs
+        .filter((t) => String(t?.status ?? '').toLowerCase() === 'success')
+        .filter((t) => String(t?.plan_id ?? t?.planId ?? '').trim())
+        .slice()
+        .sort((a, b) => {
+            const ta = Date.parse(String(a?.updated_at ?? a?.created_at ?? '')) || 0;
+            const tb = Date.parse(String(b?.updated_at ?? b?.created_at ?? '')) || 0;
+            return tb - ta;
+        })[0];
+    const currentPlanId = latestPlanTx ? String(latestPlanTx?.plan_id ?? latestPlanTx?.planId ?? '').trim() || null : null;
+
     return NextResponse.json(
         {
             data: {
@@ -69,6 +89,7 @@ export async function GET(request: NextRequest) {
                 coin: user.coin ?? 0,
                 plan_status: (user as any)?.plan_status ?? null,
                 has_used_free_plan: Boolean((user as any)?.has_used_free_plan ?? false),
+                current_plan_id: currentPlanId,
                 // onboarding/profile extras (optional)
                 mainSkill: (user as any).main_skill ?? (user as any).mainSkill ?? '',
                 dateOfBirth: (user as any).date_of_birth ?? (user as any).dateOfBirth ?? '',

@@ -13,6 +13,7 @@ export interface UserProfile {
     name: string | null;
     coin: number | null;
     plan_status?: string | null;
+    current_plan_id?: string | null;
     has_used_free_plan?: boolean;
     mainSkill?: string;
     dateOfBirth?: string;

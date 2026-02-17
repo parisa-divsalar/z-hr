@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
+import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,7 +17,10 @@ const corsHeaders = {
  */
 export async function GET() {
   try {
-    const rows = db.resumeFeaturePricing.findAll() ?? [];
+    const prisma = getPrismaOrNull();
+    const rows = prisma
+      ? await prisma.$queryRaw`SELECT * FROM resume_feature_pricing ORDER BY id ASC`
+      : (db.resumeFeaturePricing.findAll() ?? []);
     return NextResponse.json({ data: rows, generatedAt: new Date().toISOString() }, { headers: corsHeaders });
   } catch (error) {
     console.error('Error in /api/pricing/resume-feature-pricing:', error);

@@ -43,6 +43,20 @@ export async function consumeCredit(
   if (prisma) {
     try {
       const result = await prisma.$transaction(async (tx) => {
+        // Atomic decrement (prevents negative balances under concurrency).
+        const updatedRows = await tx.$queryRaw<Array<{ coin: number | null }>>`
+          UPDATE users
+          SET coin = COALESCE(coin, 0) - ${amount}
+          WHERE id = ${userIdNum} AND COALESCE(coin, 0) >= ${amount}
+          RETURNING coin
+        `;
+
+        const updated = updatedRows?.[0];
+        if (updated && Number.isFinite(Number(updated.coin))) {
+          return { ok: true as const, remaining: Number(updated.coin ?? 0) };
+        }
+
+        // Either user doesn't exist, or credits were insufficient. Fetch current state for a friendly response.
         const existing = await tx.user.findUnique({
           where: { id: userIdNum },
           select: { coin: true },
@@ -53,21 +67,11 @@ export async function consumeCredit(
         }
 
         const currentCredits = Number(existing.coin ?? 0);
-        if (!Number.isFinite(currentCredits) || currentCredits < amount) {
-          return {
-            ok: false as const,
-            reason: 'insufficient' as const,
-            remaining: Number.isFinite(currentCredits) ? currentCredits : 0,
-          };
-        }
-
-        const updated = await tx.user.update({
-          where: { id: userIdNum },
-          data: { coin: { decrement: amount } },
-          select: { coin: true },
-        });
-
-        return { ok: true as const, remaining: Number(updated.coin ?? 0) };
+        return {
+          ok: false as const,
+          reason: 'insufficient' as const,
+          remaining: Number.isFinite(currentCredits) ? currentCredits : 0,
+        };
       });
 
       if (!result.ok) {

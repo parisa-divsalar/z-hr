@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest) {
              * Cost is driven by `data/resume_feature_pricing.json` (feature: "AI Resume Builder").
              */
             const userIdNum = parseInt(finalUserId, 10);
-            const coinCost = getResumeFeatureCoinCost('AI Resume Builder', 6);
+            const coinCost = await getResumeFeatureCoinCost('AI Resume Builder', 6);
             const charge = await consumeCredit(userIdNum, coinCost, 'ai_resume_builder');
             if (!charge.success) {
                 return NextResponse.json(

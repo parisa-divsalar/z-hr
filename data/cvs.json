@@ -189,5 +189,23 @@
     "charged_attachment_ids": [
       "714efccf-f363-4390-9d72-11ad8fc4442d"
     ]
+  },
+  {
+    "id": 21,
+    "user_id": 1,
+    "request_id": "req_1771339617390_cgdu87v1c",
+    "content": "{\"fullName\":\"صثیصثثی\",\"name\":\"صثیصثثی\",\"dateOfBirth\":\"12/12/1998\",\"birthDate\":\"12/12/1998\",\"title\":\"Wizard Status: Web Frameworks • Visa: student_visa\",\"mainSkill\":\"Wizard Status: Web Frameworks • Visa: student_visa\",\"summary\":\"\",\"skills\":[],\"skillList\":[],\"contactWays\":[],\"contactWay\":[],\"education\":[],\"languages\":[],\"certificates\":[],\"certifications\":[],\"selectedProjects\":[],\"additionalInfo\":\"\",\"additionalInfoText\":\"\",\"experiences\":[],\"experience\":[],\"profile\":{\"fullName\":\"صثیصثثی\",\"name\":\"صثیصثثی\",\"dateOfBirth\":\"12/12/1998\",\"birthDate\":\"12/12/1998\",\"title\":\"Wizard Status: Web Frameworks • Visa: student_visa\",\"headline\":\"Wizard Status: Web Frameworks • Visa: student_visa\",\"summary\":\"\"}}",
+    "analysis_result": "{\"improvedResume\":{\"personalInfo\":{\"name\":\"صیسزس\",\"email\":\"\",\"phone\":\"32423423\",\"location\":\"\"},\"summary\":\"Transitioned into front-end development with a strong interest in web technologies. Completed courses and hands-on projects using HTML, CSS, JavaScript, and React. Developed strong problem-solving and self-learning skills.\",\"technicalSkills\":[\"Web Development\",\"RESTful APIs\",\"AJAX\",\"HTML\",\"CSS\",\"JavaScript\",\"React\"],\"professionalExperience\":[{\"title\":\"Front-End Developer\",\"company\":\"\",\"dates\":\"\",\"bullets\":[\"Transitioned into front-end development after developing a strong interest in web technologies.\",\"Completed several courses and hands-on projects using HTML, CSS, JavaScript, and React.\",\"Developed strong problem-solving and self-learning skills.\"]}],\"education\":[],\"certifications\":[{\"title\":\"Front-End Development Courses\",\"issuer\":\"\",\"issue_date\":\"\"}],\"selectedProjects\":[],\"languages\":[{\"language\":\"Persian\",\"level\":\"A\"}],\"additionalInfo\":{\"notes\":[]}}}",
+    "created_at": "2026-02-17T14:52:30.776Z",
+    "updated_at": "2026-02-17T14:52:58.574Z"
+  },
+  {
+    "id": 22,
+    "user_id": 1,
+    "request_id": "c7bf73f4-e2aa-42fc-945f-5cb3616f4573",
+    "content": "{\"fullName\":\"\",\"mainSkill\":\"\",\"dateOfBirth\":\"\",\"visaStatus\":\"\",\"contactWay\":[],\"languages\":[],\"background\":{\"text\":\"\",\"voices\":[],\"files\":[]},\"skills\":[],\"experiences\":[],\"certificates\":[],\"jobDescription\":{\"text\":\"\",\"voices\":[],\"files\":[]},\"additionalInfo\":{\"text\":\"\",\"voices\":[],\"files\":[]},\"allFiles\":[],\"__updatedAt\":1771339969584,\"name\":\"\",\"birthDate\":\"\",\"title\":\"\",\"summary\":\"\",\"skillList\":[],\"contactWays\":[],\"education\":[],\"certifications\":[],\"selectedProjects\":[],\"additionalInfoText\":\"\",\"experience\":[],\"profile\":{\"fullName\":\"\",\"name\":\"\",\"dateOfBirth\":\"\",\"birthDate\":\"\",\"title\":\"\",\"headline\":\"\",\"summary\":\"\"}}",
+    "title": null,
+    "created_at": "2026-02-17T14:52:59.566Z",
+    "updated_at": "2026-02-17T14:53:12.171Z"
   }
 ]

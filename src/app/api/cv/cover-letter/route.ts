@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
             const uid = Number(userId);
             const alreadyUnlocked = Number.isFinite(uid) ? isMoreFeatureUnlocked(uid, 'ai_cover_letter') : false;
             if (!alreadyUnlocked) {
-                const coinCost = getResumeFeatureCoinCost('AI Cover Letter', 1);
+                const coinCost = await getResumeFeatureCoinCost('AI Cover Letter', 1);
                 const creditResult = await consumeCredit(userId, coinCost, 'cover_letter');
                 if (!creditResult.success) {
                     return NextResponse.json(

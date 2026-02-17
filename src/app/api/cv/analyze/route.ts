@@ -167,11 +167,11 @@ export async function POST(request: NextRequest) {
                 const chargedSet = new Set((existingChargedIds ?? []).map((x) => String(x ?? '').trim()).filter(Boolean));
                 const newlyAdded = attachmentsNow.filter((a) => !chargedSet.has(a.id));
 
-                const baseCost = isNewCv ? getResumeFeatureCoinCost('AI Resume Builder', 6) : 0;
-                const fileUnit = getResumeFeatureCoinCost('File Input', 0);
-                const imageUnit = getResumeFeatureCoinCost('Images Input', 0);
-                const videoUnit = getResumeFeatureCoinCost('Video Input', 0);
-                const voiceUnit = getResumeFeatureCoinCost('Voice Input', 0);
+                const baseCost = isNewCv ? await getResumeFeatureCoinCost('AI Resume Builder', 6) : 0;
+                const fileUnit = await getResumeFeatureCoinCost('File Input', 0);
+                const imageUnit = await getResumeFeatureCoinCost('Images Input', 0);
+                const videoUnit = await getResumeFeatureCoinCost('Video Input', 0);
+                const voiceUnit = await getResumeFeatureCoinCost('Voice Input', 0);
 
                 const counts = { file: 0, image: 0, video: 0, voice: 0 } as Record<AttachmentKind, number>;
                 for (const a of newlyAdded) {

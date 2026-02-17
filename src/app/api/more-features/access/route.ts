@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { consumeCredit } from '@/lib/credits';
 import { getUserIdFromAuth } from '@/lib/auth/get-user-id';
-import { getResumeFeatureCoinCost } from '@/lib/pricing/get-resume-feature-coin-cost';
+import { consumeCredit } from '@/lib/credits';
 import {
   disableMoreFeature,
   featureKeyFromName,
@@ -10,6 +9,7 @@ import {
   isMoreFeatureUnlocked,
   unlockAndEnableMoreFeature,
 } from '@/lib/more-features/access-store';
+import { getResumeFeatureCoinCost } from '@/lib/pricing/get-resume-feature-coin-cost';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
   if (!alreadyUnlocked) {
     // Deduct coin cost ONCE when unlocking.
-    const coinCost = getResumeFeatureCoinCost(featureName, 0);
+    const coinCost = await getResumeFeatureCoinCost(featureName, 0);
     if (coinCost > 0) {
       const creditResult = await consumeCredit(uid, coinCost, featureKey || 'more_feature');
       if (!creditResult.success) {

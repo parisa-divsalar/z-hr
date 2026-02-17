@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getUserIdFromAuth } from '@/lib/auth/get-user-id';
@@ -165,8 +166,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid paid selection' }, { status: 400 });
         }
 
-        const successUrl = `${origin}/payment/return?status=success&orderId=${encodeURIComponent(orderId)}`;
-        const failureUrl = `${origin}/payment/return?status=failure&orderId=${encodeURIComponent(orderId)}`;
+        const planParam = resolvedPlanId ? `&plan=${encodeURIComponent(resolvedPlanId)}` : '';
+        const successUrl = `${origin}/payment/return?status=success&orderId=${encodeURIComponent(orderId)}${planParam}`;
+        const failureUrl = `${origin}/payment/return?status=failure&orderId=${encodeURIComponent(orderId)}${planParam}`;
 
         const requestBody = {
             storeId: STORE_ID,
@@ -235,12 +237,12 @@ export async function POST(request: NextRequest) {
                 checkoutId: typeof json?.checkout?.checkoutId === 'string' ? json.checkout.checkoutId : null,
                 transactionId: null,
                 status: 'pending',
+                ...(resolvedPlanId ? { planId: resolvedPlanId } : {}),
                 amount: priceAed,
                 currency: 'AED',
                 customerEmail: user.email,
                 customerName: user.name ?? null,
                 ...(resolvedCoinPackageId ? { coinPackageId: resolvedCoinPackageId, purchasedCoinAmount } : {}),
-                // For plan upgrades we don't persist planId in Prisma client yet; orderId remains the join key for the webhook.
             },
         });
 
@@ -269,8 +271,9 @@ export async function POST(request: NextRequest) {
 
     if (!priceAed || !Number.isFinite(priceAed) || priceAed <= 0) return NextResponse.json({ error: 'Invalid paid selection' }, { status: 400 });
 
-    const successUrl = `${origin}/payment/return?status=success&orderId=${encodeURIComponent(orderId)}`;
-    const failureUrl = `${origin}/payment/return?status=failure&orderId=${encodeURIComponent(orderId)}`;
+    const planParam = planId ? `&plan=${encodeURIComponent(planId)}` : '';
+    const successUrl = `${origin}/payment/return?status=success&orderId=${encodeURIComponent(orderId)}${planParam}`;
+    const failureUrl = `${origin}/payment/return?status=failure&orderId=${encodeURIComponent(orderId)}${planParam}`;
 
     const requestBody = {
         storeId: STORE_ID,

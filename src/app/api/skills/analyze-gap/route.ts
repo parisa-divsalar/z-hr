@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         
         // Deduct dynamic coin cost for skill gap analysis (from resume_feature_pricing.json)
         if (userId) {
-            const coinCost = getResumeFeatureCoinCost('Skill Gap', 1);
+            const coinCost = await getResumeFeatureCoinCost('Skill Gap', 1);
             const creditResult = await consumeCredit(userId, coinCost, 'skill_gap');
             if (!creditResult.success) {
                 return NextResponse.json(

@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 function safeStr(v: unknown): string {
   return String(v ?? '').trim();
@@ -23,16 +24,57 @@ function toFiniteInt(v: unknown): number | null {
 }
 
 /**
- * Reads coin cost from `data/resume_feature_pricing.json` (via `db.resumeFeaturePricing`).
- * This keeps feature coin consumption dynamic in dev/JSON-db mode.
+ * Loads resume-feature pricing rows from the SQL database (when configured)
+ * or from the JSON DB fallback.
+ *
+ * Source of truth:
+ * - **SQL/Prisma mode**: `resume_feature_pricing` table
+ * - **JSON-db mode**: `data/resume_feature_pricing.json` via `db.resumeFeaturePricing`
  */
-export function getResumeFeatureCoinCost(featureName: string, fallback: number): number {
+type ResumeFeaturePricingRow = {
+  id?: number | string;
+  feature_name?: string;
+  coin_per_action?: number | string;
+  [k: string]: unknown;
+};
+
+let cachedRows: ResumeFeaturePricingRow[] | null = null;
+let cachedAtMs = 0;
+const CACHE_TTL_MS = 30_000;
+
+async function loadResumeFeaturePricingRows(): Promise<ResumeFeaturePricingRow[]> {
+  const now = Date.now();
+  if (cachedRows && now - cachedAtMs < CACHE_TTL_MS) return cachedRows;
+
+  const prisma = getPrismaOrNull();
+  if (prisma) {
+    try {
+      // Keep this query permissive: we only require feature_name + coin_per_action.
+      const rows = (await prisma.$queryRaw<
+        Array<{ id: number; feature_name: string | null; coin_per_action: number | null }>
+      >`SELECT id, feature_name, coin_per_action FROM resume_feature_pricing`) as any[];
+
+      cachedRows = Array.isArray(rows) ? (rows as any) : [];
+      cachedAtMs = now;
+      return cachedRows;
+    } catch {
+      // If the SQL table isn't available yet, fall back to JSON rows below.
+    }
+  }
+
+  const rows = (db.resumeFeaturePricing.findAll?.() ?? []) as ResumeFeaturePricingRow[];
+  cachedRows = Array.isArray(rows) ? rows : [];
+  cachedAtMs = now;
+  return cachedRows;
+}
+
+export async function getResumeFeatureCoinCost(featureName: string, fallback: number): Promise<number> {
   const fallbackInt = Math.max(0, Math.trunc(Number.isFinite(fallback) ? fallback : 0));
   const target = normalizeKey(featureName);
   if (!target) return fallbackInt;
 
   try {
-    const rows = db.resumeFeaturePricing.findAll?.() ?? [];
+    const rows = await loadResumeFeaturePricingRows();
     const match =
       rows.find((r: any) => normalizeKey(r?.feature_name) === target) ??
       rows.find((r: any) => normalizeKey(r?.feature_name).includes(target)) ??

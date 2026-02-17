@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const coinCost = getResumeFeatureCoinCost('File Input', 1);
+        const coinCost = await getResumeFeatureCoinCost('File Input', 1);
         const creditResult = await consumeCredit(userId, coinCost, 'file_upload');
         if (!creditResult.success) {
             return NextResponse.json(

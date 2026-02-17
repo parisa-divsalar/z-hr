@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
+import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,7 +17,12 @@ const corsHeaders = {
 export async function GET() {
   try {
     const rows = (db.moreFeatures.findAll?.() ?? []) as any[];
-    const pricingRows = (db.resumeFeaturePricing.findAll?.() ?? []) as any[];
+    const prisma = getPrismaOrNull();
+    const pricingRows = prisma
+      ? await prisma.$queryRaw<Array<{ feature_name: string | null; coin_per_action: number | null }>>`
+          SELECT feature_name, coin_per_action FROM resume_feature_pricing
+        `
+      : ((db.resumeFeaturePricing.findAll?.() ?? []) as any[]);
 
     const safeStr = (v: unknown) => String(v ?? '').trim();
     const normalizeKey = (v: unknown) =>

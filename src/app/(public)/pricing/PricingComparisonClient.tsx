@@ -20,8 +20,11 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
+import { PublicRoutes } from '@/config/routes';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 import type { SxProps, Theme } from '@mui/material/styles';
 
@@ -257,10 +260,14 @@ function PlanNameCell({ plan }: { plan: PricingPlan }) {
 function PriceFooter({
     plan,
     isHighlighted,
+    isCurrent,
+    loading,
     onUpgrade,
 }: {
     plan: PricingPlan;
     isHighlighted: boolean;
+    isCurrent: boolean;
+    loading: boolean;
     onUpgrade: (plan: PricingPlan) => void;
 }) {
     return (
@@ -279,9 +286,10 @@ function PriceFooter({
                 fullWidth
                 variant={isHighlighted ? 'contained' : plan.cta.variant}
                 color='primary'
+                disabled={isCurrent || loading}
                 onClick={() => onUpgrade(plan)}
             >
-                Upgrade Now
+                {isCurrent ? 'Current Plan' : loading ? 'Redirecting…' : 'Upgrade Now'}
             </MuiButton>
         </Stack>
     );
@@ -290,10 +298,14 @@ function PriceFooter({
 function DesktopComparisonTable({
     plans,
     features,
+    currentPlanId,
+    upgradeLoadingPlanId,
     onUpgrade,
 }: {
     plans: PricingPlan[];
     features: PricingFeature[];
+    currentPlanId: PlanId | null;
+    upgradeLoadingPlanId: PlanId | null;
     onUpgrade: (plan: PricingPlan) => void;
 }) {
     const highlightedId = plans.find((p) => p.isPopular)?.id;
@@ -327,6 +339,8 @@ function DesktopComparisonTable({
             {/* Plan columns */}
             {plans.map((plan, idx) => {
                 const isHighlighted = plan.id === highlightedId;
+                const isCurrent = currentPlanId === plan.id;
+                const loading = upgradeLoadingPlanId === plan.id;
                 const prevPlan = plans[idx - 1];
                 const showLeftDivider = idx > 0 && !isHighlighted && !(prevPlan && prevPlan.id === highlightedId);
 
@@ -361,7 +375,7 @@ function DesktopComparisonTable({
                                 )}
                             </Box>
                         ))}
-                        <PriceFooter plan={plan} isHighlighted={isHighlighted} onUpgrade={onUpgrade} />
+                        <PriceFooter plan={plan} isHighlighted={isHighlighted} isCurrent={isCurrent} loading={loading} onUpgrade={onUpgrade} />
                     </Box>
                 );
             })}
@@ -372,10 +386,14 @@ function DesktopComparisonTable({
 function MobilePlanCards({
     plans,
     features,
+    currentPlanId,
+    upgradeLoadingPlanId,
     onUpgrade,
 }: {
     plans: PricingPlan[];
     features: PricingFeature[];
+    currentPlanId: PlanId | null;
+    upgradeLoadingPlanId: PlanId | null;
     onUpgrade: (plan: PricingPlan) => void;
 }) {
     const highlightedId = plans.find((p) => p.isPopular)?.id;
@@ -386,6 +404,8 @@ function MobilePlanCards({
         <Stack spacing={2.5}>
             {plans.map((plan) => {
                 const isHighlighted = plan.id === highlightedId;
+                const isCurrent = currentPlanId === plan.id;
+                const loading = upgradeLoadingPlanId === plan.id;
 
                 return (
                     <Card
@@ -432,7 +452,7 @@ function MobilePlanCards({
                                 ))}
                             </Box>
 
-                            <PriceFooter plan={plan} isHighlighted={isHighlighted} onUpgrade={onUpgrade} />
+                            <PriceFooter plan={plan} isHighlighted={isHighlighted} isCurrent={isCurrent} loading={loading} onUpgrade={onUpgrade} />
                         </CardContent>
                     </Card>
                 );
@@ -444,11 +464,19 @@ function MobilePlanCards({
 export default function PricingComparisonClient({ plans, features }: { plans: PricingPlan[]; features: PricingFeature[] }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <900px
+    const router = useRouter();
+    const { profile } = useUserProfile({ enabled: true });
 
-    const [upgradeConfirmOpen, setUpgradeConfirmOpen] = useState(false);
-    const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<PricingPlan | null>(null);
     const [paymentResult, setPaymentResult] = useState<PaymentResultMessage | null>(null);
-    const [upgradeLoading, setUpgradeLoading] = useState(false);
+    const [upgradeLoadingPlanId, setUpgradeLoadingPlanId] = useState<PlanId | null>(null);
+    const [currentPlanId, setCurrentPlanId] = useState<PlanId | null>(null);
+
+    const profileCurrentPlanIdRaw = (profile as any)?.current_plan_id ?? (profile as any)?.currentPlanId ?? null;
+    useEffect(() => {
+        const s = String(profileCurrentPlanIdRaw ?? '').trim().toLowerCase();
+        const next: PlanId | null = s === 'starter' || s === 'pro' || s === 'plus' || s === 'elite' ? (s as PlanId) : null;
+        setCurrentPlanId(next);
+    }, [profileCurrentPlanIdRaw]);
 
     const hydratedFeatures: PricingFeature[] = features.map((f) => ({
         ...f,
@@ -467,6 +495,12 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
                 planId: typeof p.planId === 'string' ? p.planId : undefined,
                 at: typeof p.at === 'number' ? p.at : Date.now(),
             });
+
+            if (p.status === 'success' && typeof p.planId === 'string') {
+                const s = p.planId.trim().toLowerCase();
+                const next: PlanId | null = s === 'starter' || s === 'pro' || s === 'plus' || s === 'elite' ? (s as PlanId) : null;
+                if (next) setCurrentPlanId(next);
+            }
         };
 
         let bc: BroadcastChannel | null = null;
@@ -493,15 +527,16 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
         };
     }, []);
 
-    const handleUpgradeClick = (plan: PricingPlan) => {
-        setSelectedUpgradePlan(plan);
-        setUpgradeConfirmOpen(true);
-    };
-
-    const handleConfirmUpgrade = async () => {
-        const planId = selectedUpgradePlan?.id;
+    const handleUpgradeClick = async (plan: PricingPlan) => {
+        const planId = plan?.id;
         if (!planId) return;
-        setUpgradeLoading(true);
+        if (!profile?.id) {
+            router.push(PublicRoutes.login);
+            return;
+        }
+        if (currentPlanId === planId) return;
+
+        setUpgradeLoadingPlanId(planId);
         try {
             const res = await fetch('/api/payment/create-session', {
                 method: 'POST',
@@ -510,16 +545,18 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
                 cache: 'no-store',
             });
             const json = await res.json().catch(() => ({} as any));
+            if (res.status === 401) {
+                router.push(PublicRoutes.login);
+                return;
+            }
             if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
             const url = String(json?.paymentUrl ?? '').trim();
             if (!url) throw new Error('Missing paymentUrl');
-            setUpgradeConfirmOpen(false);
             window.location.href = url;
         } catch (e) {
             console.error('Upgrade create-session failed:', e);
-            setUpgradeConfirmOpen(false);
         } finally {
-            setUpgradeLoading(false);
+            setUpgradeLoadingPlanId(null);
         }
     };
 
@@ -536,36 +573,25 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
                 >
                     <Box sx={{ px: 0, py: { xs: 2, md: 2 } }}>
                         {isMobile ? (
-                            <MobilePlanCards plans={plans} features={hydratedFeatures} onUpgrade={handleUpgradeClick} />
+                            <MobilePlanCards
+                                plans={plans}
+                                features={hydratedFeatures}
+                                currentPlanId={currentPlanId}
+                                upgradeLoadingPlanId={upgradeLoadingPlanId}
+                                onUpgrade={handleUpgradeClick}
+                            />
                         ) : (
-                            <DesktopComparisonTable plans={plans} features={hydratedFeatures} onUpgrade={handleUpgradeClick} />
+                            <DesktopComparisonTable
+                                plans={plans}
+                                features={hydratedFeatures}
+                                currentPlanId={currentPlanId}
+                                upgradeLoadingPlanId={upgradeLoadingPlanId}
+                                onUpgrade={handleUpgradeClick}
+                            />
                         )}
                     </Box>
                 </Box>
             </Box>
-
-            <Dialog open={upgradeConfirmOpen} onClose={() => setUpgradeConfirmOpen(false)} fullWidth maxWidth='xs'>
-                <DialogTitle>Confirm upgrade</DialogTitle>
-                <DialogContent dividers>
-                    <Typography variant='body2' color='text.secondary'>
-                        Open the payment page in a new tab for{' '}
-                        <Typography component='span' variant='body2' fontWeight={700} color='text.primary'>
-                            {selectedUpgradePlan?.name ?? 'this plan'}
-                        </Typography>
-                        ?
-                    </Typography>
-                </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Stack direction='row' gap={1} width='100%'>
-                        <MuiButton fullWidth color='secondary' variant='outlined' onClick={() => setUpgradeConfirmOpen(false)}>
-                            Cancel
-                        </MuiButton>
-                        <MuiButton fullWidth color='primary' variant='contained' onClick={handleConfirmUpgrade} disabled={upgradeLoading}>
-                            Continue
-                        </MuiButton>
-                    </Stack>
-                </DialogActions>
-            </Dialog>
 
             <Dialog open={Boolean(paymentResult)} onClose={() => setPaymentResult(null)} fullWidth maxWidth='xs'>
                 <DialogTitle>Payment result</DialogTitle>
