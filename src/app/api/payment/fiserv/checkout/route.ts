@@ -21,6 +21,28 @@ type CheckoutRequestBody = {
   };
 };
 
+const FISERV_PLACEHOLDERS = new Set([
+  'PASTE_YOUR_API_KEY_HERE',
+  'PASTE_YOUR_SECRET_HERE',
+  'PASTE_YOUR_STORE_ID_HERE',
+]);
+
+function readEnvValue(name: string): string {
+  const raw = String(process.env[name] ?? '').trim();
+  if (!raw) return '';
+  if (FISERV_PLACEHOLDERS.has(raw)) return '';
+  return raw;
+}
+
+function defaultFiservBaseUrl(): string {
+  // Fiserv EMEA Checkout API (docs.fiserv.dev):
+  // - Sandbox: https://prod.emea.api.fiservapps.com/sandbox/exp/v1/checkouts
+  // - Production: https://prod.emea.api.fiservapps.com/exp/v1/checkouts
+  return process.env.NODE_ENV === 'production'
+    ? 'https://prod.emea.api.fiservapps.com/exp/v1/checkouts'
+    : 'https://prod.emea.api.fiservapps.com/sandbox/exp/v1/checkouts';
+}
+
 function normalizePlanId(name: string | undefined): PlanId | null {
   const n = String(name ?? '').trim().toLowerCase();
   if (!n) return null;
@@ -89,11 +111,11 @@ function resolvePlanPriceAed(planId: PlanId): number | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const API_KEY = process.env.FISERV_API_KEY ?? '';
-    const SECRET = process.env.FISERV_SECRET ?? '';
-    const STORE_ID = process.env.FISERV_STORE_ID ?? '';
-    const BASE_URL = process.env.FISERV_BASE_URL ?? 'https://prod.emea.api.fiservapps.com/exp/v1/checkouts';
-    const WEBHOOK_URL = process.env.FISERV_WEBHOOK_URL ?? '';
+    const API_KEY = readEnvValue('FISERV_API_KEY');
+    const SECRET = readEnvValue('FISERV_SECRET');
+    const STORE_ID = readEnvValue('FISERV_STORE_ID');
+    const BASE_URL = readEnvValue('FISERV_BASE_URL') || defaultFiservBaseUrl();
+    const WEBHOOK_URL = readEnvValue('FISERV_WEBHOOK_URL');
 
     if (!API_KEY || !SECRET || !STORE_ID) {
       return NextResponse.json(
