@@ -25,10 +25,10 @@ const PlanRequiredDialog = ({ open, onClose }: PlanRequiredDialogProps) => {
             <DialogContent dividers>
                 <Stack spacing={1}>
                     <Typography variant='subtitle2' fontWeight={500} color='text.primary'>
-                        Dear user, please purchase a plan before uploading files or recording voice.
+                        This feature is not available on the Free plan.
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
-                        Purchasing a plan lets you unlock uploads and voice recordings.
+                        Please upgrade to upload files and record voice.
                     </Typography>
                 </Stack>
             </DialogContent>

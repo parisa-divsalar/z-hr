@@ -6,6 +6,7 @@ import { AIStatus } from '@/components/Landing/type';
 import { MainContainer } from '@/components/Landing/Wizard/Step1/AI/styled';
 import VoiceRecord from '@/components/Landing/Wizard/Step1/Common/VoiceRecord';
 import MuiButton from '@/components/UI/MuiButton';
+import { usePlanGate } from '@/hooks/usePlanGate';
 
 interface AIInputProps {
     setAiStatus: (status: AIStatus) => void;
@@ -20,8 +21,9 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
     const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
     const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
     const [voiceDuration, setVoiceDuration] = useState<number>(0);
-    const [showRecordingControls, setShowRecordingControls] = useState<boolean>(true);
+    const [showRecordingControls, setShowRecordingControls] = useState<boolean>(false);
     const [_uploadedFiles, _setUploadedFiles] = useState<File[]>([]);
+    const { guardAction, planDialog } = usePlanGate();
 
     const handleVoiceRecordingComplete = (url: string, blob: Blob, duration: number) => {
         setVoiceUrl(url);
@@ -39,6 +41,7 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
 
     return (
         <MainContainer>
+            {planDialog}
             {voiceUrl && (
                 <VoiceRecord
                     recordingState={recordingState}
@@ -51,10 +54,10 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
                 />
             )}
 
-            {!voiceUrl && (
+            {!voiceUrl && showRecordingControls && (
                 <VoiceRecord
                     onRecordingComplete={handleVoiceRecordingComplete}
-                    showRecordingControls={showRecordingControls}
+                    showRecordingControls={true}
                     recordingState={recordingState}
                     setRecordingState={setRecordingState}
                 />
@@ -64,6 +67,19 @@ const AIInput: FunctionComponent<AIInputProps> = (props) => {
                 <Stack width='10rem' mt={6}>
                     <MuiButton fullWidth color='secondary' size='large' onClick={() => setAiStatus('WIZARD')}>
                         submit
+                    </MuiButton>
+                </Stack>
+            )}
+            {!voiceUrl && !showRecordingControls && (
+                <Stack width='10rem' mt={2}>
+                    <MuiButton
+                        fullWidth
+                        color='secondary'
+                        variant='outlined'
+                        size='large'
+                        onClick={() => guardAction(() => setShowRecordingControls(true), 'voice_recording')}
+                    >
+                        Record voice
                     </MuiButton>
                 </Stack>
             )}

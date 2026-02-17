@@ -6,6 +6,7 @@ import AddIcon from '@/assets/images/icons/add.svg';
 import FileIcon from '@/assets/images/icons/icon-file.svg';
 import VideoIcon from '@/assets/images/icons/Icon-play.svg';
 import PhotoIcon from '@/assets/images/icons/select-Icon.svg';
+import { usePlanGate } from '@/hooks/usePlanGate';
 
 interface AddAttachFileProps {
   uploadedFiles: File[];
@@ -17,6 +18,7 @@ const AddAttachFile: FunctionComponent<AddAttachFileProps> = (props) => {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(menuAnchorEl);
+  const { guardAction, planDialog } = usePlanGate();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -24,7 +26,7 @@ const AddAttachFile: FunctionComponent<AddAttachFileProps> = (props) => {
 
   console.log({ uploadedFiles });
   const handleAddIconClick = (event: React.MouseEvent<HTMLElement>) => {
-    setMenuAnchorEl(event.currentTarget);
+    guardAction(() => setMenuAnchorEl(event.currentTarget), 'file_upload');
   };
 
   const handleMenuClose = () => {
@@ -141,6 +143,7 @@ const AddAttachFile: FunctionComponent<AddAttachFileProps> = (props) => {
         onChange={(e) => handlePhotoUpload(e.target.files)}
         style={{ display: 'none' }}
       />
+      {planDialog}
     </>
   );
 };

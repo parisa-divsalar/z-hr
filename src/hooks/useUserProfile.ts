@@ -2,16 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { AxiosError } from 'axios';
-
 import { apiClientClient } from '@/services/api-client';
 import { useAuthStore } from '@/store/auth';
+
+import type { AxiosError } from 'axios';
 
 export interface UserProfile {
     id: number;
     email: string;
     name: string | null;
     coin: number | null;
+    plan_status?: string | null;
+    has_used_free_plan?: boolean;
     mainSkill?: string;
     dateOfBirth?: string;
 }

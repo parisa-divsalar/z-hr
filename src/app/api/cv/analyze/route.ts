@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { consumeCredit } from '@/lib/credits';
 import { db } from '@/lib/db';
 import { recordUserStateTransition } from '@/lib/user-state';
 import { ChatGPTService } from '@/services/chatgpt/service';
@@ -23,6 +24,20 @@ async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
     }
 }
 
+function getAiResumeBuilderCoinCost(): number {
+    try {
+        const rows = db.resumeFeaturePricing.findAll?.() ?? [];
+        const row = rows.find((r: any) => {
+            const name = String(r?.feature_name ?? '').trim().toLowerCase();
+            return name === 'ai resume builder' || name.includes('ai resume builder');
+        });
+        const n = Number((row as any)?.coin_per_action ?? 6);
+        return Number.isFinite(n) && n > 0 ? Math.round(n) : 6;
+    } catch {
+        return 6;
+    }
+}
+
 export async function POST(request: NextRequest) {
     let requestId: string | undefined;
     try {
@@ -41,6 +56,26 @@ export async function POST(request: NextRequest) {
         const reqId: string =
             providedRequestId || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         requestId = reqId;
+
+        // If this is a NEW CV creation, consume coins before expensive AI work.
+        if (finalUserId) {
+            const existingCv = (db as any).cvs.findByRequestId(reqId);
+            if (!existingCv) {
+                const userIdNum = parseInt(finalUserId, 10);
+                const coinCost = getAiResumeBuilderCoinCost();
+                const charge = await consumeCredit(userIdNum, coinCost, 'ai_resume_builder');
+                if (!charge.success) {
+                    return NextResponse.json(
+                        {
+                            error: charge.error || 'Insufficient coins to create your resume',
+                            remainingCredits: charge.remainingCredits,
+                            requiredCredits: coinCost,
+                        },
+                        { status: 402 },
+                    );
+                }
+            }
+        }
 
         // دریافت اطلاعات wizard از database (اگر وجود داشته باشد)
         const wizardDataFromDb: any = finalUserId
@@ -86,6 +121,8 @@ export async function POST(request: NextRequest) {
 
         // Save to database if authenticated
         if (finalUserId) {
+            const userIdNum = parseInt(finalUserId, 10);
+
             // ذخیره CV در database
             let cv: any = (db as any).cvs.findByRequestId(reqId);
             if (cv) {
@@ -96,7 +133,7 @@ export async function POST(request: NextRequest) {
                 });
             } else {
                 cv = (db as any).cvs.create({
-                    user_id: parseInt(finalUserId),
+                    user_id: userIdNum,
                     request_id: reqId,
                     content: typeof finalCvText === 'string' ? finalCvText : JSON.stringify(finalCvText),
                     // Store in the requested shape for DB/admin: { improvedResume: ... }

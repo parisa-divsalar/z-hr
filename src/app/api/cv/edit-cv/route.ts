@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { consumeCredit } from '@/lib/credits';
 import { db } from '@/lib/db';
 import { recordUserStateTransition } from '@/lib/user-state';
 import { ChatGPTService } from '@/services/chatgpt/service';
@@ -20,6 +21,20 @@ async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
         return decoded.userId?.toString() || null;
     } catch {
         return null;
+    }
+}
+
+function getAiResumeBuilderCoinCost(): number {
+    try {
+        const rows = db.resumeFeaturePricing.findAll?.() ?? [];
+        const row = rows.find((r: any) => {
+            const name = String(r?.feature_name ?? '').trim().toLowerCase();
+            return name === 'ai resume builder' || name.includes('ai resume builder');
+        });
+        const n = Number((row as any)?.coin_per_action ?? 6);
+        return Number.isFinite(n) && n > 0 ? Math.round(n) : 6;
+    } catch {
+        return 6;
     }
 }
 
@@ -63,8 +78,26 @@ export async function PUT(request: NextRequest) {
                 return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
             }
 
+            /**
+             * Creating a NEW CV consumes coins (AI Resume Builder).
+             * Cost is driven by `data/resume_feature_pricing.json` (feature: "AI Resume Builder").
+             */
+            const userIdNum = parseInt(finalUserId, 10);
+            const coinCost = getAiResumeBuilderCoinCost();
+            const charge = await consumeCredit(userIdNum, coinCost, 'ai_resume_builder');
+            if (!charge.success) {
+                return NextResponse.json(
+                    {
+                        error: charge.error || 'Insufficient coins to create your resume',
+                        remainingCredits: charge.remainingCredits,
+                        requiredCredits: coinCost,
+                    },
+                    { status: 402 },
+                );
+            }
+
             cv = db.cvs.create({
-                user_id: parseInt(finalUserId),
+                user_id: userIdNum,
                 request_id: requestId,
                 content: nextBodyOfResume ? JSON.stringify(nextBodyOfResume) : null,
                 title: title || null,

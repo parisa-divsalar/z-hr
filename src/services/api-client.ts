@@ -37,6 +37,8 @@ const createAPIClient = (baseURL: string): AxiosInstance => {
             if (typeof window !== 'undefined') {
                 const url = String(res?.config?.url ?? '');
                 const creditChangingEndpoints = [
+                    'cv/analyze',
+                    'cv/edit-cv',
                     'cv/cover-letter',
                     'skills/analyze-gap',
                     'files/extract-text',

@@ -137,6 +137,14 @@ export const pollCvAnalysisAndCreateCv = async (
             }
 
             await editCV({ userId: userId ?? undefined, requestId, bodyOfResume });
+            // CV was created (first time) -> coins may have been consumed; refresh profile for Navbar.
+            try {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('zcv:profile-changed'));
+                }
+            } catch {
+                // ignore
+            }
 
             await apiClientClient.get('cv/get-cv', {
                 params: { requestId, userId: userId ?? undefined },

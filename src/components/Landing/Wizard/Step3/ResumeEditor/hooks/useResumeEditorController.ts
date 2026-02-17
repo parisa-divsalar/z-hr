@@ -245,6 +245,16 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
      * This is intentionally per-requestId: if the request context changes, auto-improve can run again.
      */
     const manualEditSavedRequestIdRef = useRef<string | null>(null);
+    /**
+     * Text-only wizard flow (no file upload/voice) normally enters ResumeEditor without a `requestId`,
+     * which means no CV row is created on the server. For Free plan users, we still need to "spend"
+     * the initial 6 coins when the first resume is created.
+     *
+     * We create a CV once (server-side) using a generated requestId, then skip the analysis polling
+     * for that requestId and just load the CV directly.
+     */
+    const skipAutoPollRequestIdRef = useRef<string | null>(null);
+    const didAutoCreateTextOnlyCvRef = useRef(false);
 
     const textOnlyBackupRef = useRef<Record<string, any>>({});
 
@@ -640,6 +650,42 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         if (!canFetchCv) setHasCvLoadedOnce(true);
     }, [canFetchCv, identityKey, requestId]);
+
+    /**
+     * Auto-create a CV row (text-only flow) so Free plan coins are consumed immediately
+     * when the user reaches ResumeEditor, even if there were no file uploads / voice.
+     */
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (apiUserId) return; // admin/tooling: don't auto-create
+        if (requestId) return; // already have a CV context
+        if (!isTextOnlyMode) return;
+        if (didAutoCreateTextOnlyCvRef.current) return;
+
+        const payload = (loadWizardTextOnlySession() ?? buildWizardSerializable(wizardData)) as any;
+        if (!payload) return;
+
+        didAutoCreateTextOnlyCvRef.current = true;
+        const newRequestId = generateFakeUUIDv4();
+
+        const run = async () => {
+            try {
+                await editCV({ requestId: newRequestId, bodyOfResume: payload });
+                skipAutoPollRequestIdRef.current = newRequestId;
+                setRequestId(newRequestId);
+                // Refresh profile for Navbar coins (if server consumed credits).
+                try {
+                    window.dispatchEvent(new Event('zcv:profile-changed'));
+                } catch {
+                    // ignore
+                }
+            } catch {
+                // If unauthenticated or server errors, keep local text-only mode (no blocking).
+            }
+        };
+
+        void run();
+    }, [apiUserId, isTextOnlyMode, requestId, setRequestId, wizardData]);
 
 
     // When request context changes, require a fresh get-cv load before auto-improve can run.
@@ -1156,6 +1202,13 @@ export function useResumeEditorController(args: Args): ResumeEditorController {
 
         // For admin/open-existing-resume flows: skip polling and just load.
         if (args.disableAutoPoll) {
+            void loadCvData();
+            return;
+        }
+
+        // Text-only auto-created CVs (no analysis request) should load directly.
+        if (skipAutoPollRequestIdRef.current && skipAutoPollRequestIdRef.current === requestId) {
+            skipAutoPollRequestIdRef.current = null;
             void loadCvData();
             return;
         }

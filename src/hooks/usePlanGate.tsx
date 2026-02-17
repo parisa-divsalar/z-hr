@@ -9,17 +9,22 @@ import { trackEvent } from '@/lib/analytics';
 interface UsePlanGateResult {
     guardAction: (action: () => void, featureName?: string) => void;
     planDialog: ReactNode;
-    hasCoins: boolean;
+    hasPaidPlan: boolean;
 }
 
 export const usePlanGate = (): UsePlanGateResult => {
     const { profile } = useUserProfile();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const hasCoins = Boolean(profile?.coin && profile.coin > 0);
+    const planStatusRaw =
+        (profile as any)?.plan_status ??
+        (profile as any)?.planStatus ??
+        null;
+    const planStatus = String(planStatusRaw ?? '').trim().toLowerCase();
+    const hasPaidPlan = planStatus === 'paid';
 
     const guardAction = useCallback(
         (action: () => void, featureName?: string) => {
-            if (hasCoins) {
+            if (hasPaidPlan) {
                 action();
                 return;
             }
@@ -34,7 +39,7 @@ export const usePlanGate = (): UsePlanGateResult => {
 
             setIsDialogOpen(true);
         },
-        [hasCoins, profile?.id],
+        [hasPaidPlan, profile?.id],
     );
 
     const closeDialog = useCallback(() => setIsDialogOpen(false), []);
@@ -46,7 +51,7 @@ export const usePlanGate = (): UsePlanGateResult => {
     return {
         guardAction,
         planDialog,
-        hasCoins,
+        hasPaidPlan,
     };
 };
 
