@@ -40,6 +40,7 @@ const Setting = () => {
                     <NewPasswordForm
                         showCodeField={false}
                         showCurrentPassword
+                        fieldsLayout='stack'
                         fieldGridSize={6}
                         showResetButton
                         buttonLabel='Save'

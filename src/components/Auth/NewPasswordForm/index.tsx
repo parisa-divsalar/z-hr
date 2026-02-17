@@ -38,6 +38,7 @@ type NewPasswordFormProps = {
     clearOnSuccess?: boolean;
     onSuccess?: () => void;
     fieldGridSize?: number;
+    fieldsLayout?: 'grid' | 'stack';
     showResetButton?: boolean;
     resetLabel?: string;
     primaryButtonWidth?: number | string;
@@ -68,6 +69,7 @@ const NewPasswordForm = ({
     clearOnSuccess = true,
     onSuccess,
     fieldGridSize = 6,
+    fieldsLayout = 'grid',
     showResetButton = false,
     resetLabel = 'Reset',
     primaryButtonWidth,
@@ -172,14 +174,44 @@ const NewPasswordForm = ({
                 </ToastContainer>
             )}
 
-            <Box sx={columnGridStyles}>
-                {showCurrentPassword && (
+            {fieldsLayout === 'stack' ? (
+                <Stack spacing={1}>
+                    {showCurrentPassword && (
+                        <MuiInput
+                            value={currentPassword}
+                            onChange={setCurrentPassword}
+                            type={typeInput}
+                            label='Current Password'
+                            placeholder='Your current password'
+                            endIcon={
+                                typeInput === 'password' ? (
+                                    <IconButton size='small' onClick={() => setTypeInput('text')}>
+                                        <VisibilityRoundedIcon color='primary' fontSize='small' />
+                                    </IconButton>
+                                ) : (
+                                    <IconButton size='small' onClick={() => setTypeInput('password')}>
+                                        <VisibilityOffRoundedIcon color='primary' fontSize='small' />
+                                    </IconButton>
+                                )
+                            }
+                        />
+                    )}
+
+                    {showCodeField && (
+                        <MuiInput
+                            value={code}
+                            onChange={setCode}
+                            label='Code'
+                            placeholder='Enter the code from your email'
+                        />
+                    )}
+
                     <MuiInput
-                        value={currentPassword}
-                        onChange={setCurrentPassword}
+                        value={password}
+                        onChange={setPassword}
                         type={typeInput}
-                        label='Current Password'
-                        placeholder='Your current password'
+                        label='Password'
+                        placeholder='Enter password'
                         endIcon={
                             typeInput === 'password' ? (
                                 <IconButton size='small' onClick={() => setTypeInput('text')}>
@@ -192,55 +224,97 @@ const NewPasswordForm = ({
                             )
                         }
                     />
-                )}
 
-                {showCodeField && (
                     <MuiInput
-                        value={code}
-                        onChange={setCode}
-                        label='Code'
-                        placeholder='Enter the code from your email'
+                        value={repeatPassword}
+                        onChange={setRepeatPassword}
+                        type={typeInput}
+                        label='Re-enter New Password'
+                        placeholder='Re-enter new password'
+                        endIcon={
+                            typeInput === 'password' ? (
+                                <IconButton size='small' onClick={() => setTypeInput('text')}>
+                                    <VisibilityRoundedIcon color='primary' fontSize='small' />
+                                </IconButton>
+                            ) : (
+                                <IconButton size='small' onClick={() => setTypeInput('password')}>
+                                    <VisibilityOffRoundedIcon color='primary' fontSize='small' />
+                                </IconButton>
+                            )
+                        }
                     />
-                )}
+                </Stack>
+            ) : (
+                <Box sx={columnGridStyles}>
+                    {showCurrentPassword && (
+                        <MuiInput
+                            value={currentPassword}
+                            onChange={setCurrentPassword}
+                            type={typeInput}
+                            label='Current Password'
+                            placeholder='Your current password'
+                            endIcon={
+                                typeInput === 'password' ? (
+                                    <IconButton size='small' onClick={() => setTypeInput('text')}>
+                                        <VisibilityRoundedIcon color='primary' fontSize='small' />
+                                    </IconButton>
+                                ) : (
+                                    <IconButton size='small' onClick={() => setTypeInput('password')}>
+                                        <VisibilityOffRoundedIcon color='primary' fontSize='small' />
+                                    </IconButton>
+                                )
+                            }
+                        />
+                    )}
 
-                <MuiInput
-                    value={password}
-                    onChange={setPassword}
-                    type={typeInput}
-                    label='Password'
-                    placeholder='Enter password'
-                    endIcon={
-                        typeInput === 'password' ? (
-                            <IconButton size='small' onClick={() => setTypeInput('text')}>
-                                <VisibilityRoundedIcon color='primary' fontSize='small' />
-                            </IconButton>
-                        ) : (
-                            <IconButton size='small' onClick={() => setTypeInput('password')}>
-                                <VisibilityOffRoundedIcon color='primary' fontSize='small' />
-                            </IconButton>
-                        )
-                    }
-                />
+                    {showCodeField && (
+                        <MuiInput
+                            value={code}
+                            onChange={setCode}
+                            label='Code'
+                            placeholder='Enter the code from your email'
+                        />
+                    )}
 
-                <MuiInput
-                    value={repeatPassword}
-                    onChange={setRepeatPassword}
-                    type={typeInput}
-                    label='Re-enter New Password'
-                    placeholder='Re-enter new password'
-                    endIcon={
-                        typeInput === 'password' ? (
-                            <IconButton size='small' onClick={() => setTypeInput('text')}>
-                                <VisibilityRoundedIcon color='primary' fontSize='small' />
-                            </IconButton>
-                        ) : (
-                            <IconButton size='small' onClick={() => setTypeInput('password')}>
-                                <VisibilityOffRoundedIcon color='primary' fontSize='small' />
-                            </IconButton>
-                        )
-                    }
-                />
-            </Box>
+                    <MuiInput
+                        value={password}
+                        onChange={setPassword}
+                        type={typeInput}
+                        label='Password'
+                        placeholder='Enter password'
+                        endIcon={
+                            typeInput === 'password' ? (
+                                <IconButton size='small' onClick={() => setTypeInput('text')}>
+                                    <VisibilityRoundedIcon color='primary' fontSize='small' />
+                                </IconButton>
+                            ) : (
+                                <IconButton size='small' onClick={() => setTypeInput('password')}>
+                                    <VisibilityOffRoundedIcon color='primary' fontSize='small' />
+                                </IconButton>
+                            )
+                        }
+                    />
+
+                    <MuiInput
+                        value={repeatPassword}
+                        onChange={setRepeatPassword}
+                        type={typeInput}
+                        label='Re-enter New Password'
+                        placeholder='Re-enter new password'
+                        endIcon={
+                            typeInput === 'password' ? (
+                                <IconButton size='small' onClick={() => setTypeInput('text')}>
+                                    <VisibilityRoundedIcon color='primary' fontSize='small' />
+                                </IconButton>
+                            ) : (
+                                <IconButton size='small' onClick={() => setTypeInput('password')}>
+                                    <VisibilityOffRoundedIcon color='primary' fontSize='small' />
+                                </IconButton>
+                            )
+                        }
+                    />
+                </Box>
+            )}
 
             <Stack spacing={0.75}>
                 <Stack direction='row' alignItems='center' gap={0.75} flexWrap='wrap'>
