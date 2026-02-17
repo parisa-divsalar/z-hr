@@ -53,13 +53,20 @@ export const SidebarContainer = styled(Box)(({ theme }) => ({
 }));
 
 export const ItemButton = styled(ListItemButton, {
-    shouldForwardProp: (prop) => prop !== 'active',
-})<{ active?: boolean }>(({ theme, active }) => ({
+    shouldForwardProp: (prop) => prop !== 'active' && prop !== 'locked',
+})<{ active?: boolean; locked?: boolean }>(({ theme, active, locked }) => ({
     borderRadius: 8,
     margin: '4px 0',
     padding: '10px 24px',
     color: '#d1d1d1',
     fontSize: 14,
+    ...(locked && {
+        opacity: 0.55,
+        cursor: 'not-allowed',
+        '&:hover': {
+            backgroundColor: theme.palette.grey.A700,
+        },
+    }),
     ...(active && {
         background: theme.palette.primary.main,
         color: '#fff',

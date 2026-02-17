@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import MuiButton from '@/components/UI/MuiButton';
+import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
+import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchInterviewQuestions } from '@/services/interview/get-questions';
 
@@ -18,12 +20,37 @@ import type { InterviewQuestionItem } from './QuestionsList';
 export default function ChatInterView() {
     const router = useRouter();
     const { profile } = useUserProfile();
+    const { access, isLoading: isAccessLoading } = useMoreFeaturesAccess({ enabled: true });
+    const [lockedOpen, setLockedOpen] = useState(false);
     const [step, setStep] = useState<'intro' | 'skill-input' | 'ready' | 'repeat-skill-input'>('intro');
     const [skillAnswer, setSkillAnswer] = useState('');
     const [questions, setQuestions] = useState<InterviewQuestionItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const lastRequestKeyRef = useRef<string | null>(null);
+
+    const enabled = new Set((access?.enabledKeys ?? []).filter(Boolean));
+    const isLocked = !isAccessLoading && !enabled.has('question_interview');
+
+    useEffect(() => {
+        if (isLocked) setLockedOpen(true);
+    }, [isLocked]);
+
+    if (isLocked) {
+        return (
+            <>
+                <PlanRequiredDialog
+                    open={lockedOpen}
+                    onClose={() => setLockedOpen(false)}
+                    title='Feature locked'
+                    headline='Interview Questions is disabled for your account.'
+                    bodyText='Enable it in More Features (Step 3) to unlock it.'
+                    primaryLabel='Enable in More Features'
+                    primaryHref='/resume-builder?step=3'
+                />
+            </>
+        );
+    }
 
     const handleStartClick = () => {
         setStep('skill-input');

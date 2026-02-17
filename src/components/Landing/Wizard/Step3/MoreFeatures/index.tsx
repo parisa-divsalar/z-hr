@@ -16,6 +16,9 @@ import {
   type MoreFeaturesSelection,
   writeMoreFeaturesSelection,
 } from '@/utils/moreFeaturesSelection';
+import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
+import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
 
 interface MoreFeaturesProps {
   setStage: (stage: 'RESUME_EDITOR' | 'MORE_FEATURES') => void;
@@ -29,24 +32,98 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
   const [selection, setSelection] = useState<MoreFeaturesSelection>(() => readMoreFeaturesSelection(requestId));
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const { access, refresh: refreshAccess } = useMoreFeaturesAccess({ enabled: true });
 
   useEffect(() => {
     setSelection(readMoreFeaturesSelection(requestId));
   }, [requestId]);
 
   const selectionKeyFor = (suggestion: Pick<MoreFeatureSuggestion, 'id' | 'title'>): string => {
-    const idKey = String(suggestion.id ?? '').trim();
-    return idKey || featureKeyFromTitle(suggestion.title) || '';
+    // Prefer stable semantic key derived from feature name (pricing `feature_name`),
+    // fallback to id for legacy rows that don't map cleanly.
+    return featureKeyFromTitle(suggestion.title) || String(suggestion.id ?? '').trim() || '';
   };
 
-  const toggleSuggestion = (suggestion: Pick<MoreFeatureSuggestion, 'id' | 'title'>, checked: boolean) => {
+  useEffect(() => {
+    // Merge server-enabled features into local selection (so checked state persists across reloads/devices).
+    const enabledKeys = (access?.enabledKeys ?? []).filter(Boolean);
+    if (enabledKeys.length === 0) return;
+    setSelection((prev) => {
+      const next = { ...(prev ?? {}) };
+      let changed = false;
+      for (const k of enabledKeys) {
+        if (!next[k]) {
+          next[k] = true;
+          changed = true;
+        }
+      }
+      if (changed) writeMoreFeaturesSelection(requestId, next);
+      return changed ? next : prev;
+    });
+  }, [access?.enabledKeys, requestId]);
+
+  const toggleSuggestion = async (suggestion: Pick<MoreFeatureSuggestion, 'id' | 'title'>, checked: boolean) => {
     const key = selectionKeyFor(suggestion);
     if (!key) return;
-    setSelection((prev) => {
-      const next = { ...prev, [key]: checked };
-      writeMoreFeaturesSelection(requestId, { [key]: checked });
-      return next;
-    });
+
+    if (pendingKey && pendingKey !== key) return; // one at a time
+    setPendingKey(key);
+
+    try {
+      if (checked) {
+        const res = await fetch('/api/more-features/access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'enable', featureName: suggestion.title }),
+        });
+
+        if (res.status === 402) {
+          setPlanDialogOpen(true);
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        // Reflect selection locally only after server confirms (coin deducted / unlocked).
+        setSelection((prev) => {
+          const next = { ...prev, [key]: true };
+          writeMoreFeaturesSelection(requestId, { [key]: true });
+          return next;
+        });
+
+        // Refresh global coin display + access cache.
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('zcv:profile-changed'));
+          window.dispatchEvent(new Event('zcv:more-features-access-changed'));
+        }
+        void refreshAccess();
+        return;
+      }
+
+      // checked === false => disable (no refund; keeps unlocked, only hides/locks in UI)
+      const res = await fetch('/api/more-features/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disable', featureName: suggestion.title }),
+      });
+      if (!res.ok && res.status !== 401) throw new Error(`HTTP ${res.status}`);
+
+      setSelection((prev) => {
+        const next = { ...prev, [key]: false };
+        writeMoreFeaturesSelection(requestId, { [key]: false });
+        return next;
+      });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('zcv:more-features-access-changed'));
+      }
+      void refreshAccess();
+    } finally {
+      setPendingKey(null);
+    }
   };
 
   useEffect(() => {
@@ -88,9 +165,9 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const rightWithSelection = useMemo(() => {
     return rightSuggestions.map((s) => {
       const key = selectionKeyFor(s);
-      return { ...s, __featureKey: key, __checked: key ? Boolean(selection[key]) : false };
+      return { ...s, __featureKey: key, __checked: key ? Boolean(selection[key]) : false, __pending: pendingKey === key };
     });
-  }, [rightSuggestions, selection]);
+  }, [rightSuggestions, selection, pendingKey]);
 
   return (
     <>
@@ -158,6 +235,18 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
           )}
         </Grid>
       </Grid>
+
+      <PlanRequiredDialog
+        open={planDialogOpen}
+        onClose={() => setPlanDialogOpen(false)}
+        title='Insufficient coins'
+        headline='You do not have enough coins to enable this feature.'
+        bodyText='You can buy coins/upgrade your plan, or continue to payment.'
+        primaryLabel='Go to payment'
+        primaryHref={PrivateRoutes.payment}
+        secondaryLabel='Pricing'
+        secondaryHref={PublicRoutes.pricing}
+      />
 
       <Stack
         direction={{ xs: 'column', sm: 'row' }}

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { consumeCredit } from '@/lib/credits';
 import { db } from '@/lib/db';
+import { isMoreFeatureUnlocked } from '@/lib/more-features/access-store';
 import { getResumeFeatureCoinCost } from '@/lib/pricing/get-resume-feature-coin-cost';
 import { recordUserStateTransition } from '@/lib/user-state';
 import { ChatGPTService } from '@/services/chatgpt/service';
@@ -111,17 +112,21 @@ export async function POST(request: NextRequest) {
 
         // Deduct dynamic coin cost for cover letter generation (from resume_feature_pricing.json)
         if (userId) {
-            const coinCost = getResumeFeatureCoinCost('AI Cover Letter', 1);
-            const creditResult = await consumeCredit(userId, coinCost, 'cover_letter');
-            if (!creditResult.success) {
-                return NextResponse.json(
-                    { 
-                        error: creditResult.error || 'Failed to consume credit',
-                        remainingCredits: creditResult.remainingCredits,
-                        requiredCredits: coinCost,
-                    },
-                    { status: 402 }
-                );
+            const uid = Number(userId);
+            const alreadyUnlocked = Number.isFinite(uid) ? isMoreFeatureUnlocked(uid, 'ai_cover_letter') : false;
+            if (!alreadyUnlocked) {
+                const coinCost = getResumeFeatureCoinCost('AI Cover Letter', 1);
+                const creditResult = await consumeCredit(userId, coinCost, 'cover_letter');
+                if (!creditResult.success) {
+                    return NextResponse.json(
+                        { 
+                            error: creditResult.error || 'Failed to consume credit',
+                            remainingCredits: creditResult.remainingCredits,
+                            requiredCredits: coinCost,
+                        },
+                        { status: 402 }
+                    );
+                }
             }
         }
 

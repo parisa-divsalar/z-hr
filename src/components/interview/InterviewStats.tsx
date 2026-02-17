@@ -1,25 +1,65 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+
 import { Grid, Stack, Typography } from '@mui/material';
 
 import InterviewIcon from '@/assets/images/dashboard/imag/interview.svg';
 import InterVoice from '@/assets/images/icons/interVoice.svg';
+import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
 import MuiButton from '@/components/UI/MuiButton';
-import { usePlanGate } from '@/hooks/usePlanGate';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
+import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 
 import { useInterviewDialog } from './StartInterviewDialogProvider';
 import { SmallCardBase, StatValueRow } from './styled';
 
 const InterviewStats = () => {
     const { openStartDialog } = useInterviewDialog();
-    const { guardAction, planDialog } = usePlanGate();
+    const { access, isLoading: isAccessLoading } = useMoreFeaturesAccess({ enabled: true });
+    const [lockedDialogOpen, setLockedDialogOpen] = useState(false);
+    const [lockedFeatureLabel, setLockedFeatureLabel] = useState<string>('this feature');
 
-    const handleChatInterview = () => guardAction(() => openStartDialog('chat'), 'interview_chat');
-    const handleVoiceInterview = () => guardAction(() => openStartDialog('voice'), 'interview_voice');
+    const enabled = useMemo(() => new Set((access?.enabledKeys ?? []).filter(Boolean)), [access?.enabledKeys]);
+    const isChatLocked = !isAccessLoading && !enabled.has('question_interview');
+    const isVoiceLocked = !isAccessLoading && !enabled.has('voice_interview');
+
+    const openLockedDialog = (label: string) => {
+        setLockedFeatureLabel(label);
+        setLockedDialogOpen(true);
+    };
+
+    const handleChatInterview = () => {
+        if (isAccessLoading) return;
+        if (isChatLocked) {
+            openLockedDialog('Chat Interview');
+            return;
+        }
+        openStartDialog('chat');
+    };
+
+    const handleVoiceInterview = () => {
+        if (isAccessLoading) return;
+        if (isVoiceLocked) {
+            openLockedDialog('Voice Interview');
+            return;
+        }
+        openStartDialog('voice');
+    };
 
     return (
         <>
-            {planDialog}
+            <PlanRequiredDialog
+                open={lockedDialogOpen}
+                onClose={() => setLockedDialogOpen(false)}
+                title='Feature locked'
+                headline={`"${lockedFeatureLabel}" is disabled for your account.`}
+                bodyText='Buy coins/upgrade your plan, then enable it in More Features (Step 3).'
+                primaryLabel='Buy plan / coins'
+                primaryHref={PrivateRoutes.payment}
+                secondaryLabel='Pricing'
+                secondaryHref={PublicRoutes.pricing}
+            />
             <Grid container spacing={2} width='100%'>
                 <Grid size={{ xs: 12, md: 6 }}>
                     <SmallCardBase>
@@ -41,7 +81,17 @@ const InterviewStats = () => {
                                 </Stack>
                             </Stack>
                             <Stack mt={7}>
-                                <MuiButton variant='outlined' color='secondary' onClick={handleChatInterview}>
+                                <MuiButton
+                                    variant='outlined'
+                                    color='secondary'
+                                    onClick={handleChatInterview}
+                                    aria-disabled={isChatLocked || isAccessLoading}
+                                    sx={
+                                        isChatLocked || isAccessLoading
+                                            ? { opacity: 0.55, cursor: 'not-allowed' }
+                                            : undefined
+                                    }
+                                >
                                     Start
                                 </MuiButton>
                             </Stack>
@@ -69,7 +119,17 @@ const InterviewStats = () => {
                                 </Stack>
                             </Stack>
                             <Stack mt={7}>
-                                <MuiButton variant='outlined' color='secondary' onClick={handleVoiceInterview}>
+                                <MuiButton
+                                    variant='outlined'
+                                    color='secondary'
+                                    onClick={handleVoiceInterview}
+                                    aria-disabled={isVoiceLocked || isAccessLoading}
+                                    sx={
+                                        isVoiceLocked || isAccessLoading
+                                            ? { opacity: 0.55, cursor: 'not-allowed' }
+                                            : undefined
+                                    }
+                                >
                                     Start
                                 </MuiButton>
                             </Stack>

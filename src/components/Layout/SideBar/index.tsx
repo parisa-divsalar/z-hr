@@ -9,7 +9,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import LogoutDialog from '@/components/Layout/SideBar/LogoutDialog';
 import { sidebarMenuItems, isSidebarMenuItemActive } from '@/components/Layout/SideBar/menu';
 import { ItemButton, SidebarContainer, ItemIcon, SidebarItemText } from '@/components/Layout/SideBar/styled';
-import { isSidebarVisible } from '@/config/routes';
+import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
+import { isSidebarVisible, PrivateRoutes } from '@/config/routes';
+import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 import { useAuthStore } from '@/store/auth';
 
 const SideBar = () => {
@@ -18,8 +20,11 @@ const SideBar = () => {
   const { logout } = useAuthStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { access, isLoading: isAccessLoading } = useMoreFeaturesAccess({ enabled: true });
 
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+  const [lockedDialogOpen, setLockedDialogOpen] = useState(false);
+  const [lockedDialogFeature, setLockedDialogFeature] = useState<string>('this feature');
 
   const handleConfirmLogout = async () => {
     await logout();
@@ -29,6 +34,22 @@ const SideBar = () => {
   const isSideBarVisible = isSidebarVisible(pathname);
 
   if (!isSideBarVisible || isMobile) return null;
+
+  const enabled = new Set((access?.enabledKeys ?? []).filter(Boolean));
+  const isRouteLocked = (route: string): { locked: boolean; label?: string } => {
+    // Avoid flashing "locked" while access is still loading.
+    if (isAccessLoading) return { locked: false };
+    // Lock specific dashboard areas based on MoreFeatures selection.
+    // (These keys are derived from pricing `feature_name` via `featureKeyFromTitle`.)
+    if (route === PrivateRoutes.learningHub) {
+      return { locked: !enabled.has('learning_hub'), label: 'Learning Hub' };
+    }
+    if (route === PrivateRoutes.interView || route === PrivateRoutes.chatInterView || route === PrivateRoutes.voiceInterView) {
+      const ok = enabled.has('question_interview') || enabled.has('voice_interview');
+      return { locked: !ok, label: 'Interview' };
+    }
+    return { locked: false };
+  };
 
   return (
     <SidebarContainer>
@@ -46,12 +67,23 @@ const SideBar = () => {
           {sidebarMenuItems.map((item) => {
             const isActive = isSidebarMenuItemActive(item, pathname);
             const MenuIcon = item.icon;
+            const lock = isRouteLocked(item.route);
+            const locked = lock.locked;
 
             return (
               <ItemButton
                 key={item.route}
                 active={isActive}
-                onClick={() => router.push(item.route)}
+                locked={locked}
+                aria-disabled={locked}
+                onClick={() => {
+                  if (locked) {
+                    setLockedDialogFeature(lock.label || item.label);
+                    setLockedDialogOpen(true);
+                    return;
+                  }
+                  router.push(item.route);
+                }}
               >
                 <ItemIcon>
                   <MenuIcon />
@@ -91,6 +123,16 @@ const SideBar = () => {
         open={openLogoutDialog}
         onClose={() => setOpenLogoutDialog(false)}
         onConfirm={handleConfirmLogout}
+      />
+
+      <PlanRequiredDialog
+        open={lockedDialogOpen}
+        onClose={() => setLockedDialogOpen(false)}
+        title='Feature locked'
+        headline={`"${lockedDialogFeature}" is disabled for your account.`}
+        bodyText='Enable it in More Features (Step 3) to unlock it for your dashboard.'
+        primaryLabel='Enable in More Features'
+        primaryHref='/resume-builder?step=3'
       />
     </SidebarContainer>
   );
