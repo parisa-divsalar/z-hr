@@ -21,10 +21,14 @@ export const usePlanGate = (): UsePlanGateResult => {
         null;
     const planStatus = String(planStatusRaw ?? '').trim().toLowerCase();
     const hasPaidPlan = planStatus === 'paid';
+    const coinBalance = Number(profile?.coin ?? 0);
+    const hasCoins = Number.isFinite(coinBalance) && coinBalance > 0;
 
     const guardAction = useCallback(
         (action: () => void, featureName?: string) => {
-            if (hasPaidPlan) {
+            // Allow if user is on a paid plan OR they have coin balance to spend.
+            // Server-side APIs will still enforce exact coin costs and return 402 when insufficient.
+            if (hasPaidPlan || hasCoins) {
                 action();
                 return;
             }
@@ -39,7 +43,7 @@ export const usePlanGate = (): UsePlanGateResult => {
 
             setIsDialogOpen(true);
         },
-        [hasPaidPlan, profile?.id],
+        [hasCoins, hasPaidPlan, profile?.id],
     );
 
     const closeDialog = useCallback(() => setIsDialogOpen(false), []);

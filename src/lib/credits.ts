@@ -102,7 +102,22 @@ export async function consumeCredit(
     };
   }
 
-  const currentCredits = Number((user as any)?.credits ?? (user as any)?.coin ?? 0);
+  /**
+   * JSON-db mode source of truth:
+   * - The UI (Navbar) reads `users.coin` via `/api/users/me`.
+   * - Some legacy seeds may include `users.credits` as a separate field.
+   *
+   * To keep behavior consistent and intuitive, we treat `coin` as the primary balance.
+   * If `coin` is missing/invalid, we fall back to `credits`.
+   * We then sync BOTH fields on update (when present) to prevent drift.
+   */
+  const coinValue = Number((user as any)?.coin);
+  const legacyCreditsValue = Number((user as any)?.credits);
+  const currentCredits = Number.isFinite(coinValue)
+    ? coinValue
+    : Number.isFinite(legacyCreditsValue)
+      ? legacyCreditsValue
+      : 0;
 
   if (currentCredits < amount) {
     return {
@@ -116,8 +131,10 @@ export async function consumeCredit(
 
   // Update user credits
   db.users.update(userIdNum, {
+    // Always update coin (source of truth for UI)
+    coin: newCredits,
+    // Keep legacy field in sync when it exists (or to fix old drifted seeds).
     credits: newCredits,
-    coin: newCredits, // Keep both fields in sync
   } as any);
 
   // Log the credit consumption activity
@@ -180,7 +197,13 @@ export function hasEnoughCredits(userId: string | number, amount: number): boole
     return false;
   }
 
-  const currentCredits = Number((user as any)?.credits ?? (user as any)?.coin ?? 0);
+  const coinValue = Number((user as any)?.coin);
+  const legacyCreditsValue = Number((user as any)?.credits);
+  const currentCredits = Number.isFinite(coinValue)
+    ? coinValue
+    : Number.isFinite(legacyCreditsValue)
+      ? legacyCreditsValue
+      : 0;
   
   return currentCredits >= amount;
 }
@@ -203,5 +226,11 @@ export function getUserCredits(userId: string | number): number {
     return 0;
   }
 
-  return Number((user as any)?.credits ?? (user as any)?.coin ?? 0);
+  const coinValue = Number((user as any)?.coin);
+  if (Number.isFinite(coinValue)) return coinValue;
+
+  const legacyCreditsValue = Number((user as any)?.credits);
+  if (Number.isFinite(legacyCreditsValue)) return legacyCreditsValue;
+
+  return 0;
 }

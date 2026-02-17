@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { consumeCredit } from '@/lib/credits';
 import { db } from '@/lib/db';
+import { getResumeFeatureCoinCost } from '@/lib/pricing/get-resume-feature-coin-cost';
 import { recordUserStateTransition } from '@/lib/user-state';
 import { ChatGPTService } from '@/services/chatgpt/service';
 
@@ -24,18 +25,74 @@ async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
     }
 }
 
-function getAiResumeBuilderCoinCost(): number {
+type WizardAllFilesSummaryItem = {
+    id?: string;
+    kind?: 'file' | 'voice' | string;
+    name?: string | null;
+};
+
+type AttachmentKind = 'file' | 'image' | 'video' | 'voice';
+
+function safeParseJson(value: string): any | null {
     try {
-        const rows = db.resumeFeaturePricing.findAll?.() ?? [];
-        const row = rows.find((r: any) => {
-            const name = String(r?.feature_name ?? '').trim().toLowerCase();
-            return name === 'ai resume builder' || name.includes('ai resume builder');
-        });
-        const n = Number((row as any)?.coin_per_action ?? 6);
-        return Number.isFinite(n) && n > 0 ? Math.round(n) : 6;
+        return JSON.parse(value);
     } catch {
-        return 6;
+        return null;
     }
+}
+
+function getExtensionLower(name: string): string {
+    const trimmed = String(name ?? '').trim().toLowerCase();
+    const lastDot = trimmed.lastIndexOf('.');
+    if (lastDot === -1) return '';
+    return trimmed.slice(lastDot + 1).trim();
+}
+
+function classifyFileNameToKind(fileName: string): Exclude<AttachmentKind, 'voice'> {
+    const imageExts = new Set([
+        'png',
+        'jpg',
+        'jpeg',
+        'webp',
+        'gif',
+        'bmp',
+        'svg',
+        'ico',
+        'avif',
+        'heic',
+        'heif',
+        'tif',
+        'tiff',
+        'jfif',
+    ]);
+    const videoExts = new Set(['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'flv', 'wmv', '3gp']);
+
+    const ext = fileName ? getExtensionLower(fileName) : '';
+    if (ext && imageExts.has(ext)) return 'image';
+    if (ext && videoExts.has(ext)) return 'video';
+    return 'file';
+}
+
+function extractAttachmentsFromWizardText(wizardText: string): Array<{ id: string; kind: AttachmentKind }> {
+    const parsed = safeParseJson(wizardText);
+    const list: WizardAllFilesSummaryItem[] = Array.isArray(parsed?.allFilesSummary) ? parsed.allFilesSummary : [];
+
+    const out: Array<{ id: string; kind: AttachmentKind }> = [];
+    for (const item of list) {
+        const id = String(item?.id ?? '').trim();
+        if (!id) continue;
+        const rawKind = String(item?.kind ?? '').trim().toLowerCase();
+        if (rawKind === 'voice') {
+            out.push({ id, kind: 'voice' });
+            continue;
+        }
+        if (rawKind !== 'file') continue;
+
+        const name = String(item?.name ?? '').trim();
+        out.push({ id, kind: classifyFileNameToKind(name) });
+    }
+
+    return out;
 }
 
 export async function POST(request: NextRequest) {
@@ -57,26 +114,6 @@ export async function POST(request: NextRequest) {
             providedRequestId || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         requestId = reqId;
 
-        // If this is a NEW CV creation, consume coins before expensive AI work.
-        if (finalUserId) {
-            const existingCv = (db as any).cvs.findByRequestId(reqId);
-            if (!existingCv) {
-                const userIdNum = parseInt(finalUserId, 10);
-                const coinCost = getAiResumeBuilderCoinCost();
-                const charge = await consumeCredit(userIdNum, coinCost, 'ai_resume_builder');
-                if (!charge.success) {
-                    return NextResponse.json(
-                        {
-                            error: charge.error || 'Insufficient coins to create your resume',
-                            remainingCredits: charge.remainingCredits,
-                            requiredCredits: coinCost,
-                        },
-                        { status: 402 },
-                    );
-                }
-            }
-        }
-
         // دریافت اطلاعات wizard از database (اگر وجود داشته باشد)
         const wizardDataFromDb: any = finalUserId
             ? (db as any).wizardData.findByUserIdAndRequestId(parseInt(finalUserId), reqId)
@@ -96,6 +133,92 @@ export async function POST(request: NextRequest) {
 
         const finalCvText =
             typeof rawCv === 'string' ? rawCv : JSON.stringify(rawCv);
+
+        // If this is a NEW CV creation, consume coins before expensive AI work.
+        // Total = AI Resume Builder (once per requestId) + attachment inputs (charged per NEW attachment id).
+        //
+        // Important: Users may add attachments later and re-run analysis. We should only charge for NEW attachments
+        // (delta charging) to avoid double-spending for the same file/image/voice.
+        if (finalUserId) {
+            const userIdNum = parseInt(finalUserId, 10);
+            const existingCv = (db as any).cvs.findByRequestId(reqId) as any | null;
+            const isNewCv = !existingCv;
+
+            const attachmentsNow = extractAttachmentsFromWizardText(finalCvText);
+            const attachmentIdsNow = attachmentsNow.map((a) => a.id);
+
+            const existingChargedRaw = existingCv?.charged_attachment_ids ?? existingCv?.chargedAttachmentIds ?? null;
+            const existingChargedIds: string[] | null = Array.isArray(existingChargedRaw)
+                ? existingChargedRaw.map((x: any) => String(x ?? '').trim()).filter(Boolean)
+                : null;
+
+            // Migration behavior:
+            // - If CV already exists but has no charged list (legacy), we DO NOT retroactively charge.
+            //   We initialize "charged_attachment_ids" to current attachments so future new attachments are charged correctly.
+            if (!isNewCv && existingChargedIds == null) {
+                try {
+                    (db as any).cvs.update(reqId, {
+                        charged_attachment_ids: attachmentIdsNow,
+                    });
+                } catch {
+                    // ignore
+                }
+            } else {
+                const chargedSet = new Set((existingChargedIds ?? []).map((x) => String(x ?? '').trim()).filter(Boolean));
+                const newlyAdded = attachmentsNow.filter((a) => !chargedSet.has(a.id));
+
+                const baseCost = isNewCv ? getResumeFeatureCoinCost('AI Resume Builder', 6) : 0;
+                const fileUnit = getResumeFeatureCoinCost('File Input', 0);
+                const imageUnit = getResumeFeatureCoinCost('Images Input', 0);
+                const videoUnit = getResumeFeatureCoinCost('Video Input', 0);
+                const voiceUnit = getResumeFeatureCoinCost('Voice Input', 0);
+
+                const counts = { file: 0, image: 0, video: 0, voice: 0 } as Record<AttachmentKind, number>;
+                for (const a of newlyAdded) {
+                    counts[a.kind] += 1;
+                }
+
+                const attachmentCost =
+                    Math.max(0, fileUnit) * counts.file +
+                    Math.max(0, imageUnit) * counts.image +
+                    Math.max(0, videoUnit) * counts.video +
+                    Math.max(0, voiceUnit) * counts.voice;
+
+                const totalCost = Math.max(0, baseCost) + Math.max(0, attachmentCost);
+
+                if (totalCost > 0) {
+                    const charge = await consumeCredit(userIdNum, totalCost, 'ai_resume_builder');
+                    if (!charge.success) {
+                        return NextResponse.json(
+                            {
+                                error: charge.error || 'Insufficient coins to create/update your resume',
+                                remainingCredits: charge.remainingCredits,
+                                requiredCredits: totalCost,
+                                breakdown: {
+                                    base: baseCost,
+                                    newly_added: counts,
+                                    file_input: { unit: fileUnit, qty: counts.file, total: fileUnit * counts.file },
+                                    images_input: { unit: imageUnit, qty: counts.image, total: imageUnit * counts.image },
+                                    video_input: { unit: videoUnit, qty: counts.video, total: videoUnit * counts.video },
+                                    voice_input: { unit: voiceUnit, qty: counts.voice, total: voiceUnit * counts.voice },
+                                },
+                            },
+                            { status: 402 },
+                        );
+                    }
+                }
+
+                // Persist charged ids so we only charge delta next time.
+                const nextChargedIds = Array.from(new Set([...(existingChargedIds ?? []), ...attachmentIdsNow])).filter(Boolean);
+                try {
+                    (db as any).cvs.update(reqId, {
+                        charged_attachment_ids: nextChargedIds,
+                    });
+                } catch {
+                    // ignore
+                }
+            }
+        }
 
         const logContext = finalUserId
             ? { userId: finalUserId, endpoint: '/api/cv/analyze', action: 'analyzeCV' }

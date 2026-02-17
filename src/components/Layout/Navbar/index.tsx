@@ -234,7 +234,7 @@ const Navbar = () => {
                     </Typography>
                   </Stack>
                 </ButtonBase>
-                <MuiButton color='secondary' onClick={() => router.push(PublicRoutes.landing)}>
+                <MuiButton color='secondary' onClick={() => router.push(`${PublicRoutes.landing}?new=1`)}>
                   Create New
                 </MuiButton>
 
@@ -423,7 +423,7 @@ const Navbar = () => {
               color='secondary'
               fullWidth
               onClick={() => {
-                router.push(PublicRoutes.landing);
+                router.push(`${PublicRoutes.landing}?new=1`);
                 closeMenu();
               }}
             >

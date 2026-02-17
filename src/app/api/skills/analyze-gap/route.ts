@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { consumeCredit } from '@/lib/credits';
+import { getResumeFeatureCoinCost } from '@/lib/pricing/get-resume-feature-coin-cost';
 import { ChatGPTService } from '@/services/chatgpt/service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -44,14 +45,16 @@ export async function POST(request: NextRequest) {
 
         const userId = await getUserId(request);
         
-        // Deduct 1 credit for skill gap analysis
+        // Deduct dynamic coin cost for skill gap analysis (from resume_feature_pricing.json)
         if (userId) {
-            const creditResult = await consumeCredit(userId, 1, 'skill_gap');
+            const coinCost = getResumeFeatureCoinCost('Skill Gap', 1);
+            const creditResult = await consumeCredit(userId, coinCost, 'skill_gap');
             if (!creditResult.success) {
                 return NextResponse.json(
                     { 
                         error: creditResult.error || 'Failed to consume credit',
                         remainingCredits: creditResult.remainingCredits,
+                        requiredCredits: coinCost,
                     },
                     { status: 402 }
                 );

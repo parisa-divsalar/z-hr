@@ -4,7 +4,7 @@ import { Stack, Typography, Dialog, DialogActions, DialogContent, DialogTitle } 
 import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
-import { PrivateRoutes } from '@/config/routes';
+import { PublicRoutes } from '@/config/routes';
 
 interface PlanRequiredDialogProps {
     open: boolean;
@@ -14,28 +14,28 @@ interface PlanRequiredDialogProps {
 const PlanRequiredDialog = ({ open, onClose }: PlanRequiredDialogProps) => {
     const router = useRouter();
 
-    const handleBuyPlan = () => {
-        router.push(PrivateRoutes.payment);
+    const handleGoToPricing = () => {
+        router.push(PublicRoutes.pricing);
         onClose();
     };
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth='xs'>
-            <DialogTitle>Plan required</DialogTitle>
+            <DialogTitle>Coins required</DialogTitle>
             <DialogContent dividers>
                 <Stack spacing={1}>
                     <Typography variant='subtitle2' fontWeight={500} color='text.primary'>
-                        This feature is not available on the Free plan.
+                        You need coins (or an active paid plan) to use this feature.
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
-                        Please upgrade to upload files and record voice.
+                        Go to pricing to buy a coin package or upgrade your plan.
                     </Typography>
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
                 <Stack direction='row' gap={1} width='100%'>
-                    <MuiButton fullWidth color='secondary' onClick={handleBuyPlan}>
-                        Buy plan
+                    <MuiButton fullWidth color='secondary' onClick={handleGoToPricing}>
+                        Get coins
                     </MuiButton>
                     <MuiButton fullWidth color='secondary' variant='text' onClick={onClose}>
                         Close

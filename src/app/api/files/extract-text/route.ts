@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { consumeCredit } from '@/lib/credits';
+import { getResumeFeatureCoinCost } from '@/lib/pricing/get-resume-feature-coin-cost';
 import { ChatGPTService } from '@/services/chatgpt/service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -38,12 +39,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const creditResult = await consumeCredit(userId, 1, 'file_upload');
+        const coinCost = getResumeFeatureCoinCost('File Input', 1);
+        const creditResult = await consumeCredit(userId, coinCost, 'file_upload');
         if (!creditResult.success) {
             return NextResponse.json(
                 { 
                     error: creditResult.error || 'Insufficient credits for file upload',
                     remainingCredits: creditResult.remainingCredits,
+                    requiredCredits: coinCost,
                     requiresPaidPlan: true,
                 },
                 { status: 402 }

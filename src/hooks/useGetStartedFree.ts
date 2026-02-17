@@ -50,14 +50,14 @@ export function useGetStartedFree(): UseGetStartedFreeResult {
         try {
             const token = storeAccessToken || useAuthStore.getState().accessToken || getAccessTokenFromAuthStorage();
             if (token) {
-                router.push(PublicRoutes.landing);
+                router.push(`${PublicRoutes.landing}?new=1`);
                 return;
             }
 
             // No token in the client store/storage; fallback to cookie session check.
             try {
                 await apiClientClient.get('users/me');
-                router.push(PublicRoutes.landing);
+                router.push(`${PublicRoutes.landing}?new=1`);
             } catch {
                 router.push(PublicRoutes.login);
             }
