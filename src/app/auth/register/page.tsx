@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import AppleIcon from '@mui/icons-material/Apple';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { IconButton, Stack, Typography } from '@mui/material';
@@ -12,12 +10,11 @@ import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 
-import { MainContainer, MainContent, FirstChild, LogoCard } from '@/app/auth/login/styled';
+import { MainContainer, MainContent, FirstChild } from '@/app/auth/login/styled';
 import CheckCircleIcon from '@/assets/images/icons/check-circle.svg';
 import InfoIcon from '@/assets/images/icons/info.svg';
 import AdAuth from '@/components/Auth/AdAuth';
 import AuthHeader from '@/components/Auth/Header';
-import { DividerLine, OrDivider } from '@/components/Landing/Wizard/Step1/AI/VoiceBox/styled';
 import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
@@ -238,37 +235,37 @@ const RegisterPage = () => {
                             Sign up
                         </MuiButton>
 
-                        <Stack alignItems='center'>
-                            <OrDivider sx={{ marginTop: '0.75rem' }}>
-                                <DividerLine />
-                                <Typography variant='body2' color='text.primary' bgcolor='transparent' mx={1}>
-                                    Or
-                                </Typography>
-                                <DividerLine />
-                            </OrDivider>
-                        </Stack>
+                        {/*<Stack alignItems='center'>*/}
+                        {/*    <OrDivider sx={{ marginTop: '0.75rem' }}>*/}
+                        {/*        <DividerLine />*/}
+                        {/*        <Typography variant='body2' color='text.primary' bgcolor='transparent' mx={1}>*/}
+                        {/*            Or*/}
+                        {/*        </Typography>*/}
+                        {/*        <DividerLine />*/}
+                        {/*    </OrDivider>*/}
+                        {/*</Stack>*/}
 
-                        <Stack
-                            direction='row'
-                            justifyContent='center'
-                            gap={2}
-                            sx={{
-                                flexWrap: 'wrap',
-                                rowGap: 1.5,
-                            }}
-                        >
-                            <LogoCard>
-                                <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />
-                            </LogoCard>
+                        {/*<Stack*/}
+                        {/*    direction='row'*/}
+                        {/*    justifyContent='center'*/}
+                        {/*    gap={2}*/}
+                        {/*    sx={{*/}
+                        {/*        flexWrap: 'wrap',*/}
+                        {/*        rowGap: 1.5,*/}
+                        {/*    }}*/}
+                        {/*>*/}
+                        {/*    <LogoCard>*/}
+                        {/*        <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />*/}
+                        {/*    </LogoCard>*/}
 
-                            <LogoCard>
-                                <AppleIcon sx={{ fontSize: 24 }} />
-                            </LogoCard>
+                        {/*    <LogoCard>*/}
+                        {/*        <AppleIcon sx={{ fontSize: 24 }} />*/}
+                        {/*    </LogoCard>*/}
 
-                            <LogoCard>
-                                <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />
-                            </LogoCard>
-                        </Stack>
+                        {/*    <LogoCard>*/}
+                        {/*        <LinkedInIcon sx={{ fontSize: 24, color: '#0A66C2' }} />*/}
+                        {/*    </LogoCard>*/}
+                        {/*</Stack>*/}
 
                         <Typography variant='subtitle1' color='secondary.main' mt={1.5}>
                             By signing up to Z-CV, you agree to{' '}
