@@ -7,6 +7,16 @@ import { useAuthStore } from '@/store/auth';
 
 import type { AxiosError } from 'axios';
 
+type PaymentResultMessage = {
+    type: 'payment_result';
+    status: 'success' | 'failed' | 'cancelled';
+    planId?: string;
+    orderId?: string;
+    at: number;
+};
+
+const PAYMENT_CHANNEL_NAME = 'zcv-payment';
+
 export interface UserProfile {
     id: number;
     email: string;
@@ -140,6 +150,50 @@ export const useUserProfile = (options?: { enabled?: boolean }) => {
         window.addEventListener('zcv:profile-changed', handler);
         return () => {
             window.removeEventListener('zcv:profile-changed', handler);
+        };
+    }, [enabled, refreshProfile]);
+
+    // Refresh profile after successful payment (cross-tab safe).
+    useEffect(() => {
+        if (!enabled) return;
+        if (typeof window === 'undefined') return;
+
+        const handlePayload = (payload: unknown) => {
+            if (!payload || typeof payload !== 'object') return;
+            const p = payload as Partial<PaymentResultMessage>;
+            if (p.type !== 'payment_result') return;
+            if (p.status !== 'success') return;
+
+            // Best-effort refresh; also notify other listeners.
+            void refreshProfile();
+            try {
+                window.dispatchEvent(new Event('zcv:profile-changed'));
+            } catch {
+                // ignore
+            }
+        };
+
+        let bc: BroadcastChannel | null = null;
+        try {
+            bc = new BroadcastChannel(PAYMENT_CHANNEL_NAME);
+            bc.onmessage = (e) => handlePayload(e.data);
+        } catch {
+            // ignore
+        }
+
+        const onWindowMessage = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin) return;
+            handlePayload(event.data);
+        };
+        window.addEventListener('message', onWindowMessage);
+
+        return () => {
+            window.removeEventListener('message', onWindowMessage);
+            try {
+                bc?.close();
+            } catch {
+                // ignore
+            }
         };
     }, [enabled, refreshProfile]);
 
