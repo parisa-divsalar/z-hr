@@ -446,7 +446,7 @@ const Pricing = () => {
                                 ctaLabel={
                                     p.priceText === 'Free'
                                         ? me?.has_used_free_plan
-                                            ? 'Free Plan Already Used'
+                                            ? 'Already Used'
                                             : me
                                                 ? 'Claim Free Plan'
                                                 : 'Login'
