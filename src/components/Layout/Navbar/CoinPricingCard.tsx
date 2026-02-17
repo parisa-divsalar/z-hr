@@ -2,9 +2,11 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { Box, ButtonBase, Divider, Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import CoinIcon from '@/assets/images/design/coin.svg';
 import MuiButton from '@/components/UI/MuiButton';
+import { PublicRoutes } from '@/config/routes';
 
 type TabKey = 'features' | 'pack';
 
@@ -455,6 +457,7 @@ type CoinPricingCardProps = {
 };
 
 export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: CoinPricingCardProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('features');
   const [selectedPackId, setSelectedPackId] = useState<string>('');
 
@@ -672,16 +675,65 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
     return packTotals.savingPercent > 0 ? `Save ${packTotals.savingPercent}% on features` : null;
   }, [activeTab, packTotals.savingPercent]);
 
-  const handleDirectGatewayPayment = useCallback(() => {
-    // Keep existing behavior (e.g. close popover) then go directly to gateway start page.
+  const handleDirectGatewayPayment = useCallback(async () => {
+    // Keep existing behavior (e.g. close popover).
     onPayment?.();
 
-    const selectedLabel = coinPacks.find((p) => p.id === selectedPackId)?.label;
-    const plan = normalizePlanId(selectedLabel) ?? normalizePlanId(selectedPackId) ?? 'plus';
+    // We can only create a real paid session for coin packages (pack tab).
+    if (activeTab !== 'pack') {
+      setActiveTab('pack');
+      return;
+    }
 
-    const url = `/payment/fiserv?plan=${encodeURIComponent(plan)}`;
-    window.location.assign(url);
-  }, [coinPacks, onPayment, selectedPackId]);
+    const coinPackageId = Number(String(selectedPackId ?? '').trim());
+    if (!Number.isFinite(coinPackageId) || coinPackageId <= 0) {
+      // Fallback: nothing selected; bounce to pricing.
+      router.push(PublicRoutes.pricing);
+      return;
+    }
+
+    // Open a tab synchronously to avoid popup blockers.
+    const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+
+    try {
+      const res = await fetch('/api/payment/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ coinPackageId }),
+        cache: 'no-store',
+      });
+      const json = await res.json().catch(() => ({} as any));
+
+      if (res.status === 401) {
+        try {
+          popup?.close();
+        } catch {
+          // ignore
+        }
+        router.push(PublicRoutes.login);
+        return;
+      }
+
+      if (!res.ok) throw new Error(String(json?.error ?? `HTTP ${res.status}`));
+
+      const url = String(json?.paymentUrl ?? '').trim();
+      if (!url) throw new Error('Missing paymentUrl');
+
+      if (popup && !popup.closed) {
+        popup.location.href = url;
+      } else {
+        window.location.assign(url);
+      }
+    } catch (e) {
+      try {
+        popup?.close();
+      } catch {
+        // ignore
+      }
+      console.error('Coin package create-session failed:', e);
+      router.push(PublicRoutes.pricing);
+    }
+  }, [activeTab, onPayment, router, selectedPackId]);
 
   return (
     <>

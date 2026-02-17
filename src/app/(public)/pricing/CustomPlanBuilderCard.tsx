@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
@@ -10,10 +10,23 @@ import DeleteIcon from '@/assets/images/icons/clean.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
+type ResumeFeaturePricingRow = {
+  id?: number | string;
+  feature_name?: string;
+  coin_per_action?: number | string;
+  price_per_coin_aed?: number | string;
+  price_per_action_aed?: number | string;
+  [k: string]: unknown;
+};
+
+type ApiListResponse<T> = { data?: T[]; error?: string; generatedAt?: string };
+
 type CatalogItem = {
   id: string;
   label: string;
-  unitPriceAedCents: number; // integer cents
+  coinPerAction: number;
+  pricePerCoinAedCents: number; // integer cents
+  pricePerActionAedCents: number; // integer cents (0 means derive from coin price)
 };
 
 type PlanRow = {
@@ -29,17 +42,43 @@ const TEXT_MUTED = '#9CA3AF';
 const TEXT_DARK = '#111827';
 const BRAND = '#4D49FC';
 
-// NOTE: These defaults are chosen so the screenshot example (2 + 5)
-// shows ~100 AED with 9% tax when rounded to 2 decimals.
-const CATALOG: CatalogItem[] = [
-  { id: 'job_description_match', label: 'Job Description Match', unitPriceAedCents: 837 }, // 8.37 AED
-  { id: 'wizard_edit', label: 'Wizard Edit', unitPriceAedCents: 1500 }, // 15.00 AED
-];
+function safeStr(v: unknown): string {
+  return String(v ?? '').trim();
+}
 
-function formatAed(amountAedCents: number): string {
+function normalizeKey(v: unknown): string {
+  return safeStr(v)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function toFiniteNumber(v: unknown, fallback = 0): number {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : fallback;
+  if (typeof v === 'string') {
+    const n = Number(v.replace(/,/g, '').trim());
+    return Number.isFinite(n) ? n : fallback;
+  }
+  const n = Number(v as any);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function toIntCentsFromAed(value: unknown): number {
+  const n = toFiniteNumber(value, 0);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.max(0, Math.round(n * 100));
+}
+
+function slugifyId(input: string): string {
+  return safeStr(input)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function formatAedFromCents(amountAedCents: number): string {
   const safe = Number.isFinite(amountAedCents) ? amountAedCents : 0;
   const aed = Math.round(safe) / 100;
-  // keep as: "100 AED" (as in screenshot)
   const label = aed % 1 === 0 ? String(aed.toFixed(0)) : String(aed.toFixed(2));
   return `${label} AED`;
 }
@@ -50,24 +89,96 @@ function clampInt(n: number, min: number, max: number): number {
 }
 
 export default function CustomPlanBuilderCard() {
-  const catalogById = useMemo(() => Object.fromEntries(CATALOG.map((x) => [x.id, x])), []);
+  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [kindInput, setKindInput] = useState('');
+  const catalogById = useMemo(() => Object.fromEntries(catalog.map((x) => [x.id, x])), [catalog]);
+
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [qtyInput, setQtyInput] = useState<string>('');
 
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
-  const [rows, setRows] = useState<PlanRow[]>([
-    { id: 'r1', itemId: 'job_description_match', label: 'Job Description Match', qty: 2 },
-    { id: 'r2', itemId: 'wizard_edit', label: 'Wizard Edit', qty: 5 },
-  ]);
+  const [rows, setRows] = useState<PlanRow[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    async function run() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch('/api/pricing/resume-feature-pricing', {
+          cache: 'no-store',
+          signal,
+          headers: { Accept: 'application/json' },
+        });
+        const json = (await res.json().catch(() => ({}))) as ApiListResponse<ResumeFeaturePricingRow>;
+        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+
+        const data = Array.isArray(json?.data) ? json.data : [];
+        const nextCatalog: CatalogItem[] = data
+          .map((row, idx) => {
+            const label = safeStr(row?.feature_name) || `Feature ${idx + 1}`;
+            const rawId = safeStr(row?.id) || slugifyId(label) || String(idx + 1);
+            const id = rawId || String(idx + 1);
+            const coinPerAction = Math.max(0, clampInt(toFiniteNumber(row?.coin_per_action, 0), 0, 9999));
+            const pricePerCoinAedCents = toIntCentsFromAed(row?.price_per_coin_aed);
+            const pricePerActionAedCents = toIntCentsFromAed(row?.price_per_action_aed);
+            return { id, label, coinPerAction, pricePerCoinAedCents, pricePerActionAedCents };
+          })
+          .filter((x) => Boolean(x.id) && Boolean(x.label))
+          .sort((a, b) => {
+            const aKey = normalizeKey(a.label);
+            const bKey = normalizeKey(b.label);
+            const aBoost = aKey === 'job description match' || aKey === 'wizard edit' ? -1 : 0;
+            const bBoost = bKey === 'job description match' || bKey === 'wizard edit' ? -1 : 0;
+            if (aBoost !== bBoost) return aBoost - bBoost;
+            return a.label.localeCompare(b.label);
+          });
+
+        setCatalog(nextCatalog);
+      } catch (e) {
+        if (signal.aborted) return;
+        const msg = e instanceof Error ? e.message : 'Failed to load pricing data';
+        setError(msg);
+        setCatalog([]);
+      } finally {
+        if (signal.aborted) return;
+        setLoading(false);
+      }
+    }
+
+    run();
+    return () => controller.abort();
+  }, []);
+
+  const rowsWithComputed = useMemo(() => {
+    return rows.map((r) => {
+      const item = catalogById[r.itemId] as CatalogItem | undefined;
+      const coinPerAction = item?.coinPerAction ?? 0;
+      const rowCoins = clampInt(r.qty, 0, 9999) * Math.max(0, clampInt(coinPerAction, 0, 9999));
+      return { ...r, rowCoins };
+    });
+  }, [catalogById, rows]);
 
   const subtotalAedCents = useMemo(() => {
     let sum = 0;
     for (const r of rows) {
       const item = catalogById[r.itemId] as CatalogItem | undefined;
-      const unit = item?.unitPriceAedCents ?? 0;
-      sum += clampInt(r.qty, 0, 9999) * unit;
+      if (!item) continue;
+
+      const qty = clampInt(r.qty, 0, 9999);
+      const coinPerAction = Math.max(0, clampInt(item.coinPerAction, 0, 9999));
+      const coins = qty * coinPerAction;
+
+      // Use `price_per_action_aed` if provided, otherwise derive from `price_per_coin_aed * coin_per_action`.
+      const derivedFromCoins = item.pricePerCoinAedCents > 0 ? coins * item.pricePerCoinAedCents : 0;
+      const totalForRow = item.pricePerActionAedCents > 0 ? qty * item.pricePerActionAedCents : derivedFromCoins;
+
+      sum += Math.max(0, Math.round(totalForRow));
     }
     return Math.max(0, Math.round(sum));
   }, [catalogById, rows]);
@@ -79,11 +190,10 @@ export default function CustomPlanBuilderCard() {
 
   const canSubmit = useMemo(() => {
     const qty = Number(qtyInput);
-    return Boolean(selectedItemId) && Number.isFinite(qty) && qty > 0;
-  }, [qtyInput, selectedItemId]);
+    return Boolean(selectedItemId) && Number.isFinite(qty) && qty > 0 && !loading;
+  }, [loading, qtyInput, selectedItemId]);
 
   const resetInputs = useCallback(() => {
-    setKindInput('');
     setSelectedItemId('');
     setQtyInput('');
     setEditingRowId(null);
@@ -96,9 +206,7 @@ export default function CustomPlanBuilderCard() {
 
     setRows((prev) => {
       if (editingRowId) {
-        return prev.map((r) =>
-          r.id === editingRowId ? { ...r, itemId: item.id, label: item.label, qty } : r,
-        );
+        return prev.map((r) => (r.id === editingRowId ? { ...r, itemId: item.id, label: item.label, qty } : r));
       }
 
       // Merge if item already exists; keeps UI tidy like screenshot.
@@ -113,38 +221,29 @@ export default function CustomPlanBuilderCard() {
     resetInputs();
   }, [catalogById, editingRowId, qtyInput, resetInputs, selectedItemId]);
 
-  const handleEditRow = useCallback(
-    (row: PlanRow) => {
-      setEditingRowId(row.id);
-      setSelectedItemId(row.itemId);
-      setQtyInput(String(row.qty));
-      // Keep the first input as-is; it's just a UI affordance in the screenshot.
-      setKindInput((v) => v || 'Item');
-    },
-    [],
-  );
+  const handleEditRow = useCallback((row: PlanRow) => {
+    setEditingRowId(row.id);
+    setSelectedItemId(row.itemId);
+    setQtyInput(String(row.qty));
+  }, []);
 
   const handleDeleteRow = useCallback((rowId: string) => {
     setRows((prev) => prev.filter((r) => r.id !== rowId));
     setEditingRowId((prev) => (prev === rowId ? null : prev));
   }, []);
 
+  const rowGridTemplateColumns = useMemo(
+    () => ({
+      xs: '1fr 52px 92px 84px',
+      sm: '1fr 64px 110px 92px',
+    }),
+    [],
+  );
+
   return (
-    <Box
-      sx={{
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        mt: { xs: 4, md: 6 },
-      }}
-    >
-      <Box
-        sx={{
-          width: 'min(100%, 706px)',
-          textAlign: 'center',
-        }}
-      >
-        <Typography sx={{  mb:4 ,fontSize:'12px'}} fontWeight={400} color='text.secondary' >
+    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: { xs: 4, md: 6 } }}>
+      <Box sx={{ width: 'min(100%, 706px)', textAlign: 'center' }}>
+        <Typography sx={{ mb: 4, fontSize: '12px' }} fontWeight={400} color='text.secondary'>
           Do you want to create your own plan ?
         </Typography>
 
@@ -152,34 +251,13 @@ export default function CustomPlanBuilderCard() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr auto' },
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr auto' },
             gap: 1.25,
             alignItems: 'center',
             justifyItems: 'stretch',
             mb: 2,
           }}
         >
-          <TextField
-            value={kindInput}
-            onChange={(e) => setKindInput(e.target.value)}
-            placeholder='Coin or item'
-            size='small'
-            fullWidth
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                height: 44,
-                borderRadius:'16px',
-                backgroundColor: '#fff',
-                fontSize: 13.5,
-                color: TEXT_DARK,
-                '& fieldset': { borderColor: BORDER },
-                '&:hover fieldset': { borderColor: BORDER },
-                '&.Mui-focused fieldset': { borderColor: BORDER, borderWidth: 1 },
-                '& input::placeholder': { color: TEXT_MUTED, opacity: 1 },
-              },
-            }}
-          />
-
           <TextField
             select
             value={selectedItemId}
@@ -197,7 +275,7 @@ export default function CustomPlanBuilderCard() {
             sx={{
               '& .MuiOutlinedInput-root': {
                 height: 44,
-                  borderRadius:'16px',
+                borderRadius: '16px',
                 backgroundColor: '#fff',
                 fontSize: 13.5,
                 color: TEXT_DARK,
@@ -211,7 +289,20 @@ export default function CustomPlanBuilderCard() {
             <MenuItem value='' disabled>
               Choose an item...
             </MenuItem>
-            {CATALOG.map((item) => (
+            {loading ? (
+              <MenuItem value='' disabled>
+                Loading…
+              </MenuItem>
+            ) : error ? (
+              <MenuItem value='' disabled>
+                Failed to load
+              </MenuItem>
+            ) : catalog.length === 0 ? (
+              <MenuItem value='' disabled>
+                No items
+              </MenuItem>
+            ) : null}
+            {catalog.map((item) => (
               <MenuItem key={item.id} value={item.id}>
                 {item.label}
               </MenuItem>
@@ -228,7 +319,7 @@ export default function CustomPlanBuilderCard() {
             sx={{
               '& .MuiOutlinedInput-root': {
                 height: 44,
-                  borderRadius:'16px',
+                borderRadius: '16px',
                 backgroundColor: '#fff',
                 fontSize: 13.5,
                 color: TEXT_DARK,
@@ -270,128 +361,114 @@ export default function CustomPlanBuilderCard() {
             textAlign: 'left',
           }}
         >
-          {rows.map((row, idx) => (
-            <Box key={row.id}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                    justifyContent: 'center',
-
-                    px: 2,
-                  py: 1.25,
-                }}
-              >
-                <Typography
-                    fontSize='h6'
-                  sx={{
-                    fontWeight: 400,
-                    color: TEXT_DARK,
-                    minWidth: 0,
-                    flex: '1 1 auto',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {row.label}
-                </Typography>
-
+          {rowsWithComputed.length === 0 ? (
+            <Box sx={{ px: 2, py: 2 }}>
+              <Typography sx={{ fontSize: 13, color: TEXT_MUTED, fontWeight: 600, textAlign: 'center' }}>
+                {loading ? 'Loading items…' : error ? 'Failed to load items.' : 'No items yet.'}
+              </Typography>
+            </Box>
+          ) : (
+            rowsWithComputed.map((row, idx) => (
+              <Box key={row.id}>
                 <Box
                   sx={{
-                    width: 448,
-                    flex: '0 0 auto',
-                    display: 'flex',
+                    display: 'grid',
+                    gridTemplateColumns: rowGridTemplateColumns,
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    px: 2,
+                    py: 1.25,
+                    gap: 1.25,
                   }}
                 >
                   <Typography
-                      fontSize='h6'
-                      sx={{
-                      fontWeight: 400,
+                    sx={{
+                      fontSize: 16,
+                      fontWeight: 500,
                       color: TEXT_DARK,
-                      textAlign: 'center',
-                        justifyContent: 'center',
-
-                        lineHeight: 1,
+                      minWidth: 0,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                     }}
                   >
+                    {row.label}
+                  </Typography>
+
+                  <Typography sx={{ fontSize: 16, fontWeight: 600, color: TEXT_DARK, textAlign: 'center' }}>
                     {row.qty}
                   </Typography>
+
+                  <Typography sx={{ fontSize: 16, fontWeight: 600, color: TEXT_DARK, textAlign: 'center' }}>
+                    {row.rowCoins} {row.rowCoins === 1 ? 'Coin' : 'Coins'}
+                  </Typography>
+
+                  <Stack direction='row' spacing={1} justifyContent='flex-end' sx={{ justifySelf: 'end' }}>
+                    <IconButton
+                      size='small'
+                      aria-label='Edit'
+                      onClick={() => handleEditRow(row)}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        p: 0,
+                        backgroundColor: 'transparent',
+                        '&:hover': { backgroundColor: 'transparent' },
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size='small'
+                      aria-label='Delete'
+                      onClick={() => handleDeleteRow(row.id)}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        p: 0,
+                        backgroundColor: 'transparent',
+                        '&:hover': { backgroundColor: 'transparent' },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Stack>
                 </Box>
 
-                <Stack direction='row' spacing={1} justifyContent='flex-end' sx={{ flex: '0 0 auto' }}>
-                  <IconButton
-                    size='small'
-                    aria-label='Edit'
-                    onClick={() => handleEditRow(row)}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      p: 0,
-                      backgroundColor: 'transparent',
-                      '&:hover': { backgroundColor: 'transparent' },
-                    }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size='small'
-                    aria-label='Delete'
-                    onClick={() => handleDeleteRow(row.id)}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      p: 0,
-                      backgroundColor: 'transparent',
-                      '&:hover': { backgroundColor: 'transparent' },
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Stack>
+                {idx < rowsWithComputed.length - 1 ? <Divider sx={{ borderColor: BORDER }} /> : null}
               </Box>
-
-              {idx < rows.length - 1 ? <Divider sx={{ borderColor: BORDER }} /> : null}
-            </Box>
-          ))}
+            ))
+          )}
 
           <Divider sx={{ borderColor: BORDER }} />
 
-          <Box sx={{ px: 2, py: 1.6, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-            <Box sx={{ minWidth: 0, textAlign: 'center' }}>
-              <Typography sx={{  textAlign: 'center' }} fontSize='h6' color='text.primary' fontWeight='400'>
-                Total price
-              </Typography>
+          <Box
+            sx={{
+              px: 2,
+              py: 1.6,
+              display: 'grid',
+              gridTemplateColumns: rowGridTemplateColumns,
+              alignItems: 'center',
+              gap: 1.25,
+            }}
+          >
+            <Typography sx={{ fontSize: 16, fontWeight: 500, color: TEXT_DARK }}>Total price</Typography>
 
+            <Box sx={{ gridColumn: '2 / span 2', textAlign: 'center' }}>
+              <Stack direction='row' alignItems='baseline' justifyContent='center' spacing={1} sx={{ mt: 0.1 }}>
+                <Typography  variant='h5' color='primary.main' fontWeight='584'>
+                  {formatAedFromCents(totalWithTaxAedCents)}
+                </Typography>
+              </Stack>
+              <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 600, mt: -0.25, textAlign: 'center' }}>
+                With 9% Tax
+              </Typography>
             </Box>
-<Box pl={18}>
-    <Stack direction='row' alignItems='baseline' justifyContent='center' spacing={1} sx={{ mt: 0.1 }}>
-        <Typography variant='h5' color='primary.main' fontWeight='584' sx={{  textAlign: 'center' }} >
-            {formatAed(totalWithTaxAedCents)}
-        </Typography>
-    </Stack>
-    <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 600, mt: -0.25, textAlign: 'center' }}>
-        With 9% Tax
-    </Typography>
-</Box>
+
             <MuiButton
-              text='Upgrade Now'
+              text='Upgrade '
               variant='contained'
-              color='inherit'
-              sx={{
-                height: 40,
-                px: 2.2,
-                borderRadius: '10px',
-                textTransform: 'none',
-                fontWeight: 800,
-                bgcolor: '#111827',
-                color: '#fff',
-                boxShadow: 'none',
-                '&:hover': { bgcolor: '#0B1220', boxShadow: 'none' },
-                flex: '0 0 auto',
-              }}
+              color='secondary'
+
               onClick={() => {
                 // no-op for now; pricing flow handled by plans comparison / gateway.
               }}
@@ -402,4 +479,3 @@ export default function CustomPlanBuilderCard() {
     </Box>
   );
 }
-
