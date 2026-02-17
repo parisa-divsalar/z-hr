@@ -10,6 +10,7 @@ import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanReq
 import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchInterviewQuestions } from '@/services/interview/get-questions';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
 
 import InterviewReadyStep from './InterviewReadyStep';
 import SkillInputStep from './SkillInputStep';
@@ -30,7 +31,7 @@ export default function ChatInterView() {
     const lastRequestKeyRef = useRef<string | null>(null);
 
     const enabled = new Set((access?.enabledKeys ?? []).filter(Boolean));
-    const isLocked = !isAccessLoading && !enabled.has('question_interview');
+    const isLocked = !isAccessLoading && !(enabled.has('question_interview') || enabled.has('text_interview'));
 
     useEffect(() => {
         if (isLocked) setLockedOpen(true);
@@ -43,10 +44,12 @@ export default function ChatInterView() {
                     open={lockedOpen}
                     onClose={() => setLockedOpen(false)}
                     title='Feature locked'
-                    headline='Interview Questions is disabled for your account.'
-                    bodyText='Enable it in More Features (Step 3) to unlock it.'
-                    primaryLabel='Enable in More Features'
-                    primaryHref='/resume-builder?step=3'
+                    headline='Chat / Text Interview is disabled for your account.'
+                    bodyText='Buy coins/upgrade your plan, then enable it in More Features (Step 3).'
+                    primaryLabel='Buy plan / coins'
+                    primaryHref={PublicRoutes.pricing}
+                    secondaryLabel='Enable in More Features'
+                    secondaryHref={`${PrivateRoutes.resumeBuilder}?step=3`}
                 />
             </>
         );

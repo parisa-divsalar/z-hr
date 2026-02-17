@@ -10,6 +10,7 @@ import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanReq
 import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchInterviewQuestions } from '@/services/interview/get-questions';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
 
 import { CenterGrayBox, VoiceInterViewContent, VoiceInterViewGrid, VoiceInterViewRoot } from './styled';
 import VoiceInterviewReadyStep from './VoiceInterviewReadyStep';
@@ -48,9 +49,11 @@ export default function VoiceInterView() {
                     onClose={() => setLockedOpen(false)}
                     title='Feature locked'
                     headline='Voice Interview is disabled for your account.'
-                    bodyText='Enable it in More Features (Step 3) to unlock it.'
-                    primaryLabel='Enable in More Features'
-                    primaryHref='/resume-builder?step=3'
+                    bodyText='Buy coins/upgrade your plan, then enable it in More Features (Step 3).'
+                    primaryLabel='Buy plan / coins'
+                    primaryHref={PublicRoutes.pricing}
+                    secondaryLabel='Enable in More Features'
+                    secondaryHref={`${PrivateRoutes.resumeBuilder}?step=3`}
                 />
             </>
         );

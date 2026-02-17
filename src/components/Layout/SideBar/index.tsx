@@ -45,7 +45,7 @@ const SideBar = () => {
       return { locked: !enabled.has('learning_hub'), label: 'Learning Hub' };
     }
     if (route === PrivateRoutes.interView || route === PrivateRoutes.chatInterView || route === PrivateRoutes.voiceInterView) {
-      const ok = enabled.has('question_interview') || enabled.has('voice_interview');
+      const ok = enabled.has('question_interview') || enabled.has('text_interview') || enabled.has('voice_interview');
       return { locked: !ok, label: 'Interview' };
     }
     return { locked: false };

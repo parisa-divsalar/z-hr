@@ -8,7 +8,7 @@ import InterviewIcon from '@/assets/images/dashboard/imag/interview.svg';
 import InterVoice from '@/assets/images/icons/interVoice.svg';
 import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
 import MuiButton from '@/components/UI/MuiButton';
-import { PrivateRoutes, PublicRoutes } from '@/config/routes';
+import { PublicRoutes } from '@/config/routes';
 import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 
 import { useInterviewDialog } from './StartInterviewDialogProvider';
@@ -21,7 +21,7 @@ const InterviewStats = () => {
     const [lockedFeatureLabel, setLockedFeatureLabel] = useState<string>('this feature');
 
     const enabled = useMemo(() => new Set((access?.enabledKeys ?? []).filter(Boolean)), [access?.enabledKeys]);
-    const isChatLocked = !isAccessLoading && !enabled.has('question_interview');
+    const isChatLocked = !isAccessLoading && !(enabled.has('question_interview') || enabled.has('text_interview'));
     const isVoiceLocked = !isAccessLoading && !enabled.has('voice_interview');
 
     const openLockedDialog = (label: string) => {
@@ -56,9 +56,7 @@ const InterviewStats = () => {
                 headline={`"${lockedFeatureLabel}" is disabled for your account.`}
                 bodyText='Buy coins/upgrade your plan, then enable it in More Features (Step 3).'
                 primaryLabel='Buy plan / coins'
-                primaryHref={PrivateRoutes.payment}
-                secondaryLabel='Pricing'
-                secondaryHref={PublicRoutes.pricing}
+                primaryHref={PublicRoutes.pricing}
             />
             <Grid container spacing={2} width='100%'>
                 <Grid size={{ xs: 12, md: 6 }}>

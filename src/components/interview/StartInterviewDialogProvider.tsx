@@ -1,14 +1,16 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { Dialog, Divider, IconButton, SelectProps, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
+import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
-import { PrivateRoutes } from '@/config/routes';
+import { PrivateRoutes, PublicRoutes } from '@/config/routes';
+import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 
 import {
     START_INTERVIEW_DIALOG_ACTIONS_SX,
@@ -36,12 +38,6 @@ const resumeOptions: SelectOption[] = [
     { label: 'Resume 2', value: 'resume-2' },
 ];
 
-const interviewTypeOptions: SelectOption[] = [
-    { label: 'Chat interview', value: 'chat' },
-    { label: 'Voice interview', value: 'voice' },
-    { label: 'Video interview', value: 'video' },
-];
-
 type InterviewDialogContextValue = {
     openStartDialog: (type: InterviewTypeValue) => void;
     closeStartDialog: () => void;
@@ -56,11 +52,44 @@ const InterviewDialogContext = createContext<InterviewDialogContextValue | undef
 
 const StartInterviewDialogProvider = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
+    const { access, isLoading: isAccessLoading } = useMoreFeaturesAccess({ enabled: true });
     const [startDialogOpen, setStartDialogOpen] = useState(false);
     const [selectedResume, setSelectedResume] = useState<string>('');
     const [selectedInterviewType, setSelectedInterviewType] = useState<InterviewTypeValue>('');
+    const [lockedDialogOpen, setLockedDialogOpen] = useState(false);
+    const [lockedFeatureLabel, setLockedFeatureLabel] = useState<string>('this feature');
+
+    const enabled = useMemo(() => new Set((access?.enabledKeys ?? []).filter(Boolean)), [access?.enabledKeys]);
+    const isChatLocked = !isAccessLoading && !(enabled.has('question_interview') || enabled.has('text_interview'));
+    const isVoiceLocked = !isAccessLoading && !enabled.has('voice_interview');
+
+    const interviewTypeOptions: SelectOption[] = useMemo(() => {
+        return [
+            { label: 'Chat interview', value: 'chat', disabled: isAccessLoading || isChatLocked },
+            { label: 'Voice interview', value: 'voice', disabled: isAccessLoading || isVoiceLocked },
+            // Not implemented yet
+            { label: 'Video interview', value: 'video', disabled: true },
+        ];
+    }, [isAccessLoading, isChatLocked, isVoiceLocked]);
+
+    const openLockedDialog = (label: string) => {
+        setLockedFeatureLabel(label);
+        setLockedDialogOpen(true);
+    };
 
     const openStartDialog = (type: InterviewTypeValue) => {
+        if (type === 'chat' && (isAccessLoading || isChatLocked)) {
+            openLockedDialog('Chat Interview');
+            return;
+        }
+        if (type === 'voice' && (isAccessLoading || isVoiceLocked)) {
+            openLockedDialog('Voice Interview');
+            return;
+        }
+        if (type === 'video') {
+            openLockedDialog('Video Interview');
+            return;
+        }
         setSelectedInterviewType(type);
         setStartDialogOpen(true);
     };
@@ -72,6 +101,19 @@ const StartInterviewDialogProvider = ({ children }: { children: ReactNode }) => 
     const canStart = Boolean(selectedResume) && Boolean(selectedInterviewType);
 
     const handleStart = () => {
+        if (isAccessLoading) return;
+        if (selectedInterviewType === 'chat' && isChatLocked) {
+            openLockedDialog('Chat Interview');
+            return;
+        }
+        if (selectedInterviewType === 'voice' && isVoiceLocked) {
+            openLockedDialog('Voice Interview');
+            return;
+        }
+        if (selectedInterviewType === 'video') {
+            openLockedDialog('Video Interview');
+            return;
+        }
         closeStartDialog();
         if (selectedInterviewType === 'chat') {
             router.push(PrivateRoutes.chatInterView);
@@ -93,6 +135,15 @@ const StartInterviewDialogProvider = ({ children }: { children: ReactNode }) => 
             }}
         >
             {children}
+            <PlanRequiredDialog
+                open={lockedDialogOpen}
+                onClose={() => setLockedDialogOpen(false)}
+                title='Feature locked'
+                headline={`"${lockedFeatureLabel}" is disabled for your account.`}
+                bodyText='Buy coins/upgrade your plan, then enable it in More Features (Step 3).'
+                primaryLabel='Buy plan / coins'
+                primaryHref={PublicRoutes.pricing}
+            />
             <Dialog
                 open={startDialogOpen}
                 onClose={closeStartDialog}

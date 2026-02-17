@@ -9,7 +9,7 @@ import ArrowRightIcon from '@/assets/images/icons/arrow-right.svg';
 import FrameUser from '@/assets/images/icons/frameUser.svg';
 import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
 import MuiButton from '@/components/UI/MuiButton';
-import { PrivateRoutes, PublicRoutes } from '@/config/routes';
+import { PublicRoutes } from '@/config/routes';
 import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
 
 import { CardBaseiNTER, SectionHeader, StepsLeftChip } from '../styled';
@@ -20,7 +20,7 @@ const UpcomingInterview2 = () => {
     const [lockedOpen, setLockedOpen] = useState(false);
 
     const enabled = useMemo(() => new Set((access?.enabledKeys ?? []).filter(Boolean)), [access?.enabledKeys]);
-    const isChatLocked = !isAccessLoading && !enabled.has('question_interview');
+    const isChatLocked = !isAccessLoading && !(enabled.has('question_interview') || enabled.has('text_interview'));
 
     const handleContinue = () => {
         if (isAccessLoading) return;
@@ -40,9 +40,7 @@ const UpcomingInterview2 = () => {
                 headline='Chat Interview is disabled for your account.'
                 bodyText='Buy coins/upgrade your plan, then enable it in More Features (Step 3).'
                 primaryLabel='Buy plan / coins'
-                primaryHref={PrivateRoutes.payment}
-                secondaryLabel='Pricing'
-                secondaryHref={PublicRoutes.pricing}
+                primaryHref={PublicRoutes.pricing}
             />
 
             <CardBaseiNTER mt={2}>
