@@ -6,7 +6,7 @@ import { Box, ButtonBase, Divider, Stack, Typography } from '@mui/material';
 import CoinIcon from '@/assets/images/design/coin.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
-type TabKey = 'asset' | 'features' | 'coin';
+type TabKey = 'features' | 'pack';
 
 type PricingListItem = {
   id: string;
@@ -15,12 +15,23 @@ type PricingListItem = {
   initialQty: number;
 };
 
+const COIN_ITEMS: PricingListItem[] = [{ id: 'coin_number', label: 'Coin Number', initialQty: 1 }];
+
 const ASSET_ITEMS: PricingListItem[] = [
   { id: 'file', label: 'File', initialQty: 1 },
   { id: 'image', label: 'Image', initialQty: 0 },
   { id: 'video', label: 'Video', initialQty: 0 },
   { id: 'voice', label: 'Voice', initialQty: 0 },
 ];
+
+const ASSET_TO_PRICING_KEY: Record<string, string> = {
+  file: 'file input',
+  image: 'images input',
+  video: 'video input',
+  voice: 'voice input',
+};
+
+const ASSET_PRICING_KEYS = new Set(Object.values(ASSET_TO_PRICING_KEY).map((v) => normalizeKey(v)));
 
 type ResumeFeaturePricingRow = {
   id?: number | string;
@@ -37,10 +48,11 @@ type CoinPackageRow = {
   coin_amount?: number | string;
   price_aed?: number | string;
   aed_per_coin?: number | string;
+  user_saving_percent?: number | string;
   [k: string]: unknown;
 };
 
-type CoinPack = { id: string; label: string; coins: number };
+type CoinPack = { id: string; label: string; coins: number; savingPercent: number };
 
 type ApiListResponse<T> = { data?: T[]; error?: string };
 
@@ -188,17 +200,18 @@ const CoinPackList = memo(function CoinPackList({
                 </Typography>
               </Stack>
 
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  color: '#111827',
-                  fontWeight: 500,
-                  whiteSpace: 'nowrap',
-                  flex: '0 0 auto',
-                }}
-              >
-                {pack.coins} Coins
-              </Typography>
+              <Stack direction='row' alignItems='center' spacing={1} sx={{ flex: '0 0 auto' }}>
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    color: '#111827',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {pack.coins} Coins
+                </Typography>
+              </Stack>
             </Box>
           </ButtonBase>
         );
@@ -342,12 +355,14 @@ const PricingFooter = memo(function PricingFooter({
   totalCoins,
   totalPriceLabel,
   comparisonLabel,
+  showCoinsLabel = true,
   onPayment,
   onOurPlans,
 }: {
   totalCoins: number;
   totalPriceLabel: string;
   comparisonLabel: string | null;
+  showCoinsLabel?: boolean;
   onPayment?: () => void;
   onOurPlans?: () => void;
 }) {
@@ -356,7 +371,9 @@ const PricingFooter = memo(function PricingFooter({
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
         <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 600 }}>Total</Typography>
 
-        <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 600 }}>{totalCoins} Coins</Typography>
+        {showCoinsLabel ? (
+          <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 600 }}>{totalCoins} Coins</Typography>
+        ) : null}
 
         <Box
           sx={{
@@ -438,20 +455,27 @@ type CoinPricingCardProps = {
 };
 
 export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: CoinPricingCardProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>('asset');
+  const [activeTab, setActiveTab] = useState<TabKey>('features');
   const [selectedPackId, setSelectedPackId] = useState<string>('');
 
   const [featureItems, setFeatureItems] = useState<PricingListItem[]>([]);
   const [featureLoading, setFeatureLoading] = useState(false);
   const [featureError, setFeatureError] = useState<string | null>(null);
-  const [featurePricingById, setFeaturePricingById] = useState<Record<string, { coinPerAction: number; pricePerCoinAed: number }>>({});
+  const [featurePricingById, setFeaturePricingById] = useState<
+    Record<string, { coinPerAction: number; pricePerCoinAed: number; pricePerActionAed: number }>
+  >({});
   const [featureNameToId, setFeatureNameToId] = useState<Record<string, string>>({});
 
   const [coinPacks, setCoinPacks] = useState<CoinPack[]>([]);
   const [coinPackLoading, setCoinPackLoading] = useState(false);
   const [coinPackError, setCoinPackError] = useState<string | null>(null);
-  const [coinPackageById, setCoinPackageById] = useState<Record<string, { coinAmount: number; priceAed: number; aedPerCoin: number }>>({});
+  const [coinPackageById, setCoinPackageById] = useState<
+    Record<string, { coinAmount: number; priceAed: number; aedPerCoin: number; savingPercent: number }>
+  >({});
 
+  const [coinQty, setCoinQty] = useState<Record<string, number>>(() =>
+    Object.fromEntries(COIN_ITEMS.map((i) => [i.id, i.initialQty])),
+  );
   const [assetQty, setAssetQty] = useState<Record<string, number>>(() =>
     Object.fromEntries(ASSET_ITEMS.map((i) => [i.id, i.initialQty])),
   );
@@ -480,7 +504,7 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
         if (!coinRes.ok) throw new Error(coinJson?.error || `HTTP ${coinRes.status} (coin-packages)`);
 
         const featureRows = Array.isArray(featuresJson?.data) ? featuresJson.data : [];
-        const nextFeaturePricingById: Record<string, { coinPerAction: number; pricePerCoinAed: number }> = {};
+        const nextFeaturePricingById: Record<string, { coinPerAction: number; pricePerCoinAed: number; pricePerActionAed: number }> = {};
         const nextFeatureNameToId: Record<string, string> = {};
         const nextFeatureItems: PricingListItem[] = featureRows
           .map((row, idx) => {
@@ -490,6 +514,7 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
             nextFeaturePricingById[id] = {
               coinPerAction: toFiniteNumber(row?.coin_per_action, 0),
               pricePerCoinAed: toFiniteNumber(row?.price_per_coin_aed, 0),
+              pricePerActionAed: toFiniteNumber(row?.price_per_action_aed, 0),
             };
             const key = normalizeKey(label);
             if (key) nextFeatureNameToId[key] = id;
@@ -497,8 +522,14 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
           })
           .filter((x) => Boolean(x.id) && Boolean(x.label));
 
+        // Assets are shown in a dedicated section; exclude their pricing rows from the Features list to avoid duplicates.
+        const filteredFeatureItems = nextFeatureItems.filter((it) => !ASSET_PRICING_KEYS.has(normalizeKey(it.label)));
+
         const coinRows = Array.isArray(coinJson?.data) ? coinJson.data : [];
-        const nextCoinPackageById: Record<string, { coinAmount: number; priceAed: number; aedPerCoin: number }> = {};
+        const nextCoinPackageById: Record<
+          string,
+          { coinAmount: number; priceAed: number; aedPerCoin: number; savingPercent: number }
+        > = {};
         const nextCoinPacks: CoinPack[] = coinRows
           .map((row, idx) => {
             const label = safeStr(row?.package_name) || `Package ${idx + 1}`;
@@ -508,12 +539,13 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
             const aedPerCoinRaw = toFiniteNumber(row?.aed_per_coin, 0);
             const aedPerCoin =
               aedPerCoinRaw > 0 ? aedPerCoinRaw : coinAmount > 0 && priceAed > 0 ? priceAed / coinAmount : 0;
-            nextCoinPackageById[id] = { coinAmount, priceAed, aedPerCoin };
-            return { id, label, coins: Number.isFinite(coinAmount) ? coinAmount : 0 };
+            const savingPercent = Math.max(0, Math.round(toFiniteNumber(row?.user_saving_percent, 0)));
+            nextCoinPackageById[id] = { coinAmount, priceAed, aedPerCoin, savingPercent };
+            return { id, label, coins: Number.isFinite(coinAmount) ? coinAmount : 0, savingPercent };
           })
           .filter((x) => Boolean(x.id) && Boolean(x.label));
 
-        setFeatureItems(nextFeatureItems);
+        setFeatureItems(filteredFeatureItems);
         setFeaturePricingById(nextFeaturePricingById);
         setFeatureNameToId(nextFeatureNameToId);
         setCoinPacks(nextCoinPacks);
@@ -551,97 +583,94 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
     });
   }, [coinPacks]);
 
-  const qtyItems = useMemo(() => {
-    if (activeTab === 'asset') return ASSET_ITEMS;
-    if (activeTab === 'features') return featureItems;
-    return null;
-  }, [activeTab, featureItems]);
+  const handleChangeAssetQty = useCallback((id: string, next: number) => {
+    setAssetQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
+  }, []);
 
-  const quantities = activeTab === 'asset' ? assetQty : activeTab === 'features' ? featureQty : null;
+  const handleChangeCoinQty = useCallback((id: string, next: number) => {
+    setCoinQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
+  }, []);
 
-  const handleChangeQty = useCallback(
-    (id: string, next: number) => {
-      if (activeTab === 'asset') {
-        setAssetQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
-        return;
-      }
-      if (activeTab === 'features') {
-        setFeatureQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
-      }
-    },
-    [activeTab],
-  );
+  const handleChangeFeatureQty = useCallback((id: string, next: number) => {
+    setFeatureQty((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
+  }, []);
 
-  const handleSetAssetTab = useCallback(() => setActiveTab('asset'), []);
   const handleSetFeaturesTab = useCallback(() => setActiveTab('features'), []);
-  const handleSetCoinTab = useCallback(() => setActiveTab('coin'), []);
+  const handleSetPackTab = useCallback(() => setActiveTab('pack'), []);
 
   const safeCoinCount = Number.isFinite(Number(coinCount)) ? Number(coinCount) : 0;
   const handleSelectPack = useCallback((id: string) => setSelectedPackId(id), []);
 
   const unitPricePerCoinAed = useMemo(() => {
     const values = Object.values(featurePricingById);
-    for (const v of values) {
-      if (v && typeof v.pricePerCoinAed === 'number' && v.pricePerCoinAed > 0) return v.pricePerCoinAed;
-    }
-    return 0;
+    const candidates = values
+      .map((v) => (v && typeof v.pricePerCoinAed === 'number' ? v.pricePerCoinAed : 0))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    return candidates.length ? Math.min(...candidates) : 0;
   }, [featurePricingById]);
 
-  const totalCoins = useMemo(() => {
-    let sum = 0;
+  const featuresTotals = useMemo(() => {
+    let coins = 0;
+    let priceAed = 0;
 
-    // Asset tab uses the same underlying "Input" features in resume_feature_pricing.
-    const assetToPricingKey: Record<string, string> = {
-      file: 'file input',
-      image: 'images input',
-      video: 'video input',
-      voice: 'voice input',
-    };
+    const coinNumberQty = toFiniteNumber(coinQty['coin_number'], 0);
+    if (coinNumberQty > 0) {
+      coins += coinNumberQty;
+      if (unitPricePerCoinAed > 0) priceAed += coinNumberQty * unitPricePerCoinAed;
+    }
 
     for (const item of ASSET_ITEMS) {
       const qty = toFiniteNumber(assetQty[item.id], 0);
       if (qty <= 0) continue;
-      const pricingId = featureNameToId[assetToPricingKey[item.id]] ?? '';
-      const coinPerAction = pricingId ? featurePricingById[pricingId]?.coinPerAction ?? 0 : 0;
-      sum += qty * coinPerAction;
+      const pricingKey = normalizeKey(ASSET_TO_PRICING_KEY[item.id]);
+      const pricingId = (pricingKey && featureNameToId[pricingKey]) || '';
+      const pricing = pricingId ? featurePricingById[pricingId] : undefined;
+      const coinPerAction = pricing?.coinPerAction ?? 0;
+      const pricePerActionAed = pricing?.pricePerActionAed ?? 0;
+
+      coins += qty * coinPerAction;
+      if (pricePerActionAed > 0) priceAed += qty * pricePerActionAed;
+      else if (unitPricePerCoinAed > 0) priceAed += qty * coinPerAction * unitPricePerCoinAed;
     }
 
     for (const item of featureItems) {
       const qty = toFiniteNumber(featureQty[item.id], 0);
       if (qty <= 0) continue;
-      const coinPerAction = featurePricingById[item.id]?.coinPerAction ?? 0;
-      sum += qty * coinPerAction;
+      const pricing = featurePricingById[item.id];
+      const coinPerAction = pricing?.coinPerAction ?? 0;
+      const pricePerActionAed = pricing?.pricePerActionAed ?? 0;
+
+      coins += qty * coinPerAction;
+      if (pricePerActionAed > 0) priceAed += qty * pricePerActionAed;
+      else if (unitPricePerCoinAed > 0) priceAed += qty * coinPerAction * unitPricePerCoinAed;
     }
 
-    // Coins should be whole numbers.
-    return Math.max(0, Math.round(sum));
-  }, [assetQty, featureItems, featureNameToId, featurePricingById, featureQty]);
+    const roundedCoins = Math.max(0, Math.round(coins));
+    const roundedPrice = Math.max(0, Math.round(priceAed * 100) / 100);
+    return { coins: roundedCoins, priceAed: roundedPrice };
+  }, [assetQty, coinQty, featureItems, featureNameToId, featurePricingById, featureQty, unitPricePerCoinAed]);
 
-  const totalPriceAed = useMemo(() => totalCoins * unitPricePerCoinAed, [totalCoins, unitPricePerCoinAed]);
+  const packTotals = useMemo(() => {
+    const pkg = selectedPackId ? coinPackageById[selectedPackId] : undefined;
+    const coins = Math.max(0, Math.round(pkg?.coinAmount ?? 0));
+    const priceAed = Math.max(0, Math.round(toFiniteNumber(pkg?.priceAed, 0) * 100) / 100);
+    return { coins, priceAed, savingPercent: Math.max(0, Math.round(toFiniteNumber(pkg?.savingPercent, 0))) };
+  }, [coinPackageById, selectedPackId]);
 
-  const comparisonLabel = useMemo(() => {
-    if (totalCoins <= 0) return null;
-    if (!selectedPackId) return null;
-    const pkg = coinPackageById[selectedPackId];
-    if (!pkg || pkg.aedPerCoin <= 0) return null;
-    if (unitPricePerCoinAed <= 0) return null;
-
-    const packageEquivalent = totalCoins * pkg.aedPerCoin;
-    if (packageEquivalent <= 0) return null;
-
-    const deltaPercent = ((totalPriceAed - packageEquivalent) / packageEquivalent) * 100;
-    if (!Number.isFinite(deltaPercent)) return null;
-    const rounded = Math.round(Math.abs(deltaPercent));
-    if (rounded === 0) return 'Same price as our packages';
-    return `${rounded}% ${deltaPercent >= 0 ? 'pricier' : 'cheaper'} than our packages`;
-  }, [coinPackageById, selectedPackId, totalCoins, totalPriceAed, unitPricePerCoinAed]);
+  const footerTotals = activeTab === 'pack' ? packTotals : featuresTotals;
 
   const totalPriceLabel = useMemo(() => {
-    if (totalCoins <= 0) return 'AED 0';
-    if (!Number.isFinite(totalPriceAed) || totalPriceAed <= 0) return '—';
-    const rounded = Math.round(totalPriceAed * 100) / 100;
+    if (footerTotals.coins <= 0) return 'AED 0';
+    if (!Number.isFinite(footerTotals.priceAed)) return '—';
+    const rounded = Math.round(footerTotals.priceAed * 100) / 100;
     return `AED ${rounded}`;
-  }, [totalCoins, totalPriceAed]);
+  }, [footerTotals.coins, footerTotals.priceAed]);
+
+  const comparisonLabel = useMemo(() => {
+    if (activeTab === 'features') return '6% to 25% pricier than our packages';
+    if (activeTab !== 'pack') return null;
+    return packTotals.savingPercent > 0 ? `Save ${packTotals.savingPercent}% on features` : null;
+  }, [activeTab, packTotals.savingPercent]);
 
   const handleDirectGatewayPayment = useCallback(() => {
     // Keep existing behavior (e.g. close popover) then go directly to gateway start page.
@@ -669,14 +698,13 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
         aria-label='Pricing tabs'
         sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mt: 0.25 }}
       >
-        <TabButton label='Asset' active={activeTab === 'asset'} onClick={handleSetAssetTab} />
         <TabButton label='Features' active={activeTab === 'features'} onClick={handleSetFeaturesTab} />
-        <TabButton label='Coin' active={activeTab === 'coin'} onClick={handleSetCoinTab} />
+        <TabButton label='Pack' active={activeTab === 'pack'} onClick={handleSetPackTab} />
       </Box>
 
       <Divider sx={{ borderColor: '#F0F0F2' }} />
 
-      {activeTab === 'coin' ? (
+      {activeTab === 'pack' ? (
         coinPackLoading ? (
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Loading coin packages…</Typography>
         ) : coinPackError ? (
@@ -686,24 +714,41 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
         ) : (
           <CoinPackList packs={coinPacks} selectedId={selectedPackId} onSelect={handleSelectPack} />
         )
-      ) : qtyItems && quantities ? (
-        activeTab === 'features' && featureLoading ? (
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Loading features…</Typography>
-        ) : activeTab === 'features' && featureError ? (
-          <Typography sx={{ fontSize: 13, color: 'error.main' }}>{featureError}</Typography>
-        ) : activeTab === 'features' && featureItems.length === 0 ? (
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>No features found.</Typography>
-        ) : (
-          <PricingList items={qtyItems} quantities={quantities} onChangeQty={handleChangeQty} />
-        )
-      ) : null}
+      ) : (
+        <Stack spacing={1.5} sx={{ width: '100%' }}>
+          <Stack spacing={1} sx={{ width: '100%' }}>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary', fontWeight: 800, letterSpacing: 0.6 }}>COIN</Typography>
+            <PricingList items={COIN_ITEMS} quantities={coinQty} onChangeQty={handleChangeCoinQty} />
+          </Stack>
+
+          <Stack spacing={1} sx={{ width: '100%' }}>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary', fontWeight: 800, letterSpacing: 0.6 }}>ASSETS</Typography>
+            <PricingList items={ASSET_ITEMS} quantities={assetQty} onChangeQty={handleChangeAssetQty} />
+          </Stack>
+
+          <Stack spacing={1} sx={{ width: '100%' }}>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary', fontWeight: 800, letterSpacing: 0.6 }}>FEATURES</Typography>
+
+            {featureLoading ? (
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Loading features…</Typography>
+            ) : featureError ? (
+              <Typography sx={{ fontSize: 13, color: 'error.main' }}>{featureError}</Typography>
+            ) : featureItems.length === 0 ? (
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>No features found.</Typography>
+            ) : (
+              <PricingList items={featureItems} quantities={featureQty} onChangeQty={handleChangeFeatureQty} />
+            )}
+          </Stack>
+        </Stack>
+      )}
 
       <Divider sx={{ borderColor: '#F0F0F2' }} />
 
       <PricingFooter
-        totalCoins={totalCoins}
+        totalCoins={footerTotals.coins}
         totalPriceLabel={totalPriceLabel}
         comparisonLabel={comparisonLabel}
+        showCoinsLabel={activeTab === 'features'}
         onPayment={handleDirectGatewayPayment}
         onOurPlans={onOurPlans}
       />
