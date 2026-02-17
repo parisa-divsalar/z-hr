@@ -34,8 +34,13 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
     setSelection(readMoreFeaturesSelection(requestId));
   }, [requestId]);
 
+  const selectionKeyFor = (suggestion: Pick<MoreFeatureSuggestion, 'id' | 'title'>): string => {
+    const idKey = String(suggestion.id ?? '').trim();
+    return idKey || featureKeyFromTitle(suggestion.title) || '';
+  };
+
   const toggleSuggestion = (suggestion: Pick<MoreFeatureSuggestion, 'id' | 'title'>, checked: boolean) => {
-    const key = featureKeyFromTitle(suggestion.title) || String(suggestion.id ?? '').trim();
+    const key = selectionKeyFor(suggestion);
     if (!key) return;
     setSelection((prev) => {
       const next = { ...prev, [key]: checked };
@@ -75,14 +80,14 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
 
   const leftWithSelection = useMemo(() => {
     return leftSuggestions.map((s) => {
-      const key = featureKeyFromTitle(s.title) || String(s.id ?? '').trim();
+      const key = selectionKeyFor(s);
       return { ...s, __featureKey: key, __checked: key ? Boolean(selection[key]) : false };
     });
   }, [leftSuggestions, selection]);
 
   const rightWithSelection = useMemo(() => {
     return rightSuggestions.map((s) => {
-      const key = featureKeyFromTitle(s.title) || String(s.id ?? '').trim();
+      const key = selectionKeyFor(s);
       return { ...s, __featureKey: key, __checked: key ? Boolean(selection[key]) : false };
     });
   }, [rightSuggestions, selection]);
@@ -145,7 +150,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
             <ResumeTemplatesRight
               suggestions={rightWithSelection as any}
               getChecked={(s) => {
-                const key = featureKeyFromTitle((s as any)?.title) || String((s as any)?.id ?? '').trim();
+                const key = selectionKeyFor(s as any);
                 return key ? Boolean(selection[key]) : false;
               }}
               onToggle={(s, checked) => toggleSuggestion(s as any, checked)}
