@@ -95,10 +95,33 @@ function tryParseJson(value: unknown): any | null {
     }
 }
 
+function normalizeMainSkill(value: unknown): string {
+    const s = String(value ?? '').trim();
+    if (!s) return '';
+    // Examples seen in cvs.json: "Wizard Status: Web Development • Visa: work_visa"
+    const noPrefix = s.replace(/^wizard\s*status:\s*/i, '').trim();
+    const beforeBullet = noPrefix.split('•')[0]?.trim() ?? noPrefix;
+    return beforeBullet;
+}
+
 function extractFullNameFromWizardDataRow(wizardRow: any): string {
     const parsed = tryParseJson(wizardRow?.data);
     const fullName = String(parsed?.fullName ?? '').trim();
     return fullName;
+}
+
+function extractMainSkillFromWizardDataRow(wizardRow: any): string {
+    const parsed = tryParseJson(wizardRow?.data);
+    return normalizeMainSkill(parsed?.mainSkill);
+}
+
+function extractMainSkillFromCvRow(cv: any): string {
+    const parsed = tryParseJson(cv?.content);
+    const fromProfile = normalizeMainSkill(parsed?.profile?.mainSkill);
+    if (fromProfile) return fromProfile;
+    const direct = normalizeMainSkill(parsed?.mainSkill);
+    if (direct) return direct;
+    return '';
 }
 
 function extractFullNameFromCvRow(cv: any): string {
@@ -118,6 +141,192 @@ function resolveDisplayNameForRequest(userId: number, requestId: string): string
     const fromCv = extractFullNameFromCvRow(cv);
     if (fromCv) return fromCv;
     return '';
+}
+
+function extractImprovedResumeFromAnalysisResult(cv: any): any | null {
+    const raw = cv?.analysis_result;
+    if (!raw) return null;
+    const parsed = typeof raw === 'string' ? tryParseJson(raw) : raw;
+    if (!parsed || typeof parsed !== 'object') return null;
+    // Storage can be either `{ improvedResume: ... }` or the improved resume directly.
+    const improved = (parsed as any).improvedResume ? (parsed as any).improvedResume : parsed;
+    return improved && typeof improved === 'object' ? improved : null;
+}
+
+function parseMonthYearToken(token: string): { y: number; m: number } | null {
+    const t = token.trim();
+    // Match "01/2023" or "1/2023"
+    const mmYYYY = t.match(/^(\d{1,2})\s*\/\s*(\d{4})$/);
+    if (mmYYYY) {
+        const m = Number(mmYYYY[1]);
+        const y = Number(mmYYYY[2]);
+        if (m >= 1 && m <= 12 && y >= 1900 && y <= 2100) return { y, m };
+    }
+    // Match "2023"
+    const yyyy = t.match(/^(\d{4})$/);
+    if (yyyy) {
+        const y = Number(yyyy[1]);
+        if (y >= 1900 && y <= 2100) return { y, m: 1 };
+    }
+    return null;
+}
+
+function diffMonths(a: { y: number; m: number }, b: { y: number; m: number }): number {
+    return (b.y - a.y) * 12 + (b.m - a.m);
+}
+
+function inferExperienceLevelFromCvAnalysis(cv: any): string {
+    const improved = extractImprovedResumeFromAnalysisResult(cv);
+    const exps = Array.isArray(improved?.professionalExperience) ? improved.professionalExperience : [];
+    let months = 0;
+    const now = new Date();
+    const nowToken = { y: now.getFullYear(), m: now.getMonth() + 1 };
+
+    for (const e of exps) {
+        const datesRaw = String(e?.dates ?? '').trim();
+        if (!datesRaw) continue;
+        const normalized = datesRaw.replace(/[–—]/g, '-');
+        const parts = normalized.split('-').map((p) => p.trim()).filter(Boolean);
+        if (parts.length < 1) continue;
+
+        const start = parseMonthYearToken(parts[0]);
+        const endPart = parts[1] ? parts[1] : '';
+        const end =
+            /present|current|now/i.test(endPart) || !endPart ? nowToken : parseMonthYearToken(endPart);
+        if (!start || !end) continue;
+
+        const d = Math.max(0, diffMonths(start, end));
+        months += d;
+    }
+
+    const years = months / 12;
+    if (years >= 6) return 'Senior';
+    if (years >= 3) return 'Mid-senior';
+    if (years >= 1) return 'Mid';
+    // If we can't parse dates but we do have experience entries, avoid "Junior" mislabeling.
+    if (exps.length > 0) return 'Mid';
+    return '';
+}
+
+function computeFitScorePercent(params: { wizardRow: any | null; cv: any | null }): number {
+    const wizard = params.wizardRow ? tryParseJson(params.wizardRow?.data) : null;
+    const cvContent = params.cv ? tryParseJson(params.cv?.content) : null;
+    const improved = params.cv ? extractImprovedResumeFromAnalysisResult(params.cv) : null;
+
+    const fullName = String(wizard?.fullName ?? cvContent?.profile?.fullName ?? cvContent?.fullName ?? '').trim();
+    const mainSkill = normalizeMainSkill(wizard?.mainSkill ?? cvContent?.mainSkill ?? cvContent?.profile?.mainSkill);
+    const contactWays = Array.isArray(wizard?.contactWay)
+        ? wizard.contactWay
+        : Array.isArray(cvContent?.contactWay)
+          ? cvContent.contactWay
+          : Array.isArray(cvContent?.contactWays)
+            ? cvContent.contactWays
+            : [];
+    const languages = Array.isArray(wizard?.languages)
+        ? wizard.languages
+        : Array.isArray(cvContent?.languages)
+          ? cvContent.languages
+          : Array.isArray(improved?.languages)
+            ? improved.languages
+            : [];
+    const summaryText =
+        String(wizard?.background?.text ?? cvContent?.summary ?? cvContent?.profile?.summary ?? improved?.summary ?? '').trim();
+    const skillsArr = Array.isArray(wizard?.skills)
+        ? wizard.skills
+        : Array.isArray(cvContent?.skills)
+          ? cvContent.skills
+          : Array.isArray(cvContent?.skillList)
+            ? cvContent.skillList
+            : Array.isArray(improved?.technicalSkills)
+              ? improved.technicalSkills
+              : [];
+    const expArr = Array.isArray(wizard?.experiences)
+        ? wizard.experiences
+        : Array.isArray(cvContent?.experiences)
+          ? cvContent.experiences
+          : Array.isArray(cvContent?.experience)
+            ? cvContent.experience
+            : Array.isArray(improved?.professionalExperience)
+              ? improved.professionalExperience
+              : [];
+    const certArr = Array.isArray(wizard?.certificates)
+        ? wizard.certificates
+        : Array.isArray(cvContent?.certificates)
+          ? cvContent.certificates
+          : Array.isArray(cvContent?.certifications)
+            ? cvContent.certifications
+            : Array.isArray(improved?.certifications)
+              ? improved.certifications
+              : [];
+    const educationArr = Array.isArray(cvContent?.education)
+        ? cvContent.education
+        : Array.isArray(improved?.education)
+          ? improved.education
+          : [];
+    const projectsArr = Array.isArray(cvContent?.selectedProjects)
+        ? cvContent.selectedProjects
+        : Array.isArray(improved?.selectedProjects)
+          ? improved.selectedProjects
+          : [];
+    const additionalText = String(
+        wizard?.additionalInfo?.text ??
+            cvContent?.additionalInfoText ??
+            cvContent?.additionalInfo ??
+            (typeof improved?.additionalInfo === 'string' ? improved.additionalInfo : ''),
+    ).trim();
+
+    let score = 0;
+
+    if (fullName) score += 8;
+    if (mainSkill) score += 8;
+    if (contactWays.filter((x: any) => String(x ?? '').trim()).length >= 1) score += 10;
+    if (languages.length >= 1) score += 10;
+    if (summaryText.length >= 40) score += 12;
+
+    const skillCount = skillsArr.filter((x: any) => String(x ?? '').trim()).length;
+    score += Math.round(Math.min(1, skillCount / 8) * 15);
+
+    // Experience: give points for having content (regardless of structure)
+    const expHasText =
+        expArr.length > 0 &&
+        expArr.some((e: any) => String(e?.text ?? e?.description ?? '').replace(/\s+/g, ' ').trim().length >= 40);
+    if (expHasText) score += 20;
+
+    const certHasText =
+        certArr.length > 0 &&
+        certArr.some((c: any) => String(c?.text ?? c?.title ?? '').replace(/\s+/g, ' ').trim().length >= 10);
+    if (certHasText) score += 7;
+
+    if (educationArr.length > 0) score += 5;
+    if (projectsArr.length > 0) score += 5;
+    if (additionalText.length >= 20) score += 5;
+
+    // Small bonus for visaStatus presence (wizard completeness)
+    const visa = String(wizard?.visaStatus ?? cvContent?.visaStatus ?? '').trim();
+    if (visa) score += 3;
+
+    // Clamp to 5..99 to avoid awkward "0%" and "100%" UX
+    const clamped = Math.max(5, Math.min(99, Math.round(score)));
+    return clamped;
+}
+
+function enrichHistoryRow(userId: number, requestId: string, row: any) {
+    const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, requestId);
+    const cv = db.cvs.findByRequestId(requestId);
+
+    const mainSkill = extractMainSkillFromWizardDataRow(wizardRow) || extractMainSkillFromCvRow(cv);
+    const fit = computeFitScorePercent({ wizardRow, cv });
+    const inferredLevel = inferExperienceLevelFromCvAnalysis(cv);
+
+    return {
+        ...row,
+        // Skill group from wizard selection
+        position: mainSkill || row?.position || '',
+        // Experience level inferred from AI analysis dates (fallback empty)
+        level: inferredLevel || row?.level || '',
+        // Fit score computed from resume completeness (not mock)
+        Percentage: `${fit}%`,
+    };
 }
 
 /**
@@ -143,15 +352,18 @@ function materializeHistoryFromCvs(userId: number) {
         const photo = counts ? String(counts.photoCount) : '0';
         const video = counts ? String(counts.videoCount) : '0';
         const fullName = extractFullNameFromWizardDataRow(wizardRow) || extractFullNameFromCvRow(cv);
+        const mainSkill = extractMainSkillFromWizardDataRow(wizardRow) || extractMainSkillFromCvRow(cv);
+        const fit = computeFitScorePercent({ wizardRow, cv });
+        const inferredLevel = inferExperienceLevelFromCvAnalysis(cv);
 
         db.history.upsert({
             id: requestId,
             user_id: userId,
             name: fullName || (cv?.title as any) || "User's Resume",
             date: toMMDDYYYY(String(cv?.created_at || new Date().toISOString())),
-            Percentage: '0%',
-            position: '',
-            level: '',
+            Percentage: `${fit}%`,
+            position: mainSkill || '',
+            level: inferredLevel || '',
             title: (cv?.title as any) || '',
             Voice: voice,
             Photo: photo,
@@ -269,9 +481,10 @@ export async function GET(request: NextRequest) {
         const wizardRow = db.wizardData.findByUserIdAndRequestId(userId, requestId);
         const counts = getCountsFromWizardDataRow(wizardRow);
         const fullName = resolveDisplayNameForRequest(userId, requestId);
-        const enriched = counts
+        const base = counts
             ? { ...row, name: fullName || row?.name, Voice: String(counts.voiceCount), Photo: String(counts.photoCount), Video: String(counts.videoCount) }
-            : row;
+            : { ...row, name: fullName || row?.name };
+        const enriched = enrichHistoryRow(userId, requestId, base);
 
         return NextResponse.json({ data: enriched }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
     }
@@ -284,13 +497,15 @@ export async function GET(request: NextRequest) {
         const counts = getCountsFromWizardDataRow(wizardRow);
         const fullName = resolveDisplayNameForRequest(userId, requestId);
         const base = fullName ? { ...row, name: fullName } : row;
-        if (!counts) return base;
-        return {
-            ...base,
-            Voice: String(counts.voiceCount),
-            Photo: String(counts.photoCount),
-            Video: String(counts.videoCount),
-        };
+        const withCounts = counts
+            ? {
+                ...base,
+                Voice: String(counts.voiceCount),
+                Photo: String(counts.photoCount),
+                Video: String(counts.videoCount),
+            }
+            : base;
+        return enrichHistoryRow(userId, requestId, withCounts);
     });
 
     const sorted = sortHistoryRows(enriched, sort);

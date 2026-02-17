@@ -12,6 +12,7 @@ import ArrowRightIcon from '@/assets/images/icons/links.svg';
 import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { useHistoryResumeRow } from '@/hooks/useHistoryResumeRow';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
@@ -45,13 +46,21 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
     const requestId = useWizardStore((state) => state.requestId);
     const resumePdfRef = useRef<HTMLDivElement | null>(null);
 
+    const { row: historyRow } = useHistoryResumeRow(requestId);
+
     const resumeInfo = [
-        { label: 'Created:', value: '09/09/2025' },
-        { label: 'Size:', value: '2.85 MB' },
-        { label: 'Fit score:', value: '89%', isBadge: true },
-        { label: 'Skill group:', value: 'Front-end' },
-        { label: 'Experience level:', value: 'Mid-senior' },
+        { label: 'Created:', value: historyRow?.date || '—' },
+        { label: 'Size:', value: historyRow?.size || '—' },
+        { label: 'Fit score:', value: historyRow?.Percentage || '—', isBadge: true },
+        { label: 'Skill group:', value: historyRow?.position || '—' },
+        { label: 'Experience level:', value: historyRow?.level || '—' },
     ];
+
+    const headerTitle = (() => {
+        const base = String(historyRow?.name ?? '').trim();
+        if (!base) return 'Resume';
+        return /resume/i.test(base) ? base : `${base}'s Resume`;
+    })();
 
     const truncateText = (text: string, maxLength: number) => {
         if (text.length <= maxLength) return text;
@@ -125,23 +134,23 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
     return (
         <Container>
             <Grid container spacing={{ xs: 3, sm: 4 }}>
-                <Grid size={{ xs: 12, lg: 3 }}>
-                    <ResumePreview>
-                        <ResumeEditor
-                            mode='preview'
-                            pdfTargetRef={resumePdfRef}
-                            setStage={setStage ?? (() => undefined)}
-                            setActiveStep={setActiveStep ?? (() => undefined)}
-                        />
-                    </ResumePreview>
-                </Grid>
+                {/*<Grid size={{ xs: 12, lg: 3 }}>*/}
+                {/*    <ResumePreview>*/}
+                {/*        <ResumeEditor*/}
+                {/*            mode='preview'*/}
+                {/*            pdfTargetRef={resumePdfRef}*/}
+                {/*            setStage={setStage ?? (() => undefined)}*/}
+                {/*            setActiveStep={setActiveStep ?? (() => undefined)}*/}
+                {/*        />*/}
+                {/*    </ResumePreview>*/}
+                {/*</Grid>*/}
 
-                <Grid size={{ xs: 12, lg: 9 }}>
+                <Grid size={{ xs: 12, lg: 12 }}>
                     <InfoTable>
                         <HeaderSection>
                             <HeaderLeft>
                                 <Typography variant='h5' color='text.primary' fontWeight='500'>
-                                    Zayd Al-Mansoori's Resume
+                                    {headerTitle}
                                 </Typography>
                                 <PurplePill>AI Generation</PurplePill>
                             </HeaderLeft>
