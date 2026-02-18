@@ -291,8 +291,7 @@ export default function CustomPlanBuilderCard() {
         if (popup && !popup.closed) {
           popup.location.href = url;
         } else {
-          const w = window.open(url, '_blank', 'noopener,noreferrer');
-          if (!w || w.closed) window.location.assign(url);
+          window.location.assign(url);
         }
       } catch (e) {
         try {

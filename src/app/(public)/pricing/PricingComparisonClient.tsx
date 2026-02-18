@@ -553,8 +553,7 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
             if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
             const url = String(json?.paymentUrl ?? '').trim();
             if (!url) throw new Error('Missing paymentUrl');
-            const w = window.open(url, '_blank', 'noopener,noreferrer');
-            if (!w || w.closed) window.location.href = url;
+            window.location.href = url;
             return;
         } catch (e) {
             console.error('Upgrade create-session failed:', e);
