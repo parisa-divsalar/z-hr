@@ -54,9 +54,10 @@ async function loadResumeFeaturePricingRows(): Promise<ResumeFeaturePricingRow[]
         Array<{ id: number; feature_name: string | null; coin_per_action: number | null }>
       >`SELECT id, feature_name, coin_per_action FROM resume_feature_pricing`) as any[];
 
-      cachedRows = Array.isArray(rows) ? (rows as any) : [];
+      const result: ResumeFeaturePricingRow[] = Array.isArray(rows) ? (rows as any) : [];
+      cachedRows = result;
       cachedAtMs = now;
-      return cachedRows;
+      return result;
     } catch {
       // If the SQL table isn't available yet, fall back to JSON rows below.
     }

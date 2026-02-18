@@ -9,7 +9,7 @@ import AuthHeader from '@/components/Auth/Header';
 import NewPasswordForm, { NewPasswordFormValues } from '@/components/Auth/NewPasswordForm';
 import MuiButton from '@/components/UI/MuiButton';
 import { PrivateRoutes, PublicRoutes } from '@/config/routes';
-import { updatePassword } from '@/services/auth/update-password';
+import { resetPassword } from '@/services/auth/reset-password';
 
 const NewPasswordPage = () => {
   const router = useRouter();
@@ -29,7 +29,7 @@ const NewPasswordPage = () => {
       throw new Error('Please enter the code sent to your email.');
     }
 
-    await updatePassword({
+    await resetPassword({
       userId,
       code,
       password,

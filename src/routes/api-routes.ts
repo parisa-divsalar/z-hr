@@ -12,6 +12,7 @@ export const API_ROUTES: ApiRoute[] = [
   { path: '/api/auth/login', methods: ['POST'], feature: 'auth', userStateEvent: 'login' },
   { path: '/api/auth/logout', methods: ['POST'], feature: 'auth' },
   { path: '/api/auth/forgot-password', methods: ['POST'], feature: 'auth' },
+  { path: '/api/auth/confirm-reset-password', methods: ['POST'], feature: 'auth' },
   { path: '/api/auth/update-password', methods: ['POST'], feature: 'auth' },
 
   // User profile
