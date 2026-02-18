@@ -346,6 +346,8 @@ const PricingFooter = memo(function PricingFooter({
   totalPriceLabel,
   comparisonLabel,
   showCoinsLabel = true,
+  paymentButtonLabel,
+  canPay,
   onPayment,
   onOurPlans,
 }: {
@@ -353,6 +355,10 @@ const PricingFooter = memo(function PricingFooter({
   totalPriceLabel: string;
   comparisonLabel: string | null;
   showCoinsLabel?: boolean;
+  /** e.g. "Payment — AED 50" so user sees real amount on button */
+  paymentButtonLabel?: string;
+  /** false when total is 0 (disable payment) */
+  canPay?: boolean;
   onPayment?: () => void;
   onOurPlans?: () => void;
 }) {
@@ -403,6 +409,7 @@ const PricingFooter = memo(function PricingFooter({
 
       <MuiButton
         fullWidth
+        disabled={!canPay}
         onClick={onPayment}
         endIcon={<ArrowOutwardIcon sx={{ fontSize: 18 }} />}
         sx={{
@@ -414,7 +421,7 @@ const PricingFooter = memo(function PricingFooter({
           '&:hover': { backgroundColor: '#0B1220' },
         }}
       >
-        Payment
+        {paymentButtonLabel ?? 'Payment'}
       </MuiButton>
 
       <MuiButton
@@ -664,33 +671,36 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
   }, [activeTab, packTotals.savingPercent]);
 
   const handleDirectGatewayPayment = useCallback(async () => {
-    // Keep existing behavior (e.g. close popover).
     onPayment?.();
 
-    // We can only create a real paid session for coin packages (pack tab).
-    if (activeTab !== 'pack') {
-      setActiveTab('pack');
-      return;
-    }
+    const isPack = activeTab === 'pack';
+    const isFeatures = activeTab === 'features';
+    const packId = Number(String(selectedPackId ?? '').trim());
+    const hasValidPack = Number.isFinite(packId) && packId > 0;
+    const hasValidFeatures =
+        isFeatures && footerTotals.coins > 0 && Number.isFinite(footerTotals.priceAed) && footerTotals.priceAed > 0;
 
-    const coinPackageId = Number(String(selectedPackId ?? '').trim());
-    if (!Number.isFinite(coinPackageId) || coinPackageId <= 0) {
-      // Fallback: nothing selected; bounce to pricing.
+    if (isPack && !hasValidPack) {
       router.push(PublicRoutes.pricing);
       return;
     }
+    if (isFeatures && !hasValidFeatures) {
+      return;
+    }
 
-    // Open a tab synchronously to avoid popup blockers.
     const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
 
     try {
+      const body = isPack
+        ? { coinPackageId: packId }
+        : { amountAed: Math.round(footerTotals.priceAed * 100) / 100, purchasedCoinAmount: footerTotals.coins };
       const res = await fetch('/api/payment/create-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ coinPackageId }),
+        body: JSON.stringify(body),
         cache: 'no-store',
       });
-      const json = await res.json().catch(() => ({} as any));
+      const json = await res.json().catch(() => ({} as Record<string, unknown>));
 
       if (res.status === 401) {
         try {
@@ -719,10 +729,10 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
       } catch {
         // ignore
       }
-      console.error('Coin package create-session failed:', e);
+      console.error('Create-session failed:', e);
       router.push(PublicRoutes.pricing);
     }
-  }, [activeTab, onPayment, router, selectedPackId]);
+  }, [activeTab, footerTotals, onPayment, router, selectedPackId]);
 
   return (
     <>
@@ -790,6 +800,8 @@ export default function CoinPricingCard({ onPayment, onOurPlans, coinCount }: Co
         totalPriceLabel={totalPriceLabel}
         comparisonLabel={comparisonLabel}
         showCoinsLabel={activeTab === 'features'}
+        paymentButtonLabel={footerTotals.coins > 0 && footerTotals.priceAed > 0 ? `Payment — ${totalPriceLabel}` : 'Payment'}
+        canPay={footerTotals.coins > 0 && footerTotals.priceAed > 0}
         onPayment={handleDirectGatewayPayment}
         onOurPlans={onOurPlans}
       />

@@ -171,8 +171,8 @@ export const useUserProfile = (options?: { enabled?: boolean }) => {
             if (p.type !== 'payment_result') return;
             if (p.status !== 'success') return;
 
-            // Best-effort refresh; also notify other listeners.
-            void refreshProfile();
+            // Force refetch so navbar coin count updates after payment.
+            void refreshProfile(true);
             try {
                 window.dispatchEvent(new Event('zcv:profile-changed'));
             } catch {

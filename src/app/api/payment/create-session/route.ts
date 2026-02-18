@@ -11,6 +11,10 @@ const ZENON_PAYMENT_API = 'https://apisrv.zenonrobotics.ae/PaymentAPI/api/create
 type CreateSessionBody = {
     coinPackageId?: number | string;
     planId?: string;
+    /** Custom amount (AED) for features/assets selection; use with purchasedCoinAmount. */
+    amountAed?: number;
+    /** Coins to credit on success when using amountAed (custom checkout). */
+    purchasedCoinAmount?: number;
 };
 
 function readEnv(name: string, fallback = ''): string {
@@ -148,13 +152,26 @@ export async function POST(request: NextRequest) {
 
     const coinPackageId = toInt(body?.coinPackageId);
     const planId = normalizePlanId(body?.planId);
+    const amountAedRaw = body?.amountAed;
+    const amountAedNum = typeof amountAedRaw === 'number' ? amountAedRaw : Number(amountAedRaw);
+    const customAmountAed = Number.isFinite(amountAedNum) && amountAedNum > 0 ? amountAedNum : null;
+    const purchasedCoinAmountRaw = body?.purchasedCoinAmount;
+    const customCoins =
+        typeof purchasedCoinAmountRaw === 'number' && Number.isFinite(purchasedCoinAmountRaw) && purchasedCoinAmountRaw >= 0
+            ? Math.round(purchasedCoinAmountRaw)
+            : typeof purchasedCoinAmountRaw === 'string'
+              ? Math.max(0, Math.round(Number(purchasedCoinAmountRaw)) || 0)
+              : null;
+    const useCustomAmount = customAmountAed != null && customCoins != null;
 
-    if (!coinPackageId && !planId) {
-        return NextResponse.json({ error: 'coinPackageId or planId is required' }, { status: 400 });
+    const hasPackage = !!coinPackageId;
+    const hasPlan = !!planId;
+    if (!hasPackage && !hasPlan && !useCustomAmount) {
+        return NextResponse.json({ error: 'coinPackageId, planId, or (amountAed + purchasedCoinAmount) is required' }, { status: 400 });
     }
-
-    if (coinPackageId && planId) {
-        return NextResponse.json({ error: 'Provide only one of coinPackageId or planId' }, { status: 400 });
+    const modes = [hasPackage, hasPlan, useCustomAmount].filter(Boolean).length;
+    if (modes > 1) {
+        return NextResponse.json({ error: 'Provide only one of: coinPackageId, planId, or (amountAed + purchasedCoinAmount)' }, { status: 400 });
     }
 
     const origin = resolveOrigin(request);
@@ -169,15 +186,25 @@ export async function POST(request: NextRequest) {
 
         let priceAed: number | null = null;
 
+        let purchasedCoinAmount: number | null = null;
+        let resolvedCoinPackageId: number | null = null;
+
         if (coinPackageId) {
             const pkg = await prisma.coinPackage.findUnique({
                 where: { id: coinPackageId },
-                select: { id: true, priceAed: true },
+                select: { id: true, priceAed: true, coinAmount: true },
             });
             if (!pkg) return NextResponse.json({ error: 'Coin package not found' }, { status: 404 });
             priceAed = Number(pkg.priceAed);
+            purchasedCoinAmount = pkg.coinAmount;
+            resolvedCoinPackageId = pkg.id;
         } else if (planId) {
             priceAed = resolvePlanPriceAed(planId);
+            purchasedCoinAmount = 0;
+        } else if (useCustomAmount && customAmountAed != null && customCoins != null) {
+            priceAed = customAmountAed;
+            purchasedCoinAmount = customCoins;
+            resolvedCoinPackageId = null;
         }
 
         if (!priceAed || !Number.isFinite(priceAed) || priceAed <= 0) {
@@ -238,6 +265,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const checkoutId = typeof json?.checkoutId === 'string' ? json.checkoutId : null;
+        await prisma.fiservTransaction.create({
+            data: {
+                userId: user.id,
+                orderId,
+                checkoutId,
+                status: 'pending',
+                ...(planId ? { planId } : {}),
+                amount: priceAed,
+                currency: 'AED',
+                customerEmail: user.email,
+                customerName: user.name ?? null,
+                ...(resolvedCoinPackageId != null ? { coinPackageId: resolvedCoinPackageId, purchasedCoinAmount: purchasedCoinAmount ?? 0 } : { purchasedCoinAmount: purchasedCoinAmount ?? 0 }),
+            },
+        });
+
         return NextResponse.json(
             { paymentUrl: checkoutUrl, orderId: responseOrderId, checkoutId: json?.checkoutId ?? undefined },
             { headers: { 'Cache-Control': 'no-store, max-age=0' } },
@@ -250,13 +293,20 @@ export async function POST(request: NextRequest) {
 
     let priceAed: number | null = null;
 
+    let purchasedCoinAmount: number | null = null;
+
     if (coinPackageId) {
         const pkgs = db.coinPackages.findAll() ?? [];
-        const pkg = pkgs.find((p: { id?: unknown }) => Number(p?.id) === coinPackageId) as { price_aed?: number } | undefined;
+        const pkg = pkgs.find((p: { id?: unknown }) => Number(p?.id) === coinPackageId) as { price_aed?: number; coin_amount?: number } | undefined;
         if (!pkg) return NextResponse.json({ error: 'Coin package not found' }, { status: 404 });
         priceAed = Number(pkg?.price_aed ?? 0);
+        purchasedCoinAmount = Number(pkg?.coin_amount ?? 0);
     } else if (planId) {
         priceAed = resolvePlanPriceAed(planId);
+        purchasedCoinAmount = 0;
+    } else if (useCustomAmount && customAmountAed != null && customCoins != null) {
+        priceAed = customAmountAed;
+        purchasedCoinAmount = customCoins;
     }
 
     if (!priceAed || !Number.isFinite(priceAed) || priceAed <= 0) {
@@ -312,6 +362,19 @@ export async function POST(request: NextRequest) {
             { status: 502 },
         );
     }
+
+    db.fiservTransactions.upsert({
+        user_id: userId,
+        order_id: orderId,
+        checkout_id: typeof json?.checkoutId === 'string' ? json.checkoutId : null,
+        status: 'pending',
+        amount: Number(priceAed.toFixed(2)),
+        currency: 'AED',
+        customer_email: String((user as any)?.email ?? ''),
+        customer_name: String((user as any)?.name ?? ''),
+        ...(coinPackageId ? { coin_package_id: coinPackageId, purchased_coin_amount: purchasedCoinAmount ?? 0 } : { purchased_coin_amount: purchasedCoinAmount ?? 0 }),
+        ...(planId ? { plan_id: planId } : {}),
+    });
 
     return NextResponse.json(
         { paymentUrl: checkoutUrl, orderId: responseOrderId, checkoutId: json?.checkoutId },

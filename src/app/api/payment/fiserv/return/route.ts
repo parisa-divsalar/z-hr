@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
+import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 export const runtime = 'nodejs';
 
@@ -54,11 +55,19 @@ export async function POST(request: NextRequest) {
     const status = normalizeStatus(body?.status);
     const planId = String(body?.planId ?? body?.plan_id ?? '').trim() || null;
 
-    const existing = db.fiservTransactions.findByOrderId(orderId);
-    const authedUserId = await getUserIdFromAuth(request);
+    const prisma = getPrismaOrNull();
+    const existing = prisma
+      ? null
+      : (db.fiservTransactions.findByOrderId(orderId) as { user_id?: number; customer_email?: string; purchased_coin_amount?: number; status?: string } | null);
 
-    let userId: number | null =
-      authedUserId != null ? authedUserId : existing?.user_id != null ? Number(existing.user_id) : null;
+    let userId: number | null = null;
+    if (prisma) {
+      const tx = await prisma.fiservTransaction.findUnique({ where: { orderId }, select: { userId: true } });
+      userId = tx?.userId ?? null;
+    }
+    const authedUserId = await getUserIdFromAuth(request);
+    if (userId == null && authedUserId != null) userId = authedUserId;
+    if (userId == null && existing?.user_id != null) userId = Number(existing.user_id);
     if (!Number.isFinite(Number(userId))) userId = null;
 
     if (userId == null && existing?.customer_email) {
@@ -67,14 +76,55 @@ export async function POST(request: NextRequest) {
       if (Number.isFinite(uid)) userId = uid;
     }
 
-    const updated = db.fiservTransactions.upsert({
-      ...(existing ?? {}),
-      user_id: userId,
-      order_id: orderId,
-      status,
-      ...(planId ? { plan_id: planId } : {}),
-      return_received_at: new Date().toISOString(),
-    });
+    if (status === 'success' && userId != null) {
+      if (prisma) {
+        const tx = await prisma.fiservTransaction.findUnique({ where: { orderId }, select: { id: true, userId: true, purchasedCoinAmount: true, status: true } });
+        if (tx && tx.userId && String(tx.status ?? '').toLowerCase() !== 'success') {
+          const coinAdd = Number(tx.purchasedCoinAmount ?? 0);
+          if (Number.isFinite(coinAdd) && coinAdd >= 0) {
+            await prisma.$executeRaw`
+              UPDATE users SET coin = COALESCE(coin, 0) + ${coinAdd}, plan_status = 'paid', payment_failed = FALSE, just_converted = TRUE, last_payment_at = NOW() WHERE id = ${tx.userId}
+            `;
+          }
+          await prisma.fiservTransaction.update({ where: { id: tx.id }, data: { status: 'success' } });
+        }
+      } else {
+        const existingRow = existing as { user_id?: number; purchased_coin_amount?: number; status?: string } | null;
+        const currentStatus = String(existingRow?.status ?? '').toLowerCase();
+        if (existingRow && currentStatus !== 'success') {
+          const coinAdd = Number(existingRow?.purchased_coin_amount ?? 0) || 0;
+          if (coinAdd >= 0) {
+            const u = db.users.findById(userId);
+            if (u) {
+              const current = Number((u as any)?.coin ?? 0) || 0;
+              db.users.update(userId, { coin: current + coinAdd, plan_status: 'paid', payment_failed: false, just_converted: true, last_payment_at: new Date().toISOString() } as any);
+            }
+          }
+        }
+      }
+    }
+
+    let updated: any;
+    if (prisma) {
+      const tx = await prisma.fiservTransaction.findUnique({ where: { orderId } });
+      if (tx) {
+        updated = await prisma.fiservTransaction.update({
+          where: { id: tx.id },
+          data: { status, ...(planId ? { planId } : {}) },
+        });
+      } else {
+        updated = { orderId, status };
+      }
+    } else {
+      updated = db.fiservTransactions.upsert({
+        ...(existing ?? {}),
+        user_id: userId,
+        order_id: orderId,
+        status,
+        ...(planId ? { plan_id: planId } : {}),
+        return_received_at: new Date().toISOString(),
+      });
+    }
 
     return NextResponse.json({ ok: true, data: updated }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
   } catch (error) {
