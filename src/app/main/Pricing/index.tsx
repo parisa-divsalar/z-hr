@@ -288,6 +288,7 @@ const Pricing = () => {
     const [me, setMe] = useState<{ id: number; has_used_free_plan: boolean } | null>(null);
     const [meLoading, setMeLoading] = useState(true);
     const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+    const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
     const defaultSelectedId = useMemo(() => plans.find((p) => p.highlighted)?.id ?? plans[0]?.id ?? '', [plans]);
     const [selectedPlanId, setSelectedPlanId] = useState<PlanCard['id']>('');
@@ -369,6 +370,7 @@ const Pricing = () => {
 
     const handleUpgrade = useCallback(
         async (coinPackageId: string) => {
+            setUpgradeError(null);
             if (!me) {
                 router.push(PublicRoutes.login);
                 return;
@@ -382,13 +384,27 @@ const Pricing = () => {
                     cache: 'no-store',
                 });
                 const json = await res.json().catch(() => ({} as any));
-                if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+                if (res.status === 401) {
+                    setActionLoadingId(null);
+                    router.push(PublicRoutes.login);
+                    return;
+                }
+                if (!res.ok) {
+                    const msg = typeof json?.error === 'string' ? json.error : `HTTP ${res.status}`;
+                    setUpgradeError(msg);
+                    setActionLoadingId(null);
+                    return;
+                }
                 const url = String(json?.paymentUrl ?? '').trim();
-                if (!url) throw new Error('Missing paymentUrl');
+                if (!url) {
+                    setUpgradeError('Missing payment URL');
+                    setActionLoadingId(null);
+                    return;
+                }
                 window.location.href = url;
             } catch (e) {
                 console.error('Upgrade create-session failed:', e);
-            } finally {
+                setUpgradeError(e instanceof Error ? e.message : 'Connection error');
                 setActionLoadingId(null);
             }
         },
@@ -420,16 +436,22 @@ const Pricing = () => {
                         </Typography>
                     </Stack>
                 ) : (
-                    <Stack
-                        direction='row'
-                        gap={2.5}
-                        alignItems='stretch'
-                        justifyContent='center'
-                        sx={{
-                            width: '100%',
-                            flexWrap: { xs: 'wrap', lg: 'nowrap' },
-                        }}
-                    >
+                    <Stack width='100%' alignItems='center' gap={2}>
+                        {upgradeError ? (
+                            <Typography variant='body2' color='error' sx={{ textAlign: 'center' }}>
+                                {upgradeError}
+                            </Typography>
+                        ) : null}
+                        <Stack
+                            direction='row'
+                            gap={2.5}
+                            alignItems='stretch'
+                            justifyContent='center'
+                            sx={{
+                                width: '100%',
+                                flexWrap: { xs: 'wrap', lg: 'nowrap' },
+                            }}
+                        >
                         {plans.map((p) => (
                             <PlanCardView
                                 key={p.id}
@@ -463,6 +485,7 @@ const Pricing = () => {
                                 }}
                             />
                         ))}
+                        </Stack>
                     </Stack>
                 )}
             </Box>

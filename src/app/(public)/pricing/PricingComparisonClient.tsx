@@ -546,6 +546,7 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
             });
             const json = await res.json().catch(() => ({} as any));
             if (res.status === 401) {
+                setUpgradeLoadingPlanId(null);
                 router.push(PublicRoutes.login);
                 return;
             }
@@ -553,9 +554,9 @@ export default function PricingComparisonClient({ plans, features }: { plans: Pr
             const url = String(json?.paymentUrl ?? '').trim();
             if (!url) throw new Error('Missing paymentUrl');
             window.location.href = url;
+            return;
         } catch (e) {
             console.error('Upgrade create-session failed:', e);
-        } finally {
             setUpgradeLoadingPlanId(null);
         }
     };
