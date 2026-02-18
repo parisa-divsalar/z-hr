@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
     try {
         const { email, password, username } = await request.json();
 
-        // Support both 'email' and 'username' fields (username is actually email)
         const userEmail = email || username;
 
         if (!userEmail || !password) {
@@ -21,7 +20,6 @@ export async function POST(request: NextRequest) {
 
         const prisma = getPrismaOrNull();
 
-        // SQL/Prisma mode
         if (prisma) {
             const user = await prisma.user.findUnique({
                 where: { email: userEmail },
@@ -91,7 +89,6 @@ export async function POST(request: NextRequest) {
             maxAge: 60 * 60 * 24 * 7, // 7 days
         });
 
-        // Log login with summary of user data saved so far (for admin panel)
         const userId = user.id as number;
         const cvsCount = db.cvs.findByUserId(userId).length;
         const wizardDataCount = db.wizardData.findByUserId(userId).length;

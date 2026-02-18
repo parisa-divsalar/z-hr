@@ -53,7 +53,6 @@ export async function GET(request: NextRequest) {
     const userId = await getUserId(request);
     const userIdNum = userId != null && String(userId).trim() ? Number(userId) : null;
     const safeUserIdNum = Number.isFinite(userIdNum as any) ? (userIdNum as number) : null;
-    // If row is owned by a user, enforce access (but remain backward compatible for older rows missing user_id)
     if (safeUserIdNum != null && row?.user_id != null && Number(row.user_id) !== Number(safeUserIdNum)) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -75,17 +74,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
         }
 
-        // Accept both shapes:
-        // - { cvData, jobDescription, isFinalStep, requestId? }
-        // - { cvContent, companyName, positionTitle, jobDescription, isFinalStep?, requestId? }
         const jobDescription = normalize(body?.jobDescription);
         const isFinalStep = Boolean(body?.isFinalStep ?? true);
-        // Multi-cover-letter support:
-        // - `cvRequestId` identifies the resume (many cover letters can point to it)
-        // - `requestId` identifies the cover letter row (unique per cover letter). If omitted we generate a new one.
+
         const cvRequestId = normalize(body?.cvRequestId ?? body?.resumeRequestId ?? body?.cv_request_id) || '';
         const requestId = normalize(body?.requestId) || makeRequestId();
-        const effectiveCvRequestId = cvRequestId || requestId; // backward compatible: 1:1 when cvRequestId isn't provided
+        const effectiveCvRequestId = cvRequestId || requestId;
 
         const cvData =
             body?.cvData ?? {
@@ -110,7 +104,6 @@ export async function POST(request: NextRequest) {
         const userIdNum = userId != null && String(userId).trim() ? Number(userId) : null;
         const safeUserIdNum = Number.isFinite(userIdNum as any) ? (userIdNum as number) : null;
 
-        // Deduct dynamic coin cost for cover letter generation (from resume_feature_pricing.json)
         if (userId) {
             const uid = Number(userId);
             const alreadyUnlocked = Number.isFinite(uid) ? isMoreFeatureUnlocked(uid, 'ai_cover_letter') : false;
@@ -154,7 +147,6 @@ export async function POST(request: NextRequest) {
                 logContext,
             );
         } catch {
-            // Hard fallback: avoid JSON parsing issues causing 500s.
             const text = await ChatGPTService.generateCoverLetter(cvData, jobDescription, logContext);
             coverLetterJson = {
                 companyName,
@@ -168,9 +160,7 @@ export async function POST(request: NextRequest) {
             request_id: requestId,
             cv_request_id: effectiveCvRequestId,
             user_id: safeUserIdNum,
-            // Backward-compatible plain text field (UI reads this today)
             cover_letter: coverLetterJson.content,
-            // New structured output
             cover_letter_json: coverLetterJson,
             job_description: jobDescription,
             cv_data: cvData,
@@ -182,9 +172,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             requestId,
-            // Backward compatibility
             coverLetter: coverLetterJson.content,
-            // New fields
             ...coverLetterJson,
         });
     } catch (error: any) {
@@ -231,7 +219,7 @@ export async function PATCH(request: NextRequest) {
         if (subject) (nextJson as any).subject = subject;
 
         const updated = db.coverLetters.updateByRequestId(requestId, {
-            user_id: existing?.user_id ?? safeUserIdNum, // claim ownership if older rows were missing user_id
+            user_id: existing?.user_id ?? safeUserIdNum,
             cover_letter: coverLetter,
             cover_letter_json: nextJson,
         });

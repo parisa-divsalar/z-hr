@@ -45,11 +45,9 @@ export async function PUT(request: NextRequest) {
             );
         }
 
-        // Check if CV exists
         let cv = db.cvs.findByRequestId(requestId);
 
         if (cv) {
-            // Update existing CV
             const updateData: any = {};
             if (nextBodyOfResume !== undefined) {
                 updateData.content = JSON.stringify(nextBodyOfResume);
@@ -60,15 +58,11 @@ export async function PUT(request: NextRequest) {
             
             cv = db.cvs.update(requestId, updateData);
         } else {
-            // Create new CV if doesn't exist
             if (!finalUserId) {
                 return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
             }
 
-            /**
-             * Creating a NEW CV consumes coins (AI Resume Builder).
-             * Cost is driven by `data/resume_feature_pricing.json` (feature: "AI Resume Builder").
-             */
+
             const userIdNum = parseInt(finalUserId, 10);
             const coinCost = await getResumeFeatureCoinCost('AI Resume Builder', 6);
             const charge = await consumeCredit(userIdNum, coinCost, 'ai_resume_builder');

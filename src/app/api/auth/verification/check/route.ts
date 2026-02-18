@@ -5,26 +5,21 @@ import { sendNotification } from '@/lib/notifications';
 
 export async function GET() {
   try {
-    // Find all users
     const users = db.users.findAll();
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
     
-    // Filter unverified users who signed up > 24 hours ago
     const unverifiedUsers = users.filter((u: any) => {
-      // Check if user is not verified
-      const isVerified = 
+      const isVerified =
         u?.is_verified === true || 
         u?.email_verified === true || 
         u?.verified_at;
       
       if (isVerified) return false;
       
-      // Check if created > 24 hours ago
       const createdAt = new Date(u.created_at).getTime();
       return createdAt < oneDayAgo;
     });
     
-    // Send reminders to each unverified user
     const reminded = [];
     for (const user of unverifiedUsers) {
       try {

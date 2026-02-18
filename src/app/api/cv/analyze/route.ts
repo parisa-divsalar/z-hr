@@ -109,17 +109,14 @@ export async function POST(request: NextRequest) {
         const authedUserId = await getUserIdFromAuth(request);
         const finalUserId = authedUserId || (userId ? String(userId) : null);
 
-        // دریافت یا ایجاد requestId
         const reqId: string =
             providedRequestId || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         requestId = reqId;
 
-        // دریافت اطلاعات wizard از database (اگر وجود داشته باشد)
         const wizardDataFromDb: any = finalUserId
             ? (db as any).wizardData.findByUserIdAndRequestId(parseInt(finalUserId), reqId)
             : null;
 
-        // استفاده از cvText یا داده‌های database
         const rawCv = wizardDataFromDb?.data ?? cvText;
         if (rawCv == null || rawCv === '') {
             return NextResponse.json(
@@ -134,11 +131,7 @@ export async function POST(request: NextRequest) {
         const finalCvText =
             typeof rawCv === 'string' ? rawCv : JSON.stringify(rawCv);
 
-        // If this is a NEW CV creation, consume coins before expensive AI work.
-        // Total = AI Resume Builder (once per requestId) + attachment inputs (charged per NEW attachment id).
-        //
-        // Important: Users may add attachments later and re-run analysis. We should only charge for NEW attachments
-        // (delta charging) to avoid double-spending for the same file/image/voice.
+
         if (finalUserId) {
             const userIdNum = parseInt(finalUserId, 10);
             const existingCv = (db as any).cvs.findByRequestId(reqId) as any | null;
@@ -152,9 +145,7 @@ export async function POST(request: NextRequest) {
                 ? existingChargedRaw.map((x: any) => String(x ?? '').trim()).filter(Boolean)
                 : null;
 
-            // Migration behavior:
-            // - If CV already exists but has no charged list (legacy), we DO NOT retroactively charge.
-            //   We initialize "charged_attachment_ids" to current attachments so future new attachments are charged correctly.
+
             if (!isNewCv && existingChargedIds == null) {
                 try {
                     (db as any).cvs.update(reqId, {
@@ -208,7 +199,6 @@ export async function POST(request: NextRequest) {
                     }
                 }
 
-                // Persist charged ids so we only charge delta next time.
                 const nextChargedIds = Array.from(new Set([...(existingChargedIds ?? []), ...attachmentIdsNow])).filter(Boolean);
                 try {
                     (db as any).cvs.update(reqId, {
@@ -242,16 +232,13 @@ export async function POST(request: NextRequest) {
             return { improvedResume: value };
         };
 
-        // Save to database if authenticated
         if (finalUserId) {
             const userIdNum = parseInt(finalUserId, 10);
 
-            // ذخیره CV در database
             let cv: any = (db as any).cvs.findByRequestId(reqId);
             if (cv) {
                 cv = (db as any).cvs.update(reqId, {
                     content: typeof finalCvText === 'string' ? finalCvText : JSON.stringify(finalCvText),
-                    // Store in the requested shape for DB/admin: { improvedResume: ... }
                     analysis_result: JSON.stringify(normalizeAnalysisForStorage(analysis)),
                 });
             } else {
@@ -259,16 +246,13 @@ export async function POST(request: NextRequest) {
                     user_id: userIdNum,
                     request_id: reqId,
                     content: typeof finalCvText === 'string' ? finalCvText : JSON.stringify(finalCvText),
-                    // Store in the requested shape for DB/admin: { improvedResume: ... }
                     analysis_result: JSON.stringify(normalizeAnalysisForStorage(analysis)),
                 });
             }
 
             recordUserStateTransition(parseInt(finalUserId), {}, { event: 'cv_analyze' });
 
-            // به‌روزرسانی wizard data به عنوان completed
             if (wizardDataFromDb) {
-                // test/z-hr db has upsert (not update)
                 (db as any).wizardData.upsert({
                     ...wizardDataFromDb,
                     user_id: parseInt(finalUserId),

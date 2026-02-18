@@ -31,14 +31,12 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'requestId is required' }, { status: 400 });
         }
 
-        // Get CV from database
         let cv = db.cvs.findByRequestId(requestId);
 
         if (!cv) {
             return NextResponse.json({ error: 'CV not found' }, { status: 404 });
         }
 
-        // Check user access: prefer authenticated user
         const authedUserId = await getUserIdFromAuth(request);
         const finalUserId = authedUserId || userId;
         if (finalUserId && cv.user_id && cv.user_id.toString() !== finalUserId) {
@@ -46,9 +44,7 @@ export async function GET(request: NextRequest) {
         }
 
         const analysisResultRaw = cv.analysis_result ? JSON.parse(cv.analysis_result) : null;
-        // Backward compatibility: DB can store either:
-        // - legacy structured resume JSON
-        // - or `{ improvedResume: <structured resume JSON> }` (preferred/admin shape)
+
         const analysisResult =
             analysisResultRaw &&
             typeof analysisResultRaw === 'object' &&

@@ -31,8 +31,6 @@ function json(data: any, init?: { status?: number }) {
 function resolveDataDir() {
   if (process.env.DATABASE_PATH) return path.dirname(process.env.DATABASE_PATH);
 
-  // Match `src/lib/db.ts` behavior: allow running from subfolders (e.g. `admin-dashboard/`)
-  // while still reading/writing the repo-root `data/` directory.
   const cwd = process.cwd();
   const candidates = [cwd, path.resolve(cwd, '..'), path.resolve(cwd, '../..'), path.resolve(cwd, '../../..')];
   for (const dir of candidates) {
@@ -91,10 +89,7 @@ const TABLES: Record<string, TableConfig> = {
   user_state_logs: { file: 'user_state_logs.json', keyFields: ['id'], allowIndexFallback: true },
   plans: { file: 'plans.json', keyFields: ['id'], allowIndexFallback: true },
   resume_feature_pricing: { file: 'resume_feature_pricing.json', keyFields: ['id'], allowIndexFallback: true },
-  // NOTE:
-  // - Historically coin_packages can contain duplicate numeric `id` values (manual edits / inserts).
-  // - Admin UI needs to be able to edit `id` to fix/normalize data.
-  // Therefore we treat `package_name` as the stable key and allow `id` to be edited.
+
   coin_packages: { file: 'coin_packages.json', keyFields: ['package_name'], allowIndexFallback: true },
   fiserv_transactions: { file: 'fiserv_transactions.json', keyFields: ['order_id', 'id'], allowIndexFallback: true },
   history: { file: 'history.json', keyFields: ['user_id', 'id'], allowIndexFallback: true },
@@ -117,7 +112,6 @@ function matchWhere(row: any, where: any) {
   if (!where || typeof where !== 'object') return false;
   return Object.entries(where).every(([k, v]) => {
     if (k === '_index') return true; // handled separately
-    // match numbers loosely to avoid string/number mismatch
     const rowVal = (row as any)?.[k];
     const n1 = toNumberOrNull(rowVal);
     const n2 = toNumberOrNull(v);
@@ -147,7 +141,6 @@ function applyTimestampsForUpsert(row: any) {
 function autoAssignIdIfNeeded(rows: any[], row: any) {
   if (!row || typeof row !== 'object') return row;
   if (row.id != null && row.id !== '') return row;
-  // If the dataset looks like numeric incremental ids, assign next id.
   const ids = rows.map((r) => toNumberOrNull(r?.id)).filter((v): v is number => v != null);
   if (ids.length === 0) return row;
   row.id = Math.max(...ids) + 1;
@@ -241,7 +234,6 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ tabl
   const dataDir = resolveDataDir();
   const filePath = path.join(dataDir, cfg.file);
 
-  // allow both JSON body and query params
   let where: any = null;
   try {
     const body = await request.json().catch(() => null);

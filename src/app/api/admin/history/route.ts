@@ -19,8 +19,7 @@ function json(data: any, init?: { status?: number }) {
 }
 
 function safeId() {
-  // Prefer UUID if available; fallback to random bytes.
-  // Node 18+ supports randomUUID in most environments.
+
   const anyCrypto: any = crypto as any;
   if (typeof anyCrypto.randomUUID === 'function') return anyCrypto.randomUUID();
   return crypto.randomBytes(16).toString('hex');
@@ -31,15 +30,7 @@ function normalizeUserId(v: any): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/**
- * Admin CRUD for history rows (file-based JSON).
- * NOTE: This endpoint is CORS-open because admin-dashboard is a separate app.
- *
- * GET    /api/admin/history                  -> list all (optionally include deleted)
- * POST   /api/admin/history                  -> create (or upsert if id exists)
- * PATCH  /api/admin/history                  -> patch update by (user_id, id)
- * DELETE /api/admin/history?id=...&user_id=.. -> delete (hard by default; hard=0 for soft)
- */
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const includeDeleted = url.searchParams.get('include_deleted') === '1' || url.searchParams.get('include_deleted') === 'true';
@@ -94,7 +85,6 @@ export async function PATCH(request: NextRequest) {
     if (!id) return json({ error: 'id is required' }, { status: 400 });
 
     const patch = body?.patch && typeof body.patch === 'object' ? body.patch : body;
-    // Never allow key fields to change via patch
     const { user_id: _u, id: _id, ...safePatch } = patch ?? {};
 
     const updated = db.history.update(userId, id, safePatch as any);
