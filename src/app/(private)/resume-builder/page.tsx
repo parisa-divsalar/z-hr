@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Stack } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import IntroDialog from '@/components/Landing/IntroDialog';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { trackEvent } from '@/lib/analytics';
 import { apiClientClient } from '@/services/api-client';
 import { useWizardStore } from '@/store/wizard';
@@ -16,11 +17,41 @@ import { ResumeBuilderRoot } from './styled';
 
 export default function ResumeBuilderPage() {
     const searchParams = useSearchParams();
+    const { profile, isLoading: profileLoading, refreshProfile } = useUserProfile();
     const [_aiStatus, setAiStatus] = useState<AIStatus>('START');
     const [initialStep, setInitialStep] = useState<number>(1);
     const [isIntroOpen, setIsIntroOpen] = useState<boolean>(true);
+    const [refetchDone, setRefetchDone] = useState<boolean>(false);
     const setRequestId = useWizardStore((state) => state.setRequestId);
+
+    // Only allow form / wizard after we have completed a fresh refetch on this page (avoid stale cache).
+    const effectiveLoading = !refetchDone || profileLoading;
+    const zeroCoinsMode = useMemo(() => {
+        if (!refetchDone || profileLoading || profile == null) return false;
+        const coins = Number(profile.coin);
+        return Number.isFinite(coins) && coins <= 0;
+    }, [refetchDone, profileLoading, profile]);
+
     const resetWizard = useWizardStore((state) => state.resetWizard);
+
+    // Force a fresh profile fetch when entering resume-builder; do not show form until this completes.
+    useEffect(() => {
+        let cancelled = false;
+        refreshProfile(true)
+            .then(() => {
+                if (!cancelled) setRefetchDone(true);
+            })
+            .catch(() => {
+                if (!cancelled) setRefetchDone(true);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [refreshProfile]);
+
+    useEffect(() => {
+        if (zeroCoinsMode) setIsIntroOpen(true);
+    }, [zeroCoinsMode]);
     const requestIdFromStore = useWizardStore((state) => state.requestId);
     const setData = useWizardStore((state) => state.setData);
 
@@ -153,8 +184,10 @@ export default function ResumeBuilderPage() {
                     onClose={() => setIsIntroOpen(false)}
                     showBackToDashboard
                     backToDashboardHref='/dashboard'
+                    zeroCoinsMode={zeroCoinsMode}
+                    profileLoading={effectiveLoading}
                 />
-                <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
+                {!zeroCoinsMode && <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />}
             </Stack>
         </ResumeBuilderRoot>
     );

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Stack } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
@@ -7,14 +7,42 @@ import { useSearchParams } from 'next/navigation';
 import IntroDialog from '@/components/Landing/IntroDialog';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWizardStore } from '@/store/wizard';
 
 export default function LandingPage() {
   const searchParams = useSearchParams();
+  const { profile, isLoading: profileLoading, refreshProfile } = useUserProfile();
   const [_aiStatus, setAiStatus] = useState<AIStatus>('START');
   const [initialStep, setInitialStep] = useState<number>(1);
   const [isIntroOpen, setIsIntroOpen] = useState<boolean>(true);
+  const [refetchDone, setRefetchDone] = useState<boolean>(false);
   const resetWizard = useWizardStore((state) => state.resetWizard);
+
+  const effectiveLoading = !refetchDone || profileLoading;
+  const zeroCoinsMode = useMemo(() => {
+    if (!refetchDone || profileLoading || profile == null) return false;
+    const coins = Number(profile.coin);
+    return Number.isFinite(coins) && coins <= 0;
+  }, [refetchDone, profileLoading, profile]);
+
+  useEffect(() => {
+    let cancelled = false;
+    refreshProfile(true)
+      .then(() => {
+        if (!cancelled) setRefetchDone(true);
+      })
+      .catch(() => {
+        if (!cancelled) setRefetchDone(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshProfile]);
+
+  useEffect(() => {
+    if (zeroCoinsMode) setIsIntroOpen(true);
+  }, [zeroCoinsMode]);
 
   useEffect(() => {
     const stepParam = searchParams.get('step');
@@ -38,8 +66,15 @@ export default function LandingPage() {
 
   return (
     <Stack width='100%' height='100%'>
-      <IntroDialog open={isIntroOpen} onClose={() => setIsIntroOpen(false)} />
-      <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />
+      <IntroDialog
+        open={isIntroOpen}
+        onClose={() => setIsIntroOpen(false)}
+        showBackToDashboard
+        backToDashboardHref='/dashboard'
+        zeroCoinsMode={zeroCoinsMode}
+        profileLoading={effectiveLoading}
+      />
+      {!zeroCoinsMode && <Wizard setAiStatus={setAiStatus} initialStep={initialStep} />}
     </Stack>
   );
 }

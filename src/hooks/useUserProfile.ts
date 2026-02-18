@@ -34,8 +34,11 @@ let profileRequest: Promise<UserProfile | null> | null = null;
 let lastAccessToken: string | null = null;
 let didTryCookieSessionProfile = false;
 
-const fetchCurrentUserProfile = async (): Promise<UserProfile | null> => {
-    const response = await apiClientClient.get('users/me');
+const fetchCurrentUserProfile = async (options?: { cacheBust?: boolean }): Promise<UserProfile | null> => {
+    const response = await apiClientClient.get('users/me', {
+        params: options?.cacheBust ? { _: Date.now() } : undefined,
+        headers: options?.cacheBust ? { 'Cache-Control': 'no-cache', Pragma: 'no-cache' } : undefined,
+    });
     return response?.data?.data ?? null;
 };
 
@@ -56,7 +59,7 @@ export const useUserProfile = (options?: { enabled?: boolean }) => {
         };
     }, []);
 
-    const refreshProfile = useCallback(async (): Promise<UserProfile | null> => {
+    const refreshProfile = useCallback(async (forceRefresh?: boolean): Promise<UserProfile | null> => {
         if (!enabled) {
             if (isMounted.current) setIsLoading(false);
             return cachedProfile;
@@ -71,8 +74,12 @@ export const useUserProfile = (options?: { enabled?: boolean }) => {
             return cachedProfile;
         }
 
+        if (forceRefresh) {
+            profileRequest = null;
+        }
+
         setIsLoading(true);
-        const request = profileRequest ?? fetchCurrentUserProfile();
+        const request = profileRequest ?? fetchCurrentUserProfile(forceRefresh ? { cacheBust: true } : undefined);
         profileRequest = request;
 
         try {

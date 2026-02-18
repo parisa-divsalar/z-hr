@@ -2,10 +2,12 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 
 import { Divider, SelectProps, Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
+import { PublicRoutes } from '@/config/routes';
 import { apiClientClient } from '@/services/api-client';
 import { useWizardStore } from '@/store/wizard';
 import { isValidDateOfBirthDDMMYYYY, normalizeDateOfBirthInput } from '@/utils/validation';
@@ -42,6 +44,13 @@ type IntroDialogProps = {
 
     showBackToDashboard?: boolean;
     backToDashboardHref?: string;
+
+    /** When true, show "buy plan" message and block resume creation until user goes to pricing or dashboard */
+    zeroCoinsMode?: boolean;
+    pricingHref?: string;
+
+    /** When true (e.g. on resume-builder), show loading until profile is loaded so we can decide zeroCoinsMode */
+    profileLoading?: boolean;
 };
 
 const IntroDialog: FunctionComponent<IntroDialogProps> = ({
@@ -49,7 +58,11 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
     onClose,
     showBackToDashboard = false,
     backToDashboardHref = '/dashboard',
+    zeroCoinsMode = false,
+    pricingHref = PublicRoutes.pricing,
+    profileLoading = false,
 }) => {
+    const router = useRouter();
     const { data, updateField } = useWizardStore();
 
     const [loadingSkills, setLoadingSkills] = useState<boolean>(true);
@@ -116,6 +129,87 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
             onClose();
         }
     };
+
+    const handleGoToPricing = () => {
+        onClose();
+        router.push(pricingHref);
+    };
+
+    const handleBackToDashboard = () => {
+        onClose();
+        router.push(backToDashboardHref);
+    };
+
+    if (showBackToDashboard && profileLoading) {
+        return (
+            <DialogContainer
+                open={open}
+                maxWidth='xs'
+                PaperProps={{ sx: { height: 'auto', minHeight: '200px' } }}
+                onClose={() => {}}
+                disableEscapeKeyDown
+            >
+                <StackContainer>
+                    <HeaderContainer direction='row'>
+                        <Typography color='text.primary' variant='body1' fontWeight={500}>
+                            Primary information
+                        </Typography>
+                    </HeaderContainer>
+                    <StackContent gap={1.5} sx={{ justifyContent: 'center', py: 3 }}>
+                        <Typography variant='body2' color='text.secondary'>
+                            Loading…
+                        </Typography>
+                    </StackContent>
+                </StackContainer>
+            </DialogContainer>
+        );
+    }
+
+    if (zeroCoinsMode) {
+        return (
+            <DialogContainer
+                open={open}
+                maxWidth='xs'
+                PaperProps={{ sx: { height: 'auto', minHeight: '280px' } }}
+                onClose={(_, reason) => {
+                    if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+                    onClose();
+                }}
+                disableEscapeKeyDown
+            >
+                <StackContainer>
+                    <HeaderContainer direction='row'>
+                        <Typography color='text.primary' variant='body1' fontWeight={500}>
+                            Not enough coins
+                        </Typography>
+                    </HeaderContainer>
+
+                    <StackContent gap={1.5}>
+                        <Typography variant='body2' color='text.secondary'>
+                            To create a new resume, you need to purchase a design or coins. Please go to the designs page
+                        </Typography>
+                    </StackContent>
+
+                    <Divider />
+
+                    <ActionContainer>
+                        <Stack direction='row' gap={1} sx={{ width: '258px' }}>
+
+                            <MuiButton
+                                fullWidth
+                                variant='contained'
+                                color='secondary'
+                                sx={{ flex: 1, minWidth: 0 }}
+                                onClick={handleGoToPricing}
+                            >
+                                Pricing
+                            </MuiButton>
+                        </Stack>
+                    </ActionContainer>
+                </StackContainer>
+            </DialogContainer>
+        );
+    }
 
     return (
         <DialogContainer open={open} maxWidth='xs' PaperProps={{ sx: { height: '413px' } }}>
