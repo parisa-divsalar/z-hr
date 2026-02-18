@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getUserIdFromAuth } from '@/lib/auth/get-user-id';
@@ -8,27 +6,16 @@ import { getPrismaOrNull } from '@/lib/db/require-prisma';
 
 export const runtime = 'nodejs';
 
+const ZENON_PAYMENT_API = 'https://apisrv.zenonrobotics.ae/PaymentAPI/api/create';
+
 type CreateSessionBody = {
     coinPackageId?: number | string;
     planId?: string;
 };
 
-const FISERV_PLACEHOLDERS = new Set(['PASTE_YOUR_API_KEY_HERE', 'PASTE_YOUR_SECRET_HERE', 'PASTE_YOUR_STORE_ID_HERE']);
-
-function readEnvValue(name: string): string {
+function readEnv(name: string, fallback = ''): string {
     const raw = String(process.env[name] ?? '').trim();
-    if (!raw) return '';
-    if (FISERV_PLACEHOLDERS.has(raw)) return '';
-    return raw;
-}
-
-function defaultFiservBaseUrl(): string {
-    // Fiserv EMEA Checkout API (docs.fiserv.dev):
-    // - Sandbox: https://prod.emea.api.fiservapps.com/sandbox/exp/v1/checkouts
-    // - Production: https://prod.emea.api.fiservapps.com/exp/v1/checkouts
-    return process.env.NODE_ENV === 'production'
-        ? 'https://prod.emea.api.fiservapps.com/exp/v1/checkouts'
-        : 'https://prod.emea.api.fiservapps.com/sandbox/exp/v1/checkouts';
+    return raw || fallback;
 }
 
 function resolveOrigin(request: NextRequest): string {
@@ -38,35 +25,6 @@ function resolveOrigin(request: NextRequest): string {
     const proto = request.headers.get('x-forwarded-proto') ?? 'https';
     if (host) return `${proto}://${host}`;
     return 'http://localhost:3000';
-}
-
-function generateUUID(): string {
-    const anyCrypto = crypto as any;
-    if (typeof anyCrypto.randomUUID === 'function') return anyCrypto.randomUUID();
-    return crypto.randomBytes(16).toString('hex');
-}
-
-function generateOrderId(): string {
-    // Exactly 10 characters (ZR + 8 random A-Z0-9)
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let out = 'ZR';
-    for (let i = 0; i < 8; i += 1) {
-        out += chars[crypto.randomInt(0, chars.length)];
-    }
-    return out.slice(0, 10);
-}
-
-function generateSignature(params: { apiKey: string; clientRequestId: string; timestampMs: string; body: string; secret: string }): string {
-    const raw = params.apiKey + params.clientRequestId + params.timestampMs + params.body;
-    return crypto.createHmac('sha256', params.secret).update(raw).digest('base64');
-}
-
-function extractCheckoutUrl(responseJson: any): string | null {
-    if (!responseJson || typeof responseJson !== 'object') return null;
-    if (typeof responseJson.checkoutUrl === 'string') return responseJson.checkoutUrl;
-    if (typeof responseJson?.checkout?.redirectionUrl === 'string') return responseJson.checkout.redirectionUrl;
-    if (typeof responseJson?.checkout?.checkoutUrl === 'string') return responseJson.checkout.checkoutUrl;
-    return null;
 }
 
 function toInt(v: unknown): number | null {
@@ -97,6 +55,86 @@ function resolvePlanPriceAed(planId: PlanId): number | null {
     return null;
 }
 
+type ZenonCreatePayload = {
+    amount: number;
+    currency: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    country: string;
+    postalCode: string;
+    userId: string;
+    description: string;
+    metadata: {
+        merchantName: string;
+        mid: string;
+        storeId: string;
+        transactionType: string;
+        transactionOrigin: string;
+    };
+    successUrl: string;
+    failureUrl: string;
+    webhookUrl?: string;
+};
+
+function buildZenonPayload(params: {
+    amount: number;
+    origin: string;
+    userId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    orderId?: string;
+    planParam?: string;
+}): ZenonCreatePayload {
+    const {
+        amount,
+        origin,
+        userId,
+        firstName,
+        lastName,
+        email,
+        orderId = '',
+        planParam = '',
+    } = params;
+
+    const successUrl = `${origin}/payment/return?status=success&orderId=${encodeURIComponent(orderId)}${planParam}`;
+    const failureUrl = `${origin}/payment/return?status=failure&orderId=${encodeURIComponent(orderId)}${planParam}`;
+
+    const merchantName = readEnv('ZENON_MERCHANT_NAME', 'ZENON ROBOTICS & SMART MACHINES TR');
+    const mid = readEnv('ZENON_MID', '760076310429');
+    const storeId = readEnv('ZENON_STORE_ID', '811676310429');
+    const webhookUrl = readEnv('ZENON_WEBHOOK_URL');
+
+    return {
+        amount: Number(amount.toFixed(2)),
+        currency: 'AED',
+        firstName,
+        lastName,
+        email,
+        phone: '+971501234567',
+        address: 'Dubai, UAE',
+        city: 'Dubai',
+        country: 'AE',
+        postalCode: '00000',
+        userId,
+        description: 'Zenon Robotics - Fiserv IPG Checkout (Production)',
+        metadata: {
+            merchantName,
+            mid,
+            storeId,
+            transactionType: 'SALE',
+            transactionOrigin: 'ECOM',
+        },
+        successUrl,
+        failureUrl,
+        ...(webhookUrl ? { webhookUrl } : {}),
+    };
+}
+
 export async function POST(request: NextRequest) {
     const userId = await getUserIdFromAuth(request);
     if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -119,230 +157,164 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Provide only one of coinPackageId or planId' }, { status: 400 });
     }
 
-    const API_KEY = readEnvValue('FISERV_API_KEY');
-    const SECRET = readEnvValue('FISERV_SECRET');
-    const STORE_ID = readEnvValue('FISERV_STORE_ID');
-    const BASE_URL = readEnvValue('FISERV_BASE_URL') || defaultFiservBaseUrl();
-    const WEBHOOK_URL = readEnvValue('FISERV_WEBHOOK_URL');
-
-    if (!API_KEY || !SECRET || !STORE_ID) {
-        return NextResponse.json(
-            {
-                error:
-                    'Fiserv is not configured. Missing env vars: FISERV_API_KEY, FISERV_SECRET, FISERV_STORE_ID (and optionally FISERV_BASE_URL, FISERV_WEBHOOK_URL).',
-            },
-            { status: 500 },
-        );
-    }
+    const origin = resolveOrigin(request);
+    const orderId = `ZR${Date.now().toString(36).toUpperCase().slice(-8)}`;
+    const planParam = planId ? `&plan=${encodeURIComponent(planId)}` : '';
 
     const prisma = getPrismaOrNull();
-    const origin = resolveOrigin(request);
-    const orderId = generateOrderId();
 
     if (prisma) {
         const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, name: true } });
         if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
         let priceAed: number | null = null;
-        let purchasedCoinAmount: number | null = null;
-        let resolvedCoinPackageId: number | null = null;
-        let resolvedPlanId: string | null = null;
 
         if (coinPackageId) {
             const pkg = await prisma.coinPackage.findUnique({
                 where: { id: coinPackageId },
-                select: { id: true, coinAmount: true, priceAed: true },
+                select: { id: true, priceAed: true },
             });
             if (!pkg) return NextResponse.json({ error: 'Coin package not found' }, { status: 404 });
             priceAed = Number(pkg.priceAed);
-            resolvedCoinPackageId = pkg.id;
-            purchasedCoinAmount = pkg.coinAmount;
         } else if (planId) {
             priceAed = resolvePlanPriceAed(planId);
-            resolvedPlanId = planId;
         }
 
         if (!priceAed || !Number.isFinite(priceAed) || priceAed <= 0) {
             return NextResponse.json({ error: 'Invalid paid selection' }, { status: 400 });
         }
 
-        const planParam = resolvedPlanId ? `&plan=${encodeURIComponent(resolvedPlanId)}` : '';
-        const successUrl = `${origin}/payment/return?status=success&orderId=${encodeURIComponent(orderId)}${planParam}`;
-        const failureUrl = `${origin}/payment/return?status=failure&orderId=${encodeURIComponent(orderId)}${planParam}`;
+        const nameParts = String(user.name ?? 'User').trim().split(/\s+/);
+        const firstName = nameParts[0] || 'User';
+        const lastName = nameParts.slice(1).join(' ') || 'Customer';
 
-        const requestBody = {
-            storeId: STORE_ID,
-            transactionType: 'SALE',
-            transactionOrigin: 'ECOM',
-            transactionAmount: {
-                total: Number(priceAed.toFixed(2)),
-                currency: 'AED',
-            },
-            checkoutSettings: {
-                ...(WEBHOOK_URL ? { webHooksUrl: WEBHOOK_URL } : {}),
-                redirectBackUrls: { successUrl, failureUrl },
-            },
-            order: {
-                orderId,
-                orderDetails: { invoiceNumber: orderId },
-                billing: {
-                    person: { firstName: String(user.name ?? 'User').split(' ')[0] || 'User', lastName: String(user.name ?? '').split(' ').slice(1).join(' ') || 'Customer' },
-                    contact: { mobilePhone: '+971501234567', email: user.email },
-                    address: { address1: 'Dubai, UAE', city: 'Dubai', country: 'AE', postalCode: '00000' },
-                },
-            },
-        };
+        const payload = buildZenonPayload({
+            amount: priceAed,
+            origin,
+            userId: String(user.id),
+            firstName,
+            lastName,
+            email: user.email ?? '',
+            orderId,
+            planParam,
+        });
 
-        const clientRequestId = generateUUID();
-        const timestampMs = String(Date.now());
-        const bodyString = JSON.stringify(requestBody);
-        const signature = generateSignature({ apiKey: API_KEY, clientRequestId, timestampMs, body: bodyString, secret: SECRET });
+        const apiUrl = readEnv('ZENON_PAYMENT_API_URL', ZENON_PAYMENT_API);
 
-        const fiservRes = await fetch(BASE_URL, {
+        const zenonRes = await fetch(apiUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Api-Key': API_KEY,
-                'Client-Request-Id': clientRequestId,
-                Timestamp: timestampMs,
-                'Message-Signature': signature,
-            },
-            body: bodyString,
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
             cache: 'no-store',
         });
 
-        const text = await fiservRes.text();
-        const json = (() => {
-            try {
-                return JSON.parse(text);
-            } catch {
-                return null;
-            }
-        })();
-
-        if (!fiservRes.ok) {
-            return NextResponse.json({ error: 'Fiserv API error', httpStatus: fiservRes.status, details: json ?? text }, { status: 502 });
+        const text = await zenonRes.text();
+        let json: Record<string, unknown> | null = null;
+        try {
+            json = JSON.parse(text) as Record<string, unknown>;
+        } catch {
+            // ignore
         }
 
-        const checkoutUrl = extractCheckoutUrl(json);
-        if (!checkoutUrl) {
-            return NextResponse.json({ error: 'No checkoutUrl found in Fiserv response', details: json ?? text }, { status: 502 });
+        if (!zenonRes.ok) {
+            const errMsg = typeof json?.errorMessage === 'string' ? json.errorMessage : json?.error ?? text;
+            return NextResponse.json(
+                { error: 'Payment gateway error', details: errMsg, httpStatus: zenonRes.status },
+                { status: 502 },
+            );
         }
 
-        // Persist pending transaction for webhook + audit (NO plan_status updates here).
-        await prisma.fiservTransaction.create({
-            data: {
-                userId: user.id,
-                orderId,
-                checkoutId: typeof json?.checkout?.checkoutId === 'string' ? json.checkout.checkoutId : null,
-                transactionId: null,
-                status: 'pending',
-                ...(resolvedPlanId ? { planId: resolvedPlanId } : {}),
-                amount: priceAed,
-                currency: 'AED',
-                customerEmail: user.email,
-                customerName: user.name ?? null,
-                ...(resolvedCoinPackageId ? { coinPackageId: resolvedCoinPackageId, purchasedCoinAmount } : {}),
-            },
-        });
+        const success = json?.success === true;
+        const checkoutUrl = typeof json?.checkoutUrl === 'string' ? json.checkoutUrl : null;
+        const responseOrderId = typeof json?.orderId === 'string' ? json.orderId : orderId;
+
+        if (!success || !checkoutUrl) {
+            return NextResponse.json(
+                {
+                    error: typeof json?.errorMessage === 'string' ? json.errorMessage : 'No checkout URL in response',
+                    details: json ?? text,
+                },
+                { status: 502 },
+            );
+        }
 
         return NextResponse.json(
-            { paymentUrl: checkoutUrl, orderId },
+            { paymentUrl: checkoutUrl, orderId: responseOrderId, checkoutId: json?.checkoutId ?? undefined },
             { headers: { 'Cache-Control': 'no-store, max-age=0' } },
         );
     }
 
     // JSON-db fallback (dev only)
-    const user = db.users.findById(userId);
+    const user = db.users.findById(userId) as { email?: string; name?: string } | null;
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     let priceAed: number | null = null;
-    let purchasedCoinAmount: number | null = null;
 
     if (coinPackageId) {
         const pkgs = db.coinPackages.findAll() ?? [];
-        const pkg = pkgs.find((p: any) => Number(p?.id) === coinPackageId) as any;
+        const pkg = pkgs.find((p: { id?: unknown }) => Number(p?.id) === coinPackageId) as { price_aed?: number } | undefined;
         if (!pkg) return NextResponse.json({ error: 'Coin package not found' }, { status: 404 });
         priceAed = Number(pkg?.price_aed ?? 0);
-        purchasedCoinAmount = Number(pkg?.coin_amount ?? null);
     } else if (planId) {
         priceAed = resolvePlanPriceAed(planId);
     }
 
-    if (!priceAed || !Number.isFinite(priceAed) || priceAed <= 0) return NextResponse.json({ error: 'Invalid paid selection' }, { status: 400 });
+    if (!priceAed || !Number.isFinite(priceAed) || priceAed <= 0) {
+        return NextResponse.json({ error: 'Invalid paid selection' }, { status: 400 });
+    }
 
-    const planParam = planId ? `&plan=${encodeURIComponent(planId)}` : '';
-    const successUrl = `${origin}/payment/return?status=success&orderId=${encodeURIComponent(orderId)}${planParam}`;
-    const failureUrl = `${origin}/payment/return?status=failure&orderId=${encodeURIComponent(orderId)}${planParam}`;
+    const nameParts = String(user?.name ?? 'User').trim().split(/\s+/);
+    const firstName = nameParts[0] || 'User';
+    const lastName = nameParts.slice(1).join(' ') || 'Customer';
 
-    const requestBody = {
-        storeId: STORE_ID,
-        transactionType: 'SALE',
-        transactionOrigin: 'ECOM',
-        transactionAmount: { total: Number(priceAed.toFixed(2)), currency: 'AED' },
-        checkoutSettings: {
-            ...(WEBHOOK_URL ? { webHooksUrl: WEBHOOK_URL } : {}),
-            redirectBackUrls: { successUrl, failureUrl },
-        },
-        order: {
-            orderId,
-            orderDetails: { invoiceNumber: orderId },
-            billing: {
-                person: { firstName: 'User', lastName: 'Customer' },
-                contact: { mobilePhone: '+971501234567', email: String((user as any)?.email ?? '') },
-                address: { address1: 'Dubai, UAE', city: 'Dubai', country: 'AE', postalCode: '00000' },
-            },
-        },
-    };
+    const payload = buildZenonPayload({
+        amount: priceAed,
+        origin,
+        userId: String(userId),
+        firstName,
+        lastName,
+        email: String(user?.email ?? ''),
+        orderId,
+        planParam,
+    });
 
-    const clientRequestId = generateUUID();
-    const timestampMs = String(Date.now());
-    const bodyString = JSON.stringify(requestBody);
-    const signature = generateSignature({ apiKey: API_KEY, clientRequestId, timestampMs, body: bodyString, secret: SECRET });
+    const apiUrl = readEnv('ZENON_PAYMENT_API_URL', ZENON_PAYMENT_API);
 
-    const fiservRes = await fetch(BASE_URL, {
+    const zenonRes = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Api-Key': API_KEY,
-            'Client-Request-Id': clientRequestId,
-            Timestamp: timestampMs,
-            'Message-Signature': signature,
-        },
-        body: bodyString,
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
         cache: 'no-store',
     });
 
-    const text = await fiservRes.text();
-    const json = (() => {
-        try {
-            return JSON.parse(text);
-        } catch {
-            return null;
-        }
-    })();
-
-    if (!fiservRes.ok) {
-        return NextResponse.json({ error: 'Fiserv API error', httpStatus: fiservRes.status, details: json ?? text }, { status: 502 });
+    const text = await zenonRes.text();
+    let json: Record<string, unknown> | null = null;
+    try {
+        json = JSON.parse(text) as Record<string, unknown>;
+    } catch {
+        // ignore
     }
 
-    const checkoutUrl = extractCheckoutUrl(json);
-    if (!checkoutUrl) return NextResponse.json({ error: 'No checkoutUrl found in Fiserv response', details: json ?? text }, { status: 502 });
+    if (!zenonRes.ok) {
+        return NextResponse.json(
+            { error: 'Payment gateway error', details: json?.errorMessage ?? text, httpStatus: zenonRes.status },
+            { status: 502 },
+        );
+    }
 
-    db.fiservTransactions.upsert({
-        user_id: userId,
-        order_id: orderId,
-        checkout_id: typeof json?.checkout?.checkoutId === 'string' ? json.checkout.checkoutId : null,
-        transaction_id: null,
-        status: 'pending',
-        amount: Number(priceAed.toFixed(2)),
-        currency: 'AED',
-        customer_email: String((user as any)?.email ?? ''),
-        customer_name: String((user as any)?.name ?? ''),
-        ...(coinPackageId ? { coin_package_id: coinPackageId, purchased_coin_amount: purchasedCoinAmount } : {}),
-        ...(planId ? { plan_id: planId } : {}),
-    });
+    const success = json?.success === true;
+    const checkoutUrl = typeof json?.checkoutUrl === 'string' ? json.checkoutUrl : null;
+    const responseOrderId = typeof json?.orderId === 'string' ? json.orderId : orderId;
 
-    return NextResponse.json({ paymentUrl: checkoutUrl, orderId }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
+    if (!success || !checkoutUrl) {
+        return NextResponse.json(
+            { error: typeof json?.errorMessage === 'string' ? json.errorMessage : 'No checkout URL in response' },
+            { status: 502 },
+        );
+    }
+
+    return NextResponse.json(
+        { paymentUrl: checkoutUrl, orderId: responseOrderId, checkoutId: json?.checkoutId },
+        { headers: { 'Cache-Control': 'no-store, max-age=0' } },
+    );
 }
-

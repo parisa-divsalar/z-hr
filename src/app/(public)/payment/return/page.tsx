@@ -91,11 +91,15 @@ export default function PaymentReturnPage() {
         gap={2}
       >
         <Typography variant='h4' fontWeight={800}>
-          Payment {status === 'success' ? 'successful' : status === 'cancelled' ? 'cancelled' : 'failed'}
+          {status === 'success' ? 'Payment successful' : status === 'cancelled' ? 'Payment cancelled' : 'Payment failed'}
         </Typography>
 
         <Alert severity={status === 'success' ? 'success' : status === 'cancelled' ? 'warning' : 'error'}>
-          {sent ? 'Result sent back to the app. You can close this tab.' : 'Sending result back to the app…'}
+          {status === 'success'
+            ? (sent ? 'Payment completed successfully. You can close this tab and return to the app.' : 'Payment completed. Sending result back to the app…')
+            : sent
+              ? 'Result sent back to the app. You can close this tab.'
+              : 'Sending result back to the app…'}
         </Alert>
 
         <Stack gap={0.75}>

@@ -301,8 +301,12 @@ export default function CustomPlanBuilderCard() {
         const url = String(json?.paymentUrl ?? '').trim();
         if (!url) throw new Error('Missing paymentUrl');
 
-        if (popup && !popup.closed) popup.location.href = url;
-        else window.location.assign(url);
+        if (popup && !popup.closed) {
+          popup.location.href = url;
+        } else {
+          const w = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!w || w.closed) window.location.assign(url);
+        }
       } catch (e) {
         try {
           popup?.close();

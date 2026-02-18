@@ -401,7 +401,8 @@ const Pricing = () => {
                     setActionLoadingId(null);
                     return;
                 }
-                window.location.href = url;
+                const w = window.open(url, '_blank', 'noopener,noreferrer');
+                if (!w || w.closed) window.location.href = url;
             } catch (e) {
                 console.error('Upgrade create-session failed:', e);
                 setUpgradeError(e instanceof Error ? e.message : 'Connection error');
