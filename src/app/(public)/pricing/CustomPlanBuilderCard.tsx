@@ -252,36 +252,23 @@ export default function CustomPlanBuilderCard() {
     [],
   );
 
-  const startDirectGatewayForMissingCoins = useCallback(
-    async (missingCoins: number) => {
+  /** Opens payment gateway with exact custom plan total (Total price). */
+  const startCustomPlanPayment = useCallback(
+    async (totalPriceAedCents: number, coinsToCredit: number) => {
       const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+      const amountAed = Number.isFinite(totalPriceAedCents) && totalPriceAedCents > 0 ? totalPriceAedCents / 100 : 0;
+      if (amountAed <= 0 || !Number.isFinite(coinsToCredit) || coinsToCredit <= 0) {
+        throw new Error('Invalid custom plan amount or coins.');
+      }
 
       try {
-        // Find the smallest paid coin package that covers the missing amount.
-        const pkRes = await fetch('/api/pricing/coin-packages', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-        const pkJson = (await pkRes.json().catch(() => ({}))) as { data?: any[]; error?: string };
-        if (!pkRes.ok) throw new Error(String(pkJson?.error ?? `HTTP ${pkRes.status}`));
-        const pkgs = Array.isArray(pkJson?.data) ? pkJson.data : [];
-
-        const normalized = pkgs
-          .map((p) => ({
-            id: Number(p?.id),
-            coinAmount: Number(p?.coin_amount ?? p?.coinAmount ?? 0),
-            priceAed: Number(p?.price_aed ?? p?.priceAed ?? 0),
-          }))
-          .filter((p) => Number.isFinite(p.id) && p.id > 0)
-          .filter((p) => Number.isFinite(p.coinAmount) && p.coinAmount > 0)
-          .filter((p) => Number.isFinite(p.priceAed) && p.priceAed > 0)
-          .sort((a, b) => a.coinAmount - b.coinAmount);
-
-        const target = normalized.find((p) => p.coinAmount >= missingCoins) ?? normalized[normalized.length - 1];
-        const coinPackageId = target?.id ?? null;
-        if (!coinPackageId) throw new Error('No paid coin package available.');
-
         const res = await fetch('/api/payment/create-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ coinPackageId }),
+          body: JSON.stringify({
+            amountAed: Math.round(amountAed * 100) / 100,
+            purchasedCoinAmount: Math.round(coinsToCredit),
+          }),
           cache: 'no-store',
         });
         const json = await res.json().catch(() => ({} as any));
@@ -345,14 +332,10 @@ export default function CustomPlanBuilderCard() {
       }
 
       if (res.status === 402) {
-        const remaining = Number(json?.remainingCredits ?? 0);
-        const required = Number(json?.requiredCredits ?? totalCoins);
-        const missing = Math.max(0, Math.round(required - remaining));
-        if (missing > 0) {
-          await startDirectGatewayForMissingCoins(missing);
-          setUpgradeSuccess(`Not enough coins. Opened direct gateway to buy at least ${missing} coins.`);
-          return;
-        }
+        // Send exact Total price to gateway (same as shown in UI)
+        await startCustomPlanPayment(totalWithTaxAedCents, totalCoins);
+        setUpgradeSuccess('Not enough coins. Opened payment gateway with your plan total.');
+        return;
       }
 
       if (!res.ok) throw new Error(String(json?.error ?? `HTTP ${res.status}`));
@@ -368,7 +351,7 @@ export default function CustomPlanBuilderCard() {
     } finally {
       setUpgradeLoading(false);
     }
-  }, [resetInputs, router, startDirectGatewayForMissingCoins, totalCoins]);
+  }, [resetInputs, router, startCustomPlanPayment, totalCoins, totalWithTaxAedCents]);
 
   return (
     <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: { xs: 4, md: 6 } }}>
