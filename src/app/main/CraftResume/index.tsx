@@ -9,6 +9,8 @@ import { motion } from 'framer-motion';
 
 import TypewriterText from '@/components/UI/TypewriterText';
 import { useGetStartedFree } from '@/hooks/useGetStartedFree';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 const HeroWrapper = styled(Box)(({ theme }) => ({
     textAlign: 'center',

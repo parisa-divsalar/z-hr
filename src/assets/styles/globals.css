@@ -4,6 +4,12 @@ html, body {
     padding: 0;
 }
 
+/* RTL: use Persian font from assets/fonts/Persian */
+[dir="rtl"] body,
+[dir="rtl"] {
+    font-family: var(--font-persian), Tahoma, Arial, sans-serif;
+}
+
 :root {
     --app-height: 100vh;
 }
