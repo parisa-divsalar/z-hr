@@ -7,6 +7,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 
 import { HeroWrapper, StepBadge, StepCard, StepsRow } from './styled';
 import { useGetStartedFree } from '@/hooks/useGetStartedFree';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 const AnimatedWords: FC<{
     text: string;
@@ -60,6 +62,8 @@ const AnimatedWords: FC<{
 };
 
 const HeroSection: FC = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).hero;
     const { onGetStartedFree, isRouting } = useGetStartedFree();
 
     return (
@@ -76,7 +80,7 @@ const HeroSection: FC = () => {
                     fontWeight={700}
                     mb='1rem'
                 >
-                    <AnimatedWords text='Professional & ATS-friendly Resume' />
+                    <AnimatedWords text={t.title} />
                 </Typography>
 
                 <Typography
@@ -85,7 +89,7 @@ const HeroSection: FC = () => {
                     sx={{ color: 'secondary.main', fontSize: { xs: '1.05rem', sm: '1.15rem', md: '1.25rem' } }}
                     fontWeight={492}
                 >
-                    Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
+                    {t.subtitle}
                 </Typography>
 
                 <Typography
@@ -103,8 +107,7 @@ const HeroSection: FC = () => {
                     }}
                     fontWeight={492}
                 >
-                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                    intelligence.
+                    {t.tagline}
                 </Typography>
 
                 <Button
@@ -121,7 +124,7 @@ const HeroSection: FC = () => {
                         textDecoration: 'none',
                     }}
                 >
-                    Get Started Free
+                    {t.getStarted}
                 </Button>
 
                 <StepsRow aria-label='steps'>
@@ -139,10 +142,10 @@ const HeroSection: FC = () => {
                         })}
                     >
                         <StepBadge
-                            sx={(t) => ({
-                                backgroundColor: t.palette.primary.main,
+                            sx={(theme) => ({
+                                backgroundColor: theme.palette.primary.main,
                                 border: 'none',
-                                color: t.palette.common.white,
+                                color: theme.palette.common.white,
                                 boxShadow: '0 10px 22px rgba(77, 73, 252, 0.28)',
                             })}
                         >
@@ -156,10 +159,10 @@ const HeroSection: FC = () => {
                                 fontWeight='492'
                                 sx={{ color: 'primary.main', lineHeight: 1.15 }}
                             >
-                                First Step
+                                {t.firstStep}
                             </Typography>
                             <Typography fontWeight='400' variant='subtitle2' sx={{ color: 'text.secondary' }}>
-                                Answer questions
+                                {t.answerQuestions}
                             </Typography>
                         </Box>
                     </StepCard>
@@ -189,10 +192,10 @@ const HeroSection: FC = () => {
                                 fontWeight='492'
                                 sx={{ color: 'text.primary', lineHeight: 1.15 }}
                             >
-                                Second Step
+                                {t.secondStep}
                             </Typography>
                             <Typography fontWeight='400' variant='subtitle2' sx={{ color: 'text.secondary' }}>
-                                Review and Submit
+                                {t.reviewSubmit}
                             </Typography>
                         </Box>
                     </StepCard>
@@ -223,10 +226,10 @@ const HeroSection: FC = () => {
                                 fontWeight='492'
                                 sx={{ color: 'text.primary', lineHeight: 1.15 }}
                             >
-                                Final Step
+                                {t.finalStep}
                             </Typography>
                             <Typography fontWeight='400' variant='subtitle2' sx={{ color: 'text.secondary' }}>
-                                Download a resume
+                                {t.downloadResume}
                             </Typography>
                         </Box>
                     </StepCard>

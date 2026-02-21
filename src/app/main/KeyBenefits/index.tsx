@@ -1,6 +1,6 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
@@ -12,6 +12,8 @@ import JobOpportunityImage from '@/assets/images/main/job-opportunity.png';
 import MiddleEastImage from '@/assets/images/main/middle-east.png';
 import QuickResumeImage from '@/assets/images/main/quick-resume.png';
 import { useGetStartedFree } from '@/hooks/useGetStartedFree';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 interface Benefit {
     title: string;
@@ -22,8 +24,20 @@ interface Benefit {
 const MotionBox = motion(Box);
 
 const KeyBenefits: FC = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).keyBenefits;
     const shouldReduceMotion = useReducedMotion();
     const { onGetStartedFree, isRouting } = useGetStartedFree();
+
+    const benefits: Benefit[] = useMemo(
+        () =>
+            t.benefits.map((b, i) => ({
+                title: b.title,
+                description: b.description,
+                image: [QuickResumeImage, JobOpportunityImage, AITextImage, MiddleEastImage][i] as StaticImageData,
+            })),
+        [t.benefits],
+    );
 
     const containerVariants: Variants = {
         hidden: {},
@@ -67,33 +81,6 @@ const KeyBenefits: FC = () => {
         },
     } as const;
 
-    const benefits: Benefit[] = [
-        {
-            title: 'ATS-Friendly Resume That Gets Past Filters',
-            description:
-                'Create an ATS-friendly resume designed to pass automated screening and stay readable for real hiring managers',
-            image: QuickResumeImage,
-        },
-        {
-            title: 'Tailor Your Resume to Any Job Description',
-            description:
-                'Tailor your resume to match the Job Description (JD) to highlight your relevant skills and experience.',
-            image: JobOpportunityImage,
-        },
-        {
-            title: 'AI Resume Builder, Done in Minutes',
-            description:
-                'Use an AI Resume Builder to generate a polished, professional resume without starting from scratch',
-            image: AITextImage,
-        },
-        {
-            title: 'Keyword Optimization for Higher Visibility',
-            description:
-                'Find missing keywords with a Keyword Gap approach so your resume matches UAE job posts more accurately',
-            image: MiddleEastImage,
-        },
-    ];
-
     return (
         <Container>
             <Box
@@ -107,12 +94,11 @@ const KeyBenefits: FC = () => {
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 4 }, alignItems: 'flex-start' }}>
                     <Typography variant='h2' color='secondary.main' fontWeight={'700'}>
-                        Key Benefits
+                        {t.title}
                     </Typography>
 
                     <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'}>
-                        Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for the
-                        markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.
+                        {t.intro}
                     </Typography>
 
                     <Button
@@ -123,7 +109,7 @@ const KeyBenefits: FC = () => {
                         disabled={isRouting}
                         sx={{ textDecoration: 'none' }}
                     >
-                        Get Started Free
+                        {t.getStarted}
                     </Button>
                 </Box>
 
@@ -149,7 +135,7 @@ const KeyBenefits: FC = () => {
                     }}
                 >
                     <Typography variant='h5' color='secondary.main' fontWeight={'584'}>
-                        Dubai & UAE CV Format, Ready to Submit{' '}
+                        {t.dubaiCvTitle}{' '}
                     </Typography>
 
                     <Typography
@@ -159,8 +145,7 @@ const KeyBenefits: FC = () => {
                         color='secondary.main'
                         fontWeight={'492'}
                     >
-                        Build a Dubai-ready CV that matches UAE resume format expectations, from layout to
-                        recruiter-friendly
+                        {t.dubaiCvDesc}
                     </Typography>
 
                     <Box sx={rotateImageOnHoverSx}>

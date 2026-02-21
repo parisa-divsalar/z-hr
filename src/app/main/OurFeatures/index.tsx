@@ -2,15 +2,14 @@
 
 import * as React from 'react';
 
-import {
-    Box,
-    Container,
-    Typography,
-} from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
+
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 const OurFeatures = () => {
-    const description =
-        'Please provide details about your current visa status and the languages you speak fluently. Additionally, share your primary area of expertise and a summary of your previous work experiences. Include any certifications you hold, and let us know if you are open to relocating for work. What are your salary expectations, and how many years of experience do you have in your field? Finally, outline your career goals for the next five years.';
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).ourFeatures;
 
     type OurFeatureItem = {
         title: string;
@@ -20,34 +19,11 @@ const OurFeatures = () => {
     };
 
     const items: OurFeatureItem[] = [
-        {
-            title: 'Response to questions in 9 stages',
-            description,
-            media: '/images/main/main.svg',
-        },
-        {
-            title: 'Review the resume before the final exit',
-            description,
-            media: '/images/main/main1.svg',
-            reverse: true,
-        },
-        {
-            title: 'Check out our awesome features!',
-            description,
-            media: '/images/main/main2.svg',
-        },
-        {
-            title: 'Finish, you can download and use your resume and its features.',
-            description,
-            media: '/images/main/main3.svg',
-            reverse: true,
-        },
-        {
-            title: 'Use the features in the Dashboard',
-            description,
-            media: '/images/main/main4.svg',
-        },
-
+        { title: t.items[0].title, description: t.description, media: '/images/main/main.svg' },
+        { title: t.items[1].title, description: t.description, media: '/images/main/main1.svg', reverse: true },
+        { title: t.items[2].title, description: t.description, media: '/images/main/main2.svg' },
+        { title: t.items[3].title, description: t.description, media: '/images/main/main3.svg', reverse: true },
+        { title: t.items[4].title, description: t.description, media: '/images/main/main4.svg' },
     ];
 
     return (
@@ -55,7 +31,7 @@ const OurFeatures = () => {
             component='section'
             sx={{
                 width: '100%',
-                direction: 'ltr',
+                direction: locale === 'fa' ? 'rtl' : 'ltr',
                 bgcolor: 'common.white',
                 pt: { xs: 7, sm: 9, md: 11 },
             }}
@@ -63,7 +39,7 @@ const OurFeatures = () => {
             <Container>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75, alignItems: 'center' }}>
                     <Typography variant='h3' color='secondary.main' fontWeight={700}>
-                        Our Features
+                        {t.title}
                     </Typography>
 
                     <Typography
@@ -74,10 +50,7 @@ const OurFeatures = () => {
                         textAlign='center'
                         sx={{ maxWidth: 760, opacity: 0.92, lineHeight: 1.7 }}
                     >
-                        Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-                        <br />
-                        Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                        intelligence.
+                        {t.intro}
                     </Typography>
                 </Box>
 

@@ -18,6 +18,8 @@ import Grid from '@mui/material/Grid';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 
 import { faqSx } from './Faq.styles';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type FaqItem = {
     id: string;
@@ -86,6 +88,17 @@ const Sparkle = (props: { size?: number }) => {
 };
 
 const Faq = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).faq;
+    const FAQ_ITEMS: FaqItem[] = React.useMemo(
+        () =>
+            t.items.map((item, i) => ({
+                id: `faq-${i}`,
+                question: item.question,
+                answer: item.answer,
+            })),
+        [t.items],
+    );
     const [expanded, setExpanded] = React.useState<string | false>(FAQ_ITEMS[0]?.id ?? false);
     const shouldReduceMotion = useReducedMotion();
 
@@ -125,18 +138,16 @@ const Faq = () => {
                     <Grid size={{ xs: 12, md: 4 }}>
                         <Box sx={faqSx.stickyCol}>
                             <Typography variant='h2' fontWeight='700' sx={faqSx.heading}>
-                                FAQ
+                                {t.title}
                             </Typography>
 
                             <Typography variant='subtitle1' fontWeight='492' color='text.primary' mt={4}>
-                                "Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for
-                                the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                                intelligence.
+                                {t.intro}
                             </Typography>
 
                             <Box sx={faqSx.ctaWrap} mt={4}>
                                 <Button variant='contained' disableElevation sx={faqSx.ctaButton}>
-                                    Ask Your Question
+                                    {t.askQuestion}
                                 </Button>
 
                                 <Box sx={faqSx.sparkleCtaFloat}>

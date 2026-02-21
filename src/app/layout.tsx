@@ -1,7 +1,8 @@
 import { ReactNode, Suspense } from 'react';
 
 import Loading from '@/app/loading';
-import { interphasesFont } from '@/config/fonts';
+import { interphasesFont, persianFont } from '@/config/fonts';
+import { LocaleProvider } from '@/providers/LocaleProvider';
 import { ThemeProvider } from '@/providers/theme';
 import '@/config/configAxios';
 
@@ -25,10 +26,12 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en' dir='ltr' className={`${interphasesFont.variable}`}>
+    <html lang='en' dir='ltr' className={`${interphasesFont.variable} ${persianFont.variable}`}>
       <body>
         <Suspense fallback={<Loading />}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <LocaleProvider>
+            <ThemeProvider>{children}</ThemeProvider>
+          </LocaleProvider>
         </Suspense>
       </body>
     </html>

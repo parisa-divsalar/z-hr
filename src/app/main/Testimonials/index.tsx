@@ -1,12 +1,14 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import { Box, Button, Container, Typography } from '@mui/material';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import Image from 'next/image';
 
 import AvatarImage from '@/assets/images/bg/avatar.png';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type Testimonial = {
     id: string;
@@ -17,7 +19,7 @@ type Testimonial = {
 
 const MotionBox = motion(Box);
 
-const TESTIMONIALS: Testimonial[] = [
+const _testimonialsPlaceholder = [
     {
         id: 'pavel-1',
         role: 'CEO of Telegram',
@@ -50,9 +52,21 @@ Tailored for the markets of Iran and Dubai, featuring modern templates and advan
 
 Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.`,
     },
-];
+] as Testimonial[];
 
 const Testimonials: FC = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).testimonials;
+    const TESTIMONIALS: Testimonial[] = useMemo(
+        () =>
+            [1, 2, 3].map((i) => ({
+                id: `pavel-${i}`,
+                role: t.items[0].role,
+                name: t.items[0].name,
+                quote: t.items[0].quote,
+            })),
+        [t.items],
+    );
     const shouldReduceMotion = useReducedMotion();
 
     const containerVariants: Variants = {
@@ -90,13 +104,11 @@ const Testimonials: FC = () => {
                 }}
             >
                 <Typography variant='h2' color='text.primary' fontWeight='800' sx={{ letterSpacing: '-0.02em' }}>
-                    Testimonials
+                    {t.title}
                 </Typography>
 
                 <Typography variant='subtitle1' color='text.secondary' fontWeight='492' mb={3} sx={{ maxWidth: 860, lineHeight: 1.8 }}>
-                    "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-                    <br />
-                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial ."
+                    {t.intro}
                 </Typography>
 
                 <Button
@@ -114,7 +126,7 @@ const Testimonials: FC = () => {
                         '&:hover': { bgcolor: '#0B1220' },
                     }}
                 >
-                    Ask Your Question
+                    {t.askQuestion}
                 </Button>
             </Box>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import Image, { StaticImageData } from 'next/image';
@@ -11,14 +11,38 @@ import KeywordImage from '@/assets/images/main/keyword.png';
 import ModernATSImage from '@/assets/images/main/modern-ats.png';
 import OneClickImage from '@/assets/images/main/one-click.png';
 import { useGetStartedFree } from '@/hooks/useGetStartedFree';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 interface Feature {
     title: string;
     description: string;
     image: StaticImageData;
 }
+
+const FEATURE_IMAGES: StaticImageData[] = [
+    AIBulletImage,
+    ATSScoreImage,
+    KeywordImage,
+    ModernATSImage,
+    ATSScoreImage,
+    OneClickImage,
+];
+
 const ProductFeatures: FC = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).productFeatures;
     const { onGetStartedFree, isRouting } = useGetStartedFree();
+
+    const features: Feature[] = useMemo(
+        () =>
+            t.features.map((f, i) => ({
+                title: f.title,
+                description: f.description,
+                image: FEATURE_IMAGES[i] as StaticImageData,
+            })),
+        [t.features],
+    );
 
     const featureCardSx = {
         position: 'relative',
@@ -87,58 +111,15 @@ const ProductFeatures: FC = () => {
         },
     } as const;
 
-    const features: Feature[] = [
-        {
-            title: 'One-Click Job Description Import',
-            description:
-                'Paste or import a Job Description and instantly tailor your resume content to match role requirements',
-            image: AIBulletImage,
-        },
-        {
-            title: 'AI Bullet Points Generator',
-            description:
-                'Turn tasks into impact-driven achievements with an AI bullet points generator (clear, concise, recruiter-ready)',
-            image: ATSScoreImage,
-        },
-        {
-            title: 'ATS Score Checker / Profile',
-            description:
-                'Check resume structure and content with an ATS score checker style review to improve compatibility and clarity',
-            image: KeywordImage,
-        },
-        {
-            title: 'Keyword Gap Analyzer',
-            description:
-                'Identify missing keywords from the JD and improve matching with a built-in keyword gap analyzer',
-            image: ModernATSImage,
-        },
-        {
-            title: 'Modern ATS-Friendly Templates',
-            description:
-                'Pick from ATS-friendly resume templates optimized for a clean Dubai CV format look and faster scanning',
-            image: ATSScoreImage,
-        },
-        {
-            title: 'AI Cover Letter Builder',
-            description:
-                'Generate a tailored cover letter aligned to the same job description, so your application stays consistent',
-            image: OneClickImage,
-        },
-    ];
-
     return (
         <Container sx={{ mt: '5rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
                 <Typography variant='h2' color='secondary.main' fontWeight={'700'}>
-                    Product Features
+                    {t.title}
                 </Typography>
 
                 <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
-                    Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-                </Typography>
-                <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'} textAlign={'center'}>
-                    Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial
-                    intelligence.
+                    {t.intro}
                 </Typography>
             </div>
             <Box
@@ -188,7 +169,7 @@ const ProductFeatures: FC = () => {
                     disabled={isRouting}
                     sx={{ textDecoration: 'none' }}
                 >
-                    Get Started Free
+                    {t.getStarted}
                 </Button>
             </Stack>
         </Container>

@@ -22,8 +22,7 @@ export const MainNavbarContent = styled(Stack)(({ theme }) => ({
   zIndex: 99,
   height: '76px',
   margin: '0 auto',
-  paddingLeft: theme.spacing(2),
-  paddingRight: theme.spacing(2),
+  paddingInline: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
     height: '64px',
   },

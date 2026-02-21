@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
 import { PublicRoutes } from '@/config/routes';
+import { mainTranslations, getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type PlanCard = {
     id: string;
@@ -49,15 +51,17 @@ function toFiniteNumber(v: unknown, fallback = 0): number {
     return Number.isFinite(n) ? n : fallback;
 }
 
-function formatAed(priceAed: number): string {
+type PricingT = (typeof mainTranslations)['en']['pricing'];
+
+function formatAed(priceAed: number, freeLabel: string): string {
     const n = Number.isFinite(priceAed) ? priceAed : 0;
-    if (n <= 0) return 'Free';
+    if (n <= 0) return freeLabel;
     const rounded = Math.round(n * 100) / 100;
     const label = rounded % 1 === 0 ? String(rounded.toFixed(0)) : String(rounded.toFixed(2));
     return `${label} AED`;
 }
 
-function normalizePackagesToPlans(rows: CoinPackageRow[]): PlanCard[] {
+function normalizePackagesToPlans(rows: CoinPackageRow[], t: PricingT): PlanCard[] {
     const safeRows = Array.isArray(rows) ? rows : [];
 
     const paidRows = safeRows.filter((r) => toFiniteNumber(r?.price_aed, 0) > 0);
@@ -92,11 +96,11 @@ function normalizePackagesToPlans(rows: CoinPackageRow[]): PlanCard[] {
                 title,
                 coins,
                 subtitle: '',
-                saveText: `Save ${saving}% on features`,
-                priceText: formatAed(priceAed),
-                ctaText: isCurrent ? 'Current Plan' : 'Upgrade Now',
+                saveText: t.savePercent(saving),
+                priceText: formatAed(priceAed, t.free),
+                ctaText: isCurrent ? t.currentPlan : t.upgradeNow,
                 isCurrent,
-                badge: isPopular ? 'Popular' : undefined,
+                badge: isPopular ? t.popular : undefined,
                 highlighted: isPopular,
             } satisfies PlanCard;
         })
@@ -104,8 +108,8 @@ function normalizePackagesToPlans(rows: CoinPackageRow[]): PlanCard[] {
 
     // Keep a stable, sensible order (by coins, with Free first if present).
     plans.sort((a, b) => {
-        const aFree = a.priceText === 'Free' ? 1 : 0;
-        const bFree = b.priceText === 'Free' ? 1 : 0;
+        const aFree = a.priceText === t.free ? 1 : 0;
+        const bFree = b.priceText === t.free ? 1 : 0;
         if (aFree !== bFree) return bFree - aFree; // free first
         return a.coins - b.coins;
     });
@@ -120,6 +124,7 @@ function PlanCardView({
     ctaDisabled,
     ctaLabel,
     onCta,
+    coinsLabel,
 }: {
     plan: PlanCard;
     selected: boolean;
@@ -127,6 +132,7 @@ function PlanCardView({
     ctaDisabled: boolean;
     ctaLabel: string;
     onCta: () => void;
+    coinsLabel: string;
 }) {
     const highlighted = Boolean(plan.highlighted);
     const isCurrent = Boolean(plan.isCurrent);
@@ -221,7 +227,7 @@ function PlanCardView({
                     fontWeight={700}
                     sx={{ transform: 'translateY(-2px)' }}
                 >
-                    Coins
+                    {coinsLabel}
                 </Typography>
             </Stack>
 
@@ -281,6 +287,8 @@ mt={4}
 }
 
 const Pricing = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).pricing;
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -326,7 +334,7 @@ const Pricing = () => {
                 const json = (await res.json().catch(() => ({}))) as CoinPackagesApiResponse;
                 if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
                 const rows = Array.isArray(json?.data) ? json.data : [];
-                const nextPlans = normalizePackagesToPlans(rows);
+                const nextPlans = normalizePackagesToPlans(rows, getMainTranslations(locale).pricing);
                 setPlans(nextPlans);
             } catch (e) {
                 if (signal.aborted) return;
@@ -338,7 +346,7 @@ const Pricing = () => {
         })();
 
         return () => controller.abort();
-    }, []);
+    }, [locale]);
 
     useEffect(() => {
         void refetchMe();
@@ -426,13 +434,13 @@ const Pricing = () => {
                 {loading ? (
                     <Stack width='100%' alignItems='center' justifyContent='center' py={4}>
                         <Typography variant='body2' color='text.secondary'>
-                            Loading plans...
+                            {t.loadingPlans}
                         </Typography>
                     </Stack>
                 ) : error || plans.length === 0 ? (
                     <Stack width='100%' alignItems='center' justifyContent='center' py={4}>
                         <Typography variant='body2' color='error'>
-                            Could not load coin packages from database{error ? `: ${error}` : ''}
+                            {t.loadError}{error ? `: ${error}` : ''}
                         </Typography>
                     </Stack>
                 ) : (
@@ -458,26 +466,27 @@ const Pricing = () => {
                                 plan={p}
                                 selected={p.id === selectedPlanId}
                                 onSelect={handleSelect}
+                                coinsLabel={t.coins}
                                 ctaDisabled={
                                     Boolean(actionLoadingId) ||
                                     meLoading ||
-                                    (p.priceText === 'Free'
+                                    (p.priceText === t.free
                                         ? Boolean(me?.has_used_free_plan)
                                         : false)
                                 }
                                 ctaLabel={
-                                    p.priceText === 'Free'
+                                    p.priceText === t.free
                                         ? me?.has_used_free_plan
-                                            ? 'Already Used'
+                                            ? t.alreadyUsed
                                             : me
-                                                ? 'Claim Free Plan'
-                                                : 'Login'
+                                                ? t.claimFreePlan
+                                                : t.login
                                         : me
-                                            ? 'Upgrade Now'
-                                            : 'Login'
+                                            ? t.upgradeNow
+                                            : t.login
                                 }
                                 onCta={() => {
-                                    if (p.priceText === 'Free') {
+                                    if (p.priceText === t.free) {
                                         void handleClaimFree();
                                         return;
                                     }

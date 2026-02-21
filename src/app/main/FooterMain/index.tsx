@@ -8,8 +8,6 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import { Box, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 
-import { AppImage } from '@/components/AppImage';
-import { PublicRoutes } from '@/config/routes';
 import {
     BottomNote,
     ColumnItem,
@@ -25,17 +23,24 @@ import {
     TopRow,
 } from '@/app/main/FooterMain/styled';
 import logo from '@/assets/images/logo/logo.png';
-
-const COLUMNS: { title: string; items: string[] }[] = [
-    { title: 'Title', items: ['Item', 'Item', 'Item', 'Item', 'Item'] },
-    { title: 'Title', items: ['Item', 'Item', 'Item', 'Item', 'Item'] },
-    { title: 'Title', items: ['Item', 'Item'] },
-    { title: 'Title', items: ['Item', 'Item', 'Item', 'Item'] },
-];
+import { AppImage } from '@/components/AppImage';
+import { PublicRoutes } from '@/config/routes';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 const FooterMain: FC = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).footer;
+
+    const COLUMNS: { title: string; items: string[] }[] = [
+        { title: t.columnTitle, items: [t.columnItem, t.columnItem, t.columnItem, t.columnItem, t.columnItem] },
+        { title: t.columnTitle, items: [t.columnItem, t.columnItem, t.columnItem, t.columnItem, t.columnItem] },
+        { title: t.columnTitle, items: [t.columnItem, t.columnItem] },
+        { title: t.columnTitle, items: [t.columnItem, t.columnItem, t.columnItem, t.columnItem] },
+    ];
+
     return (
-        <FooterWrapper as='footer' dir='ltr'>
+        <FooterWrapper as='footer' dir={locale === 'fa' ? 'rtl' : 'ltr'}>
             <FooterContent>
                 <TopRow direction='row'>
                     <Stack direction='row' alignItems='center' gap={2}>
@@ -46,25 +51,25 @@ const FooterMain: FC = () => {
                         </Typography>
 
                         <Typography variant='subtitle2' fontWeight='400' sx={{ color: 'rgba(255,255,255,0.55)' }}>
-                            AI Resume Maker
+                            {t.aiResumeMaker}
                         </Typography>
                     </Stack>
 
                     <TopNav direction='row'>
                         <Link href='/' style={{ textDecoration: 'none' }}>
-                            <TopNavItem variant='subtitle2'>Home</TopNavItem>
+                            <TopNavItem variant='subtitle2'>{t.home}</TopNavItem>
                         </Link>
                         <TopNavItem fontWeight='400' variant='subtitle2'>
-                            About Us
+                            {t.aboutUs}
                         </TopNavItem>
                         <Link href={PublicRoutes.pricing} style={{ textDecoration: 'none' }}>
                             <TopNavItem fontWeight='400' variant='subtitle2'>
-                                Our Plans
+                                {t.ourPlans}
                             </TopNavItem>
                         </Link>
                         <Link href={PublicRoutes.contactUs} style={{ textDecoration: 'none' }}>
                             <TopNavItem fontWeight='400' variant='subtitle2'>
-                                Contact Us
+                                {t.contactUs}
                             </TopNavItem>
                         </Link>
                     </TopNav>
@@ -137,7 +142,7 @@ const FooterMain: FC = () => {
                     </Box>
                 </FooterGrid>
 
-                <BottomNote variant='caption'>©2025 Z-AI Company</BottomNote>
+                <BottomNote variant='caption'>{t.copyright}</BottomNote>
             </FooterContent>
         </FooterWrapper>
     );

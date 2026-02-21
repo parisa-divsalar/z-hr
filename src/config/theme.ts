@@ -2,8 +2,10 @@
 
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 
-const commonSettings: ThemeOptions = {
-    direction: 'rtl',
+type ThemeDirection = 'ltr' | 'rtl';
+
+const getCommonSettings = (direction: ThemeDirection): ThemeOptions => ({
+    direction,
     breakpoints: {
         values: {
             xs: 444,
@@ -202,7 +204,10 @@ const commonSettings: ThemeOptions = {
         },
     },
     typography: {
-        fontFamily: 'var(--font-interphases), Arial, sans-serif',
+        fontFamily:
+            direction === 'rtl'
+                ? 'var(--font-persian), Tahoma, Arial, sans-serif'
+                : 'var(--font-interphases), Arial, sans-serif',
         h1: {
             fontSize: '3rem', // 48px
         },
@@ -251,11 +256,12 @@ const commonSettings: ThemeOptions = {
             fontSize: '0.625rem', // 10px
         },
     },
-};
+});
 
-export const darkTheme = createTheme({
-    ...commonSettings,
-    palette: {
+export const getDarkTheme = (direction: ThemeDirection = 'ltr') =>
+    createTheme({
+        ...getCommonSettings(direction),
+        palette: {
         mode: 'dark',
         primary: {
             main: '#4d49fc',
@@ -313,12 +319,13 @@ export const darkTheme = createTheme({
             paper: '#263238',
         },
     },
-});
+    });
 
-export const lightTheme = createTheme({
-    ...commonSettings,
-    palette: {
-        mode: 'light',
+export const getLightTheme = (direction: ThemeDirection = 'ltr') =>
+    createTheme({
+        ...getCommonSettings(direction),
+        palette: {
+            mode: 'light',
         primary: {
             main: '#4d49fc',
             light: '#F1F1FE',
@@ -380,4 +387,7 @@ export const lightTheme = createTheme({
             paper: '#FAFAFA',
         },
     },
-});
+    });
+
+export const lightTheme = getLightTheme('ltr');
+export const darkTheme = getDarkTheme('ltr');

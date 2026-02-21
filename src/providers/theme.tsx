@@ -6,18 +6,27 @@ import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from '@mui/material';
 
-import { lightTheme, darkTheme } from '@/config/theme';
-import { useThemeStore } from '@/store/common';
+import { getDarkTheme, getLightTheme } from '@/config/theme';
+import { useLocaleStore, useThemeStore } from '@/store/common';
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const { mode, setMode } = useThemeStore();
+  const locale = useLocaleStore((s) => s.locale);
   const [isMounted, setIsMounted] = useState(false);
 
-  const theme = useMemo(() => (mode === 'dark' ? darkTheme : lightTheme), [mode]);
-
-  const cacheRtl = createCache({
-    key: 'mui-rtl',
-  });
+  const direction = locale === 'fa' ? 'rtl' : 'ltr';
+  const theme = useMemo(
+    () => (mode === 'dark' ? getDarkTheme(direction) : getLightTheme(direction)),
+    [mode, direction],
+  );
+  const cache = useMemo(
+    () =>
+      createCache({
+        key: direction === 'rtl' ? 'mui-rtl' : 'mui-ltr',
+        ...(direction === 'rtl' ? { rtl: true } : {}),
+      }),
+    [direction],
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -37,7 +46,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <CacheProvider value={cacheRtl}>
+    <CacheProvider value={cache}>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
         {children}

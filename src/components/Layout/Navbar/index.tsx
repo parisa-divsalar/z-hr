@@ -46,7 +46,8 @@ import {
 } from '@/config/routes';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useThemeStore } from '@/store/common';
+import { getMainTranslations } from '@/locales/main';
+import { type Locale, useLocaleStore, useThemeStore } from '@/store/common';
 
 function getInitials(nameOrEmail: string): string {
   const value = (nameOrEmail ?? '').trim();
@@ -65,6 +66,7 @@ function getInitials(nameOrEmail: string): string {
 
 const Navbar = () => {
   const { mode, setMode } = useThemeStore();
+  const { locale, setLocale } = useLocaleStore();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuthSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -81,36 +83,18 @@ const Navbar = () => {
 
   const isLayoutActive = isLayoutVisible(pathname);
 
+  const navLabels = getMainTranslations(locale).nav;
   const navItems = useMemo(() => {
-    if (showAuthedUI) {
-      return [
-        // { label: 'Home', href: '/' },
-        // // TODO: Wire these up to real routes/anchors when available.
-        // { label: 'About Us', href: '/#about' },
-        // { label: 'Our Plans', href: PublicRoutes.pricing },
-        //   { label: 'FAQ', href: PublicRoutes.faq },
-        //   { label: 'Blog', href: PublicRoutes.blog },
-        //
-        //   { label: 'Contact Us', href: PublicRoutes.contactUs },
-          { label: 'Home', href: '/' },
-          { label: 'CV/Resume Builder', href: PublicRoutes.landing },
-          { label: 'Pricing', href:  PublicRoutes.pricing },
-          { label: 'Blog', href: PublicRoutes.blog },
-          { label: 'FAQ', href: PublicRoutes.faq },
-          { label: 'Contact Us', href: PublicRoutes.contactUs },
-      ];
-    }
-
-    // Public/unauthenticated navbar (matches the marketing top nav).
-    return [
-      { label: 'Home', href: '/' },
-      { label: 'CV/Resume Builder', href: PublicRoutes.landing },
-      { label: 'Pricing', href:  PublicRoutes.pricing },
-      { label: 'Blog', href: PublicRoutes.blog },
-      { label: 'FAQ', href: PublicRoutes.faq },
-      { label: 'Contact Us', href: PublicRoutes.contactUs },
+    const items = [
+      { label: navLabels.home, href: '/' },
+      { label: navLabels.cvResumeBuilder, href: PublicRoutes.landing },
+      { label: navLabels.pricing, href: PublicRoutes.pricing },
+      { label: navLabels.blog, href: PublicRoutes.blog },
+      { label: navLabels.faq, href: PublicRoutes.faq },
+      { label: navLabels.contactUs, href: PublicRoutes.contactUs },
     ];
-  }, [showAuthedUI]);
+    return items;
+  }, [navLabels]);
 
   const userInitials = useMemo(() => {
     if (profile?.name?.trim()) return getInitials(profile.name);
@@ -118,12 +102,13 @@ const Navbar = () => {
     return 'U';
   }, [profile?.email, profile?.name]);
 
+  const appT = getMainTranslations(locale).app;
   const creditsText = useMemo(() => {
     if (!showAuthedUI) return '';
     if (isProfileLoading) return '...';
     const credits = Number(profile?.coin ?? 0);
-    return `${Number.isFinite(credits) ? credits : 0} Coin `;
-  }, [isProfileLoading, profile?.coin, showAuthedUI]);
+    return `${Number.isFinite(credits) ? credits : 0} ${appT.coin} `;
+  }, [appT.coin, isProfileLoading, profile?.coin, showAuthedUI]);
 
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
   const openMenu = useCallback(() => setIsMenuOpen(true), []);
@@ -178,12 +163,47 @@ const Navbar = () => {
             color='text.secondary'
             sx={{ display: { xs: 'none', sm: 'block' } }}
           >
-            AI Resume Maker
+            {appT.aiResumeMaker}
           </Typography>
         </Stack>
 
         {isMobile ? (
-          <IconButton
+          <>
+            <Stack direction='row' alignItems='center' gap={0.5}>
+              <ButtonBase
+                onClick={() => setLocale('fa' as Locale)}
+                sx={{
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: locale === 'fa' ? 'primary.main' : 'divider',
+                  bgcolor: locale === 'fa' ? 'primary.light' : 'transparent',
+                  '&:hover': { bgcolor: locale === 'fa' ? 'primary.light' : 'action.hover' },
+                }}
+              >
+                <Typography variant='caption' fontWeight={locale === 'fa' ? 700 : 500}>
+                  فارسی
+                </Typography>
+              </ButtonBase>
+              <ButtonBase
+                onClick={() => setLocale('en' as Locale)}
+                sx={{
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: locale === 'en' ? 'primary.main' : 'divider',
+                  bgcolor: locale === 'en' ? 'primary.light' : 'transparent',
+                  '&:hover': { bgcolor: locale === 'en' ? 'primary.light' : 'action.hover' },
+                }}
+              >
+                <Typography variant='caption' fontWeight={locale === 'en' ? 700 : 500}>
+                  EN
+                </Typography>
+              </ButtonBase>
+            </Stack>
+            <IconButton
             aria-label='Open menu'
             onClick={openMenu}
             sx={{
@@ -195,9 +215,45 @@ const Navbar = () => {
           >
             <MenuIcon />
           </IconButton>
+          </>
         ) : (
           <>
-            <Stack direction='row' gap={2}>
+            <Stack direction='row' alignItems='center' gap={2}>
+              <Stack direction='row' alignItems='center' gap={0.5}>
+                <ButtonBase
+                  onClick={() => setLocale('fa' as Locale)}
+                  sx={{
+                    px: 1.25,
+                    py: 0.5,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: locale === 'fa' ? 'primary.main' : 'divider',
+                    bgcolor: locale === 'fa' ? 'primary.light' : 'transparent',
+                    '&:hover': { bgcolor: locale === 'fa' ? 'primary.light' : 'action.hover' },
+                  }}
+                >
+                  <Typography variant='subtitle2' fontWeight={locale === 'fa' ? 700 : 500}>
+                    فارسی
+                  </Typography>
+                </ButtonBase>
+                <ButtonBase
+                  onClick={() => setLocale('en' as Locale)}
+                  sx={{
+                    px: 1.25,
+                    py: 0.5,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: locale === 'en' ? 'primary.main' : 'divider',
+                    bgcolor: locale === 'en' ? 'primary.light' : 'transparent',
+                    '&:hover': { bgcolor: locale === 'en' ? 'primary.light' : 'action.hover' },
+                  }}
+                >
+                  <Typography variant='subtitle2' fontWeight={locale === 'en' ? 700 : 500}>
+                    English
+                  </Typography>
+                </ButtonBase>
+              </Stack>
+              <Stack direction='row' gap={2}>
               {navItems.map((item) => {
                 const isActive = item.href === '/' ? isHomeActive : pathname === item.href;
 
@@ -213,6 +269,7 @@ const Navbar = () => {
                   </Link>
                 );
               })}
+              </Stack>
             </Stack>
 
             {showAuthedUI ? (
@@ -234,9 +291,7 @@ const Navbar = () => {
                     </Typography>
                   </Stack>
                 </ButtonBase>
-                <MuiButton color='secondary' onClick={() => router.push(`${PublicRoutes.landing}?new=1`)}>
-                  Create New
-                </MuiButton>
+
 
                 <Divider orientation='vertical' variant='middle' flexItem sx={{ backgroundColor: '#D8D8DA' }} />
 
@@ -326,6 +381,41 @@ const Navbar = () => {
           <IconButton aria-label='Close menu' onClick={closeMenu}>
             <CloseIcon />
           </IconButton>
+        </Stack>
+
+        <Stack direction='row' gap={0.5} sx={{ mb: 1.5 }}>
+          <ButtonBase
+            onClick={() => setLocale('fa' as Locale)}
+            sx={{
+              px: 1.25,
+              py: 0.5,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: locale === 'fa' ? 'primary.main' : 'divider',
+              bgcolor: locale === 'fa' ? 'primary.light' : 'transparent',
+              '&:hover': { bgcolor: locale === 'fa' ? 'primary.light' : 'action.hover' },
+            }}
+          >
+            <Typography variant='subtitle2' fontWeight={locale === 'fa' ? 700 : 500}>
+              فارسی
+            </Typography>
+          </ButtonBase>
+          <ButtonBase
+            onClick={() => setLocale('en' as Locale)}
+            sx={{
+              px: 1.25,
+              py: 0.5,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: locale === 'en' ? 'primary.main' : 'divider',
+              bgcolor: locale === 'en' ? 'primary.light' : 'transparent',
+              '&:hover': { bgcolor: locale === 'en' ? 'primary.light' : 'action.hover' },
+            }}
+          >
+            <Typography variant='subtitle2' fontWeight={locale === 'en' ? 700 : 500}>
+              English
+            </Typography>
+          </ButtonBase>
         </Stack>
 
         <Divider sx={{ mb: 1.5 }} />
