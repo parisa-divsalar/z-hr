@@ -169,40 +169,22 @@ const Navbar = () => {
 
         {isMobile ? (
           <>
-            <Stack direction='row' alignItems='center' gap={0.5}>
-              <ButtonBase
-                onClick={() => setLocale('fa' as Locale)}
-                sx={{
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: locale === 'fa' ? 'primary.main' : 'divider',
-                  bgcolor: locale === 'fa' ? 'primary.light' : 'transparent',
-                  '&:hover': { bgcolor: locale === 'fa' ? 'primary.light' : 'action.hover' },
-                }}
-              >
-                <Typography variant='caption' fontWeight={locale === 'fa' ? 700 : 500}>
-                  فارسی
-                </Typography>
-              </ButtonBase>
-              <ButtonBase
-                onClick={() => setLocale('en' as Locale)}
-                sx={{
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: locale === 'en' ? 'primary.main' : 'divider',
-                  bgcolor: locale === 'en' ? 'primary.light' : 'transparent',
-                  '&:hover': { bgcolor: locale === 'en' ? 'primary.light' : 'action.hover' },
-                }}
-              >
-                <Typography variant='caption' fontWeight={locale === 'en' ? 700 : 500}>
-                  EN
-                </Typography>
-              </ButtonBase>
-            </Stack>
+            <ButtonBase
+              onClick={() => setLocale((locale === 'fa' ? 'en' : 'fa') as Locale)}
+              sx={{
+                px: 1,
+                py: 0.5,
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'primary.main',
+                bgcolor: 'primary.light',
+                '&:hover': { bgcolor: 'primary.light', opacity: 0.9 },
+              }}
+            >
+              <Typography variant='caption' fontWeight={700}>
+                {locale === 'fa' ? 'فارسی' : 'EN'}
+              </Typography>
+            </ButtonBase>
             <IconButton
             aria-label='Open menu'
             onClick={openMenu}
@@ -219,40 +201,22 @@ const Navbar = () => {
         ) : (
           <>
             <Stack direction='row' alignItems='center' gap={2}>
-              <Stack direction='row' alignItems='center' gap={0.5}>
-                <ButtonBase
-                  onClick={() => setLocale('fa' as Locale)}
-                  sx={{
-                    px: 1.25,
-                    py: 0.5,
-                    borderRadius: 2,
-                    border: '1px solid',
-                    borderColor: locale === 'fa' ? 'primary.main' : 'divider',
-                    bgcolor: locale === 'fa' ? 'primary.light' : 'transparent',
-                    '&:hover': { bgcolor: locale === 'fa' ? 'primary.light' : 'action.hover' },
-                  }}
-                >
-                  <Typography variant='subtitle2' fontWeight={locale === 'fa' ? 700 : 500}>
-                    فارسی
-                  </Typography>
-                </ButtonBase>
-                <ButtonBase
-                  onClick={() => setLocale('en' as Locale)}
-                  sx={{
-                    px: 1.25,
-                    py: 0.5,
-                    borderRadius: 2,
-                    border: '1px solid',
-                    borderColor: locale === 'en' ? 'primary.main' : 'divider',
-                    bgcolor: locale === 'en' ? 'primary.light' : 'transparent',
-                    '&:hover': { bgcolor: locale === 'en' ? 'primary.light' : 'action.hover' },
-                  }}
-                >
-                  <Typography variant='subtitle2' fontWeight={locale === 'en' ? 700 : 500}>
-                    English
-                  </Typography>
-                </ButtonBase>
-              </Stack>
+              <ButtonBase
+                onClick={() => setLocale((locale === 'fa' ? 'en' : 'fa') as Locale)}
+                sx={{
+                  px: 1.25,
+                  py: 0.5,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'primary.main',
+                  bgcolor: 'primary.light',
+                  '&:hover': { bgcolor: 'primary.light', opacity: 0.9 },
+                }}
+              >
+                <Typography variant='subtitle2' fontWeight={700}>
+                  {locale === 'fa' ? 'فارسی' : 'English'}
+                </Typography>
+              </ButtonBase>
               <Stack direction='row' gap={2}>
               {navItems.map((item) => {
                 const isActive = item.href === '/' ? isHomeActive : pathname === item.href;
@@ -383,40 +347,23 @@ const Navbar = () => {
           </IconButton>
         </Stack>
 
-        <Stack direction='row' gap={0.5} sx={{ mb: 1.5 }}>
-          <ButtonBase
-            onClick={() => setLocale('fa' as Locale)}
-            sx={{
-              px: 1.25,
-              py: 0.5,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: locale === 'fa' ? 'primary.main' : 'divider',
-              bgcolor: locale === 'fa' ? 'primary.light' : 'transparent',
-              '&:hover': { bgcolor: locale === 'fa' ? 'primary.light' : 'action.hover' },
-            }}
-          >
-            <Typography variant='subtitle2' fontWeight={locale === 'fa' ? 700 : 500}>
-              فارسی
-            </Typography>
-          </ButtonBase>
-          <ButtonBase
-            onClick={() => setLocale('en' as Locale)}
-            sx={{
-              px: 1.25,
-              py: 0.5,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: locale === 'en' ? 'primary.main' : 'divider',
-              bgcolor: locale === 'en' ? 'primary.light' : 'transparent',
-              '&:hover': { bgcolor: locale === 'en' ? 'primary.light' : 'action.hover' },
-            }}
-          >
-            <Typography variant='subtitle2' fontWeight={locale === 'en' ? 700 : 500}>
-              English
-            </Typography>
-          </ButtonBase>
-        </Stack>
+        <ButtonBase
+          onClick={() => setLocale((locale === 'fa' ? 'en' : 'fa') as Locale)}
+          sx={{
+            px: 1.25,
+            py: 0.5,
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'primary.main',
+            bgcolor: 'primary.light',
+            mb: 1.5,
+            '&:hover': { bgcolor: 'primary.light', opacity: 0.9 },
+          }}
+        >
+          <Typography variant='subtitle2' fontWeight={700}>
+            {locale === 'fa' ? 'فارسی' : 'English'}
+          </Typography>
+        </ButtonBase>
 
         <Divider sx={{ mb: 1.5 }} />
 

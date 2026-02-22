@@ -82,7 +82,7 @@ function normalizePackagesToPlans(rows: CoinPackageRow[], t: PricingT): PlanCard
 
     const plans = safeRows
         .map((row, idx) => {
-            const title = safeStr(row?.package_name) || `Package ${idx + 1}`;
+            const title = safeStr(row?.package_name) || t.packageFallback(idx + 1);
             const id = safeStr(row?.id) || safeStr(row?.package_name) || String(idx + 1);
             const coins = Math.max(0, Math.round(toFiniteNumber(row?.coin_amount, 0)));
             const priceAed = toFiniteNumber(row?.price_aed, 0);

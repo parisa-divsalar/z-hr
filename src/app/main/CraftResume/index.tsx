@@ -52,15 +52,14 @@ const itemVariants = {
 const CraftResume: FC = () => {
     const [isActiveOnce, setIsActiveOnce] = useState(false);
     const { onGetStartedFree, isRouting } = useGetStartedFree();
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).craftResume;
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const mq = window.matchMedia?.('(hover: none), (pointer: coarse)');
         if (mq?.matches) setIsActiveOnce(true);
     }, []);
-
-    const subtitleText =
-        'Z-CV has helped create over 10,000 resumes from all around the world Our platform is here for job seekers everywhere, making it easy to build the perfect resume. Join the thousands who’ve already taken advantage of our cool resume-building tools!';
 
     return (
         <HeroWrapper onMouseEnter={() => setIsActiveOnce(true)} onFocusCapture={() => setIsActiveOnce(true)}>
@@ -74,13 +73,13 @@ const CraftResume: FC = () => {
             >
                 <motion.div variants={itemVariants}>
                     <Typography variant='h2' color='secondary.main' fontWeight={'700'} fontSize={'2.25rem'}>
-                        Craft Your Dream Resume Today!
+                        {t.title}
                     </Typography>
                 </motion.div>
 
                 <motion.div variants={itemVariants}>
                     <Typography variant='subtitle1' color='secondary.main' fontWeight={'492'}>
-                        <TypewriterText text={subtitleText} active={isActiveOnce} once tokenDelayMs={32} spaceDelayMs={12} />
+                        <TypewriterText text={t.subtitle} active={isActiveOnce} once tokenDelayMs={32} spaceDelayMs={12} />
                     </Typography>
                 </motion.div>
 
@@ -93,7 +92,7 @@ const CraftResume: FC = () => {
                         disabled={isRouting}
                         sx={{ marginTop: '3rem', textDecoration: 'none' }}
                     >
-                        Get Started Free
+                        {t.getStarted}
                     </Button>
                 </motion.div>
             </Container>

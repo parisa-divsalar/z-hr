@@ -150,6 +150,13 @@ export const mainTranslations = {
       title: 'Blog',
       intro: tagline,
       viewArchive: 'View Archive',
+      readMore: 'More',
+      cards: [
+        { title: 'Crafting Your Perfect Resume in Minutes', description: 'Craft your perfect resume in just ...' },
+        { title: 'Build a Standout Resume Quickly Resume', description: 'Create a polished resume in only... ' },
+        { title: 'Fast and Easy Resume Creation Guide', description: 'Get a complete resume ready in...' },
+        { title: 'Swift Resume Builder: Your Path to Success', description: 'Finish your resume in a quick ...' },
+      ],
     },
     testimonials: {
       title: 'Testimonials',
@@ -185,6 +192,7 @@ export const mainTranslations = {
       alreadyUsed: 'Already Used',
       claimFreePlan: 'Claim Free Plan',
       login: 'Login',
+      packageFallback: (n: number) => `Package ${n}`,
     },
     app: {
       aiResumeMaker: 'AI Resume Maker',
@@ -342,6 +350,13 @@ export const mainTranslations = {
       intro:
         'با Z-CV در چند دقیقه رزومه و CV حرفه‌ای و سازگار با ATS بسازید. مناسب بازار ایران و دبی، با قالب‌های مدرن و هوش مصنوعی پیشرفته.',
       viewArchive: 'مشاهده آرشیو',
+      readMore: 'بیشتر',
+      cards: [
+        { title: 'ساخت رزومه ایده‌آل در چند دقیقه', description: 'رزومه ایده‌آل خود را در چند دقیقه بسازید...' },
+        { title: 'ساخت رزومه برجسته به‌سرعت', description: 'یک رزومه منظم در زمان کوتاه...' },
+        { title: 'راهنمای سریع و آسان ساخت رزومه', description: 'یک رزومه کامل آماده در...' },
+        { title: 'سازنده رزومه: مسیر موفقیت شما', description: 'رزومه خود را به‌سرعت تمام کنید...' },
+      ],
     },
     testimonials: {
       title: 'نظرات کاربران',
@@ -378,6 +393,7 @@ export const mainTranslations = {
       alreadyUsed: 'قبلاً استفاده شده',
       claimFreePlan: 'دریافت پلن رایگان',
       login: 'ورود',
+      packageFallback: (n: number) => `بسته ${n}`,
     },
     app: {
       aiResumeMaker: 'سازنده رزومه هوش مصنوعی',

@@ -24,7 +24,7 @@ const Blog = () => {
             <ImageCardSlider />
 
             <Stack direction='row' justifyContent='center' mt={5} mb={15}>
-                <Button variant='contained' color='secondary' size='medium'>
+                <Button variant='contained' color='secondary' size='medium'    href='/blog'>
                     {t.viewArchive}
                 </Button>
             </Stack>

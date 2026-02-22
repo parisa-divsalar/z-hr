@@ -6,6 +6,9 @@ import { Box, Button, Card, Typography } from '@mui/material';
 
 import rectangleGalleryImg from 'src/assets/images/logo/RectangleGallery.png';
 
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+
 import { imageCardSliderSx } from './ImageCardSlider.styles';
 
 type CardItem = {
@@ -17,39 +20,13 @@ type CardItem = {
 
 type ImageCardProps = CardItem & {
     onClick?: () => void;
+    readMoreLabel: string;
 };
 
 const rectangleGallerySrc: string =
     typeof rectangleGalleryImg === 'string' ? rectangleGalleryImg : rectangleGalleryImg.src;
 
-const CARDS: CardItem[] = [
-    {
-        title: 'Crafting Your Perfect Resume in Minutes',
-        description: 'Craft your perfect resume in just ...',
-        image: rectangleGallerySrc,
-        showButton: true,
-    },
-    {
-        title: 'Build a Standout Resume Quickly Resume',
-        description: 'Create a polished resume in only... ',
-        image: rectangleGallerySrc,
-        showButton: true,
-    },
-    {
-        title: 'Fast and Easy Resume Creation Guide',
-        description: 'Get a complete resume ready in...',
-        image: rectangleGallerySrc,
-        showButton: true,
-    },
-    {
-        title: 'Swift Resume Builder: Your Path to Success',
-        description: 'Finish your resume in a quick ...',
-        image: rectangleGallerySrc,
-        showButton: true,
-    },
-];
-
-function ImageCard({ title, description, image, showButton, onClick }: ImageCardProps) {
+function ImageCard({ title, description, image, showButton, readMoreLabel, onClick }: ImageCardProps) {
     return (
         <Card
             elevation={2}
@@ -88,7 +65,7 @@ function ImageCard({ title, description, image, showButton, onClick }: ImageCard
                             }}
                             sx={imageCardSliderSx.ctaButton}
                         >
-                            More
+                            {readMoreLabel}
                         </Button>
                     ) : null}
                 </Box>
@@ -98,16 +75,26 @@ function ImageCard({ title, description, image, showButton, onClick }: ImageCard
 }
 
 export default function ImageCardSlider() {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).blog;
+    const cards = t.cards.map((c) => ({
+        title: c.title,
+        description: c.description,
+        image: rectangleGallerySrc,
+        showButton: true,
+    }));
+
     return (
         <Box sx={imageCardSliderSx.root}>
             <Box sx={imageCardSliderSx.list}>
-                {CARDS.map((card) => (
+                {cards.map((card) => (
                     <ImageCard
                         key={card.title}
                         title={card.title}
                         description={card.description}
                         image={card.image}
                         showButton={card.showButton}
+                        readMoreLabel={t.readMore}
                         onClick={() => {
                             // Hook up navigation / analytics here.
                         }}
