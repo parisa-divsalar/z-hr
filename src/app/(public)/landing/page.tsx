@@ -8,6 +8,7 @@ import IntroDialog from '@/components/Landing/IntroDialog';
 import { AIStatus } from '@/components/Landing/type';
 import Wizard from '@/components/Landing/Wizard';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 export default function LandingPage() {
@@ -64,8 +65,11 @@ export default function LandingPage() {
     }
   }, [resetWizard, searchParams]);
 
+  const locale = useLocaleStore((s) => s.locale);
+  const dir = locale === 'fa' ? 'rtl' : 'ltr';
+
   return (
-    <Stack width='100%' height='100%'>
+    <Stack width='100%' height='100%' dir={dir} sx={{ direction: dir }}>
       <IntroDialog
         open={isIntroOpen}
         onClose={() => setIsIntroOpen(false)}

@@ -8,7 +8,9 @@ import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
 import { PublicRoutes } from '@/config/routes';
+import { getMainTranslations } from '@/locales/main';
 import { apiClientClient } from '@/services/api-client';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 import { isValidDateOfBirthDDMMYYYY, normalizeDateOfBirthInput } from '@/utils/validation';
 
@@ -63,6 +65,8 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
     profileLoading = false,
 }) => {
     const router = useRouter();
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.introDialog;
     const { data, updateField } = useWizardStore();
 
     const [loadingSkills, setLoadingSkills] = useState<boolean>(true);
@@ -96,8 +100,8 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
 
     const dobErrorText = useMemo(() => {
         if (!dobHasFullYear) return '';
-        return isValidDateOfBirthDDMMYYYY(data.dateOfBirth) ? '' : 'Enter a valid past date (DD/MM/YYYY)';
-    }, [data.dateOfBirth, dobHasFullYear]);
+        return isValidDateOfBirthDDMMYYYY(data.dateOfBirth) ? '' : t.dateError;
+    }, [data.dateOfBirth, dobHasFullYear, t.dateError]);
 
     const isSaveDisabled = useMemo(() => {
         const hasFullName = data.fullName.trim().length > 0;
@@ -152,12 +156,12 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                 <StackContainer>
                     <HeaderContainer direction='row'>
                         <Typography color='text.primary' variant='body1' fontWeight={500}>
-                            Primary information
+                            {t.primaryInfo}
                         </Typography>
                     </HeaderContainer>
                     <StackContent gap={1.5} sx={{ justifyContent: 'center', py: 3 }}>
                         <Typography variant='body2' color='text.secondary'>
-                            Loading…
+                            {t.loading}
                         </Typography>
                     </StackContent>
                 </StackContainer>
@@ -180,13 +184,13 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                 <StackContainer>
                     <HeaderContainer direction='row'>
                         <Typography color='text.primary' variant='body1' fontWeight={500}>
-                            Not enough coins
+                            {t.notEnoughCoins}
                         </Typography>
                     </HeaderContainer>
 
                     <StackContent gap={1.5}>
                         <Typography variant='body2' color='text.secondary'>
-                            To create a new resume, you need to purchase a design or coins. Please go to the designs page
+                            {t.needPurchase}
                         </Typography>
                     </StackContent>
 
@@ -202,7 +206,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                                 sx={{ flex: 1, minWidth: 0 }}
                                 onClick={handleGoToPricing}
                             >
-                                Pricing
+                                {t.pricing}
                             </MuiButton>
                         </Stack>
                     </ActionContainer>
@@ -216,27 +220,27 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
             <StackContainer>
                 <HeaderContainer direction='row'>
                     <Typography color='text.primary' variant='body1' fontWeight={500}>
-                        Primary information
+                        {t.primaryInfo}
                     </Typography>
                 </HeaderContainer>
 
                 <StackContent gap={1.5}>
                     <MuiInput
-                        label='Full name'
+                        label={t.fullName}
                         value={data.fullName}
                         onChange={(value) => updateField('fullName', String(value ?? ''))}
                     />
                     <MuiInput
-                        label='Your date of birth'
-                        placeholder='DD/MM/YYYY'
+                        label={t.dateOfBirth}
+                        placeholder={t.datePlaceholder}
                         value={data.dateOfBirth}
                         error={!!dobErrorText}
                         helperText={dobErrorText}
                         onChange={(value) => updateField('dateOfBirth', normalizeDateOfBirthInput(String(value ?? '')))}
                     />
                     <MuiSelectOptions
-                        label='Your main skill'
-                        placeholder={loadingSkills ? 'Loading...' : 'Select one of your skills'}
+                        label={t.mainSkill}
+                        placeholder={loadingSkills ? t.loadingSkills : t.selectSkill}
                         value={data.mainSkill}
                         options={skillOptions}
                         onChange={(value) => updateField('mainSkill', String(value))}
@@ -264,7 +268,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                                 sx={{ flex: 1, minWidth: 0 }}
                                 href={backToDashboardHref}
                             >
-                                Back
+                                {t.back}
                             </MuiButton>
                             <MuiButton
                                 fullWidth
@@ -274,7 +278,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                                 onClick={handleConfirm}
                                 disabled={isSaveDisabled || saving}
                             >
-                                Save
+                                {t.save}
                             </MuiButton>
                         </Stack>
                     ) : (
@@ -286,7 +290,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                             onClick={handleConfirm}
                             disabled={isSaveDisabled || saving}
                         >
-                            Save
+                            {t.save}
                         </MuiButton>
                     )}
                 </ActionContainer>

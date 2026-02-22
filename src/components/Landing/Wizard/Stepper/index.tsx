@@ -1,8 +1,11 @@
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import { Container, StepItem, StepCircle, Divider } from './styled';
 
@@ -11,11 +14,16 @@ interface StepWrapperProps {
 }
 
 const StepWrapper: FC<StepWrapperProps> = ({ activeStep }) => {
-  const steps = [
-    { id: 1, label: 'First Step', subtitle: 'Answer questions' },
-    { id: 2, label: 'Second Step', subtitle: 'Review and Submit' },
-    { id: 3, label: 'Final Step', subtitle: 'Download a resumet' },
-  ];
+  const locale = useLocaleStore((s) => s.locale);
+  const stepperT = getMainTranslations(locale).landing.stepper;
+  const steps = useMemo(
+    () => [
+      { id: 1, label: stepperT.firstStep, subtitle: stepperT.firstSubtitle },
+      { id: 2, label: stepperT.secondStep, subtitle: stepperT.secondSubtitle },
+      { id: 3, label: stepperT.finalStep, subtitle: stepperT.finalSubtitle },
+    ],
+    [stepperT],
+  );
 
   return (
     <Container>
