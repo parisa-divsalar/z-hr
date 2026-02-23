@@ -423,6 +423,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             )}
 
             <BrieflySection
+                dir={dir}
                 backgroundText={backgroundText}
                 onBackgroundTextChange={setBackgroundText}
                 backgroundRef={backgroundRef as RefObject<HTMLTextAreaElement>}
@@ -449,12 +450,16 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 onEditBackgroundEntry={handleEditBackgroundEntry}
                 onDeleteBackgroundEntry={handleDeleteBackgroundEntry}
                 fileInputRef={fileInputRef as RefObject<HTMLInputElement>}
+                placeholderText={t.placeholder}
+                addButtonLabel={t.add}
+                cancelLabel={t.cancel}
+                saveLabel={t.save}
             />
 
             <Stack
                 mt={4}
                 mb={6}
-                direction='row'
+                direction={dir === 'rtl' ? 'row-reverse' : 'row'}
                 gap={3}
                 sx={{
                     flexWrap: 'wrap',
@@ -465,7 +470,8 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                     color='secondary'
                     variant='outlined'
                     size='large'
-                    startIcon={<ArrowBackIcon />}
+                    startIcon={dir === 'rtl' ? undefined : <ArrowBackIcon />}
+                    endIcon={dir === 'rtl' ? <ArrowBackIcon /> : undefined}
                     onClick={handleBack}
                 >
                     {t.back}
@@ -473,7 +479,8 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
                 <MuiButton
                     color='secondary'
-                    endIcon={<ArrowRightIcon />}
+                    startIcon={dir === 'rtl' ? <ArrowRightIcon /> : undefined}
+                    endIcon={dir === 'rtl' ? undefined : <ArrowRightIcon />}
                     size='large'
                     onClick={handleNext}
                     disabled={!hasExperience}
