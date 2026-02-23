@@ -12,7 +12,11 @@ import { getMainTranslations } from '@/locales/main';
 import { apiClientClient } from '@/services/api-client';
 import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
-import { isValidDateOfBirthDDMMYYYY, normalizeDateOfBirthInput } from '@/utils/validation';
+import {
+    formatDateOfBirthForDisplay,
+    isValidDateOfBirthDDMMYYYY,
+    normalizeDateOfBirthInput,
+} from '@/utils/validation';
 
 import {
     StackContent,
@@ -66,6 +70,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
 }) => {
     const router = useRouter();
     const locale = useLocaleStore((s) => s.locale);
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
     const t = getMainTranslations(locale).landing.introDialog;
     const { data, updateField } = useWizardStore();
 
@@ -79,7 +84,11 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                 setLoadingSkills(true);
                 const { data } = await apiClientClient.get('skills/categories');
 
-                const options = data.data.map((skill: string) => ({ value: skill, label: skill }));
+                const categoryFa = getMainTranslations(locale).landing.skillCategoryFa ?? {};
+                const options = data.data.map((skill: string) => ({
+                    value: skill,
+                    label: (categoryFa as Record<string, string>)[skill] ?? skill,
+                }));
                 setSkillOptions(options);
             } catch {
                 console.error('Failed to fetch skills');
@@ -89,7 +98,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
         };
 
         fetchSkills();
-    }, []);
+    }, [locale]);
 
     const dobHasFullYear = useMemo(() => {
         const parts = String(data.dateOfBirth ?? '')
@@ -149,7 +158,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
             <DialogContainer
                 open={open}
                 maxWidth='xs'
-                PaperProps={{ sx: { height: 'auto', minHeight: '200px' } }}
+                PaperProps={{ sx: { height: 'auto', minHeight: '200px', direction: dir } }}
                 onClose={() => {}}
                 disableEscapeKeyDown
             >
@@ -174,7 +183,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
             <DialogContainer
                 open={open}
                 maxWidth='xs'
-                PaperProps={{ sx: { height: 'auto', minHeight: '280px' } }}
+                PaperProps={{ sx: { height: 'auto', minHeight: '280px', direction: dir } }}
                 onClose={(_, reason) => {
                     if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
                     onClose();
@@ -216,7 +225,7 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
     }
 
     return (
-        <DialogContainer open={open} maxWidth='xs' PaperProps={{ sx: { height: '413px' } }}>
+        <DialogContainer open={open} maxWidth='xs' PaperProps={{ sx: { height: '413px', direction: dir } }}>
             <StackContainer>
                 <HeaderContainer direction='row'>
                     <Typography color='text.primary' variant='body1' fontWeight={500}>
@@ -233,10 +242,12 @@ const IntroDialog: FunctionComponent<IntroDialogProps> = ({
                     <MuiInput
                         label={t.dateOfBirth}
                         placeholder={t.datePlaceholder}
-                        value={data.dateOfBirth}
+                        value={formatDateOfBirthForDisplay(data.dateOfBirth, locale)}
                         error={!!dobErrorText}
                         helperText={dobErrorText}
                         onChange={(value) => updateField('dateOfBirth', normalizeDateOfBirthInput(String(value ?? '')))}
+                        type='text'
+                        inputMode='text'
                     />
                     <MuiSelectOptions
                         label={t.mainSkill}

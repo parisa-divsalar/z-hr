@@ -13,6 +13,8 @@ import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { useHistoryResumeRow } from '@/hooks/useHistoryResumeRow';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
@@ -39,6 +41,9 @@ type ResumeGeneratorFrameProps = {
 const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
     const { setStage, setActiveStep } = props;
     const router = useRouter();
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeGeneratorFrame;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
@@ -49,17 +54,17 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
     const { row: historyRow } = useHistoryResumeRow(requestId);
 
     const resumeInfo = [
-        { label: 'Created:', value: historyRow?.date || '—' },
-        { label: 'Size:', value: historyRow?.size || '—' },
-        { label: 'Fit score:', value: historyRow?.Percentage || '—', isBadge: true },
-        { label: 'Skill group:', value: historyRow?.position || '—' },
-        { label: 'Experience level:', value: historyRow?.level || '—' },
+        { label: t.created, value: historyRow?.date || '—' },
+        { label: t.size, value: historyRow?.size || '—' },
+        { label: t.fitScore, value: historyRow?.Percentage || '—', isBadge: true },
+        { label: t.skillGroup, value: historyRow?.position || '—' },
+        { label: t.experienceLevel, value: historyRow?.level || '—' },
     ];
 
     const headerTitle = (() => {
         const base = String(historyRow?.name ?? '').trim();
-        if (!base) return 'Resume';
-        return /resume/i.test(base) ? base : `${base}'s Resume`;
+        if (!base) return t.resume;
+        return /resume/i.test(base) ? base : `${base}'s ${t.resume}`;
     })();
 
     const truncateText = (text: string, maxLength: number) => {
@@ -85,7 +90,7 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
             });
         } catch (error) {
             console.error('Failed to export PDF', error);
-            setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
+            setDownloadError(error instanceof Error ? error.message : t.downloadError);
         } finally {
             setIsDownloading(false);
         }
@@ -105,34 +110,16 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
     }, [router, requestId, setActiveStep, setStage]);
 
     const featureCards = [
-        {
-            title: 'Resume Template',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Job Position Suggestions',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Learning Hub',
-            description: 'Create professional, templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Interview Questions',
-            description: 'Create professional,  with modern design and flexible layout options.',
-        },
-        {
-            title: 'Text Interview Practice ',
-            description: 'Create , templates with modern design and flexible layout options.',
-        },
-        {
-            title: 'Voice Interview Practice',
-            description: 'Create professional, templates with modern design  layout options.',
-        },
+        { title: t.featureResumeTemplate, description: t.featureResumeTemplateDesc },
+        { title: t.featureJobSuggestions, description: t.featureJobSuggestionsDesc },
+        { title: t.featureLearningHub, description: t.featureLearningHubDesc },
+        { title: t.featureInterviewQuestions, description: t.featureInterviewQuestionsDesc },
+        { title: t.featureTextInterview, description: t.featureTextInterviewDesc },
+        { title: t.featureVoiceInterview, description: t.featureVoiceInterviewDesc },
     ];
 
     return (
-        <Container>
+        <Container dir={dir} sx={{ direction: dir }}>
             <Grid container spacing={{ xs: 3, sm: 4 }}>
                 {/*<Grid size={{ xs: 12, lg: 3 }}>*/}
                 {/*    <ResumePreview>*/}
@@ -152,7 +139,7 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
                                 <Typography variant='h5' color='text.primary' fontWeight='500'>
                                     {headerTitle}
                                 </Typography>
-                                <PurplePill>AI Generation</PurplePill>
+                                <PurplePill>{t.aiGeneration}</PurplePill>
                             </HeaderLeft>
                             <MuiButton
                                 size='small'
@@ -165,7 +152,7 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
                                     },
                                 }}
                             >
-                                Go to panel
+                                {t.goToPanel}
                             </MuiButton>
                         </HeaderSection>
 
@@ -194,7 +181,7 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
                                             color='secondary'
                                             onClick={handleEdit}
                                         >
-                                            Edit
+                                            {t.edit}
                                         </MuiButton>
                                         <MuiButton
                                             variant='contained'
@@ -205,8 +192,8 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
                                             onClick={handleDownload}
                                         >
                                             {isDownloading
-                                                ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%`
-                                                : 'Download PDF'}
+                                                ? t.preparingPdf(Math.round(downloadProgress * 100))
+                                                : t.downloadPdf}
                                         </MuiButton>
                                     </ActionButtons>
                                 </Grid>

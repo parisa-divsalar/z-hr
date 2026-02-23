@@ -8,7 +8,6 @@ import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import {
     FILE_CATEGORY_LIMITS,
-    FILE_CATEGORY_TOAST_LABELS,
     getFileCategory,
     getFileTypeDisplayName,
     isDuplicateFile,
@@ -18,6 +17,8 @@ import {
 } from '@/components/Landing/Wizard/Step1/attachmentRules';
 import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
@@ -37,6 +38,10 @@ interface ToastInfo {
 }
 
 const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.experience;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+    const fileCategoryLabels = getMainTranslations(locale).landing.wizard.fileCategoryLabels;
     const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
 
     const [backgroundText, setBackgroundText] = useState<string>('');
@@ -145,7 +150,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
 
     const handleShowVoiceRecorder = () => {
         if (isVoiceLimitReached) {
-            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            showToast(t.voiceLimit(MAX_VOICE_RECORDINGS));
             return;
         }
 
@@ -167,7 +172,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         }
 
         if (duration > MAX_VOICE_DURATION_SECONDS) {
-            showToast('Voice recordings are limited to 90 seconds.', 'info');
+            showToast(t.voiceDuration, 'info');
             setShowRecordingControls(false);
             setVoiceUrl(null);
             setVoiceBlob(null);
@@ -175,7 +180,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
         }
 
         if (voiceRecordings.length >= MAX_VOICE_RECORDINGS) {
-            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            showToast(t.voiceLimit(MAX_VOICE_RECORDINGS));
             setShowRecordingControls(false);
             setVoiceUrl(null);
             setVoiceBlob(null);
@@ -240,7 +245,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             const currentFiles = [...uploadedFiles, ...acceptedFiles];
 
             if (isDuplicateFile(file, currentFiles)) {
-                showToast('This file has already been uploaded.');
+                showToast(t.fileAlreadyUploaded);
                 continue;
             }
 
@@ -249,9 +254,17 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                 const currentCount =
                     uploadedFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
                     acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
+                const label =
+                    category === 'image'
+                        ? fileCategoryLabels.images
+                        : category === 'video'
+                          ? fileCategoryLabels.videos
+                          : category === 'pdf'
+                            ? fileCategoryLabels.pdfFiles
+                            : fileCategoryLabels.wordFiles;
 
                 if (currentCount >= limit) {
-                    showToast(`You can upload up to ${limit} ${FILE_CATEGORY_TOAST_LABELS[category]}.`);
+                    showToast(t.fileLimit(limit, label));
                     continue;
                 }
             }
@@ -259,7 +272,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
             if (category === 'video') {
                 const isDurationValid = await isVideoDurationValid(file);
                 if (!isDurationValid) {
-                    showToast('Each video must be 60 seconds or shorter.');
+                    showToast(t.videoDuration);
                     continue;
                 }
             }
@@ -398,9 +411,9 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
     };
 
     return (
-        <Stack alignItems='center' justifyContent='flex-start' width='100%'>
+        <Stack alignItems='center' justifyContent='flex-start' width='100%' dir={dir} sx={{ direction: dir }}>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                6. Your work experience history{' '}
+                6. {t.title}{' '}
             </Typography>
 
             {toastInfo && (
@@ -455,7 +468,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                     startIcon={<ArrowBackIcon />}
                     onClick={handleBack}
                 >
-                    Back
+                    {t.back}
                 </MuiButton>
 
                 <MuiButton
@@ -465,7 +478,7 @@ const Experience: FunctionComponent<ExperienceProps> = ({ setStage }) => {
                     onClick={handleNext}
                     disabled={!hasExperience}
                 >
-                    Next
+                    {t.next}
                 </MuiButton>
             </Stack>
         </Stack>
