@@ -54,6 +54,9 @@ const InputContentRoot = styled('textarea')(({ theme }) => ({
     // Let JS auto-resize control the actual height; keep a sane default via minHeight.
     height: 'auto',
     textAlign: 'left',
+    '&[dir="rtl"]': {
+        textAlign: 'right',
+    },
     fontFamily: theme.typography.fontFamily,
     border: 'none',
     fontSize: '1rem',
