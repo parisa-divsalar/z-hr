@@ -9,6 +9,7 @@ import SKillInput from '@/components/Landing/Wizard/Step1/SKillInput';
 import SelectSkill from '@/components/Landing/Wizard/Step1/SlectSkill';
 import { apiClientClient } from '@/services/api-client';
 import { improveResume } from '@/services/cv/improve-resume';
+import { useLocaleStore } from '@/store/common';
 import { useAuthStore } from '@/store/auth';
 import { buildWizardSerializable, useWizardStore } from '@/store/wizard';
 import { clearWizardTextOnlySession, saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
@@ -19,6 +20,7 @@ interface Step1Props {
 }
 
 const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) => {
+    const locale = useLocaleStore((s) => s.locale);
     const [stage, setStage] = useState<StageWizard>('SKILL_INPUT');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const recomputeAllFiles = useWizardStore((s) => s.recomputeAllFiles);
@@ -33,23 +35,23 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
     }, [stage]);
 
     if (stage === 'SKILL_INPUT') {
-        return <SKillInput setStage={setStage} />;
+        return <SKillInput key={locale} setStage={setStage} />;
     }
 
     if (stage === 'SELECT_SKILL') {
-        return <SelectSkill setStage={setStage} />;
+        return <SelectSkill key={locale} setStage={setStage} />;
     }
 
     if (stage === 'EXPERIENCE') {
-        return <Experience setStage={setStage} />;
+        return <Experience key={locale} setStage={setStage} />;
     }
 
     if (stage === 'CERTIFICATION') {
-        return <Certification setStage={setStage} />;
+        return <Certification key={locale} setStage={setStage} />;
     }
 
     if (stage === 'DESCRIPTION') {
-        return <JobDescription setStage={setStage} />;
+        return <JobDescription key={locale} setStage={setStage} />;
     }
 
     const handleFinalSubmit = async () => {
@@ -132,6 +134,7 @@ const Step1: FunctionComponent<Step1Props> = ({ setAiStatus, setActiveStep }) =>
 
     return (
         <Questions
+            key={locale}
             onNext={handleFinalSubmit}
             setAiStatus={setAiStatus}
             setStage={setStage}

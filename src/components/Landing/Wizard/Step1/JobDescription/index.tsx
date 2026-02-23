@@ -547,7 +547,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
                 <AtsFriendlyChip color='warning' label={t.atsFriendly} />
             </Stack>
-            <SummaryTextContainer>
+            <SummaryTextContainer key={`summary-1-${locale}`}>
                 <Typography
                     fontWeight='400'
                     variant='subtitle2'
@@ -557,7 +557,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     textAlign='center'
                     mt={1}
                 >
-                    {t.summaryText}
+                    {getMainTranslations(locale).landing.wizard.jobDescription.summaryText}
                 </Typography>
             </SummaryTextContainer>
 
@@ -608,7 +608,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
                 <AtsFriendlyChip color='warning' label={t.atsFriendly} />
             </Stack>
-            <SummaryTextContainer>
+            <SummaryTextContainer key={`summary-2-${locale}`}>
                 <Typography
                     fontWeight='400'
                     variant='subtitle2'
@@ -618,7 +618,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     textAlign='center'
                     mt={1}
                 >
-                    {t.summaryText2}
+                    {getMainTranslations(locale).landing.wizard.jobDescription.summaryText2}
                 </Typography>
             </SummaryTextContainer>
             <BrieflySection

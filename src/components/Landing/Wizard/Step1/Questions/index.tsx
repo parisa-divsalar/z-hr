@@ -48,6 +48,24 @@ interface QuestionsProps {
 
 type VoicePayload = { id?: string; url: string; blob: Blob; duration: number };
 
+const faSummaryPlaceholder = getMainTranslations('fa').landing.wizard.selectSkill.summaryText;
+const enSummaryPlaceholder = getMainTranslations('en').landing.wizard.selectSkill.summaryText;
+
+const normalizeForCompare = (s: string) => String(s ?? '').replace(/\s+/g, ' ').trim();
+
+const displayContentByLocale = (content: string, locale: 'fa' | 'en'): string => {
+    if (!content || locale === 'fa') return content;
+    const norm = normalizeForCompare(content);
+    if (norm === normalizeForCompare(faSummaryPlaceholder)) return enSummaryPlaceholder;
+    const match = content.match(/^(\d+\.)\s*([\s\S]+)$/);
+    if (match) {
+        const [, prefix, rest] = match;
+        if (normalizeForCompare(rest) === normalizeForCompare(faSummaryPlaceholder))
+            return `${prefix} ${enSummaryPlaceholder}`;
+    }
+    return content;
+};
+
 const formatMmSs = (totalSeconds: number) => {
     if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return '0:00';
     const s = Math.floor(totalSeconds % 60);
@@ -597,12 +615,14 @@ const Questions: FunctionComponent<QuestionsProps> = ({
         t,
     ]);
 
+    const questionsT = getMainTranslations(locale).landing.wizard.questions;
+
     return (
-        <Container dir={dir} sx={{ direction: dir }}>
+        <Container key={locale} dir={dir} sx={{ direction: dir }}>
             <MiddleSection>
                 <TopSection>
                     <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>
-                        {t.fileUploaded}
+                        {questionsT.fileUploaded}
                     </Typography>
 
                     <MediaRow direction={dir === 'rtl' ? 'row-reverse' : 'row'}>
@@ -617,7 +637,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                         {label}
                                     </Typography>
                                     <Typography variant='subtitle1' fontWeight={492} color='success.light'>
-                                        {t.done}
+                                        {questionsT.done}
                                     </Typography>
                                 </Stack>
                             </MediaItem>
@@ -625,7 +645,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                     </MediaRow>
                 </TopSection>
                 <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center' mt={3}>
-                    {t.title}
+                    {questionsT.title}
                 </Typography>
                 <QuestionList>
                     {steps.map((step, index) => (
@@ -646,11 +666,11 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                                 color='text.primary'
                                                 sx={{ ml: dir === 'rtl' ? 0 : 2, mr: dir === 'rtl' ? 2 : 0 }}
                                             >
-                                                {t.stepLabel[step.id as keyof typeof t.stepLabel] ?? step.id}
+                                                {questionsT.stepLabel[step.id as keyof typeof questionsT.stepLabel] ?? step.id}
                                             </Typography>
                                         </Stack>
 
-                                        <Tooltip title={t.edit} placement={dir === 'rtl' ? 'top' : 'top'}>
+                                        <Tooltip title={questionsT.edit} placement={dir === 'rtl' ? 'top' : 'top'}>
                                             <span>
                                                 <IconButton
                                                     size='small'
@@ -675,9 +695,15 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                         direction={dir === 'rtl' ? 'row-reverse' : 'row'}
                                         gap={1}
                                         mt={1}
+                                        sx={{ justifyContent: dir === 'rtl' ? 'flex-end' : 'flex-start' }}
                                     >
-                                        <Typography variant='subtitle2' fontWeight={600} color='text.primary'>
-                                            {t.answer}
+                                        <Typography
+                                            variant='subtitle2'
+                                            fontWeight={600}
+                                            color='text.primary'
+                                            sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}
+                                        >
+                                            {questionsT.answer}
                                         </Typography>
                                     </Stack>
 
@@ -688,6 +714,8 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                             pl: dir === 'rtl' ? 0 : 3,
                                             pr: dir === 'rtl' ? 3 : 0,
                                             listStylePosition: 'inside',
+                                            direction: dir,
+                                            textAlign: dir === 'rtl' ? 'right' : 'left',
                                         }}
                                         gap={0.5}
                                     >
@@ -701,9 +729,11 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                                     whiteSpace: 'pre-wrap',
                                                     wordBreak: 'break-word',
                                                     overflowWrap: 'break-word',
+                                                    textAlign: dir === 'rtl' ? 'right' : 'left',
+                                                    direction: dir,
                                                 }}
                                             >
-                                                {step.text}
+                                                {displayContentByLocale(step.text, locale)}
                                             </Typography>
                                         )}
 
@@ -718,9 +748,11 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                                     whiteSpace: 'pre-wrap',
                                                     wordBreak: 'break-word',
                                                     overflowWrap: 'break-word',
+                                                    textAlign: dir === 'rtl' ? 'right' : 'left',
+                                                    direction: dir,
                                                 }}
                                             >
-                                                {line}
+                                                {displayContentByLocale(line, locale)}
                                             </Typography>
                                         ))}
                                     </Stack>
@@ -737,12 +769,12 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                                         fontWeight={600}
                                                         color='text.secondary'
                                                     >
-                                                        {t.entry(entryIdx + 1)}
+                                                        {questionsT.entry(entryIdx + 1)}
                                                     </Typography>
                                                     <AttachmentsPreview
                                                         files={entry?.files}
                                                         voices={entry?.voices}
-                                                        t={t}
+                                                        t={questionsT}
                                                         dir={dir}
                                                     />
                                                 </Stack>
@@ -752,7 +784,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                         <AttachmentsPreview
                                             files={step.attachments?.files}
                                             voices={step.attachments?.voices}
-                                            t={t}
+                                            t={questionsT}
                                             dir={dir}
                                         />
                                     )}
@@ -793,7 +825,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                         onClick={() => setStage('SKILL_INPUT')}
                         sx={{ width: { xs: '100%', sm: 'auto' } }}
                     >
-                        {t.addMore}
+                        {questionsT.addMore}
                     </MuiButton>
 
                     <MuiButton
@@ -805,7 +837,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                         loading={Boolean(isSubmitting)}
                         sx={{ width: { xs: '100%', sm: 'auto' } }}
                     >
-                        {t.submit}
+                        {questionsT.submit}
                     </MuiButton>
                 </Stack>
             </BottomSection>

@@ -705,7 +705,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             <Stack direction='row' alignItems='center' gap={1} mt={1} sx={{ flexWrap: 'wrap' }}>
                 <AtsFriendlyChip color='warning' label={t.atsFriendly} />
             </Stack>
-            <SummaryTextContainer>
+            <SummaryTextContainer key={`summary-${locale}`}>
                 <Typography
                     fontWeight='400'
                     mx={5}
@@ -716,7 +716,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     textAlign='center'
                     mt={1}
                 >
-                    {t.summaryText}
+                    {getMainTranslations(locale).landing.wizard.selectSkill.summaryText}
                 </Typography>
             </SummaryTextContainer>
             <ContainerSkill direction='row' active={!!backgroundText}>
