@@ -21,6 +21,8 @@ import {
 } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import VideoThumbDialog from '@/components/Landing/Wizard/Step1/Common/VideoThumbDialog';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 import {
@@ -53,7 +55,11 @@ const formatMmSs = (totalSeconds: number) => {
     return `${m}:${String(s).padStart(2, '0')}`;
 };
 
-const InlineVoicePlayer: FunctionComponent<{ url: string; duration?: number }> = ({ url, duration }) => {
+const InlineVoicePlayer: FunctionComponent<{
+    url: string;
+    duration?: number;
+    dir?: 'ltr' | 'rtl';
+}> = ({ url, duration, dir }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [metaDuration, setMetaDuration] = useState<number>(duration ?? 0);
@@ -116,7 +122,12 @@ const InlineVoicePlayer: FunctionComponent<{ url: string; duration?: number }> =
     const total = metaDuration || duration || 0;
 
     return (
-        <Stack direction='row' alignItems='center' gap={1} sx={{ width: '100%' }}>
+        <Stack
+            direction={dir === 'rtl' ? 'row-reverse' : 'row'}
+            alignItems='center'
+            gap={1}
+            sx={{ width: '100%' }}
+        >
             <IconButton
                 onClick={toggle}
                 size='small'
@@ -127,7 +138,11 @@ const InlineVoicePlayer: FunctionComponent<{ url: string; duration?: number }> =
                 {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
             </IconButton>
 
-            <Stack direction='row' gap={1} alignItems='baseline'>
+            <Stack
+                direction={dir === 'rtl' ? 'row-reverse' : 'row'}
+                gap={1}
+                alignItems='baseline'
+            >
                 <Typography variant='subtitle1' fontWeight={584} color='text.primary'>
                     {formatMmSs(currentTime)}{' '}
                 </Typography>
@@ -219,7 +234,7 @@ const isVideoFile = (file: File) => {
     return ['mp4', 'webm', 'mov', 'm4v', 'ogv', 'avi', 'mkv'].includes(ext);
 };
 
-const getFileKindLabel = (file: File) => {
+const getFileKindLabelEn = (file: File) => {
     if (isImageFile(file)) return 'Image';
     if (isVideoFile(file)) return 'Video';
     if (file.type?.startsWith('audio/')) return 'Audio';
@@ -306,7 +321,14 @@ const SafeImagePreview: FunctionComponent<{ file: File; url?: string | null }> =
     );
 };
 
-const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknown[] }> = ({ files, voices }) => {
+type QuestionsT = ReturnType<typeof getMainTranslations>['landing']['wizard']['questions'];
+
+const AttachmentsPreview: FunctionComponent<{
+    files?: unknown[];
+    voices?: unknown[];
+    t?: QuestionsT;
+    dir?: 'ltr' | 'rtl';
+}> = ({ files, voices, t, dir }) => {
     const safeFiles = useMemo(() => (Array.isArray(files) ? files : []).filter(Boolean) as unknown[], [files]);
     const safeVoices = useMemo(() => (Array.isArray(voices) ? voices : []).filter(Boolean) as VoicePayload[], [voices]);
 
@@ -329,10 +351,11 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
 
     if (safeFiles.length === 0 && safeVoices.length === 0) return null;
 
+    const stackDirection = dir === 'rtl' ? 'row-reverse' : 'row';
     return (
         <Stack gap={1} mt={1.25}>
             {safeFiles.length > 0 && (
-                <FilesStack direction='row' spacing={1} sx={{ width: '100%', m: 0 }}>
+                <FilesStack direction={stackDirection} spacing={1} sx={{ width: '100%', m: 0 }}>
                     {fileUrls.map(({ file, url }, idx) => (
                         <FilePreviewContainer
                             key={`${(file as any)?.id ?? file?.name ?? `item-${idx}`}-${(file as any)?.lastModified ?? idx}`}
@@ -363,7 +386,19 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
 
                             <FileTypeLabel gap={0.25}>
                                 <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                                    {file ? getFileKindLabel(file) : 'File'}
+                                    {file
+                                        ? t
+                                            ? (t.fileKind as Record<string, string>)[
+                                                  isImageFile(file)
+                                                      ? 'image'
+                                                      : isVideoFile(file)
+                                                        ? 'video'
+                                                        : file.type?.startsWith('audio/')
+                                                          ? 'audio'
+                                                          : 'file'
+                                              ]
+                                            : getFileKindLabelEn(file)
+                                        : t?.fileKind?.file ?? 'File'}
                                 </Typography>
                             </FileTypeLabel>
                         </FilePreviewContainer>
@@ -376,9 +411,17 @@ const AttachmentsPreview: FunctionComponent<{ files?: unknown[]; voices?: unknow
                     {safeVoices.map((voice) => (
                         <Stack key={voice.id ?? voice.url} gap={0.25}>
                             <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                                Voice{typeof voice.duration === 'number' ? ` (${Math.round(voice.duration)}s)` : ''}
+                                {t?.voiceWithDuration
+                                    ? typeof voice.duration === 'number'
+                                        ? t.voiceWithDuration(Math.round(voice.duration))
+                                        : (t.fileKind as Record<string, string>)?.audio ?? 'Voice'
+                                    : `Voice${typeof voice.duration === 'number' ? ` (${Math.round(voice.duration)}s)` : ''}`}
                             </Typography>
-                            <InlineVoicePlayer url={voice.url} duration={voice.duration} />
+                            <InlineVoicePlayer
+                                url={voice.url}
+                                duration={voice.duration}
+                                dir={dir}
+                            />
                         </Stack>
                     ))}
                 </Stack>
@@ -393,6 +436,9 @@ const Questions: FunctionComponent<QuestionsProps> = ({
     setStage,
     isSubmitting,
 }) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.questions;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
     const { data: wizardData } = useWizardStore();
 
     const editStageByStepId = useMemo<Record<string, StageWizard>>(
@@ -452,11 +498,11 @@ const Questions: FunctionComponent<QuestionsProps> = ({
 
     const mediaItems = useMemo(
         () => [
-            { id: 'voice', label: `Voice (${mediaCounts.voiceCount})`, Icon: MicIcon },
-            { id: 'photo', label: `Photo (${mediaCounts.photoCount})`, Icon: ImageIcon },
-            { id: 'video', label: `Video (${mediaCounts.videoCount})`, Icon: VideoIcon },
+            { id: 'voice', label: t.voice(mediaCounts.voiceCount), Icon: MicIcon },
+            { id: 'photo', label: t.photo(mediaCounts.photoCount), Icon: ImageIcon },
+            { id: 'video', label: t.video(mediaCounts.videoCount), Icon: VideoIcon },
         ],
-        [mediaCounts.photoCount, mediaCounts.videoCount, mediaCounts.voiceCount],
+        [mediaCounts.photoCount, mediaCounts.videoCount, mediaCounts.voiceCount, t],
     );
 
     const steps = useMemo(() => {
@@ -469,8 +515,8 @@ const Questions: FunctionComponent<QuestionsProps> = ({
         }) => {
             const text = section?.text?.trim() ?? '';
             const lines: string[] = [];
-            lines.push(`files: ${toCount(section?.files)}`);
-            lines.push(`voices: ${toCount(section?.voices)}`);
+            lines.push(t.filesLine(toCount(section?.files)));
+            lines.push(t.voicesLine(toCount(section?.voices)));
             return { text, lines };
         };
 
@@ -480,14 +526,14 @@ const Questions: FunctionComponent<QuestionsProps> = ({
             const totalVoices = safeEntries.reduce((acc, e) => acc + toCount(e?.voices), 0);
 
             const lines: string[] = [];
-            lines.push(`entries: ${safeEntries.length}`);
-            lines.push(`files: ${totalFiles}`);
-            lines.push(`voices: ${totalVoices}`);
+            lines.push(t.entriesLine(safeEntries.length));
+            lines.push(t.filesLine(totalFiles));
+            lines.push(t.voicesLine(totalVoices));
 
             safeEntries.forEach((e, idx) => {
-                const t = e?.text?.trim();
-                if (t) {
-                    lines.push(`${idx + 1}. ${t}`);
+                const lineText = e?.text?.trim();
+                if (lineText) {
+                    lines.push(`${idx + 1}. ${lineText}`);
                 }
             });
 
@@ -497,7 +543,7 @@ const Questions: FunctionComponent<QuestionsProps> = ({
         const skillsLines = (skills?: string[]) => {
             const safeSkills = (skills ?? []).map((s) => s?.trim()).filter(Boolean) as string[];
             if (safeSkills.length === 0) {
-                return ['(no skills)'];
+                return [t.noSkills];
             }
             return safeSkills;
         };
@@ -548,29 +594,30 @@ const Questions: FunctionComponent<QuestionsProps> = ({
         wizardData.experiences,
         wizardData.jobDescription,
         wizardData.skills,
+        t,
     ]);
 
     return (
-        <Container>
+        <Container dir={dir} sx={{ direction: dir }}>
             <MiddleSection>
                 <TopSection>
                     <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center'>
-                        File uploaded
+                        {t.fileUploaded}
                     </Typography>
 
-                    <MediaRow>
+                    <MediaRow direction={dir === 'rtl' ? 'row-reverse' : 'row'}>
                         {mediaItems.map(({ id, label, Icon }) => (
-                            <MediaItem key={id}>
+                            <MediaItem key={id} direction={dir === 'rtl' ? 'row-reverse' : 'row'}>
                                 <MediaIconBox>
                                     <Icon />
                                 </MediaIconBox>
 
-                                <Stack direction='row' spacing={1.25} alignItems='center'>
+                                <Stack direction={dir === 'rtl' ? 'row-reverse' : 'row'} spacing={1.25} alignItems='center'>
                                     <Typography variant='subtitle1' fontWeight={492} color='text.primary'>
                                         {label}
                                     </Typography>
                                     <Typography variant='subtitle1' fontWeight={492} color='success.light'>
-                                        Done
+                                        {t.done}
                                     </Typography>
                                 </Stack>
                             </MediaItem>
@@ -578,28 +625,32 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                     </MediaRow>
                 </TopSection>
                 <Typography variant='h6' fontWeight={400} color='text.primary' textAlign='center' mt={3}>
-                    Questions
+                    {t.title}
                 </Typography>
                 <QuestionList>
                     {steps.map((step, index) => (
                         <React.Fragment key={step.id}>
                             <QuestionCard>
                                 <QuestionTexts>
-                                    <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                                        <Stack direction='row' alignItems='center'>
+                                    <Stack
+                                        direction={dir === 'rtl' ? 'row-reverse' : 'row'}
+                                        alignItems='center'
+                                        justifyContent='space-between'
+                                    >
+                                        <Stack direction={dir === 'rtl' ? 'row-reverse' : 'row'} alignItems='center'>
                                             <QuestionBadge>{index + 1}</QuestionBadge>
 
                                             <Typography
                                                 variant='subtitle2'
                                                 fontWeight={400}
                                                 color='text.primary'
-                                                ml={2}
+                                                sx={{ ml: dir === 'rtl' ? 0 : 2, mr: dir === 'rtl' ? 2 : 0 }}
                                             >
-                                                {step.id}
+                                                {t.stepLabel[step.id as keyof typeof t.stepLabel] ?? step.id}
                                             </Typography>
                                         </Stack>
 
-                                        <Tooltip title='Edit' placement='top'>
+                                        <Tooltip title={t.edit} placement={dir === 'rtl' ? 'top' : 'top'}>
                                             <span>
                                                 <IconButton
                                                     size='small'
@@ -620,13 +671,26 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                             </span>
                                         </Tooltip>
                                     </Stack>
-                                    <Stack direction='row' gap={1} mt={1}>
+                                    <Stack
+                                        direction={dir === 'rtl' ? 'row-reverse' : 'row'}
+                                        gap={1}
+                                        mt={1}
+                                    >
                                         <Typography variant='subtitle2' fontWeight={600} color='text.primary'>
-                                            Answer
+                                            {t.answer}
                                         </Typography>
                                     </Stack>
 
-                                    <Stack component='ul' sx={{ pl: 3, m: 0 }} gap={0.5}>
+                                    <Stack
+                                        component='ul'
+                                        sx={{
+                                            m: 0,
+                                            pl: dir === 'rtl' ? 0 : 3,
+                                            pr: dir === 'rtl' ? 3 : 0,
+                                            listStylePosition: 'inside',
+                                        }}
+                                        gap={0.5}
+                                    >
                                         {step.text && (
                                             <Typography
                                                 component='li'
@@ -673,9 +737,14 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                                         fontWeight={600}
                                                         color='text.secondary'
                                                     >
-                                                        Entry {entryIdx + 1}
+                                                        {t.entry(entryIdx + 1)}
                                                     </Typography>
-                                                    <AttachmentsPreview files={entry?.files} voices={entry?.voices} />
+                                                    <AttachmentsPreview
+                                                        files={entry?.files}
+                                                        voices={entry?.voices}
+                                                        t={t}
+                                                        dir={dir}
+                                                    />
                                                 </Stack>
                                             ))}
                                         </Stack>
@@ -683,6 +752,8 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                                         <AttachmentsPreview
                                             files={step.attachments?.files}
                                             voices={step.attachments?.voices}
+                                            t={t}
+                                            dir={dir}
                                         />
                                     )}
                                 </QuestionTexts>
@@ -703,7 +774,10 @@ const Questions: FunctionComponent<QuestionsProps> = ({
 
             <BottomSection>
                 <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
+                    direction={{
+                        xs: 'column',
+                        sm: dir === 'rtl' ? 'row-reverse' : 'row',
+                    }}
                     gap={{ xs: 2, sm: 5 }}
                     justifyContent='center'
                     m={{ xs: 2, sm: 4 }}
@@ -714,22 +788,24 @@ const Questions: FunctionComponent<QuestionsProps> = ({
                         color='secondary'
                         variant='outlined'
                         size='large'
-                        startIcon={<AddIcon />}
+                        startIcon={dir === 'rtl' ? undefined : <AddIcon />}
+                        endIcon={dir === 'rtl' ? <AddIcon /> : undefined}
                         onClick={() => setStage('SKILL_INPUT')}
                         sx={{ width: { xs: '100%', sm: 'auto' } }}
                     >
-                        Add more
+                        {t.addMore}
                     </MuiButton>
 
                     <MuiButton
                         color='secondary'
                         size='large'
                         onClick={onNext}
-                        endIcon={<ArrowRightIcon />}
+                        startIcon={dir === 'rtl' ? <ArrowRightIcon /> : undefined}
+                        endIcon={dir === 'rtl' ? undefined : <ArrowRightIcon />}
                         loading={Boolean(isSubmitting)}
                         sx={{ width: { xs: '100%', sm: 'auto' } }}
                     >
-                        Submit
+                        {t.submit}
                     </MuiButton>
                 </Stack>
             </BottomSection>
