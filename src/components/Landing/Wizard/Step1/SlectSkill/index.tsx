@@ -18,7 +18,6 @@ import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import { FilePreviewContainer, FileTypeLabel } from '@/components/Landing/Wizard/Step1/AI/Attach/View/styled';
 import {
     FILE_CATEGORY_LIMITS,
-    FILE_CATEGORY_TOAST_LABELS,
     getFileCategory,
     getFileTypeDisplayName,
     isDuplicateFile,
@@ -36,6 +35,9 @@ import { usePlanGate } from '@/hooks/usePlanGate';
 import { apiClientClient } from '@/services/api-client';
 import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
+
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import { AllSkill } from './data';
 import EditSkillDialog from './EditSkillDialog';
@@ -179,16 +181,13 @@ const AtsFriendlyChip = styled(MuiChips)(({ theme }) => ({
 
 const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
     const theme = useTheme();
-    const tooltipLines = [
-        'Start with your job title or the role you are applying for.',
-        'Mention your years of experience.',
-        'Highlight your strongest skills and what makes you valuable.',
-        'Add 1–2 examples of what you have achieved in past companies.',
-        'Keep it short, clear, and professional (3–4 lines).',
-    ];
-    const tooltipSnippet =
-        'Example: "UX/UI Designer with 3+ years of experience in creating user-friendly digital products. Skilled in wireframing, prototyping, and user research. Successfully improved user engagement for multiple ed-tech and gaming platforms."';
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.selectSkill;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+    const tooltipLines = [t.tooltipLine1, t.tooltipLine2, t.tooltipLine3, t.tooltipLine4, t.tooltipLine5];
+    const tooltipSnippet = t.tooltipExample;
     const tooltipBackground = theme.palette.grey[800] ?? '#1C1C1C';
+    const fileCategoryLabels = getMainTranslations(locale).landing.wizard.fileCategoryLabels;
 
     const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
     const backgroundSection = wizardData.background;
@@ -360,7 +359,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
 
     const handleShowVoiceRecorder = () => {
         if (isVoiceLimitReached) {
-            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            showToast(t.voiceLimit(MAX_VOICE_RECORDINGS));
             return;
         }
 
@@ -382,7 +381,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
         }
 
         if (duration > MAX_VOICE_DURATION_SECONDS) {
-            showToast('Voice recordings are limited to 90 seconds.', 'info');
+            showToast(t.voiceDuration, 'info');
             setShowRecordingControls(false);
             setVoiceUrl(null);
             setVoiceBlob(null);
@@ -390,7 +389,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
         }
 
         if (backgroundVoices.length >= MAX_VOICE_RECORDINGS) {
-            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            showToast(t.voiceLimit(MAX_VOICE_RECORDINGS));
             setShowRecordingControls(false);
             setVoiceUrl(null);
             setVoiceBlob(null);
@@ -502,7 +501,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             const currentFiles = [...backgroundFiles, ...acceptedFiles];
 
             if (isDuplicateFile(file, currentFiles)) {
-                showToast('This file has already been uploaded.');
+                showToast(t.fileAlreadyUploaded);
                 continue;
             }
 
@@ -511,9 +510,17 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                 const currentCount =
                     backgroundFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
                     acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
+                const label =
+                    category === 'image'
+                        ? fileCategoryLabels.images
+                        : category === 'video'
+                          ? fileCategoryLabels.videos
+                          : category === 'pdf'
+                            ? fileCategoryLabels.pdfFiles
+                            : fileCategoryLabels.wordFiles;
 
                 if (currentCount >= limit) {
-                    showToast(`You can upload up to ${limit} ${FILE_CATEGORY_TOAST_LABELS[category]}.`);
+                    showToast(t.fileLimit(limit, label));
                     continue;
                 }
             }
@@ -521,7 +528,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             if (category === 'video') {
                 const isDurationValid = await isVideoDurationValid(file);
                 if (!isDurationValid) {
-                    showToast('Each video must be 60 seconds or shorter.');
+                    showToast(t.videoDuration);
                     continue;
                 }
             }
@@ -571,14 +578,16 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
     const defaultSkill = AllSkill[0] ?? { id: '', label: 'Motion Designer', selected: false };
     const [mainSkillLabel, setMainSkillLabel] = useState<ReactNode>(defaultSkill.label);
 
+    const categoryFaMap = getMainTranslations(locale).landing.skillCategoryFa ?? {};
     useEffect(() => {
         const value = wizardData.mainSkill;
         if (!value) return;
 
         const numericIndex = Number(value);
+        const toLabel = (v: string) => (categoryFaMap as Record<string, string>)[v] ?? v;
 
         if (Number.isNaN(numericIndex)) {
-            setMainSkillLabel(value);
+            setMainSkillLabel(toLabel(value));
             return;
         }
 
@@ -587,15 +596,15 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                 const { data } = await apiClientClient.get('skills/categories');
                 const list: string[] = data?.data ?? [];
                 const labelFromList = list[numericIndex];
-
-                setMainSkillLabel(labelFromList ?? value);
+                const raw = labelFromList ?? value;
+                setMainSkillLabel(toLabel(raw));
             } catch {
-                setMainSkillLabel(value);
+                setMainSkillLabel(toLabel(value));
             }
         };
 
         void fetchMainSkillLabel();
-    }, [wizardData.mainSkill]);
+    }, [wizardData.mainSkill, locale]);
 
     const handleConfirmEditDialog = (selectedOption: SelectOption) => {
         setIsEditDialogOpen(false);
@@ -642,14 +651,14 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
     };
 
     return (
-        <MainContainer>
+        <MainContainer dir={dir} sx={{ direction: dir }}>
             <Stack direction='row' alignItems='center' gap={1} sx={{ flexWrap: 'wrap' }}>
                 <Typography variant='h5' color='text.primary' fontWeight='584'>
-                    4. Briefly tell us about your background{' '}
+                    4. {t.title}{' '}
                 </Typography>
                 <Tooltip
                     arrow
-                    placement='right'
+                    placement={dir === 'rtl' ? 'left' : 'right'}
                     title={
                         <TooltipContent>
                             {tooltipLines.map((line) => (
@@ -728,13 +737,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
 
             <ActionRow>
                 <ActionButtonsGroup direction='row' gap={0.5}>
-                    <ActionIconButton aria-label='Attach file' onClick={handleProtectedFileDialog}>
+                    <ActionIconButton aria-label={t.attachFile} onClick={handleProtectedFileDialog}>
                         <AttachIcon />
                     </ActionIconButton>
                     <Stack direction='column' alignItems='center' gap={1}>
                         {!showRecordingControls && (
                             <RecordActionIconButton
-                                aria-label='Record draft action'
+                                aria-label={t.recordDraft}
                                 onClick={handleProtectedVoiceRecorder}
                                 disabled={isVoiceLimitReached}
                                 dimmed={isVoiceLimitReached}
@@ -830,17 +839,17 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             />
 
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={5}>
-                5. Your skills?
+                5. {t.yourSkills}
             </Typography>
             <Stack direction='row' gap={2} mt={3} sx={{ flexWrap: 'wrap', alignItems: 'baseline' }}>
                 <Stack direction='row' alignItems='center' gap={1} sx={{ flexWrap: 'wrap' }}>
                     <Typography variant='subtitle2' color='text.primary' fontWeight='400'>
-                        Main skill
+                        {t.mainSkill}
                     </Typography>
                     <Typography variant='h5' color='text.primary' fontWeight='584'>
                         {mainSkillLabel}
                     </Typography>
-                    <ActionIconButton aria-label='Edit main skill' onClick={handleOpenEditDialog}>
+                    <ActionIconButton aria-label={t.editMainSkill} onClick={handleOpenEditDialog}>
                         <EdiIcon />
                     </ActionIconButton>
                 </Stack>
@@ -858,13 +867,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     </SkillContainer>
                 ) : (
                     <Typography variant='body2' color='text.secondary' mt={1.5}>
-                        No skills found.
+                        {t.noSkillsFound}
                     </Typography>
                 )}
 
                 <ContainerSkill direction='row' active={!!customSkillInput}>
                     <InputContent
-                        placeholder='Your another skills: Designer, Motion...'
+                        placeholder={t.anotherSkills}
                         value={customSkillInput}
                         wrap='soft'
                         onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -894,7 +903,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                         setStage('SKILL_INPUT');
                     }}
                 >
-                    Back
+                    {t.back}
                 </MuiButton>
 
                 <MuiButton
@@ -904,7 +913,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     onClick={handleNext}
                     disabled={!canProceedBackground || (!hasSelectedSkills && !hasCustomSkillInput)}
                 >
-                    Next
+                    {t.next}
                 </MuiButton>
             </Stack>
             <EditSkillDialog
@@ -912,6 +921,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                 onClose={handleCloseEditDialog}
                 onConfirm={handleConfirmEditDialog}
                 initialSkillId={wizardData.mainSkill}
+                locale={locale}
             />
         </MainContainer>
     );

@@ -5,6 +5,8 @@ import { Divider, IconButton, SelectProps, Typography } from '@mui/material';
 
 import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption, SelectOptionValue } from '@/components/UI/MuiSelectOptions';
+import { getMainTranslations } from '@/locales/main';
+import type { Locale } from '@/store/common/type';
 import { apiClientClient } from '@/services/api-client';
 
 import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
@@ -25,10 +27,14 @@ interface EditSkillDialogProps {
     onClose: () => void;
     onConfirm: (option: SelectOption) => void;
     initialSkillId?: SelectOptionValue;
+    locale?: Locale;
 }
 
 const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
-    const { open, onClose, onConfirm, initialSkillId } = props;
+    const { open, onClose, onConfirm, initialSkillId, locale = 'en' } = props;
+    const t = getMainTranslations(locale).landing.wizard.editSkillDialog;
+    const categoryFa = getMainTranslations(locale).landing.skillCategoryFa ?? {};
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
     const [skillOptions, setSkillOptions] = useState<SelectOption[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [selectedSkillId, setSelectedSkillId] = useState<SelectOptionValue>('');
@@ -44,7 +50,7 @@ const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
                 const list: string[] = data?.data ?? [];
                 const options: SelectOption[] = list.map((skill) => ({
                     value: skill,
-                    label: skill,
+                    label: (categoryFa as Record<string, string>)[skill] ?? skill,
                 }));
 
                 setSkillOptions(options);
@@ -82,11 +88,11 @@ const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
     }, [open, initialSkillId]);
 
     return (
-        <DialogContainer onClose={onClose} open={open} maxWidth='xs'>
+        <DialogContainer onClose={onClose} open={open} maxWidth='xs' PaperProps={{ sx: { direction: dir } }}>
             <StackContainer>
                 <HeaderContainer direction='row'>
                     <Typography color='text.primary' variant='body1' fontWeight={500}>
-                        Edit your main skill{' '}
+                        {t.title}
                     </Typography>
                     <IconButton onClick={onClose}>
                         <CloseRoundedIcon />
@@ -95,8 +101,8 @@ const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
 
                 <StackContent>
                     <MuiSelectOptions
-                        label='Your main skill'
-                        placeholder={loading ? 'Loading...' : 'Select one of your skills'}
+                        label={t.mainSkill}
+                        placeholder={loading ? t.loading : t.placeholder}
                         value={selectedSkillId}
                         options={skillOptions}
                         onChange={(value) => setSelectedSkillId(value)}
@@ -123,7 +129,7 @@ const EditSkillDialog: FunctionComponent<EditSkillDialogProps> = (props) => {
                             }
                         }}
                     >
-                        Save
+                        {t.save}
                     </MuiButton>
                 </ActionContainer>
             </StackContainer>

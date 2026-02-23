@@ -8,7 +8,6 @@ import { StageWizard } from '@/components/Landing/type';
 import { RecordingState } from '@/components/Landing/Wizard/Step1/AI';
 import {
     FILE_CATEGORY_LIMITS,
-    FILE_CATEGORY_TOAST_LABELS,
     getFileCategory,
     getFileTypeDisplayName,
     isDuplicateFile,
@@ -18,6 +17,8 @@ import {
 } from '@/components/Landing/Wizard/Step1/attachmentRules';
 import MuiAlert, { AlertWrapperProps } from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 import { generateFakeUUIDv4 } from '@/utils/generateUUID';
 
@@ -37,7 +38,19 @@ interface VoiceRecording {
     duration: number;
 }
 
-const useBrieflySectionState = (showToast: (message: string, severity?: ToastSeverity) => void) => {
+type SectionToastT = {
+    voiceLimit: (n: number) => string;
+    voiceDuration: string;
+    fileAlreadyUploaded: string;
+    fileLimit: (limit: number, label: string) => string;
+    videoDuration: string;
+};
+
+const useBrieflySectionState = (
+    showToast: (message: string, severity?: ToastSeverity) => void,
+    sectionT: SectionToastT,
+    fileCategoryLabels: { images: string; videos: string; pdfFiles: string; wordFiles: string },
+) => {
     const [backgroundText, setBackgroundText] = useState<string>('');
     const backgroundRef = useRef<HTMLTextAreaElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -80,7 +93,7 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
 
     const handleShowVoiceRecorder = () => {
         if (voiceRecordings.length >= MAX_VOICE_RECORDINGS) {
-            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            showToast(sectionT.voiceLimit(MAX_VOICE_RECORDINGS));
             return;
         }
 
@@ -102,7 +115,7 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
         }
 
         if (duration > MAX_VOICE_DURATION_SECONDS) {
-            showToast('Voice recordings are limited to 90 seconds.', 'info');
+            showToast(sectionT.voiceDuration, 'info');
             setShowRecordingControls(false);
             setVoiceUrl(null);
             setVoiceBlob(null);
@@ -110,7 +123,7 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
         }
 
         if (voiceRecordings.length >= MAX_VOICE_RECORDINGS) {
-            showToast(`You can upload up to ${MAX_VOICE_RECORDINGS} voice recordings.`);
+            showToast(sectionT.voiceLimit(MAX_VOICE_RECORDINGS));
             setShowRecordingControls(false);
             setVoiceUrl(null);
             setVoiceBlob(null);
@@ -177,7 +190,7 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
                 const currentFiles = [...uploadedFiles, ...acceptedFiles];
 
                 if (isDuplicateFile(file, currentFiles)) {
-                    showToast('This file has already been uploaded.');
+                    showToast(sectionT.fileAlreadyUploaded);
                     continue;
                 }
 
@@ -186,9 +199,17 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
                     const currentCount =
                         uploadedFiles.filter((existingFile) => getFileCategory(existingFile) === category).length +
                         acceptedFiles.filter((fileItem) => getFileCategory(fileItem) === category).length;
+                    const label =
+                        category === 'image'
+                            ? fileCategoryLabels.images
+                            : category === 'video'
+                              ? fileCategoryLabels.videos
+                              : category === 'pdf'
+                                ? fileCategoryLabels.pdfFiles
+                                : fileCategoryLabels.wordFiles;
 
                     if (currentCount >= limit) {
-                        showToast(`You can upload up to ${limit} ${FILE_CATEGORY_TOAST_LABELS[category]}.`);
+                        showToast(sectionT.fileLimit(limit, label));
                         continue;
                     }
                 }
@@ -196,7 +217,7 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
                 if (category === 'video') {
                     const isDurationValid = await isVideoDurationValid(file);
                     if (!isDurationValid) {
-                        showToast('Each video must be 60 seconds or shorter.');
+                        showToast(sectionT.videoDuration);
                         continue;
                     }
                 }
@@ -359,6 +380,10 @@ const useBrieflySectionState = (showToast: (message: string, severity?: ToastSev
 };
 
 const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.jobDescription;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+    const fileCategoryLabels = getMainTranslations(locale).landing.wizard.fileCategoryLabels;
     const { data: wizardData, updateField, recomputeAllFiles } = useWizardStore();
 
     const [toastInfo, setToastInfo] = useState<ToastInfo | null>(null);
@@ -386,8 +411,8 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
         };
     }, []);
 
-    const sectionOne = useBrieflySectionState(showToast);
-    const sectionTwo = useBrieflySectionState(showToast);
+    const sectionOne = useBrieflySectionState(showToast, t, fileCategoryLabels);
+    const sectionTwo = useBrieflySectionState(showToast, t, fileCategoryLabels);
 
     useEffect(() => {
         const jd = wizardData.jobDescription as
@@ -507,18 +532,20 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
         <Stack
             alignItems='center'
             justifyContent='center'
+            dir={dir}
             sx={{
                 width: '100%',
                 px: { xs: 2, sm: 4, md: 6 },
                 boxSizing: 'border-box',
+                direction: dir,
             }}
         >
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                8. Could you share the job description?{' '}
+                8. {t.title}{' '}
             </Typography>
 
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
-                <AtsFriendlyChip color='warning' label='ATS Friendly' />
+                <AtsFriendlyChip color='warning' label={t.atsFriendly} />
             </Stack>
             <SummaryTextContainer>
                 <Typography
@@ -530,8 +557,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     textAlign='center'
                     mt={1}
                 >
-                    If you have a job position you want to apply for and you're creating a resume for it, please provide
-                    us with that job position.
+                    {t.summaryText}
                 </Typography>
             </SummaryTextContainer>
 
@@ -571,11 +597,11 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
             />
 
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={4}>
-                9. Anything else to add?{' '}
+                9. {t.title2}{' '}
             </Typography>
 
             <Stack direction='row' alignItems='center' gap={1} mt={1}>
-                <AtsFriendlyChip color='warning' label='ATS Friendly' />
+                <AtsFriendlyChip color='warning' label={t.atsFriendly} />
             </Stack>
             <SummaryTextContainer>
                 <Typography
@@ -587,8 +613,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     textAlign='center'
                     mt={1}
                 >
-                    You can upload your resume in PDF format or any other format, including a photo, detailing your work
-                    experience or activities.
+                    {t.summaryText2}
                 </Typography>
             </SummaryTextContainer>
             <BrieflySection
@@ -628,7 +653,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     startIcon={<ArrowBackIcon />}
                     onClick={handleBack}
                 >
-                    Back
+                    {t.back}
                 </MuiButton>
 
                 <MuiButton
@@ -638,7 +663,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                     onClick={handleNext}
                     disabled={!hasJobDescription}
                 >
-                    Next
+                    {t.next}
                 </MuiButton>
             </Stack>
         </Stack>

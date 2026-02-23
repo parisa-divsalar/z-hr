@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useMemo, useEffect, useRef, useState } from 'react';
 
 import { IconButton, Stack, Typography } from '@mui/material';
 
@@ -9,6 +9,8 @@ import PropertyIcon from '@/assets/images/icons/property.svg';
 import { StageWizard } from '@/components/Landing/type';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiSelectOptions, { SelectOption } from '@/components/UI/MuiSelectOptions';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 import {
@@ -27,31 +29,44 @@ import {
     SkillText,
 } from './styled';
 
-const visaStatusOptions: SelectOption[] = [
-    { value: 'citizen', label: 'Citizen' },
-    { value: 'permanent_resident', label: 'Permanent resident' },
-    { value: 'work_visa', label: 'Work visa' },
-    { value: 'student_visa', label: 'Student visa' },
-    { value: 'other', label: 'Other' },
-];
-
-const languageOptions: SelectOption[] = [
-    { value: 'Arabic', label: 'Arabic' },
-    { value: 'Persian', label: 'Persian' },
-    { value: 'English', label: 'English' },
-];
-
-const levelOptions: SelectOption[] = [
-    { value: 'A', label: 'A' },
-    { value: 'B', label: 'B' },
-    { value: 'C', label: 'C' },
-];
-
 interface SKillInputProps {
     setStage: (stage: StageWizard) => void;
 }
 
 const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.skillInput;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+
+    const visaStatusOptions: SelectOption[] = useMemo(
+        () => [
+            { value: 'citizen', label: t.citizen },
+            { value: 'permanent_resident', label: t.permanentResident },
+            { value: 'work_visa', label: t.workVisa },
+            { value: 'student_visa', label: t.studentVisa },
+            { value: 'other', label: t.other },
+        ],
+        [t],
+    );
+
+    const languageOptions: SelectOption[] = useMemo(
+        () => [
+            { value: 'Arabic', label: t.arabic },
+            { value: 'Persian', label: t.persian },
+            { value: 'English', label: t.english },
+        ],
+        [t],
+    );
+
+    const levelOptions: SelectOption[] = useMemo(
+        () => [
+            { value: 'A', label: 'A' },
+            { value: 'B', label: 'B' },
+            { value: 'C', label: 'C' },
+        ],
+        [],
+    );
+
     const { data, updateField } = useWizardStore();
 
     const [contactInput, setContactInput] = useState('');
@@ -199,20 +214,20 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
     };
 
     return (
-        <MainContainer>
+        <MainContainer dir={dir} sx={{ direction: dir }}>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                Very good 😊
+                {t.title}
             </Typography>
             <Typography variant='h5' color='text.primary' fontWeight='584'>
-                You should answer a few questions about your resume.
+                {t.subtitle}
             </Typography>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={3}>
-                <span style={{ fontWeight: 'normal' }}>1.</span> Your visa status?
+                <span style={{ fontWeight: 'normal' }}>1.</span> {t.visaStatus}
             </Typography>
 
             <Stack mt={2} direction='row' style={{ width: '100%', maxWidth: '426px' }}>
                 <MuiSelectOptions
-                    placeholder='Select visa status'
+                    placeholder={t.selectVisa}
                     value={visaStatus}
                     options={visaStatusOptions}
                     onChange={(v) => updateField('visaStatus', v as string)}
@@ -221,13 +236,13 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
             </Stack>
 
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={6}>
-                <span style={{ fontWeight: 'normal' }}>2.</span> Best way to contact you?
+                <span style={{ fontWeight: 'normal' }}>2.</span> {t.contactYou}
             </Typography>
 
             <Stack mt={2} direction='row' alignItems='center' gap={1} width='100%' maxWidth='426px'>
                 <AutoGrowInputContainer direction='row' highlight={contactInput.trim() !== ''} grow noMarginTop>
                     <InputContent
-                        placeholder='Type your answer...'
+                        placeholder={t.typeAnswer}
                         value={contactInput}
                         onChange={(e) => setContactInput(e.target.value)}
                     />
@@ -262,12 +277,12 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
             {/* --- Languages section --- */}
 
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={3}>
-                <span style={{ fontWeight: 'normal' }}>3.</span> Your language skills?
+                <span style={{ fontWeight: 'normal' }}>3.</span> {t.languageSkills}
             </Typography>
 
             <BottomActionsStack mt={2} direction='row' alignItems='center' gap={1} width='100%' maxWidth='426px'>
                 <MuiSelectOptions
-                    placeholder='Language'
+                    placeholder={t.language}
                     value={selectedLanguage}
                     options={languageOptions}
                     onChange={(v) => setSelectedLanguage(v as string)}
@@ -275,7 +290,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
                 />
 
                 <MuiSelectOptions
-                    placeholder='Level'
+                    placeholder={t.level}
                     value={selectedLevel}
                     options={levelOptions}
                     onChange={(v) => setSelectedLevel(v as string)}
@@ -326,7 +341,7 @@ const SKillInput: FunctionComponent<SKillInputProps> = ({ setStage }) => {
                     onClick={handleNext}
                     disabled={!canProceed}
                 >
-                    Next
+                    {t.next}
                 </MuiButton>
             </Stack>
         </MainContainer>

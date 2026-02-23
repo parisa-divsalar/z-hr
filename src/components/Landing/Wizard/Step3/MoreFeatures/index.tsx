@@ -9,6 +9,8 @@ import ResumeTemplatesRight, {
   MoreFeatureSuggestion,
 } from '@/components/Landing/Wizard/Step3/MoreFeatures/ResumeTemplatesRight';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 import {
   featureKeyFromTitle,
@@ -27,6 +29,9 @@ interface MoreFeaturesProps {
 const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
   const { setStage } = props;
   const router = useRouter();
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).landing.wizard.moreFeatures;
+  const dir = locale === 'fa' ? 'rtl' : 'ltr';
   const requestId = useWizardStore((state) => state.requestId);
   const [suggestions, setSuggestions] = useState<MoreFeatureSuggestion[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
@@ -138,7 +143,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
         if (isMounted) setSuggestions(Array.isArray(json) ? json : []);
       } catch (error) {
         if (isMounted) {
-          setSuggestionsError(error instanceof Error ? error.message : 'Failed to load more features');
+          setSuggestionsError(error instanceof Error ? error.message : t.failedToLoad);
           setSuggestions([]);
         }
       } finally {
@@ -171,19 +176,19 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
 
   return (
     <>
-      <Stack textAlign='center' mt={2} mb={2}>
+      <Stack textAlign='center' mt={2} mb={2} dir={dir} sx={{ direction: dir }}>
         <Typography variant='h5' color='text.primary' fontWeight='500' mt={0.5}>
-          More Features
+          {t.title}
         </Typography>
         <Typography variant='h6' color='text.primary' mt={2} fontWeight='400'>
-          You can utilize these features with your resume
+          {t.subtitle}
         </Typography>
       </Stack>
       <Grid container spacing={{ xs: 2, md: 3 }} mt={{ xs: 1, md: 2 }}>
         <Grid size={{ xs: 12, md: 6 }}>
           {loadingSuggestions ? (
             <Typography variant='subtitle2' color='text.secondary'>
-              Loading suggestions...
+              {t.loadingSuggestions}
             </Typography>
           ) : suggestionsError ? (
             <Typography variant='subtitle2' color='error'>
@@ -191,7 +196,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
             </Typography>
           ) : leftWithSelection.length === 0 ? (
             <Typography variant='subtitle2' color='text.secondary'>
-              No feature suggestions available.
+              {t.noSuggestions}
             </Typography>
           ) : (
             leftWithSelection.map((suggestion, index) =>
@@ -217,7 +222,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
         <Grid size={{ xs: 12, md: 6 }}>
           {loadingSuggestions ? (
             <Typography variant='subtitle2' color='text.secondary'>
-              Loading suggestions...
+              {t.loadingSuggestions}
             </Typography>
           ) : suggestionsError ? (
             <Typography variant='subtitle2' color='error'>
@@ -239,12 +244,12 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
       <PlanRequiredDialog
         open={planDialogOpen}
         onClose={() => setPlanDialogOpen(false)}
-        title='Insufficient coins'
-        headline='You do not have enough coins to enable this feature.'
-        bodyText='You can buy coins/upgrade your plan, or continue to payment.'
-        primaryLabel='Go to payment'
+        title={t.insufficientCoins}
+        headline={t.insufficientCoinsHeadline}
+        bodyText={t.insufficientCoinsBody}
+        primaryLabel={t.goToPayment}
         primaryHref={PrivateRoutes.payment}
-        secondaryLabel='Pricing'
+        secondaryLabel={t.pricing}
         secondaryHref={PublicRoutes.pricing}
       />
 
@@ -256,7 +261,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
         p={{ xs: 2, sm: 3, md: 5 }}
       >
         <MuiButton
-          text='Back'
+          text={t.back}
           variant='outlined'
           color='secondary'
           size='large'
@@ -264,7 +269,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
           onClick={() => setStage('RESUME_EDITOR')}
         />
         <MuiButton
-          text='Submit'
+          text={t.submit}
           variant='contained'
           color='secondary'
           size='large'

@@ -4,8 +4,10 @@ import { Stack, Typography } from '@mui/material';
 
 import ThinkingIcon from '@/assets/images/icons/thinking.svg';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
 import { apiClientClient } from '@/services/api-client';
 import { useAuthStore } from '@/store/auth';
+import { useLocaleStore } from '@/store/common';
 import { buildWizardZipBlob, useWizardStore } from '@/store/wizard';
 import { saveWizardTextOnlySession } from '@/utils/wizardTextOnlySession';
 
@@ -17,6 +19,9 @@ interface ThinkingProps {
 const SEND_FILE_TIMEOUT_MS = 7 * 60 * 1000; // 7 minutes
 
 const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep }) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.thinking;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
     const { data: wizardData } = useWizardStore();
     const setRequestId = useWizardStore((state) => state.setRequestId);
     const accessToken = useAuthStore((state) => state.accessToken);
@@ -153,24 +158,26 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
                 px: { xs: 3, sm: 0 },
                 py: { xs: 3, sm: 0 },
                 textAlign: 'center',
+                direction: dir,
             }}
+            dir={dir}
         >
             <ThinkingIcon />
 
             <Typography variant='h6' mt={4}>
-                Thinking...
+                {t.thinking}
             </Typography>
 
             <Typography variant='h5' fontWeight='600'>
                 {subRequestFileNames.length
-                    ? `Updating & analyzing “${currentFileName || subRequestFileNames[0]}” via the resume analysis service...`
-                    : 'Updating & analyzing your information via the resume analysis service...'}
+                    ? t.analyzingFile(currentFileName || subRequestFileNames[0])
+                    : t.analyzing}
             </Typography>
 
             <br />
 
             <Typography variant='h5' fontWeight='600' color='error'>
-                It might take a few minutes!
+                {t.mightTakeTime}
             </Typography>
 
             <Stack
@@ -181,12 +188,12 @@ const Thinking: FunctionComponent<ThinkingProps> = ({ onCancel, setActiveStep })
                 }}
             >
                 <MuiButton variant='outlined' fullWidth onClick={onCancel}>
-                    Cancel
+                    {t.cancel}
                 </MuiButton>
             </Stack>
         </Stack>
     ) : (
-        <div>{submitError || 'ERROR to send file'}</div>
+        <div>{submitError || t.error}</div>
     );
 };
 

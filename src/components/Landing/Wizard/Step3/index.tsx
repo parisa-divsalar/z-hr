@@ -10,6 +10,8 @@ import ResumeBuilderMoreFeatures from '@/app/(private)/resume-builder/MoreFeatur
 import ResumeGeneratorFrame from '@/app/(private)/resume-builder/ResumeGeneratorFrame';
 import WizardMoreFeatures from '@/components/Landing/Wizard/Step3/MoreFeatures';
 import { useResumeEditorController } from '@/components/Landing/Wizard/Step3/ResumeEditor/hooks/useResumeEditorController';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import ResumeEditor from './ResumeEditor';
 import ResumeEditorTemplate2 from './ResumeEditorTemplate2';
@@ -25,6 +27,9 @@ const ResumeEditorStage: FunctionComponent<{
     setActiveStep: (activeStep: number) => void;
 }> = ({ setStage, setActiveStep }) => {
     const theme = useTheme();
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
     const [activeTemplate, setActiveTemplate] = useState<'template1' | 'template2' | 'template3' | 'template4'>('template1');
     const controller = useResumeEditorController({});
 
@@ -64,12 +69,12 @@ const ResumeEditorStage: FunctionComponent<{
     };
 
     return (
-        <Stack alignItems='center' height='100%' p={2}>
+        <Stack alignItems='center' height='100%' p={2} dir={dir} sx={{ direction: dir }}>
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={2}>
-                CV Preview
+                {t.title}
             </Typography>
             <Typography variant='h6' color='text.primary' my={1}>
-                You can view and edit resume
+                {t.subtitle}
             </Typography>
 
             <Box
@@ -82,10 +87,10 @@ const ResumeEditorStage: FunctionComponent<{
                 }}
             >
                 <Stack direction='row' spacing={1}>
-                    {renderButton('template1', 'Template 1')}
-                    {renderButton('template2', 'Template 2')}
-                    {renderButton('template3', 'Template 3')}
-                    {renderButton('template4', 'Template 4')}
+                    {renderButton('template1', t.template1)}
+                    {renderButton('template2', t.template2)}
+                    {renderButton('template3', t.template3)}
+                    {renderButton('template4', t.template4)}
                 </Stack>
             </Box>
 
