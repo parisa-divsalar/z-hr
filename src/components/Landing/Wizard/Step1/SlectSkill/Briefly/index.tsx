@@ -201,6 +201,7 @@ const EntryFileThumb: FunctionComponent<{ file: File; size: number; typeLabel: s
 };
 
 interface BrieflySectionProps {
+    dir?: 'ltr' | 'rtl';
     backgroundText: string;
     onBackgroundTextChange: (value: string) => void;
     backgroundRef: RefObject<HTMLTextAreaElement>;
@@ -232,10 +233,17 @@ interface BrieflySectionProps {
     onDeleteBackgroundEntry: (id: string) => void;
 
     fileInputRef: RefObject<HTMLInputElement>;
+
+    /** Optional labels for i18n (placeholder, Add/Cancel/Save buttons) */
+    placeholderText?: string;
+    addButtonLabel?: string;
+    cancelLabel?: string;
+    saveLabel?: string;
 }
 
 const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
     const {
+        dir = 'ltr',
         backgroundText,
         onBackgroundTextChange,
         backgroundRef,
@@ -262,6 +270,10 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
         onEditBackgroundEntry,
         onDeleteBackgroundEntry,
         fileInputRef,
+        placeholderText = 'Type your answer...',
+        addButtonLabel = 'Add',
+        cancelLabel = 'Cancel',
+        saveLabel = 'Save',
     } = props;
 
     const { guardAction, planDialog } = usePlanGate();
@@ -306,7 +318,8 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
             <Stack direction='row' alignItems='center' gap={1} mt={2}></Stack>
             <ContainerSkill direction='row' active={hasBackgroundText}>
                 <InputContent
-                    placeholder='Type your answer...'
+                    dir={dir}
+                    placeholder={placeholderText}
                     value={backgroundText}
                     onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
                         onBackgroundTextChange(event.target.value)
@@ -351,12 +364,12 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                         disabled={!hasDraft}
                         highlighted={shouldHighlightAddButton}
                     >
-                        Add
+                        {addButtonLabel}
                     </AddEntryButton>
                 ) : (
                     <ActionButtonsGroup direction='row' gap={1}>
                         <MuiButton color='error' size='medium' variant='text' onClick={onCancelEditBackgroundEntry}>
-                            Cancel
+                            {cancelLabel}
                         </MuiButton>
                         <MuiButton
                             color='primary'
@@ -365,7 +378,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                             onClick={onSaveBackgroundEntry}
                             disabled={!hasDraft}
                         >
-                            Save
+                            {saveLabel}
                         </MuiButton>
                     </ActionButtonsGroup>
                 )}
@@ -437,7 +450,7 @@ const BrieflySection: FunctionComponent<BrieflySectionProps> = (props) => {
                                 <EntryBodyRow direction='row'>
                                     <EntryBodyStack spacing={1}>
                                         {entry.text && (
-                                            <EntryText variant='body2' fontWeight='400' color='text.primary'>
+                                            <EntryText variant='body2' fontWeight='400' color='text.primary' dir={dir}>
                                                 {entry.text}
                                             </EntryText>
                                         )}

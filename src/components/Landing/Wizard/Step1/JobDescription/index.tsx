@@ -568,6 +568,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
             )}
 
             <BrieflySection
+                dir={dir}
                 backgroundText={sectionOne.backgroundText}
                 onBackgroundTextChange={sectionOne.setBackgroundText}
                 backgroundRef={sectionOne.backgroundRef as RefObject<HTMLTextAreaElement>}
@@ -594,6 +595,10 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                 onEditBackgroundEntry={sectionOne.onEditBackgroundEntry}
                 onDeleteBackgroundEntry={sectionOne.onDeleteBackgroundEntry}
                 fileInputRef={sectionOne.fileInputRef as RefObject<HTMLInputElement>}
+                placeholderText={t.placeholder}
+                addButtonLabel={t.add}
+                cancelLabel={t.cancel}
+                saveLabel={t.save}
             />
 
             <Typography variant='h5' color='text.primary' fontWeight='584' mt={4}>
@@ -617,6 +622,7 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                 </Typography>
             </SummaryTextContainer>
             <BrieflySection
+                dir={dir}
                 backgroundText={sectionTwo.backgroundText}
                 onBackgroundTextChange={sectionTwo.setBackgroundText}
                 backgroundRef={sectionTwo.backgroundRef as RefObject<HTMLTextAreaElement>}
@@ -643,14 +649,19 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
                 onEditBackgroundEntry={sectionTwo.onEditBackgroundEntry}
                 onDeleteBackgroundEntry={sectionTwo.onDeleteBackgroundEntry}
                 fileInputRef={sectionTwo.fileInputRef as RefObject<HTMLInputElement>}
+                placeholderText={t.placeholder}
+                addButtonLabel={t.add}
+                cancelLabel={t.cancel}
+                saveLabel={t.save}
             />
 
-            <Stack mt={4} mb={6} direction='row' gap={3}>
+            <Stack mt={4} mb={6} direction={dir === 'rtl' ? 'row-reverse' : 'row'} gap={3}>
                 <MuiButton
                     color='secondary'
                     variant='outlined'
                     size='large'
-                    startIcon={<ArrowBackIcon />}
+                    startIcon={dir === 'rtl' ? undefined : <ArrowBackIcon />}
+                    endIcon={dir === 'rtl' ? <ArrowBackIcon /> : undefined}
                     onClick={handleBack}
                 >
                     {t.back}
@@ -658,7 +669,8 @@ const JobDescription: FunctionComponent<JobDescriptionProps> = ({ setStage }) =>
 
                 <MuiButton
                     color='secondary'
-                    endIcon={<ArrowRightIcon />}
+                    startIcon={dir === 'rtl' ? <ArrowRightIcon /> : undefined}
+                    endIcon={dir === 'rtl' ? undefined : <ArrowRightIcon />}
                     size='large'
                     onClick={handleNext}
                     disabled={!hasJobDescription}

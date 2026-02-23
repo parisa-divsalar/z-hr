@@ -703,7 +703,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             </Stack>
 
             <Stack direction='row' alignItems='center' gap={1} mt={1} sx={{ flexWrap: 'wrap' }}>
-                <AtsFriendlyChip color='warning' label='ATS Friendly' />
+                <AtsFriendlyChip color='warning' label={t.atsFriendly} />
             </Stack>
             <SummaryTextContainer>
                 <Typography
@@ -716,13 +716,13 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     textAlign='center'
                     mt={1}
                 >
-                    Your summary shows employers you’re right for their job. We’ll help you write a great one with
-                    expert content you can customize.
+                    {t.summaryText}
                 </Typography>
             </SummaryTextContainer>
             <ContainerSkill direction='row' active={!!backgroundText}>
                 <InputContent
-                    placeholder='Type your answer...'
+                    dir={dir}
+                    placeholder={t.typeAnswer}
                     value={backgroundText}
                     wrap='soft'
                     onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -873,6 +873,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
 
                 <ContainerSkill direction='row' active={!!customSkillInput}>
                     <InputContent
+                        dir={dir}
                         placeholder={t.anotherSkills}
                         value={customSkillInput}
                         wrap='soft'
@@ -886,7 +887,7 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
             <Stack
                 mt={4}
                 mb={6}
-                direction='row'
+                direction={dir === 'rtl' ? 'row-reverse' : 'row'}
                 gap={3}
                 sx={{
                     flexWrap: 'wrap',
@@ -897,7 +898,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
                     color='secondary'
                     variant='outlined'
                     size='large'
-                    startIcon={<ArrowBackIcon />}
+                    startIcon={dir === 'rtl' ? undefined : <ArrowBackIcon />}
+                    endIcon={dir === 'rtl' ? <ArrowBackIcon /> : undefined}
                     onClick={() => {
                         persistSelectSkillState();
                         setStage('SKILL_INPUT');
@@ -908,7 +910,8 @@ const SelectSkill: FunctionComponent<SelectSkillProps> = ({ setStage }) => {
 
                 <MuiButton
                     color='secondary'
-                    endIcon={<ArrowRightIcon />}
+                    startIcon={dir === 'rtl' ? <ArrowRightIcon /> : undefined}
+                    endIcon={dir === 'rtl' ? undefined : <ArrowRightIcon />}
                     size='large'
                     onClick={handleNext}
                     disabled={!canProceedBackground || (!hasSelectedSkills && !hasCustomSkillInput)}
