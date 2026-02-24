@@ -687,6 +687,11 @@ export const mainTranslations = {
         resumeEditor: {
           title: 'CV Preview',
           subtitle: 'You can view and edit resume',
+          refreshDataLossDialog: {
+            title: 'Important',
+            body: 'Refreshing this page will result in data loss. Please download your resume before refreshing or closing the page.',
+            gotIt: 'Got it',
+          },
           template1: 'Template 1',
           template2: 'Template 2',
           template3: 'Template 3',
@@ -1503,6 +1508,11 @@ export const mainTranslations = {
         resumeEditor: {
           title: 'پیش‌نمایش CV',
           subtitle: 'می‌توانید رزومه را مشاهده و ویرایش کنید',
+          refreshDataLossDialog: {
+            title: 'مهم',
+            body: 'بازخوانی این صفحه باعث از دست رفتن داده‌ها می‌شود. لطفاً قبل از بازخوانی یا بستن صفحه، رزومه خود را دانلود کنید.',
+            gotIt: 'متوجه شدم',
+          },
           template1: 'قالب ۱',
           template2: 'قالب ۲',
           template3: 'قالب ۳',

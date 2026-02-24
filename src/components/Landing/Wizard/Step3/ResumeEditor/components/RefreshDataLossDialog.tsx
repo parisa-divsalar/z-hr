@@ -10,6 +10,8 @@ import {
     StackContent,
 } from '@/components/Landing/Wizard/Step1/SlectSkill/EditSkillDialog/styled';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 interface RefreshDataLossDialogProps {
     open: boolean;
@@ -17,19 +19,23 @@ interface RefreshDataLossDialogProps {
 }
 
 const RefreshDataLossDialog: FunctionComponent<RefreshDataLossDialogProps> = ({ open, onClose }) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor.refreshDataLossDialog;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+    const isRtl = dir === 'rtl';
+
     return (
         <DialogContainer open={open} maxWidth='xs'>
-            <StackContainer>
+            <StackContainer dir={dir} sx={{ direction: dir, textAlign: isRtl ? 'right' : 'left' }}>
                 <HeaderContainer direction='row'>
-                    <Typography color='text.primary' variant='body1' fontWeight={500}>
-                        Important
+                    <Typography color='text.primary' variant='body1' fontWeight={500} sx={{ textAlign: isRtl ? 'right' : 'left' }}>
+                        {t.title}
                     </Typography>
                 </HeaderContainer>
 
                 <StackContent>
-                    <Typography color='text.primary' variant='subtitle2'>
-                        Refreshing this page will result in data loss. Please download your resume before refreshing or
-                        closing the page.
+                    <Typography color='text.primary' variant='subtitle2' sx={{ textAlign: isRtl ? 'right' : 'left' }}>
+                        {t.body}
                     </Typography>
                 </StackContent>
 
@@ -43,7 +49,7 @@ const RefreshDataLossDialog: FunctionComponent<RefreshDataLossDialogProps> = ({ 
                         sx={{ width: '258px' }}
                         onClick={onClose}
                     >
-                        Got it
+                        {t.gotIt}
                     </MuiButton>
                 </ActionContainer>
             </StackContainer>
