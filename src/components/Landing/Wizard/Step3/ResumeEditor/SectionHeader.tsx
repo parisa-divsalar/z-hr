@@ -5,6 +5,8 @@ import { Button, CircularProgress, IconButton, Menu, MenuItem, Skeleton } from '
 import DeleteIcon from '@/assets/images/icons/clean.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import { SectionHeaderContainer, SectionTitle, SectionActions } from './styled';
 
@@ -47,6 +49,8 @@ const SectionHeader = ({
     improveOptions,
     onImproveOption,
 }: SectionHeaderProps) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const resumeEditorT = getMainTranslations(locale).landing.wizard.resumeEditor;
     const shouldShowActions = !hideActions || Boolean(actionsSkeleton);
     const [improveAnchor, setImproveAnchor] = useState<null | HTMLElement>(null);
     const shouldUseImproveMenu = Boolean(onImproveOption) && Boolean(improveOptions?.length);
@@ -80,7 +84,7 @@ const SectionHeader = ({
                                 onClick={onCancel}
                                 disabled={Boolean(isSaving)}
                             >
-                                Cancel
+                                {resumeEditorT.cancel}
                             </Button>
                             <Button
                                 size='small'
@@ -90,7 +94,7 @@ const SectionHeader = ({
                                 disabled={Boolean(isSaving) || !onSave}
                                 startIcon={isSaving ? <CircularProgress size={14} color='inherit' /> : undefined}
                             >
-                                Save
+                                {resumeEditorT.save}
                             </Button>
                         </>
                     ) : (

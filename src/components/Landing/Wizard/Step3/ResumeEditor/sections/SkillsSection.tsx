@@ -1,6 +1,8 @@
 import { Typography } from '@mui/material';
 
 import MuiChips from '@/components/UI/MuiChips';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
@@ -11,6 +13,9 @@ import type { ResumeEditorController } from '../hooks/useResumeEditorController'
 type Props = { c: ResumeEditorController };
 
 export default function SkillsSection({ c }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const sectionTitle = getMainTranslations(locale).landing.wizard.resumeEditor.sections.skills;
+    const noSkillsFound = getMainTranslations(locale).landing.wizard.resumeEditor.noSkillsFound;
     const isEditing = !c.isPreview && c.editingSection === 'skills';
     const hasContent = c.skills.some((skill) => String(skill ?? '').trim().length > 0);
     const shouldRender =
@@ -25,7 +30,7 @@ export default function SkillsSection({ c }: Props) {
     return (
         <SectionContainer>
             <SectionHeader
-                title='Technical Skills'
+                title={sectionTitle}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('skills')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('skills')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('skills')}
@@ -48,7 +53,7 @@ export default function SkillsSection({ c }: Props) {
                     <SkeletonParagraph lines={3} />
                 ) : c.skills.length === 0 ? (
                     <Typography variant='body2' color='text.secondary'>
-                        No skills found.
+                        {noSkillsFound}
                     </Typography>
                 ) : !c.isPreview && c.editingSection === 'skills' ? (
                     c.skills.map((skill, index) => (

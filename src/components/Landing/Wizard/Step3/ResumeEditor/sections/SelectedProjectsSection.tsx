@@ -1,5 +1,8 @@
 import { Box, Typography } from '@mui/material';
 
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import { ExperienceTextareaAutosize, SectionContainer, SummaryText } from '../styled';
@@ -10,6 +13,10 @@ import type { ImproveOption } from '../types';
 type Props = { c: ResumeEditorController };
 
 export default function SelectedProjectsSection({ c }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const sectionTitle = t.sections.selectedProjects;
+    const noProjectsFound = t.noProjectsFound;
     const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === 'selectedProjects';
     const hasContent = c.selectedProjects.some((entry) => String(entry ?? '').trim().length > 0);
@@ -25,7 +32,7 @@ export default function SelectedProjectsSection({ c }: Props) {
     return (
         <SectionContainer>
             <SectionHeader
-                title='Selected Projects'
+                title={sectionTitle}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('selectedProjects')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('selectedProjects')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('selectedProjects')}
@@ -65,7 +72,7 @@ export default function SelectedProjectsSection({ c }: Props) {
                     />
                 ) : c.selectedProjects.length === 0 ? (
                     <Typography variant='body2' color='text.secondary'>
-                        No projects found.
+                        {noProjectsFound}
                     </Typography>
                 ) : (
                     <Box>

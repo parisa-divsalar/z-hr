@@ -1,8 +1,12 @@
 import { Box } from '@mui/material';
 
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import { SectionContainer, SummaryContainer, SummaryText, StyledTextareaAutosize } from '../styled';
+import { useTranslatedSummary } from '../hooks/useTranslatedSummary';
 
 import type { ResumeEditorController } from '../hooks/useResumeEditorController';
 import type { ImproveOption } from '../types';
@@ -12,6 +16,10 @@ type Props = {
 };
 
 export default function SummarySection({ c }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const { displayText: summaryDisplayText, isLoading: isSummaryTranslating } = useTranslatedSummary(c.summary, locale);
+    const sectionTitle = getMainTranslations(locale).landing.wizard.resumeEditor.sections.summary;
+    const noSummaryFound = getMainTranslations(locale).landing.wizard.resumeEditor.noSummaryFound;
     const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const hasContent = c.summary.trim().length > 0;
     const isEditing = !c.isPreview && c.editingSection === 'summary';
@@ -22,7 +30,7 @@ export default function SummarySection({ c }: Props) {
     return (
         <SectionContainer>
             <SectionHeader
-                title='Summary'
+                title={sectionTitle}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('summary')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('summary')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('summary')}
@@ -53,9 +61,11 @@ export default function SummarySection({ c }: Props) {
                         <SkeletonParagraph lines={5} />
                     </Box>
                 ) : !c.summary.trim() ? (
-                    <SummaryText sx={{ color: 'text.secondary' }}>No summary found.</SummaryText>
+                    <SummaryText sx={{ color: 'text.secondary' }}>{noSummaryFound}</SummaryText>
                 ) : (
-                    <SummaryText>{c.summary}</SummaryText>
+                    <SummaryText sx={isSummaryTranslating ? { opacity: 0.7 } : undefined}>
+                        {summaryDisplayText}
+                    </SummaryText>
                 )}
             </SummaryContainer>
         </SectionContainer>
