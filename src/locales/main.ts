@@ -289,6 +289,132 @@ export const mainTranslations = {
       send: 'Send',
       mapTitle: 'Z-CV location map',
     },
+    faqPage: {
+      home: 'Home',
+      faq: 'FAQ',
+      breadcrumbSep: ' / ',
+      heroTitle: 'Frequently Asked Questions',
+      heroLead:
+        'Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.',
+      searchPlaceholder: 'Search question...',
+      sectionTitle: 'FAQ',
+      sectionLead:
+        'Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.',
+      tabs: [
+        { id: 'resume', label: 'Resume & CV (Dubai format)' },
+        { id: 'ats', label: 'ATS / Profile Strength' },
+        { id: 'pricing', label: 'Pricing & Plans' },
+        { id: 'formats', label: 'Upload / Import / Formats (PDF/DOCX)' },
+        { id: 'interview', label: 'Interview Practice / Learning Hub' },
+      ],
+      resume: [
+        {
+          id: 'dubai-resume',
+          question: 'Is it possible to create a resume for Dubai?',
+          answer:
+            "Check your resume's ATS compatibility with our score checker for better applications.",
+          tags: ['pricing'],
+        },
+        {
+          id: 'ats-friendly',
+          question: 'Are your resumes ATS-friendly?',
+          answer:
+            'Yes—our templates are designed to be ATS-friendly and readable by recruiters and tracking systems.',
+        },
+        {
+          id: 'pdf-docx',
+          question: 'Can I get a PDF/DOCX output?',
+          answer:
+            'Yes. You can export your resume in PDF and DOCX formats depending on your plan and template.',
+        },
+        {
+          id: 'collaboration',
+          question: 'What features do you offer for collaboration?',
+          answer:
+            'You can share, review, and iterate faster with version history and easy export/share options.',
+        },
+        {
+          id: 'trial',
+          question: 'Is there a trial period available?',
+          answer:
+            'We offer a trial so you can test templates and core features before committing to a plan.',
+        },
+      ],
+      ats: [
+        {
+          id: 'ats-score',
+          question: 'How do I improve my ATS score?',
+          answer:
+            'Use clear section headings, measurable achievements, and keywords from the job description—then re-check your score.',
+        },
+        {
+          id: 'keywords',
+          question: 'Do you suggest keywords?',
+          answer:
+            'Yes, we can recommend role-relevant keywords based on your target job and your existing content.',
+        },
+        {
+          id: 'formatting',
+          question: 'What formatting hurts ATS?',
+          answer:
+            'Complex tables, multi-column layouts, and text inside images can reduce ATS readability. Our ATS templates avoid these.',
+        },
+      ],
+      pricing: [
+        {
+          id: 'plans',
+          question: 'What plans do you offer?',
+          answer:
+            'We offer multiple plans depending on export needs, templates, and AI features. See the Pricing page for details.',
+        },
+        {
+          id: 'cancel',
+          question: 'Can I cancel anytime?',
+          answer: 'Yes. You can cancel your subscription at any time from your account settings.',
+        },
+        {
+          id: 'refund',
+          question: 'Do you offer refunds?',
+          answer: 'Refunds depend on the plan and usage. Contact support and well help you quickly.',
+        },
+      ],
+      formats: [
+        {
+          id: 'import-docx',
+          question: 'Can I import an existing resume?',
+          answer:
+            "Yes. You can upload supported files and we'll help you restructure the content into our templates.",
+        },
+        {
+          id: 'pdf-quality',
+          question: 'Will the exported PDF be print-ready?',
+          answer: 'Yes. Exports are high-quality and optimized for both printing and online sharing.',
+        },
+        {
+          id: 'fonts',
+          question: 'Can I change fonts?',
+          answer:
+            'Template font options may vary, but we aim for professional, ATS-safe typography choices.',
+        },
+      ],
+      interview: [
+        {
+          id: 'practice',
+          question: 'Do you have interview practice questions?',
+          answer:
+            'Yes. We provide a learning hub with role-based interview questions and structured practice prompts.',
+        },
+        {
+          id: 'feedback',
+          question: 'Do you provide feedback?',
+          answer:
+            "You'll get guidance on structure and clarity. More advanced feedback features depend on your plan.",
+        },
+      ],
+      noResults: 'No results',
+      tryDifferentKeyword: 'Try a different keyword.',
+      goToPricing: 'Go to pricing',
+    },
     testimonials: {
       title: 'Testimonials',
       intro: '"Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial ."',
@@ -939,6 +1065,132 @@ export const mainTranslations = {
       reset: 'پاک کردن',
       send: 'ارسال',
       mapTitle: 'نقشه موقعیت Z-CV',
+    },
+    faqPage: {
+      home: 'خانه',
+      faq: 'سوالات متداول',
+      breadcrumbSep: ' / ',
+      heroTitle: 'سوالات متداول',
+      heroLead:
+        'با Z-CV در چند دقیقه رزومه و CV حرفه‌ای و سازگار با ATS بسازید. مناسب بازار ایران و دبی، با قالب‌های مدرن و هوش مصنوعی پیشرفته.',
+      searchPlaceholder: 'جستجوی سوال...',
+      sectionTitle: 'سوالات متداول',
+      sectionLead:
+        'با Z-CV در چند دقیقه رزومه و CV حرفه‌ای و سازگار با ATS بسازید. مناسب بازار ایران و دبی، با قالب‌های مدرن و هوش مصنوعی پیشرفته.',
+      tabs: [
+        { id: 'resume', label: 'رزومه و CV (فرمت دبی)' },
+        { id: 'ats', label: 'ATS / قدرت پروفایل' },
+        { id: 'pricing', label: 'قیمت‌گذاری و پلن‌ها' },
+        { id: 'formats', label: 'آپلود / وارد کردن / فرمت‌ها (PDF/DOCX)' },
+        { id: 'interview', label: 'تمرین مصاحبه / مرکز یادگیری' },
+      ],
+      resume: [
+        {
+          id: 'dubai-resume',
+          question: 'آیا امکان ساخت رزومه مخصوص دبی وجود دارد؟',
+          answer:
+            'سازگاری رزومه با ATS را با ابزار امتیاز ما برای درخواست‌های بهتر بررسی کنید.',
+          tags: ['pricing'],
+        },
+        {
+          id: 'ats-friendly',
+          question: 'آیا رزومه‌های شما سازگار با ATS هستند؟',
+          answer:
+            'بله — قالب‌های ما برای سازگاری با ATS و خواناتر بودن برای کارفرما و سیستم‌های ردیابی طراحی شده‌اند.',
+        },
+        {
+          id: 'pdf-docx',
+          question: 'آیا خروجی PDF/DOCX دریافت می‌کنم؟',
+          answer:
+            'بله. بسته به پلن و قالب می‌توانید رزومه را در فرمت‌های PDF و DOCX صادر کنید.',
+        },
+        {
+          id: 'collaboration',
+          question: 'برای همکاری چه قابلیت‌هایی دارید؟',
+          answer:
+            'با تاریخچه نسخه و گزینه‌های ساده export/اشتراک، سریع‌تر به‌اشتراک بگذارید، بررسی و اصلاح کنید.',
+        },
+        {
+          id: 'trial',
+          question: 'آیا دوره آزمایشی دارید؟',
+          answer:
+            'یک دوره آزمایشی داریم تا قبل از انتخاب پلن، قالب‌ها و قابلیت‌های اصلی را امتحان کنید.',
+        },
+      ],
+      ats: [
+        {
+          id: 'ats-score',
+          question: 'چطور امتیاز ATS را بهبود دهم؟',
+          answer:
+            'از عناوین بخش واضح، دستاوردهای قابل اندازه‌گیری و کلمات کلیدی شرح شغل استفاده کنید و دوباره امتیاز را بررسی کنید.',
+        },
+        {
+          id: 'keywords',
+          question: 'آیا کلمات کلیدی پیشنهاد می‌دهید؟',
+          answer:
+            'بله. بر اساس شغل هدف و محتوای فعلی شما کلمات کلیدی مرتبط با نقش پیشنهاد می‌دهیم.',
+        },
+        {
+          id: 'formatting',
+          question: 'چه قالب‌بندی‌هایی به ATS آسیب می‌زند؟',
+          answer:
+            'جدول‌های پیچیده، چیدمان چندستونی و متن داخل تصویر خوانایی ATS را کم می‌کند. قالب‌های ATS ما از این موارد پرهیز می‌کنند.',
+        },
+      ],
+      pricing: [
+        {
+          id: 'plans',
+          question: 'چه پلن‌هایی دارید؟',
+          answer:
+            'پلن‌های مختلف بسته به نیاز export، قالب‌ها و قابلیت‌های هوش مصنوعی. جزئیات در صفحه قیمت‌گذاری.',
+        },
+        {
+          id: 'cancel',
+          question: 'آیا هر زمان می‌توانم لغو کنم؟',
+          answer: 'بله. از تنظیمات حساب خود هر زمان می‌توانید اشتراک را لغو کنید.',
+        },
+        {
+          id: 'refund',
+          question: 'آیا بازپرداخت دارید؟',
+          answer: 'بازپرداخت بسته به پلن و استفاده متفاوت است. با پشتیبانی تماس بگیرید تا سریع راهنمایی کنیم.',
+        },
+      ],
+      formats: [
+        {
+          id: 'import-docx',
+          question: 'آیا می‌توانم رزومه قبلی را وارد کنم؟',
+          answer:
+            'بله. می‌توانید فایل‌های پشتیبانی‌شده را آپلود کنید تا محتوا را در قالب‌های ما بازسازی کنیم.',
+        },
+        {
+          id: 'pdf-quality',
+          question: 'آیا PDF صادرشده برای چاپ مناسب است؟',
+          answer: 'بله. خروجی‌ها با کیفیت و بهینه برای چاپ و اشتراک آنلاین هستند.',
+        },
+        {
+          id: 'fonts',
+          question: 'آیا می‌توان فونت را عوض کرد؟',
+          answer:
+            'گزینه‌های فونت قالب متفاوت است؛ ما تایپوگرافی حرفه‌ای و سازگار با ATS را در نظر داریم.',
+        },
+      ],
+      interview: [
+        {
+          id: 'practice',
+          question: 'آیا سوالات تمرین مصاحبه دارید؟',
+          answer:
+            'بله. مرکز یادگیری با سوالات مصاحبه بر اساس نقش و پرامپت‌های ساختاریافته داریم.',
+        },
+        {
+          id: 'feedback',
+          question: 'آیا بازخورد می‌دهید؟',
+          answer:
+            'راهنمایی ساختار و وضوح دریافت می‌کنید. قابلیت‌های پیشرفته‌تر بسته به پلن شماست.',
+        },
+      ],
+      noResults: 'نتیجه‌ای یافت نشد',
+      tryDifferentKeyword: 'یک کلمه دیگر امتحان کنید.',
+      goToPricing: 'رفتن به قیمت‌گذاری',
     },
     testimonials: {
       title: 'نظرات کاربران',

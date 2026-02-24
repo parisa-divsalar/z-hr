@@ -6,7 +6,6 @@ type SxMap = Record<string, SystemStyleObject<Theme>>;
 export const faqPublicSx: SxMap = {
   root: {
     width: '100%',
-    direction: 'ltr',
     minHeight: '100vh',
   },
 

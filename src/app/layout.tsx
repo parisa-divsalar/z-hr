@@ -24,10 +24,32 @@ export const viewport = {
   themeColor: '#4D49FC',
 };
 
+const localeDirScript = `
+(function(){
+  try {
+    var raw = localStorage.getItem('locale');
+    if (!raw) { document.documentElement.setAttribute('dir','ltr'); document.documentElement.setAttribute('lang','en'); return; }
+    var data = JSON.parse(raw);
+    var locale = data && data.state && data.state.locale;
+    if (locale === 'fa') {
+      document.documentElement.setAttribute('dir', 'rtl');
+      document.documentElement.setAttribute('lang', 'fa');
+    } else {
+      document.documentElement.setAttribute('dir', 'ltr');
+      document.documentElement.setAttribute('lang', 'en');
+    }
+  } catch (e) {
+    document.documentElement.setAttribute('dir', 'ltr');
+    document.documentElement.setAttribute('lang', 'en');
+  }
+})();
+`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en' dir='ltr' className={`${interphasesFont.variable} ${persianFont.variable}`}>
+    <html className={`${interphasesFont.variable} ${persianFont.variable}`} suppressHydrationWarning>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: localeDirScript }} />
         <Suspense fallback={<Loading />}>
           <LocaleProvider>
             <ThemeProvider>{children}</ThemeProvider>
