@@ -125,7 +125,7 @@ export const FeatureCard = styled(Paper)(({ theme }) => ({
 export const FeatureCardIcon = styled(Box)(() => ({
     position: 'absolute',
     top: 16,
-    right: 16,
+    insetInlineEnd: 16,
     width: 32,
     height: 32,
     display: 'flex',

@@ -15,6 +15,10 @@ import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import { useHistoryResumeRow } from '@/hooks/useHistoryResumeRow';
+import { useTranslatedSummary } from '@/components/Landing/Wizard/Step3/ResumeEditor/hooks/useTranslatedSummary';
+import { getMainTranslations } from '@/locales/main';
+import type { Locale } from '@/store/common';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, exportElementToPdfPreviewImage, sanitizeFileName } from '@/utils/exportToPdf';
 
@@ -33,11 +37,54 @@ import {
     StyledDivider,
 } from './styled';
 
+function TranslatedFeatureCard({
+    card,
+    index,
+    isHovered,
+    onMouseEnter,
+    onMouseLeave,
+    dir,
+    locale,
+    truncateLen,
+}: {
+    card: { id: number | string; title: string; description: string };
+    index: number;
+    isHovered: boolean;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+    dir: 'rtl' | 'ltr';
+    locale: Locale;
+    truncateLen: number;
+}) {
+    const { displayText: titleText } = useTranslatedSummary(card.title, locale);
+    const { displayText: descriptionText } = useTranslatedSummary(card.description, locale);
+    const truncate = (text: string, max: number) =>
+        text.length <= max ? text : text.substring(0, max) + '...';
+    return (
+        <FeatureCard onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+            <FeatureCardIcon>
+                {isHovered ? <LinkDarkIcon /> : <ArrowRightIcon />}
+            </FeatureCardIcon>
+            <Stack spacing={2} sx={{ direction: dir, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+                <Typography variant='body1' color='text.primary' fontWeight='500'>
+                    {titleText}
+                </Typography>
+                <Typography variant='body2' color='text.primary' fontWeight='400'>
+                    {truncate(descriptionText, truncateLen)}
+                </Typography>
+            </Stack>
+        </FeatureCard>
+    );
+}
+
 const ResumeGeneratorPage = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    const locale = useLocaleStore((s) => s.locale);
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+    const t = getMainTranslations(locale).landing.wizard.resumeGeneratorFrame;
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
@@ -88,7 +135,7 @@ const ResumeGeneratorPage = () => {
                 if (isMounted) setFeatureCards(mapped);
             } catch (error) {
                 if (isMounted) {
-                    setFeatureCardsError(error instanceof Error ? error.message : 'Failed to load features');
+                    setFeatureCardsError(error instanceof Error ? error.message : 'FAILED_TO_LOAD_FEATURES');
                     setFeatureCards([]);
                 }
             } finally {
@@ -130,12 +177,12 @@ const ResumeGeneratorPage = () => {
         } catch (e) {
              
             console.error('Failed to render resume thumbnail', e);
-            setPreviewError('Failed to render PDF preview.');
+            setPreviewError(t.previewRenderError);
             setPreviewSrc(null);
         } finally {
             setIsPreviewLoading(false);
         }
-    }, []);
+    }, [t.previewRenderError]);
 
     useEffect(() => {
         let cancelled = false;
@@ -169,24 +216,39 @@ const ResumeGeneratorPage = () => {
         };
     }, [requestId, renderResumeThumbnail]);
 
+    const mainT = getMainTranslations(locale);
+    const skillCategoryFa = mainT.landing.skillCategoryFa ?? {};
+    const levelLabels = t.experienceLevelLabels ?? {};
+    const skillGroupDisplay =
+        historyRow?.position &&
+        (skillCategoryFa[historyRow.position] ??
+            (Object.keys(skillCategoryFa).find(
+                (k) => k.toUpperCase() === String(historyRow?.position ?? '').toUpperCase(),
+            )
+                ? skillCategoryFa[
+                      Object.keys(skillCategoryFa).find(
+                          (k) => k.toUpperCase() === String(historyRow?.position ?? '').toUpperCase(),
+                      )!
+                  ]
+                : historyRow?.position));
+    const levelDisplay =
+        historyRow?.level && levelLabels[String(historyRow.level).toUpperCase()]
+            ? levelLabels[String(historyRow.level).toUpperCase()]
+            : historyRow?.level;
+
     const resumeInfo = [
-        { label: 'Created:', value: historyRow?.date || '—' },
-        { label: 'Size:', value: historyRow?.size || '—' },
-        { label: 'Fit score:', value: historyRow?.Percentage || '—', isBadge: true },
-        { label: 'Skill group:', value: historyRow?.position || '—' },
-        { label: 'Experience level:', value: historyRow?.level || '—' },
+        { label: t.created, value: historyRow?.date || '—' },
+        { label: t.size, value: historyRow?.size || '—' },
+        { label: t.fitScore, value: historyRow?.Percentage || '—', isBadge: true },
+        { label: t.skillGroup, value: skillGroupDisplay || '—' },
+        { label: t.experienceLevel, value: levelDisplay || '—' },
     ];
 
     const headerTitle = (() => {
         const base = String(historyRow?.name ?? '').trim();
-        if (!base) return 'Resume';
-        return /resume/i.test(base) ? base : `${base}'s Resume`;
+        if (!base) return t.resume;
+        return /resume/i.test(base) ? base : t.resumeTitleWithName(base);
     })();
-
-    const truncateText = (text: string, maxLength: number) => {
-        if (text.length <= maxLength) return text;
-        return text.substring(0, maxLength) + '...';
-    };
 
     const handleDownload = useCallback(async () => {
         if (!resumePdfRef.current || isDownloading) return;
@@ -207,7 +269,7 @@ const ResumeGeneratorPage = () => {
             });
         } catch (error) {
             console.error('Failed to export PDF', error);
-            setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
+            setDownloadError(error instanceof Error ? error.message : t.downloadError);
         } finally {
             setIsDownloading(false);
         }
@@ -221,114 +283,116 @@ const ResumeGeneratorPage = () => {
     }, [router, requestId]);
 
     return (
-        <Container>
-            {/* Render the same resume DOM as ResumeEditor (off-screen) and export that exact element. */}
-            <Box sx={{ position: 'fixed', left: '-100000px', top: 0, width: 900, pointerEvents: 'none' }}>
-                <ResumeEditor
-                    mode='preview'
-                    pdfTargetRef={resumePdfRef}
-                    setStage={() => undefined}
-                    setActiveStep={() => undefined}
-                />
-            </Box>
-            <Grid container spacing={{ xs: 3, sm: 4 }}>
-                <Grid size={{ xs: 12, lg: 3 }}>
-                    <ResumePreview>
-                        {previewSrc ? (
-                            <Box
-                                component='img'
-                                src={previewSrc}
-                                alt='Resume preview'
-                                onClick={() => setIsPreviewOpen(true)}
-                                sx={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'contain',
-                                    borderRadius: 1,
-                                    opacity: 1,
-                                    filter: 'none',
-                                    cursor: 'pointer',
-                                }}
-                            />
-                        ) : (
-                            <Stack alignItems='center' justifyContent='center' spacing={1} sx={{ px: 2 }}>
-                                {isPreviewLoading ? <CircularProgress size={22} /> : null}
-                                <Typography variant='body2' color='text.secondary' textAlign='center'>
-                                    {previewError ?? (isPreviewLoading ? 'Generating preview…' : 'Preview will appear here')}
-                                </Typography>
-                            </Stack>
-                        )}
-                    </ResumePreview>
-                </Grid>
-
-                <Grid size={{ xs: 12, lg: 8 }}>
-                    <InfoTable>
-                        <HeaderSection>
-                            <HeaderLeft>
-                                <Typography
-                                    variant='h5'
-                                    color='text.primary'
-                                    fontWeight='500'
+        <Box dir={dir} sx={{ direction: dir }}>
+            <Container>
+                {/* Render the same resume DOM as ResumeEditor (off-screen) and export that exact element. */}
+                <Box sx={{ position: 'fixed', left: '-100000px', top: 0, width: 900, pointerEvents: 'none' }}>
+                    <ResumeEditor
+                        mode='preview'
+                        pdfTargetRef={resumePdfRef}
+                        setStage={() => undefined}
+                        setActiveStep={() => undefined}
+                    />
+                </Box>
+                <Grid container spacing={{ xs: 3, sm: 4 }}>
+                    <Grid size={{ xs: 12, lg: 3 }}>
+                        <ResumePreview>
+                            {previewSrc ? (
+                                <Box
+                                    component='img'
+                                    src={previewSrc}
+                                    alt={t.resumePreviewAlt}
+                                    onClick={() => setIsPreviewOpen(true)}
                                     sx={{
-                                        fontSize: { xs: '1.5rem', sm: '2.125rem' },
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'contain',
+                                        borderRadius: 1,
+                                        opacity: 1,
+                                        filter: 'none',
+                                        cursor: 'pointer',
                                     }}
-                                >
-                                    {headerTitle}
-                                </Typography>
-                                <PurplePill>AI Generation</PurplePill>
-                            </HeaderLeft>
-                            <MuiButton
-                                size='medium'
-                                variant='outlined'
-                                endIcon={<ArrowIcon />}
-                                color='secondary'
-                                href='/dashboard'
-                            >
-                                Go to panel
-                            </MuiButton>
-                        </HeaderSection>
+                                />
+                            ) : (
+                                <Stack alignItems='center' justifyContent='center' spacing={1} sx={{ px: 2 }}>
+                                    {isPreviewLoading ? <CircularProgress size={22} /> : null}
+                                    <Typography variant='body2' color='text.secondary' textAlign='center'>
+                                        {previewError ?? (isPreviewLoading ? t.generatingPreview : t.previewPlaceholder)}
+                                    </Typography>
+                                </Stack>
+                            )}
+                        </ResumePreview>
+                    </Grid>
 
-                        <Grid container spacing={2} sx={{ mt: 3 }}>
-                            <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-                                {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mb: 1 }} />}
-                                {resumeInfo.map((info, index) => (
-                                    <InfoRow key={index}>
-                                        <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                                            {info.label}
-                                        </Typography>
-                                        {info.isBadge ? (
-                                            <FitScoreBadge>{info.value}</FitScoreBadge>
-                                        ) : (
-                                            <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
-                                                {info.value}
+                    <Grid size={{ xs: 12, lg: 8 }}>
+                        <InfoTable>
+                            <HeaderSection sx={{ flexDirection: dir === 'rtl' ? 'row-reverse' : undefined }}>
+                                <HeaderLeft sx={{ flexDirection: dir === 'rtl' ? 'row-reverse' : undefined }}>
+                                    <Typography
+                                        variant='h5'
+                                        color='text.primary'
+                                        fontWeight='500'
+                                        sx={{
+                                            fontSize: { xs: '1.5rem', sm: '2.125rem' },
+                                        }}
+                                    >
+                                        {headerTitle}
+                                    </Typography>
+                                    <PurplePill>{t.aiGeneration}</PurplePill>
+                                </HeaderLeft>
+                                <MuiButton
+                                    size='medium'
+                                    variant='outlined'
+                                    endIcon={dir === 'ltr' ? <ArrowIcon /> : undefined}
+                                    startIcon={dir === 'rtl' ? <ArrowIcon /> : undefined}
+                                    color='secondary'
+                                    href='/dashboard'
+                                >
+                                    {t.goToPanel}
+                                </MuiButton>
+                            </HeaderSection>
+
+                            <Grid container spacing={2} sx={{ mt: 3 }}>
+                                <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+                                    {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mb: 1 }} />}
+                                    {resumeInfo.map((info, index) => (
+                                        <InfoRow key={index}>
+                                            <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
+                                                {info.label}
                                             </Typography>
-                                        )}
-                                    </InfoRow>
-                                ))}
-                                <Grid size={{ xs: 12, sm: 4, lg: 4 }} mt={6}>
-                                    <ActionButtons>
-                                        <MuiButton variant='outlined' size='large' color='secondary' onClick={handleEdit}>
-                                            Edit
-                                        </MuiButton>
-                                        <MuiButton
-                                            variant='contained'
-                                            size='large'
-                                            color='secondary'
-                                            sx={{ width: '200px' }}
-                                            loading={isDownloading}
-                                            onClick={handleDownload}
-                                        >
-                                            {isDownloading
-                                                ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%`
-                                                : 'Download PDF'}
-                                        </MuiButton>
-                                    </ActionButtons>
+                                            {info.isBadge ? (
+                                                <FitScoreBadge>{info.value}</FitScoreBadge>
+                                            ) : (
+                                                <Typography variant='subtitle2' color='text.primary' fontWeight='500'>
+                                                    {info.value}
+                                                </Typography>
+                                            )}
+                                        </InfoRow>
+                                    ))}
+                                    <Grid size={{ xs: 12, sm: 4, lg: 4 }} mt={6}>
+                                        <ActionButtons sx={{ flexDirection: dir === 'rtl' ? 'row-reverse' : undefined }}>
+                                            <MuiButton variant='outlined' size='large' color='secondary' onClick={handleEdit}>
+                                                {t.edit}
+                                            </MuiButton>
+                                            <MuiButton
+                                                variant='contained'
+                                                size='large'
+                                                color='secondary'
+                                                sx={{ width: '200px' }}
+                                                loading={isDownloading}
+                                                onClick={handleDownload}
+                                            >
+                                                {isDownloading
+                                                    ? t.preparingPdf(Math.round(downloadProgress * 100))
+                                                    : t.downloadPdf}
+                                            </MuiButton>
+                                        </ActionButtons>
+                                    </Grid>
                                 </Grid>
                             </Grid>
-                        </Grid>
-                    </InfoTable>
+                        </InfoTable>
+                    </Grid>
                 </Grid>
-            </Grid>
 
             <Dialog
                 open={isPreviewOpen}
@@ -361,12 +425,12 @@ const ResumeGeneratorPage = () => {
                     }}
                 >
                     <IconButton
-                        aria-label='Close preview'
+                        aria-label={t.closePreview}
                         onClick={() => setIsPreviewOpen(false)}
                         sx={{
                             position: 'absolute',
                             top: 12,
-                            right: 12,
+                            insetInlineEnd: 12,
                             color: theme.palette.text.primary,
                             bgcolor: 'rgba(255,255,255,0.85)',
                             border: `1px solid ${theme.palette.divider}`,
@@ -380,7 +444,7 @@ const ResumeGeneratorPage = () => {
                         <Box
                             component='img'
                             src={previewSrc}
-                            alt='Resume preview large'
+                            alt={t.resumePreviewAlt}
                             onDoubleClick={handleEdit}
                             sx={{
                                 maxWidth: '100%',
@@ -401,46 +465,41 @@ const ResumeGeneratorPage = () => {
             <Grid container spacing={{ xs: 2, sm: 3 }}>
                 {featureCardsLoading ? (
                     <Grid size={{ xs: 12 }}>
-                        <Typography variant='body2' color='text.secondary'>
-                            Loading features...
+                        <Typography variant='body2' color='text.secondary' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+                            {t.loadingFeatures}
                         </Typography>
                     </Grid>
                 ) : featureCardsError ? (
                     <Grid size={{ xs: 12 }}>
-                        <Typography variant='body2' color='error'>
-                            {featureCardsError}
+                        <Typography variant='body2' color='error' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+                            {featureCardsError === 'FAILED_TO_LOAD_FEATURES' ? t.failedToLoadFeatures : featureCardsError}
                         </Typography>
                     </Grid>
                 ) : featureCards.length === 0 ? (
                     <Grid size={{ xs: 12 }}>
-                        <Typography variant='body2' color='text.secondary'>
-                            No feature data available.
+                        <Typography variant='body2' color='text.secondary' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+                            {t.noFeatureData}
                         </Typography>
                     </Grid>
                 ) : (
                     featureCards.map((card, index) => (
                         <Grid key={card.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-                            <FeatureCard
+                            <TranslatedFeatureCard
+                                card={card}
+                                index={index}
+                                isHovered={hoveredCard === index}
                                 onMouseEnter={() => setHoveredCard(index)}
                                 onMouseLeave={() => setHoveredCard(null)}
-                            >
-                                <FeatureCardIcon>
-                                    {hoveredCard === index ? <LinkDarkIcon /> : <ArrowRightIcon />}
-                                </FeatureCardIcon>
-                                <Stack spacing={2}>
-                                    <Typography variant='body1' color='text.primary' fontWeight='500'>
-                                        {card.title}
-                                    </Typography>
-                                    <Typography variant='body2' color='text.primary' fontWeight='400'>
-                                        {truncateText(card.description, 110)}
-                                    </Typography>
-                                </Stack>
-                            </FeatureCard>
+                                dir={dir}
+                                locale={locale}
+                                truncateLen={110}
+                            />
                         </Grid>
                     ))
                 )}
             </Grid>
-        </Container>
+            </Container>
+        </Box>
     );
 };
 
