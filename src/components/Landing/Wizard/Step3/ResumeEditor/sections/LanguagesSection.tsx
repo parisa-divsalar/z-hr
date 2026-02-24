@@ -1,5 +1,8 @@
 import { Box, Typography } from '@mui/material';
 
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import { ExperienceTextareaAutosize, SectionContainer, SummaryText } from '../styled';
@@ -9,6 +12,10 @@ import type { ResumeEditorController } from '../hooks/useResumeEditorController'
 type Props = { c: ResumeEditorController };
 
 export default function LanguagesSection({ c }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const sectionTitle = t.sections.languages;
+    const noLanguagesFound = t.noLanguagesFound;
     const isEditing = !c.isPreview && c.editingSection === 'languages';
     const hasContent = c.languages.some((lang) => String(lang?.name ?? '').trim().length > 0);
     const shouldRender =
@@ -23,7 +30,7 @@ export default function LanguagesSection({ c }: Props) {
     return (
         <SectionContainer>
             <SectionHeader
-                title='Languages'
+                title={sectionTitle}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('languages')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('languages')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('languages')}
@@ -51,7 +58,7 @@ export default function LanguagesSection({ c }: Props) {
                     />
                 ) : c.languages.length === 0 ? (
                     <Typography variant='body2' color='text.secondary'>
-                        No languages found.
+                        {noLanguagesFound}
                     </Typography>
                 ) : (
                     <Box>

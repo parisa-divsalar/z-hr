@@ -1,11 +1,13 @@
 'use client';
 
-import { type FunctionComponent, type MutableRefObject, useEffect, useState } from 'react';
+import { type FunctionComponent, type MutableRefObject, useEffect, useMemo, useState } from 'react';
 
 import { CardContent } from '@mui/material';
 
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { getMainTranslations } from '@/locales/main';
 import { trackEvent } from '@/lib/analytics';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
@@ -63,22 +65,26 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
     const c = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
+    const locale = useLocaleStore((s) => s.locale);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
-    const sectionLabels: Record<SectionKey, string> = {
-        summary: 'Summary',
-        skills: 'Technical Skills',
-        contactWays: 'Contact Ways',
-        education: 'Education',
-        languages: 'Languages',
-        certificates: 'Certificates',
-        selectedProjects: 'Selected Projects',
-        experience: 'Professional Experience',
-        additionalInfo: 'Additional Information',
-    };
+    const sectionLabels: Record<SectionKey, string> = useMemo(() => {
+        const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+        return {
+            summary: t.sections.summary,
+            skills: t.sections.skills,
+            contactWays: t.sections.contactWays,
+            education: t.sections.education,
+            languages: t.sections.languages,
+            certificates: t.sections.certificates,
+            selectedProjects: t.sections.selectedProjects,
+            experience: t.sections.experience,
+            additionalInfo: t.sections.additionalInfo,
+        };
+    }, [locale]);
 
     const pendingDeleteLabel = c.pendingDeleteSection
         ? sectionLabels[c.pendingDeleteSection]
-        : 'this section';
+        : getMainTranslations(locale).landing.wizard.resumeEditor.thisSection;
 
     useEffect(() => {
         // Avoid opening warning dialogs in preview-only rendering contexts (e.g. PDF export/off-screen render).

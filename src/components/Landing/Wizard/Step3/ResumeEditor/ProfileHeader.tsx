@@ -6,6 +6,8 @@ import { Box, Button, CircularProgress, IconButton, Typography } from '@mui/mate
 
 import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import {
     ProfileHeaderContainer,
@@ -82,6 +84,9 @@ const ProfileHeader = ({
     hideActions,
     showImproveIcon = true,
 }: ProfileHeaderProps) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const resumeEditorT = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const ph = resumeEditorT.profileHeader;
     const normalizedVisaStatus = normalizeVisaStatusValue(visaStatus);
     const normalizedMainSkill = normalizeMainSkill(mainSkill);
 
@@ -111,7 +116,7 @@ const ProfileHeader = ({
                             onClick={onCancel}
                             disabled={Boolean(isSaving)}
                         >
-                            Cancel
+                            {resumeEditorT.cancel}
                         </Button>
                         <Button
                             size='small'
@@ -121,14 +126,14 @@ const ProfileHeader = ({
                             disabled={Boolean(isSaving) || !onSave}
                             startIcon={isSaving ? <CircularProgress size={14} color='inherit' /> : undefined}
                         >
-                            Save
+                            {resumeEditorT.save}
                         </Button>
                     </ActionButtons>
                 ) : null}
 
                 <ExperienceTextareaAutosize
                     value={editText ?? ''}
-                    placeholder={'Full name\n\nDD/MM/YYYY\n\nVisa Status: ... • ...\n\nPhone: ...\nEmail: ...'}
+                    placeholder={ph.placeholder}
                     onChange={(e) => onEditTextChange?.(e.target.value)}
                 />
             </ProfileHeaderContainer>
@@ -148,15 +153,15 @@ const ProfileHeader = ({
                             {dateOfBirth || '—'}
                         </Typography>
                         <Typography variant='subtitle2' color='text.primary' gutterBottom>
-                            {`Visa Status: ${normalizedVisaStatus || '—'}`}
+                            {`${ph.visaStatus}: ${normalizedVisaStatus || '—'}`}
                             {shouldAppendMainSkill ? ` • ${normalizedMainSkill}` : ''}
                         </Typography>
                         <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                            <Box component='span'>{`Phone: ${phone || '—'}`}</Box>
+                            <Box component='span'>{`${ph.phone}: ${phone || '—'}`}</Box>
                             <Box component='span' sx={{ mx: 1.5 }}>
                                 {' | '}
                             </Box>
-                            <Box component='span'>{`Email: ${email || '—'}`}</Box>
+                            <Box component='span'>{`${ph.email}: ${email || '—'}`}</Box>
                         </Typography>
                     </>
                 </ProfileInfo>
