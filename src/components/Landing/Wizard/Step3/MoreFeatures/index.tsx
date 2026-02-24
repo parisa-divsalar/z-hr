@@ -184,18 +184,18 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
           {t.subtitle}
         </Typography>
       </Stack>
-      <Grid container spacing={{ xs: 2, md: 3 }} mt={{ xs: 1, md: 2 }}>
+      <Grid container spacing={{ xs: 2, md: 3 }} mt={{ xs: 1, md: 2 }} dir={dir} sx={{ direction: dir }}>
         <Grid size={{ xs: 12, md: 6 }}>
           {loadingSuggestions ? (
-            <Typography variant='subtitle2' color='text.secondary'>
+            <Typography variant='subtitle2' color='text.secondary' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
               {t.loadingSuggestions}
             </Typography>
           ) : suggestionsError ? (
-            <Typography variant='subtitle2' color='error'>
+            <Typography variant='subtitle2' color='error' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
               {suggestionsError}
             </Typography>
           ) : leftWithSelection.length === 0 ? (
-            <Typography variant='subtitle2' color='text.secondary'>
+            <Typography variant='subtitle2' color='text.secondary' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
               {t.noSuggestions}
             </Typography>
           ) : (
@@ -206,6 +206,9 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
                   suggestion={suggestion}
                   checked={Boolean((suggestion as any).__checked)}
                   onCheckedChange={(checked) => toggleSuggestion(suggestion, checked)}
+                  dir={dir}
+                  coinLabel={t.coinLabel}
+                  locale={locale}
                 />
               ) : (
                 <Box key={suggestion.id} mt={2.5}>
@@ -213,6 +216,9 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
                     suggestion={suggestion}
                     checked={Boolean((suggestion as any).__checked)}
                     onCheckedChange={(checked) => toggleSuggestion(suggestion, checked)}
+                    dir={dir}
+                    coinLabel={t.coinLabel}
+                    locale={locale}
                   />
                 </Box>
               ),
@@ -221,11 +227,11 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           {loadingSuggestions ? (
-            <Typography variant='subtitle2' color='text.secondary'>
+            <Typography variant='subtitle2' color='text.secondary' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
               {t.loadingSuggestions}
             </Typography>
           ) : suggestionsError ? (
-            <Typography variant='subtitle2' color='error'>
+            <Typography variant='subtitle2' color='error' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
               {suggestionsError}
             </Typography>
           ) : (
@@ -236,6 +242,11 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
                 return key ? Boolean(selection[key]) : false;
               }}
               onToggle={(s, checked) => toggleSuggestion(s as any, checked)}
+              dir={dir}
+              noSuggestionsText={t.noSuggestions}
+              coinLabel={t.coinLabel}
+              answerLabel={t.answer}
+              locale={locale}
             />
           )}
         </Grid>
@@ -254,18 +265,21 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = (props) => {
       />
 
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
+        dir={dir}
+        direction={{ xs: 'column', sm: dir === 'rtl' ? 'row-reverse' : 'row' }}
         gap={{ xs: 2, sm: 3 }}
         justifyContent='center'
         alignItems='center'
         p={{ xs: 2, sm: 3, md: 5 }}
+        sx={{ direction: dir }}
       >
         <MuiButton
           text={t.back}
           variant='outlined'
           color='secondary'
           size='large'
-          startIcon={<ArrowBackIcon style={{ color: '#111113' }} />}
+          startIcon={dir === 'ltr' ? <ArrowBackIcon style={{ color: '#111113' }} /> : undefined}
+          endIcon={dir === 'rtl' ? <ArrowBackIcon style={{ color: '#111113' }} /> : undefined}
           onClick={() => setStage('RESUME_EDITOR')}
         />
         <MuiButton

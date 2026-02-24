@@ -751,6 +751,8 @@ export const mainTranslations = {
           insufficientCoinsBody: "You can buy coins/upgrade your plan, or continue to payment.",
           goToPayment: 'Go to payment',
           pricing: 'Pricing',
+          coinLabel: 'Coin:',
+          answer: 'Answer:',
         },
         resumeGeneratorFrame: {
           resume: 'Resume',
@@ -1613,6 +1615,8 @@ export const mainTranslations = {
           insufficientCoinsBody: 'می‌توانید سکه بخرید یا پلن ارتقا دهید، یا به پرداخت بروید.',
           goToPayment: 'رفتن به پرداخت',
           pricing: 'قیمت‌گذاری',
+          coinLabel: 'سکه:',
+          answer: 'پاسخ:',
         },
         resumeGeneratorFrame: {
           resume: 'رزومه',
