@@ -9,6 +9,8 @@ import CoinPlansRow from '@/app/main/Pricing';
 import Testimonials from '@/app/main/Testimonials';
 import Navbar from '@/components/Layout/Navbar';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import CustomPlanBuilderCard from './CustomPlanBuilderCard';
 
@@ -31,29 +33,40 @@ function Sparkle({ size = 18 }: { size?: number }) {
 }
 
 export default function Pricing() {
+    const locale = useLocaleStore((s) => s.locale);
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+    const navT = getMainTranslations(locale).nav;
+    const t = getMainTranslations(locale).pricingPage;
+
     return (
         <Box
+            dir={dir}
             sx={{
                 minHeight: 'var(--app-height)',
                 display: 'flex',
                 flexDirection: 'column',
                 bgcolor: '#fcfbff',
                 overflowX: 'hidden',
+                direction: dir,
             }}
         >
             <Navbar />
 
             <Box component='main' sx={{ flex: 1, width: '100%' }}>
                 {/* Hero */}
-                <Box sx={{backgroundColor:'#fff', pt: { xs: 3, md: 5 }, pb: { xs: 6, md: 8 } }}>
+                <Box sx={{ backgroundColor: '#fff', pt: { xs: 3, md: 5 }, pb: { xs: 6, md: 8 } }}>
                     <Container maxWidth='lg'>
                         <Stack spacing={2.5} alignItems='center' textAlign='center' mt={4}>
-                            <Breadcrumbs aria-label='breadcrumb' separator='›' sx={{ color: 'text.secondary' }}>
+                            <Breadcrumbs
+                                aria-label='breadcrumb'
+                                separator={dir === 'rtl' ? '‹' : '›'}
+                                sx={{ color: 'text.secondary' }}
+                            >
                                 <MuiLink component={Link} href='/' underline='hover' color='inherit'>
-                                    Home
+                                    {navT.home}
                                 </MuiLink>
                                 <Typography variant='body1' fontWeight={584} color='text.primary'>
-                                    Pricing
+                                    {navT.pricing}
                                 </Typography>
                             </Breadcrumbs>
 
@@ -67,7 +80,7 @@ export default function Pricing() {
                                     fontSize: { xs: 34, sm: 44 },
                                 }}
                             >
-                                Three Plans to Boost Your Career
+                                {t.heroTitle}
                             </Typography>
 
                             <Typography
@@ -76,11 +89,11 @@ export default function Pricing() {
                                 color='text.secondary'
                                 sx={{ maxWidth: 860, lineHeight: 1.8, fontSize: { xs: 14.5, sm: 16 } }}
                             >
-                                "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-                                Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.                            </Typography>
+                                {t.heroSubtitle}
+                            </Typography>
 
                             <MuiButton
-                                text='Get Started Free'
+                                text={t.getStarted}
                                 variant='contained'
                                 color='inherit'
                                 sx={{
@@ -113,7 +126,7 @@ export default function Pricing() {
                                 color='text.primary'
                                 sx={{ letterSpacing: '-0.02em', lineHeight: 1.1, fontSize: { xs: 28, sm: 34 } }}
                             >
-                                Our Plans
+                                {t.ourPlansTitle}
                             </Typography>
                             <Typography
                                 variant='subtitle1'
@@ -121,8 +134,8 @@ export default function Pricing() {
                                 color='text.secondary'
                                 sx={{ maxWidth: 860, lineHeight: 1.8, fontSize: { xs: 14.5, sm: 16 } }}
                             >
-                                "Create a professional and ATS-friendly resume and CV in minutes with Z-CV.
-                                Tailored for the markets of Iran and Dubai, featuring modern templates and advanced artificial intelligence.                            </Typography>
+                                {t.ourPlansSubtitle}
+                            </Typography>
                         </Stack>
 
                         <CoinPlansRow />
@@ -135,7 +148,8 @@ export default function Pricing() {
                     <Box
                         sx={{
                             position: 'absolute',
-                            left: { xs: 16, sm: 24 },
+                            left: dir === 'rtl' ? undefined : { xs: 16, sm: 24 },
+                            right: dir === 'rtl' ? { xs: 16, sm: 24 } : undefined,
                             top: { xs: 90, md: 120 },
                             width: 40,
                             height: 40,
@@ -150,7 +164,8 @@ export default function Pricing() {
                     <Box
                         sx={{
                             position: 'absolute',
-                            right: { xs: 16, sm: 24 },
+                            left: dir === 'rtl' ? { xs: 16, sm: 24 } : undefined,
+                            right: dir === 'rtl' ? undefined : { xs: 16, sm: 24 },
                             top: { xs: 260, md: 300 },
                             width: 40,
                             height: 40,
@@ -165,7 +180,7 @@ export default function Pricing() {
                 </Box>
 
                 {/* FAQ */}
-                <PricingFaqSection />
+                <PricingFaqSection dir={dir} />
 
                 {/* Testimonials */}
                 <Box sx={{ pb: { xs: 6, md: 10 } }}>

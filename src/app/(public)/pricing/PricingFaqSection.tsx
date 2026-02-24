@@ -8,6 +8,8 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Container, 
 import Grid from '@mui/material/Grid';
 
 import { faqSx } from '@/app/main/Faq/Faq.styles';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type FaqItem = {
     id: string;
@@ -15,33 +17,9 @@ type FaqItem = {
     answer: string;
 };
 
-const FAQ_ITEMS: FaqItem[] = [
-    {
-        id: 'ats-score-check',
-        question: 'Is it possible to check if my Resume is fully ATS-friendly?',
-        answer: "Check your resume's ATS compatibility with our score checker for better applications.",
-    },
-    {
-        id: 'ats-friendly',
-        question: 'Are your resumes ATS-friendly?',
-        answer: 'Yes—our templates are designed to be ATS-friendly and readable by recruiters and tracking systems.',
-    },
-    {
-        id: 'pdf-docx',
-        question: 'Can I get a PDF/DOCX output?',
-        answer: 'Yes. You can export your resume in PDF and DOCX formats depending on your plan and template.',
-    },
-    {
-        id: 'collaboration',
-        question: 'What features do you offer for collaboration?',
-        answer: 'You can share, review, and iterate faster with version history and easy export/share options.',
-    },
-    {
-        id: 'trial',
-        question: 'Is there a trial period available?',
-        answer: 'We offer a trial so you can test templates and core features before committing to a plan.',
-    },
-];
+type PricingFaqSectionProps = {
+    dir: 'ltr' | 'rtl';
+};
 
 const Sparkle = (props: { size?: number }) => {
     const size = props.size ?? 18;
@@ -61,27 +39,29 @@ const Sparkle = (props: { size?: number }) => {
     );
 };
 
-export default function PricingFaqSection() {
-    const [expanded, setExpanded] = React.useState<string | false>(FAQ_ITEMS[0]?.id ?? false);
+export default function PricingFaqSection({ dir }: PricingFaqSectionProps) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).pricingPage.faq;
+    const faqItems: FaqItem[] = t.items;
+    const [expanded, setExpanded] = React.useState<string | false>(faqItems[0]?.id ?? false);
 
     return (
-        <Box component='section' sx={faqSx.section}>
+        <Box component='section' dir={dir} sx={{ ...faqSx.section, direction: dir }}>
             <Container maxWidth='lg' sx={faqSx.container}>
                 <Grid container spacing={{ xs: 4, md: 6 }} alignItems='flex-start'>
                     <Grid size={{ xs: 12, md: 4 }}>
                         <Box sx={faqSx.stickyCol}>
                             <Typography variant='h1' fontWeight='700' sx={faqSx.heading}>
-                                FAQ
+                                {t.title}
                             </Typography>
 
                             <Typography variant='subtitle1' fontWeight='492' color='text.primary' mt={4} sx={{ lineHeight: 1.7 }}>
-                                "Create a professional and ATS-friendly resume and CV in minutes with Z-CV. Tailored for the markets of Iran
-                                and Dubai, featuring modern templates and advanced artificial intelligence.
+                                {t.intro}
                             </Typography>
 
                             <Box sx={faqSx.ctaWrap} mt={4}>
                                 <Button variant='contained' disableElevation sx={faqSx.ctaButton}>
-                                    Ask Your Question
+                                    {t.askQuestion}
                                 </Button>
 
                                 <Box sx={faqSx.sparkleCtaFloat}>
@@ -93,7 +73,7 @@ export default function PricingFaqSection() {
 
                     <Grid size={{ xs: 12, md: 8 }}>
                         <Stack spacing={2} useFlexGap>
-                            {FAQ_ITEMS.map((item) => {
+                            {faqItems.map((item) => {
                                 const isExpanded = expanded === item.id;
                                 return (
                                     <Accordion
@@ -102,7 +82,15 @@ export default function PricingFaqSection() {
                                         elevation={0}
                                         expanded={isExpanded}
                                         onChange={(_, next) => setExpanded(next ? item.id : false)}
-                                        sx={faqSx.accordion}
+                                        sx={{
+                                            ...faqSx.accordion,
+                                            ...(dir === 'rtl' && {
+                                                '& .MuiAccordionSummary-expandIconWrapper': {
+                                                    right: 'auto',
+                                                    left: { xs: 16, sm: 24 },
+                                                },
+                                            }),
+                                        }}
                                     >
                                         <AccordionSummary
                                             disableRipple
@@ -111,14 +99,19 @@ export default function PricingFaqSection() {
                                                     {isExpanded ? <CloseIcon sx={faqSx.expandIcon} /> : <AddIcon sx={faqSx.expandIcon} />}
                                                 </Box>
                                             }
-                                            sx={faqSx.summary}
+                                            sx={{
+                                                ...faqSx.summary,
+                                                flexDirection: dir === 'rtl' ? 'row-reverse' : 'row',
+                                                pl: dir === 'rtl' ? { xs: 7, sm: 8 } : { xs: 2, sm: 3 },
+                                                pr: dir === 'rtl' ? { xs: 2, sm: 3 } : { xs: 7, sm: 8 },
+                                            }}
                                         >
-                                            <Typography fontWeight='584' variant='h5' sx={faqSx.question}>
+                                            <Typography fontWeight='584' variant='h5' sx={{ ...faqSx.question, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
                                                 {item.question}
                                             </Typography>
                                         </AccordionSummary>
 
-                                        <AccordionDetails sx={faqSx.details}>
+                                        <AccordionDetails sx={{ ...faqSx.details, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
                                             <Typography variant='subtitle1' fontWeight='492' color='text.secondary' sx={faqSx.answer}>
                                                 {item.answer}
                                             </Typography>
@@ -131,11 +124,11 @@ export default function PricingFaqSection() {
                 </Grid>
             </Container>
 
-            <Box sx={faqSx.sparkleTopLeftFloat}>
+            <Box sx={{ ...faqSx.sparkleTopLeftFloat, ...(dir === 'rtl' ? { left: 'auto', right: 0 } : {}) }}>
                 <Sparkle size={22} />
             </Box>
 
-            <Box sx={faqSx.sparkleCenterFloat}>
+            <Box sx={{ ...faqSx.sparkleCenterFloat, ...(dir === 'rtl' ? { right: 'auto', left: { xs: 16, sm: 24 } } : {}) }}>
                 <Sparkle size={22} />
             </Box>
         </Box>

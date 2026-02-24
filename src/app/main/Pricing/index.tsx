@@ -52,16 +52,22 @@ function toFiniteNumber(v: unknown, fallback = 0): number {
 }
 
 type PricingT = (typeof mainTranslations)['en']['pricing'];
+type Locale = 'en' | 'fa';
 
-function formatAed(priceAed: number, freeLabel: string): string {
+function toPersianDigits(s: string): string {
+    return s.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)] ?? d);
+}
+
+function formatAed(priceAed: number, freeLabel: string, currencyLabel: string, locale?: Locale): string {
     const n = Number.isFinite(priceAed) ? priceAed : 0;
     if (n <= 0) return freeLabel;
     const rounded = Math.round(n * 100) / 100;
-    const label = rounded % 1 === 0 ? String(rounded.toFixed(0)) : String(rounded.toFixed(2));
-    return `${label} AED`;
+    let label = rounded % 1 === 0 ? String(rounded.toFixed(0)) : String(rounded.toFixed(2));
+    if (locale === 'fa') label = toPersianDigits(label);
+    return `${label} ${currencyLabel}`;
 }
 
-function normalizePackagesToPlans(rows: CoinPackageRow[], t: PricingT): PlanCard[] {
+function normalizePackagesToPlans(rows: CoinPackageRow[], t: PricingT, locale?: Locale): PlanCard[] {
     const safeRows = Array.isArray(rows) ? rows : [];
 
     const paidRows = safeRows.filter((r) => toFiniteNumber(r?.price_aed, 0) > 0);
@@ -97,7 +103,7 @@ function normalizePackagesToPlans(rows: CoinPackageRow[], t: PricingT): PlanCard
                 coins,
                 subtitle: '',
                 saveText: t.savePercent(saving),
-                priceText: formatAed(priceAed, t.free),
+                priceText: formatAed(priceAed, t.free, t.currencyAed, locale),
                 ctaText: isCurrent ? t.currentPlan : t.upgradeNow,
                 isCurrent,
                 badge: isPopular ? t.popular : undefined,
@@ -334,7 +340,7 @@ const Pricing = () => {
                 const json = (await res.json().catch(() => ({}))) as CoinPackagesApiResponse;
                 if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
                 const rows = Array.isArray(json?.data) ? json.data : [];
-                const nextPlans = normalizePackagesToPlans(rows, getMainTranslations(locale).pricing);
+                const nextPlans = normalizePackagesToPlans(rows, getMainTranslations(locale).pricing, locale);
                 setPlans(nextPlans);
             } catch (e) {
                 if (signal.aborted) return;

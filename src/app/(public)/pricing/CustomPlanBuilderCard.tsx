@@ -11,6 +11,8 @@ import DeleteIcon from '@/assets/images/icons/clean.svg';
 import EditIcon from '@/assets/images/icons/edit.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import { PublicRoutes } from '@/config/routes';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type ResumeFeaturePricingRow = {
   id?: number | string;
@@ -78,11 +80,8 @@ function slugifyId(input: string): string {
     .replace(/^_+|_+$/g, '');
 }
 
-function formatAedFromCents(amountAedCents: number): string {
-  const safe = Number.isFinite(amountAedCents) ? amountAedCents : 0;
-  const aed = Math.round(safe) / 100;
-  const label = aed % 1 === 0 ? String(aed.toFixed(0)) : String(aed.toFixed(2));
-  return `${label} AED`;
+function toPersianDigits(s: string): string {
+  return s.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)] ?? d);
 }
 
 function clampInt(n: number, min: number, max: number): number {
@@ -92,6 +91,35 @@ function clampInt(n: number, min: number, max: number): number {
 
 export default function CustomPlanBuilderCard() {
   const router = useRouter();
+  const locale = useLocaleStore((s) => s.locale);
+  const dir = locale === 'fa' ? 'rtl' : 'ltr';
+  const t = getMainTranslations(locale).pricingPage.customPlan;
+
+  const formatPrice = useCallback(
+    (amountAedCents: number) => {
+      const safe = Number.isFinite(amountAedCents) ? amountAedCents : 0;
+      const aed = Math.round(safe) / 100;
+      let label = aed % 1 === 0 ? String(aed.toFixed(0)) : String(aed.toFixed(2));
+      if (locale === 'fa') label = toPersianDigits(label);
+      const currency = t.currencyAed ?? 'AED';
+      return `${label} ${currency}`;
+    },
+    [locale, t.currencyAed],
+  );
+
+  const getDisplayLabel = useCallback(
+    (label: string) => {
+      if (locale !== 'fa' || !t.featureLabels) return label;
+      const map = t.featureLabels as Record<string, string>;
+      const exact = map[label];
+      if (exact) return exact;
+      const normalized = label.trim().toLowerCase();
+      const byKey = Object.keys(map).find((k) => k.trim().toLowerCase() === normalized);
+      return byKey ? map[byKey] : label;
+    },
+    [locale, t.featureLabels],
+  );
+
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +155,7 @@ export default function CustomPlanBuilderCard() {
         const data = Array.isArray(json?.data) ? json.data : [];
         const nextCatalog: CatalogItem[] = data
           .map((row, idx) => {
-            const label = safeStr(row?.feature_name) || `Feature ${idx + 1}`;
+            const label = safeStr(row?.feature_name) || t.featureFallback(idx + 1);
             const rawId = safeStr(row?.id) || slugifyId(label) || String(idx + 1);
             const id = rawId || String(idx + 1);
             const coinPerAction = Math.max(0, clampInt(toFiniteNumber(row?.coin_per_action, 0), 0, 9999));
@@ -310,7 +338,7 @@ export default function CustomPlanBuilderCard() {
     setUpgradeSuccess(null);
 
     if (totalCoins <= 0) {
-      setUpgradeError('Please add at least one item to your plan.');
+      setUpgradeError(t.pleaseAddItem);
       return;
     }
 
@@ -331,9 +359,8 @@ export default function CustomPlanBuilderCard() {
       }
 
       if (res.status === 402) {
-        // Send exact Total price to gateway (same as shown in UI)
         await startCustomPlanPayment(totalWithTaxAedCents, totalCoins);
-        setUpgradeSuccess('Not enough coins. Opened payment gateway with your plan total.');
+        setUpgradeSuccess(t.openedPaymentGateway);
         return;
       }
 
@@ -342,28 +369,28 @@ export default function CustomPlanBuilderCard() {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('zcv:profile-changed'));
       }
-      setUpgradeSuccess('Payment done: your coin balance has been deducted.');
+      setUpgradeSuccess(t.paymentDone);
       setRows([]);
       resetInputs();
     } catch (e) {
-      setUpgradeError(e instanceof Error ? e.message : 'Failed to complete payment');
+      setUpgradeError(e instanceof Error ? e.message : t.failedToCompletePayment);
     } finally {
       setUpgradeLoading(false);
     }
-  }, [resetInputs, router, startCustomPlanPayment, totalCoins, totalWithTaxAedCents]);
+  }, [resetInputs, router, startCustomPlanPayment, t, totalCoins, totalWithTaxAedCents]);
 
   return (
-    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: { xs: 4, md: 6 } }}>
+    <Box dir={dir} sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: { xs: 4, md: 6 }, direction: dir }}>
       <Box sx={{ width: 'min(100%, 706px)', textAlign: 'center' }}>
         <Typography sx={{ mb: 4, fontSize: '12px' }} fontWeight={400} color='text.secondary'>
-          Do you want to create your own plan ?
+          {t.createYourPlan}
         </Typography>
 
         {/* Inputs row */}
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr auto' },
+            gridTemplateColumns: { xs: '1fr', sm: dir === 'rtl' ? 'auto 1fr 1fr' : '1fr 1fr auto' },
             gap: 1.25,
             alignItems: 'center',
             justifyItems: 'stretch',
@@ -380,8 +407,9 @@ export default function CustomPlanBuilderCard() {
               displayEmpty: true,
               renderValue: (v) => {
                 const id = String(v ?? '');
-                if (!id) return <Box sx={{ color: TEXT_MUTED }}>Choose an item...</Box>;
-                return catalogById[id]?.label ?? id;
+                if (!id) return <Box sx={{ color: TEXT_MUTED }}>{t.chooseItem}</Box>;
+                const raw = catalogById[id]?.label ?? id;
+                return getDisplayLabel(raw);
               },
             }}
             sx={{
@@ -399,24 +427,24 @@ export default function CustomPlanBuilderCard() {
             }}
           >
             <MenuItem value='' disabled>
-              Choose an item...
+              {t.chooseItem}
             </MenuItem>
             {loading ? (
               <MenuItem value='' disabled>
-                Loading…
+                {t.loading}
               </MenuItem>
             ) : error ? (
               <MenuItem value='' disabled>
-                Failed to load
+                {t.failedToLoad}
               </MenuItem>
             ) : catalog.length === 0 ? (
               <MenuItem value='' disabled>
-                No items
+                {t.noItems}
               </MenuItem>
             ) : null}
             {catalog.map((item) => (
               <MenuItem key={item.id} value={item.id}>
-                {item.label}
+                {getDisplayLabel(item.label)}
               </MenuItem>
             ))}
           </TextField>
@@ -424,7 +452,7 @@ export default function CustomPlanBuilderCard() {
           <TextField
             value={qtyInput}
             onChange={(e) => setQtyInput(e.target.value)}
-            placeholder='Number of item...'
+            placeholder={t.numberOfItem}
             size='small'
             fullWidth
             inputMode='numeric'
@@ -444,7 +472,7 @@ export default function CustomPlanBuilderCard() {
           />
 
           <IconButton
-            aria-label={editingRowId ? 'Save item' : 'Add item'}
+            aria-label={editingRowId ? t.saveItem : t.addItem}
             onClick={handleAddOrSave}
             disabled={!canSubmit}
             sx={{
@@ -454,7 +482,7 @@ export default function CustomPlanBuilderCard() {
               border: `1px solid ${BORDER}`,
               backgroundColor: '#fff',
               color: '#6B7280',
-              justifySelf: { xs: 'end', sm: 'auto' },
+              justifySelf: { xs: dir === 'rtl' ? 'start' : 'end', sm: 'auto' },
               '&:hover': { backgroundColor: '#fff' },
             }}
           >
@@ -470,13 +498,13 @@ export default function CustomPlanBuilderCard() {
             border: `1px solid ${BORDER}`,
             borderRadius: '12px',
             overflow: 'hidden',
-            textAlign: 'left',
+            textAlign: dir === 'rtl' ? 'right' : 'left',
           }}
         >
           {rowsWithComputed.length === 0 ? (
             <Box sx={{ px: 2, py: 2 }}>
               <Typography sx={{ fontSize: 13, color: TEXT_MUTED, fontWeight: 600, textAlign: 'center' }}>
-                {loading ? 'Loading items…' : error ? 'Failed to load items.' : 'No items yet.'}
+                {loading ? t.loadingItems : error ? t.failedToLoadItems : t.noItemsYet}
               </Typography>
             </Box>
           ) : (
@@ -501,23 +529,24 @@ export default function CustomPlanBuilderCard() {
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
+                      textAlign: dir === 'rtl' ? 'right' : 'left',
                     }}
                   >
-                    {row.label}
+                    {getDisplayLabel(row.label)}
                   </Typography>
 
                   <Typography sx={{ fontSize: 16, fontWeight: 600, color: TEXT_DARK, textAlign: 'center' }}>
-                    {row.qty}
+                    {locale === 'fa' ? toPersianDigits(String(row.qty)) : row.qty}
                   </Typography>
 
                   <Typography sx={{ fontSize: 16, fontWeight: 600, color: TEXT_DARK, textAlign: 'center' }}>
-                    {row.rowCoins} {row.rowCoins === 1 ? 'Coin' : 'Coins'}
+                    {locale === 'fa' ? toPersianDigits(String(row.rowCoins)) : row.rowCoins} {row.rowCoins === 1 ? t.coin : t.coins}
                   </Typography>
 
-                  <Stack direction='row' spacing={1} justifyContent='flex-end' sx={{ justifySelf: 'end' }}>
+                  <Stack direction='row' spacing={1} justifyContent={dir === 'rtl' ? 'flex-start' : 'flex-end'} sx={{ justifySelf: dir === 'rtl' ? 'start' : 'end' }}>
                     <IconButton
                       size='small'
-                      aria-label='Edit'
+                      aria-label={t.edit}
                       onClick={() => handleEditRow(row)}
                       sx={{
                         width: 32,
@@ -531,7 +560,7 @@ export default function CustomPlanBuilderCard() {
                     </IconButton>
                     <IconButton
                       size='small'
-                      aria-label='Delete'
+                      aria-label={t.delete}
                       onClick={() => handleDeleteRow(row.id)}
                       sx={{
                         width: 32,
@@ -557,36 +586,39 @@ export default function CustomPlanBuilderCard() {
             sx={{
               px: 2,
               py: 1.6,
-              display: 'grid',
-              gridTemplateColumns: rowGridTemplateColumns,
+              display: 'flex',
+              flexDirection: dir === 'rtl' ? 'row-reverse' : 'row',
+              flexWrap: 'wrap',
               alignItems: 'center',
-              gap: 1.25,
+              justifyContent: 'space-between',
+              gap: 2,
             }}
           >
-            <Typography sx={{ fontSize: 16, fontWeight: 500, color: TEXT_DARK }}>Total price</Typography>
+            <Typography sx={{ fontSize: 16, fontWeight: 500, color: TEXT_DARK }}>{t.totalPrice}</Typography>
 
-            <Box sx={{ gridColumn: '2 / span 2', textAlign: 'center' }}>
+            <Stack direction={dir === 'rtl' ? 'row-reverse' : 'row'} alignItems='center' spacing={3}>
               <Stack direction='row' alignItems='baseline' justifyContent='center' spacing={1} sx={{ mt: 0.1 }}>
                 <Typography sx={{ fontSize: 22, color: BRAND, fontWeight: 700, textAlign: 'center' }}>
-                  {formatAedFromCents(totalWithTaxAedCents)}
+                  {formatPrice(totalWithTaxAedCents)}
                 </Typography>
               </Stack>
-              <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 700, mt: 0.25, textAlign: 'center' }}>
-                {totalCoins} Coins
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 600, mt: -0.25, textAlign: 'center' }}>
-                With 9% Tax
-              </Typography>
-            </Box>
-
-            <MuiButton
-              text='Upgrade '
-              variant='contained'
-              color='secondary'
-
-              disabled={upgradeLoading || rowsWithComputed.length === 0}
-              onClick={handleUpgrade}
-            />
+              <Stack alignItems='center' sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 700, mt: 0.25 }}>
+                  {locale === 'fa' ? toPersianDigits(String(totalCoins)) : totalCoins} {t.coins}
+                </Typography>
+                <Typography sx={{ fontSize: 11.5, color: TEXT_MUTED, fontWeight: 600, mt: -0.25 }}>
+                  {t.withTax}
+                </Typography>
+              </Stack>
+              <MuiButton
+                text={t.upgrade}
+                variant='contained'
+                color='secondary'
+                disabled={upgradeLoading || rowsWithComputed.length === 0}
+                onClick={handleUpgrade}
+                sx={{ minWidth: 120, marginInlineStart: 16 }}
+              />
+            </Stack>
           </Box>
 
           {upgradeError ? (
