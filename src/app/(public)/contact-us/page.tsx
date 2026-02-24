@@ -8,11 +8,14 @@ import Link from 'next/link';
 import FooterMain from '@/app/main/FooterMain';
 import { ContainerSkill } from '@/components/Landing/Wizard/Step1/SlectSkill/styled';
 import { InputContent } from '@/components/Landing/Wizard/Step1/SKillInput/styled';
-
-
-
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 export default function ContactUsPage() {
+  const locale = useLocaleStore((s) => s.locale);
+  const dir = locale === 'fa' ? 'rtl' : 'ltr';
+  const t = getMainTranslations(locale).contactPage;
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -27,19 +30,19 @@ export default function ContactUsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // UI-only: no backend wired here yet.
-    // Keep it silent to match the screenshot; the parent app may add snackbar/toast later.
     if (!canSend) return;
     // eslint-disable-next-line no-console
     console.log('Contact form submit:', form);
   };
 
+  const breadcrumbSeparator = dir === 'rtl' ? '‹' : '›';
+
   return (
     <Box
-      dir='ltr'
+      dir={dir}
       sx={{
         width: '100%',
-        direction: 'ltr',
+        direction: dir,
       }}
     >
       <Box
@@ -51,12 +54,12 @@ export default function ContactUsPage() {
           width: '100%',
         }}
       >
-        {/* Left */}
+        {/* Left / First column */}
         <Stack sx={{ minWidth: 0 }} spacing={3}>
           <Stack spacing={1.5}>
             <Breadcrumbs
               aria-label='breadcrumb'
-              separator='›'
+              separator={breadcrumbSeparator}
               sx={{
                 '& .MuiBreadcrumbs-separator': { color: 'text.secondary' },
                 '& .MuiTypography-root': {
@@ -65,50 +68,51 @@ export default function ContactUsPage() {
                   letterSpacing: '0.08em',
                   color: 'text.secondary',
                 },
+                flexDirection: dir === 'rtl' ? 'row-reverse' : 'row',
               }}
             >
               <MuiLink component={Link} href='/' underline='hover' color='inherit'>
-                Home
+                {t.home}
               </MuiLink>
-              <Typography color='text.secondary'>Contact us</Typography>
+              <Typography color='text.secondary'>{t.contactUs}</Typography>
             </Breadcrumbs>
 
-            <Typography variant='h2' fontWeight={700} color='text.primary'>
-              Contact Us
+            <Typography variant='h2' fontWeight={700} color='text.primary' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              {t.contactUs}
             </Typography>
           </Stack>
 
-          <Stack spacing={1.25}>
-            <Stack direction='row'  sx={{ alignItems: 'baseline' }}>
+          <Stack spacing={1.25} sx={{ direction: dir }}>
+            <Stack direction='row' sx={{ alignItems: 'baseline', flexDirection: dir === 'rtl' ? 'row-reverse' : 'row' }}>
               <Typography fontWeight={400} variant='subtitle1' color='text.secondary' sx={{ width: 84, flexShrink: 0 }}>
-                Address
-              </Typography>
-              <Typography  fontWeight={492} variant='subtitle1' color='text.primary' sx={{ minWidth: 0 }}>
-                123 Innovation Drive, Dubai, UAE
-              </Typography>
-            </Stack>
-            <Stack direction='row'  sx={{ alignItems: 'baseline' }}>
-              <Typography  fontWeight={400} variant='subtitle1' color='text.secondary' sx={{ width: 84, flexShrink: 0 }}>
-                Email
+                {t.address}
               </Typography>
               <Typography fontWeight={492} variant='subtitle1' color='text.primary' sx={{ minWidth: 0 }}>
-                Info@z-cv.com
+                {t.addressValue}
               </Typography>
             </Stack>
-            <Stack direction='row'  sx={{ alignItems: 'baseline' }}>
-              <Typography  fontWeight={400} variant='subtitle1' color='text.secondary' sx={{ width: 84, flexShrink: 0 }}>
-                Phone
+            <Stack direction='row' sx={{ alignItems: 'baseline', flexDirection: dir === 'rtl' ? 'row-reverse' : 'row' }}>
+              <Typography fontWeight={400} variant='subtitle1' color='text.secondary' sx={{ width: 84, flexShrink: 0 }}>
+                {t.email}
               </Typography>
               <Typography fontWeight={492} variant='subtitle1' color='text.primary' sx={{ minWidth: 0 }}>
-                9999999999
+                {t.emailValue}
+              </Typography>
+            </Stack>
+            <Stack direction='row' sx={{ alignItems: 'baseline', flexDirection: dir === 'rtl' ? 'row-reverse' : 'row' }}>
+              <Typography fontWeight={400} variant='subtitle1' color='text.secondary' sx={{ width: 84, flexShrink: 0 }}>
+                {t.phone}
+              </Typography>
+              <Typography fontWeight={492} variant='subtitle1' color='text.primary' sx={{ minWidth: 0 }}>
+                {t.phoneValue}
               </Typography>
             </Stack>
           </Stack>
 
-          <Box component='form' onSubmit={handleSubmit} sx={{ width: '100%' }}>
+          <Box component='form' onSubmit={handleSubmit} sx={{ width: '100%', direction: dir }}>
             <Stack spacing={1.75} mt={2}>
-              <Typography variant='h5' fontWeight={492} color='text.primary'>
-                Contact form
+              <Typography variant='h5' fontWeight={492} color='text.primary' sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+                {t.contactForm}
               </Typography>
 
               <Box
@@ -119,19 +123,21 @@ export default function ContactUsPage() {
                 }}
               >
                 <TextField
-                  placeholder='Your name'
+                  placeholder={t.yourName}
                   value={form.name}
                   onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                   size='medium'
                   fullWidth
+                  inputProps={{ dir }}
                 />
                 <TextField
-                  placeholder='Your email'
+                  placeholder={t.yourEmail}
                   value={form.email}
                   onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                   size='medium'
                   type='email'
                   fullWidth
+                  inputProps={{ dir }}
                 />
               </Box>
 
@@ -139,24 +145,23 @@ export default function ContactUsPage() {
                 direction='row'
                 active={Boolean(form.message.trim())}
                 sx={{
-                  // Keep it aligned with the contact form grid (not the wizard's centered/maxWidth layout)
                   maxWidth: '100%',
                   marginTop: 0,
                   marginInline: 0,
+                  flexDirection: dir === 'rtl' ? 'row-reverse' : 'row',
                 }}
               >
                 <InputContent
-                  placeholder='Type your message'
+                  placeholder={t.typeMessage}
                   value={form.message}
                   onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
-                  // Match wizard behavior: auto-grow until maxHeight, then scroll inside the field.
                   style={{ maxHeight: 240 }}
-                  dir='auto'
-                  aria-label='Message'
+                  dir={dir}
+                  aria-label={t.messageAria}
                 />
               </ContainerSkill>
 
-              <Stack direction='row' spacing={1.5}>
+              <Stack direction='row' spacing={1.5} sx={{ flexDirection: dir === 'rtl' ? 'row-reverse' : 'row' }}>
                 <Button
                   variant='outlined'
                   color='inherit'
@@ -167,7 +172,7 @@ export default function ContactUsPage() {
                     '&:hover': { borderColor: 'grey.200', backgroundColor: 'action.hover' },
                   }}
                 >
-                  Reset
+                  {t.reset}
                 </Button>
                 <Button
                   type='submit'
@@ -179,7 +184,7 @@ export default function ContactUsPage() {
                     '&:hover': { backgroundColor: 'secondary.dark' },
                   }}
                 >
-                  Send
+                  {t.send}
                 </Button>
               </Stack>
             </Stack>
@@ -198,7 +203,7 @@ export default function ContactUsPage() {
         >
           <Box
             component='iframe'
-            title='Z-CV location map'
+            title={t.mapTitle}
             src='https://www.google.com/maps?q=Al%20Safa%2C%20Dubai&z=14&output=embed'
             loading='lazy'
             referrerPolicy='no-referrer-when-downgrade'
