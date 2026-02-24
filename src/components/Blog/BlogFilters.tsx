@@ -6,6 +6,9 @@ type BlogFiltersProps = {
     onCategoryChange: (category: string) => void;
     searchValue: string;
     onSearchChange: (value: string) => void;
+    searchPlaceholder: string;
+    categoryLabels: Record<string, string>;
+    allCategoriesLabel: string;
 };
 
 export default function BlogFilters({
@@ -14,7 +17,13 @@ export default function BlogFilters({
     onCategoryChange,
     searchValue,
     onSearchChange,
+    searchPlaceholder,
+    categoryLabels,
+    allCategoriesLabel,
 }: BlogFiltersProps) {
+    const getCategoryDisplayLabel = (category: string) =>
+        category === allCategoriesLabel ? allCategoriesLabel : (categoryLabels[category] ?? category);
+
     return (
         <section className={styles.filtersSection}>
             <div className={styles.filtersRow}>
@@ -27,14 +36,14 @@ export default function BlogFilters({
                         }`}
                         onClick={() => onCategoryChange(category)}
                     >
-                        {category}
+                        {getCategoryDisplayLabel(category)}
                     </button>
                 ))}
                 <input
                     className={styles.searchInput}
                     value={searchValue}
                     onChange={(event) => onSearchChange(event.target.value)}
-                    placeholder='Search topics, tips or keywords...'
+                    placeholder={searchPlaceholder}
                 />
             </div>
         </section>

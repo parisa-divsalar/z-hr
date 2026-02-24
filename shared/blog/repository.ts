@@ -16,6 +16,12 @@ export type BlogArticle = {
   image: string;
   banner?: string;
   keyTakeaways?: string[];
+  /** Persian (Farsi) locale overrides – when present, shown when user selects فارسی */
+  titleFa?: string;
+  shortTitleFa?: string;
+  descriptionFa?: string;
+  metaFa?: string;
+  keyTakeawaysFa?: string[];
 };
 
 async function readRepository(): Promise<BlogArticle[]> {

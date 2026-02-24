@@ -176,6 +176,12 @@
     opacity: 0.6;
 }
 
+[dir='rtl'] .sidebarLink::after {
+    content: '←';
+    margin-left: 0;
+    margin-right: 0.3rem;
+}
+
 .sidebarButton {
     margin-top: auto;
     background-color: #0f172a;
@@ -209,6 +215,15 @@
     line-height: 1.7;
 }
 
+.sectionTitleRtl {
+    display: block;
+    width: 100%;
+}
+
+[dir='rtl'] .sectionTitleRtl {
+    text-align: right;
+}
+
 .commentsSection {
     background: #ffffff;
     border: 1px solid #90a4ae36;
@@ -217,6 +232,36 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+}
+
+[dir='rtl'] .commentsSection .formFields {
+    text-align: right;
+    direction: rtl;
+}
+
+[dir='rtl'] .commentsSection .formFields .MuiStack-root > .MuiTypography-root {
+    text-align: right;
+}
+
+[dir='rtl'] .commentsSection .formFields .MuiInputBase-input,
+[dir='rtl'] .commentsSection .formFields textarea.MuiInputBase-input {
+    text-align: right;
+    direction: rtl;
+}
+
+[dir='rtl'] .commentsSection .commentForm h3,
+[dir='rtl'] .commentsSection .commentList h3 {
+    text-align: right;
+}
+
+[dir='rtl'] .commentsSection .commentItem p,
+[dir='rtl'] .commentsSection .commentHeader {
+    text-align: right;
+}
+
+[dir='rtl'] .commentsSection .commentList {
+    direction: rtl;
+    text-align: right;
 }
 
 .commentForm h3,
@@ -300,6 +345,16 @@
     border-radius: 8px;
 }
 
+.faqSectionTitle {
+    width: 100%;
+}
+
+[dir='rtl'] .faqSection h3.faqSectionTitle,
+[dir='rtl'] .faqSection h3 {
+    text-align: right;
+    width: 100%;
+}
+
 .accordion {
     display: flex;
     flex-direction: column;
@@ -323,6 +378,11 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
+}
+
+.accordionQuestion {
+    flex: 1;
+    min-width: 0;
 }
 
 .accordionPanel {

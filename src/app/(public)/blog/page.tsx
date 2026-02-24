@@ -7,12 +7,16 @@ import { BlogArticle } from '@shared/blog/repository';
 import ArticleGrid from '@/components/Blog/ArticleGrid';
 import BlogFilters from '@/components/Blog/BlogFilters';
 import styles from '@/components/Blog/BlogPage.module.css';
-import { trendingTopics } from '@/components/Blog/data';
 import FeaturedStories from '@/components/Blog/FeaturedStories';
 import HeroSection from '@/components/Blog/HeroSection';
 import TrendingSidebar from '@/components/Blog/TrendingSidebar';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 export default function BlogPage() {
+    const locale = useLocaleStore((s) => s.locale);
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+    const t = getMainTranslations(locale).blogPage;
     const [articles, setArticles] = useState<BlogArticle[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchValue, setSearchValue] = useState('');
@@ -26,16 +30,16 @@ export default function BlogPage() {
             try {
                 const response = await fetch('/api/blog/articles');
                 if (!response.ok) {
-                    throw new Error('Unable to load blog posts at the moment.');
+                    throw new Error('BLOG_LOAD_ERROR');
                 }
                 const data = (await response.json()) as BlogArticle[];
                 if (!cancelled) {
                     setArticles(data);
                     setErrorMessage(null);
                 }
-            } catch (error) {
+            } catch {
                 if (!cancelled) {
-                    setErrorMessage((error as Error).message);
+                    setErrorMessage('BLOG_LOAD_ERROR');
                 }
             } finally {
                 if (!cancelled) {
@@ -53,27 +57,28 @@ export default function BlogPage() {
 
     const categories = useMemo(() => {
         const uniqueCategories = Array.from(new Set(articles.map((article) => article.category)));
-        return ['All', ...uniqueCategories];
-    }, [articles]);
+        return [t.allCategories, ...uniqueCategories];
+    }, [articles, t.allCategories]);
 
     useEffect(() => {
         if (!categories.includes(selectedCategory)) {
-            setSelectedCategory('All');
+            setSelectedCategory(t.allCategories);
         }
-    }, [categories, selectedCategory]);
+    }, [categories, selectedCategory, t.allCategories]);
 
     const filteredArticles = useMemo(() => {
         const searchTerm = searchValue.trim().toLowerCase();
         return articles.filter((article) => {
-            const matchesCategory = selectedCategory === 'All' || article.category === selectedCategory;
+            const matchesCategory =
+                selectedCategory === t.allCategories || article.category === selectedCategory;
             const searchableText = `${article.title} ${article.description}`.toLowerCase();
             const matchesSearch = searchTerm ? searchableText.includes(searchTerm) : true;
             return matchesCategory && matchesSearch;
         });
-    }, [articles, selectedCategory, searchValue]);
+    }, [articles, selectedCategory, searchValue, t.allCategories]);
 
     return (
-        <div className={styles.pageShell}>
+        <div className={styles.pageShell} dir={dir} style={{ direction: dir }}>
             <div className={styles.pageContainer}>
                 <HeroSection />
                 <FeaturedStories />
@@ -83,19 +88,33 @@ export default function BlogPage() {
                     onCategoryChange={setSelectedCategory}
                     searchValue={searchValue}
                     onSearchChange={setSearchValue}
+                    searchPlaceholder={t.searchPlaceholder}
+                    categoryLabels={t.categoryLabels}
+                    allCategoriesLabel={t.allCategories}
                 />
                 {errorMessage && (
                     <div className={styles.errorMessage} role='alert'>
-                        {errorMessage}
+                        {t.errorLoad}
                     </div>
                 )}
                 <div className={styles.contentColumns}>
                     {isLoading ? (
-                        <div className={styles.loaderMessage}>در حال بارگذاری مقالات...</div>
+                        <div className={styles.loaderMessage}>{t.loadingArticles}</div>
                     ) : (
-                        <ArticleGrid articles={filteredArticles} />
+                        <ArticleGrid
+                            articles={filteredArticles}
+                            readMoreLabel={t.readMore}
+                            categoryLabels={t.categoryLabels}
+                            cardMetaLabels={t.cardMetaLabels}
+                            cardTitleLabels={t.cardTitleLabels}
+                        />
                     )}
-                    <TrendingSidebar topics={trendingTopics} />
+                    <TrendingSidebar
+                        trendingTitle={t.trendingTitle}
+                        trendingBadge={t.trendingBadge}
+                        buildCvLabel={t.buildCv}
+                        topics={t.trendingTopics}
+                    />
                 </div>
             </div>
         </div>
