@@ -2,18 +2,27 @@ import AddIcon from '@/assets/images/icons/add.svg';
 import MuiButton from '@/components/UI/MuiButton';
 
 import styles from './BlogPage.module.css';
-import { TrendingTopic } from './data';
+
+type TrendingTopicItem = { readonly title: string; readonly meta: string };
 
 type TrendingSidebarProps = {
-    topics: TrendingTopic[];
+    trendingTitle: string;
+    trendingBadge: string;
+    buildCvLabel: string;
+    topics: readonly TrendingTopicItem[];
 };
 
-export default function TrendingSidebar({ topics }: TrendingSidebarProps) {
+export default function TrendingSidebar({
+    trendingTitle,
+    trendingBadge,
+    buildCvLabel,
+    topics,
+}: TrendingSidebarProps) {
     return (
         <aside className={styles.trendingSidebar}>
             <div className={styles.trendingHeader}>
-                <p className={styles.trendingTitle}>Trending in UAE / Dubai</p>
-                <span className={styles.trendingBadge}>Resume Tips</span>
+                <p className={styles.trendingTitle}>{trendingTitle}</p>
+                <span className={styles.trendingBadge}>{trendingBadge}</span>
             </div>
             <ul className={styles.trendingList}>
                 {topics.map((topic) => (
@@ -24,7 +33,7 @@ export default function TrendingSidebar({ topics }: TrendingSidebarProps) {
                 ))}
             </ul>
             <MuiButton size='large' startIcon={<AddIcon />} fullWidth>
-                Build a Dubai-ready CV
+                {buildCvLabel}
             </MuiButton>
         </aside>
     );
