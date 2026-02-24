@@ -88,6 +88,13 @@ export default function PricingFaqSection({ dir }: PricingFaqSectionProps) {
                                                 '& .MuiAccordionSummary-expandIconWrapper': {
                                                     right: 'auto',
                                                     left: { xs: 16, sm: 24 },
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    margin: 0,
+                                                },
+                                                '& .MuiAccordionSummary-content': {
+                                                    margin: 0,
+                                                    paddingInlineEnd: { xs: 7, sm: 8 },
                                                 },
                                             }),
                                         }}
