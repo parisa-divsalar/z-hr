@@ -14,13 +14,16 @@ import { Box, CardContent, Chip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { getMainTranslations } from '@/locales/main';
 import { trackEvent } from '@/lib/analytics';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
 import { useResumeEditorController, type ResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
+import { useTranslatedSummary } from './ResumeEditor/hooks/useTranslatedSummary';
 import { MainCardContainer, ResumeContainer } from './ResumeEditor/styled';
 import type { ResumeLanguage } from './ResumeEditor/types';
 import { extractEmailAndPhone } from './ResumeEditor/utils';
@@ -187,6 +190,12 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
     const c = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
+    const locale = useLocaleStore((s) => s.locale);
+    const mainT = getMainTranslations(locale);
+    const resumeEditorT = mainT.landing.wizard.resumeEditor;
+    const sectionsT = resumeEditorT.sections;
+    const skillCategoryFa = mainT.landing.skillCategoryFa ?? {};
+    const { displayText: summaryDisplayText } = useTranslatedSummary(c.summary, locale);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
 
     useEffect(() => {
@@ -228,8 +237,9 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
             .map((x) => cleanText(x))
             .filter(Boolean)
             .slice(0, 8);
-        return items;
-    }, [c.skills]);
+        if (locale !== 'fa' || !Object.keys(skillCategoryFa).length) return items;
+        return items.map((s) => (skillCategoryFa as Record<string, string>)[s] ?? s);
+    }, [c.skills, locale, skillCategoryFa]);
 
     const interests = useMemo(() => {
         const fromAdditional = splitLines(cleanText(c.additionalInfo));
@@ -315,7 +325,9 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                             mt: 0.5,
                                         }}
                                     >
-                                        {cleanText(c.resolvedMainSkill) || ' '}
+                                        {(locale === 'fa'
+                                            ? (skillCategoryFa as Record<string, string>)[cleanText(c.resolvedMainSkill)] ?? cleanText(c.resolvedMainSkill)
+                                            : cleanText(c.resolvedMainSkill)) || ' '}
                                     </Typography>
 
                                     <Typography
@@ -330,7 +342,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                             overflowWrap: 'anywhere',
                                         }}
                                     >
-                                        {cleanText(c.summary) || ' '}
+                                        {summaryDisplayText || ' '}
                                     </Typography>
                                 </Box>
 
@@ -374,7 +386,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('skills') ? (
                                                 <Box>
-                                                    <SectionTitle title='Competencies' accentColor={accent} />
+                                                    <SectionTitle title={sectionsT.competencies} accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                                         {competencyChips.length ? (
                                                             competencyChips.map((label) => (
@@ -394,7 +406,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                             ))
                                                         ) : (
                                                         <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
-                                                                No competencies found.
+                                                                {resumeEditorT.noCompetenciesFound}
                                                             </Typography>
                                                         )}
                                                     </Box>
@@ -403,7 +415,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('languages') ? (
                                                 <Box>
-                                                    <SectionTitle title='Languages' accentColor={accent} />
+                                                    <SectionTitle title={sectionsT.languages} accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1.75 }}>
                                                         {c.languages.length ? (
                                                             c.languages.map((lang) => (
@@ -416,7 +428,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                             ))
                                                         ) : (
                                                         <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
-                                                                No languages found.
+                                                                {resumeEditorT.noLanguagesFound}
                                                             </Typography>
                                                         )}
                                                     </Box>
@@ -424,7 +436,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                             ) : null}
 
                                             <Box>
-                                                <SectionTitle title='Interests' accentColor={accent} />
+                                                <SectionTitle title={sectionsT.interests} accentColor={accent} />
                                                 <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                     {interests.length ? (
                                                         interests.map((x, idx) => (
@@ -447,7 +459,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                         ))
                                                     ) : (
                                                         <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
-                                                            No interests found.
+                                                            {resumeEditorT.noInterestsFound}
                                                         </Typography>
                                                     )}
                                                 </Box>
@@ -458,7 +470,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                             {!c.isSectionHidden('selectedProjects') ? (
                                                 <Box>
-                                                    <SectionTitle title='Skills Summary' accentColor={accent} />
+                                                    <SectionTitle title={sectionsT.skillsSummary} accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                         {c.selectedProjects.length ? (
                                                             c.selectedProjects.map((line, idx) => (
@@ -488,7 +500,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                             ))
                                                         ) : (
                                                             <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
-                                                                No skills summary found.
+                                                                {resumeEditorT.noSkillsSummaryFound}
                                                             </Typography>
                                                         )}
                                                     </Box>
@@ -497,7 +509,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('certificates') ? (
                                                 <Box>
-                                                    <SectionTitle title='Certificates' accentColor={accent} />
+                                                    <SectionTitle title={sectionsT.certificates} accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                         {c.certificates.length ? (
                                                             c.certificates.map((line, idx) => (
@@ -516,7 +528,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                             ))
                                                         ) : (
                                                             <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
-                                                                No certificates found.
+                                                                {resumeEditorT.noCertificatesFound}
                                                             </Typography>
                                                         )}
                                                     </Box>
@@ -525,7 +537,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('education') ? (
                                                 <Box>
-                                                    <SectionTitle title='Education' accentColor={accent} />
+                                                    <SectionTitle title={sectionsT.education} accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                                                         {c.education.length ? (
                                                             c.education.map((line, idx) => (
@@ -544,7 +556,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                             ))
                                                         ) : (
                                                             <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
-                                                                No education found.
+                                                                {resumeEditorT.noEducationFound}
                                                             </Typography>
                                                         )}
                                                     </Box>
@@ -553,7 +565,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('experience') ? (
                                                 <Box>
-                                                    <SectionTitle title='Professional Experience' accentColor={accent} />
+                                                    <SectionTitle title={sectionsT.experience} accentColor={accent} />
                                                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                                                         {c.experiences.filter((exp) =>
                                                             [exp.company, exp.position, exp.description].some((v) => cleanText(v)),
@@ -594,7 +606,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
                                                                 ))
                                                         ) : (
                                                             <Typography sx={{ fontFamily: T3.fontFamily, fontSize: 13, color: T3.subtle }}>
-                                                                No experience found.
+                                                                {resumeEditorT.noExperienceFound}
                                                             </Typography>
                                                         )}
                                                     </Box>
@@ -603,7 +615,7 @@ const ResumeEditorTemplate3: FunctionComponent<Props> = ({
 
                                             {!c.isSectionHidden('additionalInfo') ? (
                                                 <Box>
-                                                    <SectionTitle title='Additional Information' accentColor={accent} />
+                                                    <SectionTitle title={sectionsT.additionalInfo} accentColor={accent} />
                                                     <Typography
                                                         sx={{
                                                             mt: 1.5,

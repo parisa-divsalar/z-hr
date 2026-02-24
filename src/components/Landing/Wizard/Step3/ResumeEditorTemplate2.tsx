@@ -4,7 +4,9 @@ import { type FunctionComponent, type MutableRefObject, useEffect, useMemo, useS
 
 import { Box, Button, CardContent, CircularProgress, IconButton, Menu, MenuItem, Skeleton, Typography } from '@mui/material';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { getMainTranslations } from '@/locales/main';
 import { trackEvent } from '@/lib/analytics';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 import DeleteIcon from '@/assets/images/icons/clean.svg';
@@ -12,6 +14,7 @@ import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 
 import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
+import { useTranslatedSummary } from './ResumeEditor/hooks/useTranslatedSummary';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
@@ -94,6 +97,9 @@ function T2SectionHeader({
     improveOptions?: ImproveOption[];
     actionsSkeleton?: boolean;
 }) {
+    const locale = useLocaleStore((s) => s.locale);
+    const resumeEditorT = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const sectionTitleDisplay = locale === 'fa' ? title : title.toUpperCase();
     const shouldShowActions = (!hideActions || Boolean(actionsSkeleton)) && !c.isExporting && !c.isPreview;
     const isImprovingThisSection = !c.isPreview && c.improvingSection === section;
     const improveDisabled =
@@ -129,7 +135,7 @@ function T2SectionHeader({
                         color: T2.ruleStrong,
                     }}
                 >
-                    {title.toUpperCase()}
+                    {sectionTitleDisplay}
                 </Typography>
                 <Box sx={{ width: 22, height: 2, backgroundColor: T2.ruleStrong, mt: 0.75 }} />
             </Box>
@@ -138,10 +144,10 @@ function T2SectionHeader({
                 isEditing ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Button size='small' variant='text' color='inherit' onClick={onCancel} disabled={Boolean(c.isSaving)}>
-                            Cancel
+                            {resumeEditorT.cancel}
                         </Button>
                         <Button size='small' variant='contained' color='primary' onClick={onSave} disabled={Boolean(c.isSaving) || !onSave}>
-                            Save
+                            {resumeEditorT.save}
                         </Button>
                     </Box>
                 ) : (
@@ -223,7 +229,10 @@ function shouldShowSection({
     );
 }
 
-function SummaryCardT2({ c }: { c: ResumeEditorController }) {
+function SummaryCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
+    const locale = useLocaleStore((s) => s.locale);
+    const { displayText: summaryDisplayText } = useTranslatedSummary(c.summary, locale);
+    const noSummaryFound = getMainTranslations(locale).landing.wizard.resumeEditor.noSummaryFound;
     const hasContent = c.summary.trim().length > 0;
     const isEditing = !c.isPreview && c.editingSection === 'summary';
     const shouldRender = !c.isPreview || hasContent || isEditing || c.isPreCvLoading || c.shouldBlockBelowSummary;
@@ -232,7 +241,7 @@ function SummaryCardT2({ c }: { c: ResumeEditorController }) {
     return (
         <Box>
             <T2SectionHeader
-                title='Summary'
+                title={title}
                 c={c}
                 section='summary'
                 isEditing={isEditing}
@@ -257,17 +266,21 @@ function SummaryCardT2({ c }: { c: ResumeEditorController }) {
                     <SkeletonParagraph lines={5} />
                 ) : !c.summary.trim() ? (
                     <SummaryText sx={{ color: T2.subtleText, fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>
-                        No summary found.
+                        {noSummaryFound}
                     </SummaryText>
                 ) : (
-                    <SummaryText sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>{c.summary}</SummaryText>
+                    <SummaryText sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>
+                        {summaryDisplayText}
+                    </SummaryText>
                 )}
             </Box>
         </Box>
     );
 }
 
-function SkillsCardT2({ c }: { c: ResumeEditorController }) {
+function SkillsCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
+    const locale = useLocaleStore((s) => s.locale);
+    const noSkillsFound = getMainTranslations(locale).landing.wizard.resumeEditor.noSkillsFound;
     const isEditing = !c.isPreview && c.editingSection === 'skills';
     const visibleSkills = useMemo(() => c.skills.map((s) => String(s ?? '').trim()).filter(Boolean), [c.skills]);
     const hasContent = c.skills.some((skill) => String(skill ?? '').trim().length > 0);
@@ -276,7 +289,7 @@ function SkillsCardT2({ c }: { c: ResumeEditorController }) {
     return (
         <Box>
             <T2SectionHeader
-                title='Skills'
+                title={title}
                 c={c}
                 section='skills'
                 isEditing={isEditing}
@@ -296,7 +309,7 @@ function SkillsCardT2({ c }: { c: ResumeEditorController }) {
                     <SkeletonParagraph lines={3} />
                 ) : visibleSkills.length === 0 ? (
                     <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
-                        No skills found.
+                        {noSkillsFound}
                     </Typography>
                 ) : !c.isPreview && c.editingSection === 'skills' ? (
                     <SkillsContainer sx={{ mt: 0 }}>
@@ -355,6 +368,7 @@ function TextListCardT2({
     editValue,
     onEditValueChange,
     improveEnabled,
+    noFoundText,
 }: {
     c: ResumeEditorController;
     title: string;
@@ -363,6 +377,7 @@ function TextListCardT2({
     editValue: string;
     onEditValueChange: (v: string) => void;
     improveEnabled: boolean;
+    noFoundText?: string;
 }) {
     const isEditing = !c.isPreview && c.editingSection === section;
     const hasContent = value.some((entry) => String(entry ?? '').trim().length > 0);
@@ -399,7 +414,7 @@ function TextListCardT2({
                     <ExperienceTextareaAutosize value={editValue} onChange={(e) => onEditValueChange(e.target.value)} />
                 ) : value.length === 0 ? (
                     <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
-                        {`No ${title.toLowerCase()} found.`}
+                        {noFoundText ?? `No ${title.toLowerCase()} found.`}
                     </Typography>
                 ) : (
                     <Box>
@@ -422,7 +437,9 @@ function TextListCardT2({
     );
 }
 
-function LanguagesCardT2({ c }: { c: ResumeEditorController }) {
+function LanguagesCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
+    const locale = useLocaleStore((s) => s.locale);
+    const noLanguagesFound = getMainTranslations(locale).landing.wizard.resumeEditor.noLanguagesFound;
     const isEditing = !c.isPreview && c.editingSection === 'languages';
     const hasContent = c.languages.some((lang) => String(lang?.name ?? '').trim().length > 0);
     if (!shouldShowSection({ c, section: 'languages', hasContent })) return null;
@@ -430,7 +447,7 @@ function LanguagesCardT2({ c }: { c: ResumeEditorController }) {
     return (
         <Box>
             <T2SectionHeader
-                title='Languages'
+                title={title}
                 c={c}
                 section='languages'
                 isEditing={isEditing}
@@ -452,7 +469,7 @@ function LanguagesCardT2({ c }: { c: ResumeEditorController }) {
                     <ExperienceTextareaAutosize value={c.languagesEditText} onChange={(e) => c.setLanguagesEditText(e.target.value)} />
                 ) : c.languages.length === 0 ? (
                     <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
-                        No languages found.
+                        {noLanguagesFound}
                     </Typography>
                 ) : (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
@@ -478,7 +495,9 @@ function LanguagesCardT2({ c }: { c: ResumeEditorController }) {
     );
 }
 
-function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
+function ExperienceCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
+    const locale = useLocaleStore((s) => s.locale);
+    const noExperienceFound = getMainTranslations(locale).landing.wizard.resumeEditor.noExperienceFound;
     const isEditing = !c.isPreview && c.editingSection === 'experience';
     const visibleExperiences = c.experiences.filter((exp) =>
         [exp.company, exp.position, exp.description].some((v) => String(v ?? '').trim().length > 0),
@@ -489,7 +508,7 @@ function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
     return (
         <Box>
             <T2SectionHeader
-                title='Experience'
+                title={title}
                 c={c}
                 section='experience'
                 isEditing={isEditing}
@@ -517,7 +536,7 @@ function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
                     <ExperienceTextareaAutosize value={c.experienceEditText} onChange={(e) => c.setExperienceEditText(e.target.value)} />
                 ) : visibleExperiences.length === 0 ? (
                     <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
-                        No professional experience found.
+                        {noExperienceFound}
                     </Typography>
                 ) : (
                     visibleExperiences.map((experience, index) => {
@@ -583,7 +602,9 @@ function ExperienceCardT2({ c }: { c: ResumeEditorController }) {
     );
 }
 
-function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
+function AdditionalInfoCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
+    const locale = useLocaleStore((s) => s.locale);
+    const noAdditionalInfoFound = getMainTranslations(locale).landing.wizard.resumeEditor.noAdditionalInfoFound;
     const shouldRender =
         !c.isPreview ||
         c.shouldBlockBelowSummary ||
@@ -595,7 +616,7 @@ function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
     return (
         <Box>
             <T2SectionHeader
-                title='Additional Information'
+                title={title}
                 c={c}
                 section='additionalInfo'
                 isEditing={!c.isPreview && c.editingSection === 'additionalInfo'}
@@ -623,7 +644,7 @@ function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
                     <ExperienceTextareaAutosize value={c.additionalInfoEditText} onChange={(e) => c.setAdditionalInfoEditText(e.target.value)} />
                 ) : !c.additionalInfo.trim() ? (
                     <Typography sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.subtleText }}>
-                        No additional information found.
+                        {noAdditionalInfoFound}
                     </Typography>
                 ) : (
                     <SummaryText sx={{ whiteSpace: 'pre-line', fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>
@@ -635,7 +656,7 @@ function AdditionalInfoCardT2({ c }: { c: ResumeEditorController }) {
     );
 }
 
-function DetailsCardT2({ c }: { c: ResumeEditorController }) {
+function DetailsCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
     const isEditing = !c.isPreview && c.editingSection === 'contactWays';
     const hasContent = c.contactWays.some((v) => String(v ?? '').trim().length > 0) || Boolean(c.resolvedEmail) || Boolean(c.resolvedPhone);
     if (!shouldShowSection({ c, section: 'contactWays', hasContent })) return null;
@@ -699,7 +720,7 @@ function DetailsCardT2({ c }: { c: ResumeEditorController }) {
     return (
         <Box>
             <T2SectionHeader
-                title='Details'
+                title={title}
                 c={c}
                 section='contactWays'
                 isEditing={isEditing}
@@ -766,24 +787,26 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
     const c = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
+    const locale = useLocaleStore((s) => s.locale);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
 
-    const sectionLabels: Record<SectionKey, string> = useMemo(
-        () => ({
-            summary: 'Summary',
-            skills: 'Technical Skills',
-            contactWays: 'Contact Ways',
-            education: 'Education',
-            languages: 'Languages',
-            certificates: 'Certificates',
-            selectedProjects: 'Selected Projects',
-            experience: 'Professional Experience',
-            additionalInfo: 'Additional Information',
-        }),
-        [],
-    );
+    const sectionLabels: Record<SectionKey, string> = useMemo(() => {
+        const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+        return {
+            summary: t.sections.summary,
+            skills: t.sections.skills,
+            contactWays: t.sections.contactWays,
+            education: t.sections.education,
+            languages: t.sections.languages,
+            certificates: t.sections.certificates,
+            selectedProjects: t.sections.selectedProjects,
+            experience: t.sections.experience,
+            additionalInfo: t.sections.additionalInfo,
+        };
+    }, [locale]);
 
-    const pendingDeleteLabel = c.pendingDeleteSection ? sectionLabels[c.pendingDeleteSection] : 'this section';
+    const resumeEditorT = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const pendingDeleteLabel = c.pendingDeleteSection ? sectionLabels[c.pendingDeleteSection] : resumeEditorT.thisSection;
 
     useEffect(() => {
         if (mode === 'preview') return;
@@ -917,9 +940,13 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                         >
                             {/* Left column */}
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                {!c.isSectionHidden('contactWays') ? <DetailsCardT2 c={c} /> : null}
-                                {!c.isSectionHidden('skills') ? <SkillsCardT2 c={c} /> : null}
-                                {!c.isSectionHidden('languages') ? <LanguagesCardT2 c={c} /> : null}
+                                {!c.isSectionHidden('contactWays') ? (
+                                    <DetailsCardT2 c={c} title={resumeEditorT.sections.details} />
+                                ) : null}
+                                {!c.isSectionHidden('skills') ? <SkillsCardT2 c={c} title={sectionLabels.skills} /> : null}
+                                {!c.isSectionHidden('languages') ? (
+                                    <LanguagesCardT2 c={c} title={sectionLabels.languages} />
+                                ) : null}
                             </Box>
 
                             {/* Vertical divider */}
@@ -934,43 +961,52 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
 
                             {/* Right column */}
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                {!c.isSectionHidden('summary') ? <SummaryCardT2 c={c} /> : null}
-                                {!c.isSectionHidden('experience') ? <ExperienceCardT2 c={c} /> : null}
+                                {!c.isSectionHidden('summary') ? (
+                                    <SummaryCardT2 c={c} title={sectionLabels.summary} />
+                                ) : null}
+                                {!c.isSectionHidden('experience') ? (
+                                    <ExperienceCardT2 c={c} title={sectionLabels.experience} />
+                                ) : null}
                                 {!c.isSectionHidden('education') ? (
                                     <TextListCardT2
                                         c={c}
-                                        title='Education'
+                                        title={sectionLabels.education}
                                         section='education'
                                         value={c.education}
                                         editValue={c.educationEditText}
                                         onEditValueChange={c.setEducationEditText}
                                         improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                                        noFoundText={resumeEditorT.noEducationFound}
                                     />
                                 ) : null}
                                 {/* Render extra sections only if user has content; keeps screenshot-like output for typical data */}
                                 {!c.isSectionHidden('certificates') ? (
                                     <TextListCardT2
                                         c={c}
-                                        title='Certificates'
+                                        title={sectionLabels.certificates}
                                         section='certificates'
                                         value={c.certificates}
                                         editValue={c.certificatesEditText}
                                         onEditValueChange={c.setCertificatesEditText}
                                         improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                                        noFoundText={resumeEditorT.noCertificatesFound}
                                     />
                                 ) : null}
                                 {!c.isSectionHidden('selectedProjects') ? (
                                     <TextListCardT2
                                         c={c}
-                                        title='Selected Projects'
+                                        title={sectionLabels.selectedProjects}
                                         section='selectedProjects'
                                         value={c.selectedProjects}
                                         editValue={c.selectedProjectsEditText}
                                         onEditValueChange={c.setSelectedProjectsEditText}
                                         improveEnabled={!c.isPreview && !c.isTextOnlyMode}
+                                        noFoundText={resumeEditorT.noSelectedProjectsFound}
                                     />
                                 ) : null}
-                                {!c.isSectionHidden('additionalInfo') ? <AdditionalInfoCardT2 c={c} /> : null}
+                                {!c.isSectionHidden('additionalInfo') ? (
+                                    <AdditionalInfoCardT2 c={c} title={sectionLabels.additionalInfo} />
+                                ) : null}
                             </Box>
                         </Box>
                     </Box>

@@ -1,6 +1,8 @@
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import { FooterContainer } from '../styled';
 
@@ -14,6 +16,10 @@ type Props = {
 };
 
 export default function ResumeFooter({ isPreview, isDownloading, downloadProgress, cvError, onDownloadPdf, onSubmit }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const downloadButtonText = isDownloading ? t.preparingPdf(Math.round(downloadProgress * 100)) : t.downloadPdf;
+
     if (isPreview) return null;
 
     return (
@@ -22,7 +28,7 @@ export default function ResumeFooter({ isPreview, isDownloading, downloadProgres
                 color='secondary'
                 size='large'
                 variant='outlined'
-                text={isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download PDF'}
+                text={downloadButtonText}
                 loading={isDownloading}
                 disabled={Boolean(cvError)}
                 startIcon={<DownloadRoundedIcon />}
@@ -43,7 +49,7 @@ export default function ResumeFooter({ isPreview, isDownloading, downloadProgres
                 color='secondary'
                 size='large'
                 variant='contained'
-                text='Submit'
+                text={t.submit}
                 onClick={onSubmit}
                 sx={{
                     minWidth: 0,

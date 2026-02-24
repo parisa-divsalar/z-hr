@@ -13,13 +13,16 @@ import { alpha, useTheme } from '@mui/material/styles';
 
 import { lightTheme } from '@/config/theme';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { getMainTranslations } from '@/locales/main';
 import { trackEvent } from '@/lib/analytics';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
 import { useResumeEditorController, type ResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
+import { useTranslatedSummary } from './ResumeEditor/hooks/useTranslatedSummary';
 import { MainCardContainer, ResumeContainer } from './ResumeEditor/styled';
 import { extractEmailAndPhone } from './ResumeEditor/utils';
 
@@ -164,6 +167,12 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
     const c   = controller ?? useResumeEditorController({ mode, pdfTargetRef, apiUserId, requestIdOverride, disableAutoPoll });
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
+    const locale = useLocaleStore((s) => s.locale);
+    const mainT = getMainTranslations(locale);
+    const resumeEditorT = mainT.landing.wizard.resumeEditor;
+    const sectionsT = resumeEditorT.sections;
+    const skillCategoryFa = mainT.landing.skillCategoryFa ?? {};
+    const { displayText: summaryDisplayText } = useTranslatedSummary(c.summary, locale);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
 
     useEffect(() => {
@@ -205,10 +214,16 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
             if (picked.length >= 3) break;
             if (!picked.some((p) => p.toLowerCase() === s.toLowerCase())) picked.push(s);
         }
-        return picked.slice(0, 3);
-    }, [c.resolvedMainSkill, c.skills]);
+        const raw = picked.slice(0, 3);
+        if (locale !== 'fa' || !Object.keys(skillCategoryFa).length) return raw;
+        return raw.map((line) => (skillCategoryFa as Record<string, string>)[line] ?? line);
+    }, [c.resolvedMainSkill, c.skills, locale, skillCategoryFa]);
 
-    const visibleSkills = useMemo(() => (c.skills ?? []).map((x) => cleanText(x)).filter(Boolean).slice(0, 10), [c.skills]);
+    const visibleSkills = useMemo(() => {
+        const raw = (c.skills ?? []).map((x) => cleanText(x)).filter(Boolean).slice(0, 10);
+        if (locale !== 'fa' || !Object.keys(skillCategoryFa).length) return raw;
+        return raw.map((s) => (skillCategoryFa as Record<string, string>)[s] ?? s);
+    }, [c.skills, locale, skillCategoryFa]);
     const visibleEducation = useMemo(() => (c.education ?? []).map((x) => cleanText(x)).filter(Boolean).slice(0, 4), [c.education]);
 
     const visibleExperiences = useMemo(() => {
@@ -333,8 +348,8 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                         gridTemplateColumns: { xs: '1fr', md: `${T4.leftColPx}px ${T4.rightColPx}px` },
                                     }}
                                 >
-                                    <SectionBar title='Profile' bg={accent} fg={accentText} icon={<PersonOutlineOutlinedIcon fontSize='small' />} />
-                                    <SectionBar title='Contact' bg={darkBlock} fg={darkText} icon={<PhoneOutlinedIcon fontSize='small' />} />
+                                    <SectionBar title={sectionsT.profile} bg={accent} fg={accentText} icon={<PersonOutlineOutlinedIcon fontSize='small' />} />
+                                    <SectionBar title={sectionsT.contact} bg={darkBlock} fg={darkText} icon={<PhoneOutlinedIcon fontSize='small' />} />
                                 </Box>
 
                                 {/* Main content */}
@@ -374,11 +389,11 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                     overflowWrap: 'anywhere',
                                                 }}
                                             >
-                                                {cleanText(c.summary) || ' '}
+                                                {summaryDisplayText || ' '}
                                             </Typography>
                                         </Box>
 
-                                        <SectionBar title='Experience' bg={accent} fg={accentText} icon={<WorkOutlineOutlinedIcon fontSize='small' />} />
+                                        <SectionBar title={sectionsT.experience} bg={accent} fg={accentText} icon={<WorkOutlineOutlinedIcon fontSize='small' />} />
 
                                         <Box sx={{ px: 3, py: 2.25 }}>
                                             {visibleExperiences.length ? (
@@ -431,7 +446,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                 </Box>
                                             ) : (
                                                 <Typography sx={{ fontFamily: T4.fontFamily, fontSize: 13.5, color: subtleText }}>
-                                                    No experience found.
+                                                    {resumeEditorT.noExperienceFound}
                                                 </Typography>
                                             )}
                                         </Box>
@@ -474,7 +489,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                             </Box>
                                         </Box>
 
-                                        <SectionBar title='Skills' bg={darkBlock} fg={darkText} />
+                                        <SectionBar title={sectionsT.skills} bg={darkBlock} fg={darkText} />
                                         <Box sx={{ px: 3, py: 2.25 }}>
                                             {visibleSkills.length ? (
                                                 <Box
@@ -500,12 +515,12 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                 </Box>
                                             ) : (
                                                 <Typography sx={{ fontFamily: T4.fontFamily, fontSize: 13.5, color: subtleText }}>
-                                                    No skills found.
+                                                    {resumeEditorT.noSkillsFound}
                                                 </Typography>
                                             )}
                                         </Box>
 
-                                        <SectionBar title='Education' bg={darkBlock} fg={darkText} />
+                                        <SectionBar title={sectionsT.education} bg={darkBlock} fg={darkText} />
                                         <Box sx={{ px: 3, py: 2.25 }}>
                                             {visibleEducation.length ? (
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -536,7 +551,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                 </Box>
                                             ) : (
                                                 <Typography sx={{ fontFamily: T4.fontFamily, fontSize: 13.5, color: subtleText }}>
-                                                    No education found.
+                                                    {resumeEditorT.noEducationFound}
                                                 </Typography>
                                             )}
                                         </Box>
