@@ -1,5 +1,8 @@
 import { Box, Typography } from '@mui/material';
 
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import { ExperienceTextareaAutosize, SectionContainer, SummaryText } from '../styled';
@@ -10,6 +13,10 @@ import type { ImproveOption } from '../types';
 type Props = { c: ResumeEditorController };
 
 export default function CertificatesSection({ c }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const sectionTitle = t.sections.certificates;
+    const noCertificatesFound = t.noCertificatesFound;
     const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === 'certificates';
     const hasContent = c.certificates.some((entry) => String(entry ?? '').trim().length > 0);
@@ -25,7 +32,7 @@ export default function CertificatesSection({ c }: Props) {
     return (
         <SectionContainer>
             <SectionHeader
-                title='Certificates'
+                title={sectionTitle}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('certificates')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('certificates')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('certificates')}
@@ -63,7 +70,7 @@ export default function CertificatesSection({ c }: Props) {
                     />
                 ) : c.certificates.length === 0 ? (
                     <Typography variant='body2' color='text.secondary'>
-                        No certificates found.
+                        {noCertificatesFound}
                     </Typography>
                 ) : (
                     <Box>

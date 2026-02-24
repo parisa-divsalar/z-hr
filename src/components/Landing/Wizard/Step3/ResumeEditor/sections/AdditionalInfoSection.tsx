@@ -1,5 +1,8 @@
 import { Box, Typography } from '@mui/material';
 
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import { ExperienceTextareaAutosize, SectionContainer, SummaryText } from '../styled';
@@ -10,6 +13,10 @@ import type { ImproveOption } from '../types';
 type Props = { c: ResumeEditorController };
 
 export default function AdditionalInfoSection({ c }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const sectionTitle = t.sections.additionalInfo;
+    const noAdditionalInfoFound = t.noAdditionalInfoFound;
     const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const shouldRender =
         !c.isPreview ||
@@ -23,7 +30,7 @@ export default function AdditionalInfoSection({ c }: Props) {
     return (
         <SectionContainer>
             <SectionHeader
-                title='Additional Information'
+                title={sectionTitle}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('additionalInfo')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('additionalInfo')}
                 isEditing={!c.isPreview && c.editingSection === 'additionalInfo'}
@@ -61,7 +68,7 @@ export default function AdditionalInfoSection({ c }: Props) {
                     />
                 ) : !c.additionalInfo.trim() ? (
                     <Typography variant='body2' color='text.secondary'>
-                        No additional information found.
+                        {noAdditionalInfoFound}
                     </Typography>
                 ) : (
                     <SummaryText sx={{ whiteSpace: 'pre-line' }}>{c.additionalInfo}</SummaryText>

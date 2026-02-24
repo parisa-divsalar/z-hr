@@ -1,5 +1,8 @@
 import { Box, Typography } from '@mui/material';
 
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import {
@@ -18,6 +21,10 @@ import type { ImproveOption } from '../types';
 type Props = { c: ResumeEditorController };
 
 export default function ExperienceSection({ c }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const sectionTitle = t.sections.experience;
+    const noExperienceFound = t.noExperienceFound;
     const improveOptions: ImproveOption[] = ['shorter', 'longer', 'creative', 'formal'];
     const isEditing = !c.isPreview && c.editingSection === 'experience';
     const visibleExperiences = c.experiences.filter((exp) =>
@@ -36,7 +43,7 @@ export default function ExperienceSection({ c }: Props) {
     return (
         <ExperienceContainer>
             <SectionHeader
-                title='Professional Experience'
+                title={sectionTitle}
                 onEdit={c.isPreview ? undefined : () => c.handleEdit('experience')}
                 onDelete={c.isPreview ? undefined : () => c.requestDeleteSection('experience')}
                 onImprove={c.isPreview || c.isTextOnlyMode ? undefined : () => void c.handleImprove('experience')}
@@ -74,7 +81,7 @@ export default function ExperienceSection({ c }: Props) {
                     if (visibleExperiences.length === 0) {
                         return (
                             <Typography variant='body2' color='text.secondary'>
-                                No professional experience found.
+                                {noExperienceFound}
                             </Typography>
                         );
                     }
