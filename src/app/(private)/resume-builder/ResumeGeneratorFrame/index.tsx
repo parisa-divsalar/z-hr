@@ -22,8 +22,6 @@ import {
     InfoRow,
     FitScoreBadge,
     ActionButtons,
-    FeatureCard,
-    FeatureCardIcon,
     HeaderLeft,
     PurplePill,
     StyledDivider,
