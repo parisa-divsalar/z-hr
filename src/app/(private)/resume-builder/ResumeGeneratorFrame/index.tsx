@@ -141,23 +141,11 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
                                 </Typography>
                                 <PurplePill>{t.aiGeneration}</PurplePill>
                             </HeaderLeft>
-                            <MuiButton
-                                size='small'
-                                variant='outlined'
-                                endIcon={<ArrowIcon />}
-                                color='secondary'
-                                sx={{
-                                    '& .MuiButton-endIcon': {
-                                        marginLeft: '8px',
-                                    },
-                                }}
-                            >
-                                {t.goToPanel}
-                            </MuiButton>
+
                         </HeaderSection>
 
                         <Grid container spacing={2} sx={{ mt: 3 }}>
-                            <Grid size={{ xs: 12, sm: 6, lg: 5 }}>
+                            <Grid size={{ xs: 12, sm: 12, lg: 12 }}>
                                 {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mb: 1 }} />}
                                 {resumeInfo.map((info, index) => (
                                     <InfoRow key={index}>
@@ -205,28 +193,28 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
 
             <StyledDivider />
 
-            <Grid container spacing={{ xs: 2, sm: 3 }}>
-                {featureCards.map((card, index) => (
-                    <Grid key={index} size={{ xs: 12, sm: 6, lg: 4 }}>
-                        <FeatureCard
-                            onMouseEnter={() => setHoveredCard(index)}
-                            onMouseLeave={() => setHoveredCard(null)}
-                        >
-                            <FeatureCardIcon>
-                                {hoveredCard === index ? <LinkDarkIcon /> : <ArrowRightIcon />}
-                            </FeatureCardIcon>
-                            <Stack spacing={1}>
-                                <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
-                                    {card.title}
-                                </Typography>
-                                <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                                    {truncateText(card.description, 110)}
-                                </Typography>
-                            </Stack>
-                        </FeatureCard>
-                    </Grid>
-                ))}
-            </Grid>
+            {/*<Grid container spacing={{ xs: 2, sm: 3 }}>*/}
+            {/*    {featureCards.map((card, index) => (*/}
+            {/*        <Grid key={index} size={{ xs: 12, sm: 6, lg: 4 }}>*/}
+            {/*            <FeatureCard*/}
+            {/*                onMouseEnter={() => setHoveredCard(index)}*/}
+            {/*                onMouseLeave={() => setHoveredCard(null)}*/}
+            {/*            >*/}
+            {/*                <FeatureCardIcon>*/}
+            {/*                    {hoveredCard === index ? <LinkDarkIcon /> : <ArrowRightIcon />}*/}
+            {/*                </FeatureCardIcon>*/}
+            {/*                <Stack spacing={1}>*/}
+            {/*                    <Typography variant='subtitle1' color='text.primary' fontWeight='500'>*/}
+            {/*                        {card.title}*/}
+            {/*                    </Typography>*/}
+            {/*                    <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>*/}
+            {/*                        {truncateText(card.description, 110)}*/}
+            {/*                    </Typography>*/}
+            {/*                </Stack>*/}
+            {/*            </FeatureCard>*/}
+            {/*        </Grid>*/}
+            {/*    ))}*/}
+            {/*</Grid>*/}
         </Container>
     );
 };
