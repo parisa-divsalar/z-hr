@@ -11,6 +11,8 @@ import SkillGapAnalysis from '@/components/dashboard/SkillGapAnalysis';
 import SuggestedPositions from '@/components/dashboard/SuggestedPositions';
 import TopStats from '@/components/dashboard/TopStats';
 import { DashboardRoot } from '@/components/dashboard/styled';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type SuggestedJob = {
   id: string;
@@ -44,15 +46,17 @@ type DashboardClientProps = {
 };
 
 export default function DashboardClient({ topStats, resumeInProgress, suggestedJobs = [] }: DashboardClientProps) {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
   const creditsRemaining = Number(topStats.creditsRemaining ?? 0);
   const shouldShowCreditsDepletedBanner = creditsRemaining <= 0 && Boolean(resumeInProgress?.requestId);
   const isFirstResumeOnlyUser = Number(topStats.cvsCount) === 1;
   const hasAnyResume = Number(topStats.cvsCount) > 0;
 
   return (
-    <DashboardRoot>
+    <DashboardRoot key={locale}>
       <Typography variant='h5' fontWeight='500' color='text.primary'>
-        Dashboard
+        {t.title ?? 'Dashboard'}
       </Typography>
 
       <TopStats

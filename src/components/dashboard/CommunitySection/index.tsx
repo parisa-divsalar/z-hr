@@ -15,8 +15,10 @@ import {
   SectionHeader,
 } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
-const CommunityCard = ({ icon, title, subtitle }: { icon: 'tel' | 'insta'; title: string; subtitle: string }) => {
+const CommunityCard = ({ icon, title, subtitle, viewLabel, joinLabel }: { icon: 'tel' | 'insta'; title: string; subtitle: string; viewLabel: string; joinLabel: string }) => {
   const IconComponent = icon === 'tel' ? TelIcon : InstaIcon;
 
   return (
@@ -39,30 +41,33 @@ const CommunityCard = ({ icon, title, subtitle }: { icon: 'tel' | 'insta'; title
       </Stack>
       <Stack direction='row' spacing={2} justifyContent='center'>
         <MuiButton color='secondary' variant='text'>
-          View{' '}
+          {viewLabel}
         </MuiButton>
 
-        <MuiButton color='secondary'>Join </MuiButton>
+        <MuiButton color='secondary'>{joinLabel}</MuiButton>
       </Stack>
     </CommunityCardRoot>
   );
 };
 
 const CommunitySection = () => {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
+
   return (
     <Stack gap={2}>
       <SectionHeader>
         <Stack direction='row' gap={1} alignItems='center'>
           <HeadIcon />
           <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-            Community
+            {t.community ?? 'Community'}
           </Typography>
         </Stack>
-        <MuiButton text='More' color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
+        <MuiButton text={t.more ?? 'More'} color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
       </SectionHeader>
       <Stack gap={2}>
-        <CommunityCard icon='tel' title='Front end channel!' subtitle='Telegram — 2,638 Members' />
-        <CommunityCard icon='insta' title='Front end Instagram' subtitle='Instagram — 2,337 Followers' />
+        <CommunityCard icon='tel' title='Front end channel!' subtitle='Telegram — 2,638 Members' viewLabel={t.view ?? 'View'} joinLabel={t.join ?? 'Join'} />
+        <CommunityCard icon='insta' title='Front end Instagram' subtitle='Instagram — 2,337 Followers' viewLabel={t.view ?? 'View'} joinLabel={t.join ?? 'Join'} />
       </Stack>
     </Stack>
   );

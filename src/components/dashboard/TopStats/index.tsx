@@ -7,6 +7,8 @@ import Frame1Icon from '@/assets/images/dashboard/Frame1.svg';
 import Frame2Icon from '@/assets/images/dashboard/Frame2.svg';
 import Frame3Icon from '@/assets/images/dashboard/Frame3.svg';
 import { SmallCardBase, StatValueRow } from '@/components/dashboard/styled';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type TopStatsProps = {
   cvsCount: number;
@@ -21,6 +23,8 @@ export default function TopStats({
   creditsRemaining = 0,
   interviewPractices = 0,
 }: TopStatsProps) {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
   const mdColSize = shouldShowResumesCreatedCard ? 4 : 6;
 
   return (
@@ -31,7 +35,7 @@ export default function TopStats({
             <Frame1Icon />
             <Stack direction='column' spacing={0.5} ml={1}>
               <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                Credits Remaining
+                {t.creditsRemaining ?? 'Credits Remaining'}
               </Typography>
               <Typography variant='h5' fontWeight='500' color='text.primary'>
                 {creditsRemaining}
@@ -48,7 +52,7 @@ export default function TopStats({
               <Frame2Icon />
               <Stack direction='column' spacing={0.5} ml={1}>
                 <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                  Resumes Created
+                  {t.resumesCreated ?? 'Resumes Created'}
                 </Typography>
                 <Typography variant='h5' fontWeight='500' color='text.primary'>
                   {cvsCount}
@@ -65,7 +69,7 @@ export default function TopStats({
             <Frame3Icon />
             <Stack direction='column' spacing={0.5} ml={1}>
               <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                Interview Practices
+                {t.interviewPractices ?? 'Interview Practices'}
               </Typography>
               <StatValueRow>
                 <Typography variant='h5' fontWeight='500' color='text.primary'>

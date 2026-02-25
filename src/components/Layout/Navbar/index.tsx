@@ -393,12 +393,14 @@ const Navbar = () => {
             <Divider sx={{ my: 1.5 }} />
             <Stack gap={1}>
               <Typography variant='subtitle2' color='text.secondary'>
-                Dashboard
+                {(getMainTranslations(locale).sidebar as Record<string, string>).dashboard ?? 'Dashboard'}
               </Typography>
               <List disablePadding>
                 {sidebarMenuItems.map((item) => {
                   const isActiveItem = isSidebarMenuItemActive(item, pathname);
                   const MenuIconComponent = item.icon;
+                  const sidebarT = getMainTranslations(locale).sidebar as Record<string, string>;
+                  const label = sidebarT[item.translationKey] ?? item.label;
 
                   return (
                     <ListItem key={item.route} disablePadding>
@@ -417,7 +419,7 @@ const Navbar = () => {
                           <MenuIconComponent />
                         </ListItemIcon>
                         <ListItemText
-                          primary={item.label}
+                          primary={label}
                           primaryTypographyProps={{
                             fontWeight: isActiveItem ? 700 : 500,
                             color: isActiveItem ? 'text.primary' : 'text.secondary',

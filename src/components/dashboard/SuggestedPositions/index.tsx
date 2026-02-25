@@ -14,6 +14,8 @@ import Location from '@/assets/images/dashboard/location.svg';
 import { SectionHeader, SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiAlert from '@/components/UI/MuiAlert';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useAuthStore } from '@/store/auth';
 
 type SuggestedJob = {
@@ -48,18 +50,18 @@ function locationTypeLabel(locationType?: string) {
   return s;
 }
 
-function possessive(name: string) {
+function possessive(name: string, yourResumeLabel: string) {
   const n = String(name ?? '').trim();
-  if (!n) return 'Your Resume';
+  if (!n) return yourResumeLabel;
   const endsWithS = n.toLowerCase().endsWith('s');
   return `${n}${endsWithS ? '’' : '’s'} Resume`;
 }
 
-const SuggestedJobCard = ({ job }: { job: SuggestedJob }) => {
+const SuggestedJobCard = ({ job, t }: { job: SuggestedJob; t: Record<string, string> }) => {
   const date = toMMDDYYYY(job.postedDate);
   const type = locationTypeLabel(job.locationType);
   const subtitle = [date, type].filter(Boolean).join(' · ');
-  const resumeLabel = possessive(job.matchedResumeName);
+  const resumeLabel = possessive(job.matchedResumeName, t.yourResume ?? 'Your Resume');
 
   return (
     <SuggestedJobCardItem>
@@ -87,7 +89,7 @@ const SuggestedJobCard = ({ job }: { job: SuggestedJob }) => {
       </Typography>
 
       <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={1} px={2}>
-        Tech stack:{' '}
+        {t.techStack ?? 'Tech stack'}:{' '}
         {Array.isArray(job.techStack) && job.techStack.length > 0 ? job.techStack.join(', ') : '—'}
       </Typography>
 
@@ -97,7 +99,7 @@ const SuggestedJobCard = ({ job }: { job: SuggestedJob }) => {
           {Math.max(0, Math.min(100, Number(job.fitScore) || 0))}%{' '}
         </Typography>
         <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-          Fit with this Position
+          {t.fitWithPosition ?? 'Fit with this Position'}
         </Typography>
       </Stack>
       <Stack direction='row' gap={1} alignItems='center' px={2} mt={2}>
@@ -113,7 +115,7 @@ const SuggestedJobCard = ({ job }: { job: SuggestedJob }) => {
         </Stack>
 
         <MuiButton
-          text='Apply'
+          text={t.apply ?? 'Apply'}
           size='medium'
           color='secondary'
           sx={{ width: 247 }}
@@ -130,13 +132,14 @@ const SuggestedJobCard = ({ job }: { job: SuggestedJob }) => {
 
 const SuggestedPositions = ({ suggestedJobs }: { suggestedJobs?: SuggestedJob[] | null }) => {
   const router = useRouter();
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
   const accessToken = useAuthStore((s) => s.accessToken);
   const [internalJobs, setInternalJobs] = useState<SuggestedJob[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const jobs = useMemo(() => {
-    // If parent passes jobs (even empty array), trust it.
     if (Array.isArray(suggestedJobs)) return suggestedJobs;
     return internalJobs;
   }, [suggestedJobs, internalJobs]);
@@ -156,10 +159,10 @@ const SuggestedPositions = ({ suggestedJobs }: { suggestedJobs?: SuggestedJob[] 
       })
       .catch(() => {
         setInternalJobs([]);
-        setError('Failed to load suggested positions.');
+        setError(t.failedToLoadPositions ?? 'Failed to load suggested positions.');
       })
       .finally(() => setIsLoading(false));
-  }, [suggestedJobs, accessToken]);
+  }, [suggestedJobs, accessToken, locale]);
 
   const navigateToHistory = () => {
     router.push('/history');
@@ -170,11 +173,11 @@ const SuggestedPositions = ({ suggestedJobs }: { suggestedJobs?: SuggestedJob[] 
         <Stack direction='row' gap={1} alignItems='center'>
           <HeadIcon />
           <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-            Suggested Positions
+            {t.suggestedPositions ?? 'Suggested Positions'}
           </Typography>
         </Stack>
         <MuiButton
-          text='More'
+          text={t.more ?? 'More'}
           color='secondary'
           variant='text'
           endIcon={<ArrowRightIcon />}
@@ -189,14 +192,14 @@ const SuggestedPositions = ({ suggestedJobs }: { suggestedJobs?: SuggestedJob[] 
         ) : jobs.length > 0 ? (
           jobs.map((job) => (
             <Grid key={job.id} size={{ xs: 12, md: 6 }}>
-              <SuggestedJobCard job={job} />
+              <SuggestedJobCard job={job} t={t} />
             </Grid>
           ))
         ) : (
           <Grid size={{ xs: 12 }}>
             <SuggestedJobCardItem sx={{ p: 2, boxShadow: 1 }}>
               <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                {isLoading ? 'Loading suggested positions…' : 'No suggested positions yet.'}
+                {isLoading ? (t.loadingSuggested ?? 'Loading suggested positions…') : (t.noSuggested ?? 'No suggested positions yet.')}
               </Typography>
             </SuggestedJobCardItem>
           </Grid>

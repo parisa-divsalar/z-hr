@@ -8,24 +8,29 @@ import PositionIcon from '@/assets/images/dashboard/position.svg';
 import ResumeIllustration from '@/assets/images/dashboard/resume.svg';
 import { SectionHeader } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 const CoverLetterSection = () => {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
+
   return (
     <Stack gap={2}>
       <SectionHeader>
         <Stack direction='row' gap={1} alignItems='center'>
           <HeadIcon />
           <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-            Cover Letter
+            {t.coverLetter ?? 'Cover Letter'}
           </Typography>
         </Stack>
-        <MuiButton text='More' color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
+        <MuiButton text={t.more ?? 'More'} color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
       </SectionHeader>
 
       <Box
         sx={{
           borderRadius: 2,
-          border: (t) => `1px solid ${t.palette.grey[100]}`,
+          border: (theme) => `1px solid ${theme.palette.grey[100]}`,
           boxShadow: 1,
           bgcolor: '#fff',
           p: { xs: 2, sm: 2.5 },
@@ -62,7 +67,7 @@ const CoverLetterSection = () => {
                 fontWeight='500'
                 sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
               >
-                Draft Your Initial Cover Letter
+                {t.draftCoverLetter ?? 'Draft Your Initial Cover Letter'}
               </Typography>
               <Stack direction='row' gap={1} alignItems='center' sx={{ minWidth: 0 }}>
                 <PositionIcon />
@@ -85,13 +90,13 @@ const CoverLetterSection = () => {
             justifyContent={{ xs: 'space-between', sm: 'flex-end' }}
           >
             <MuiButton
-              text='Help'
+              text={t.help ?? 'Help'}
               color='secondary'
               variant='text'
               sx={{ minWidth: 'auto', px: 1, textTransform: 'none' }}
             />
             <MuiButton
-              text='Activate'
+              text={t.activate ?? 'Activate'}
               color='secondary'
               sx={{ borderRadius: 2, px: 3, minWidth: 110, height: 40 }}
             />

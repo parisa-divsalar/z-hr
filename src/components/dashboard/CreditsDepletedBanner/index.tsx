@@ -6,9 +6,13 @@ import { useRouter } from 'next/navigation';
 import ResumeIcon from '@/assets/images/dashboard/resume.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import { PublicRoutes } from '@/config/routes';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 export default function CreditsDepletedBanner() {
   const router = useRouter();
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
 
   return (
     <Box
@@ -47,16 +51,16 @@ export default function CreditsDepletedBanner() {
 
           <Stack gap={0.25} sx={{ minWidth: 0 }}>
             <Typography variant='subtitle2' color='text.primary' fontWeight={500} noWrap>
-              Looks like your current credits have wrapped up!
+              {t.creditsDepletedTitle ?? 'Looks like your current credits have wrapped up!'}
             </Typography>
             <Typography variant='body2' color='text.secondary' fontWeight={400} sx={{ whiteSpace: 'nowrap' }}>
-              Recharge now to continue your resume.
+              {t.creditsDepletedDesc ?? 'Recharge now to continue your resume.'}
             </Typography>
           </Stack>
         </Stack>
 
         <MuiButton
-          text='See Our Plans'
+          text={t.seeOurPlans ?? 'See Our Plans'}
           color='secondary'
           sx={{
             height: 36,

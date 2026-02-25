@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 
+import KeyboardArrowLeftRoundedIcon from '@mui/icons-material/KeyboardArrowLeftRounded';
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { List, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
@@ -12,6 +13,8 @@ import { ItemButton, SidebarContainer, ItemIcon, SidebarItemText } from '@/compo
 import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
 import { isSidebarVisible, PrivateRoutes } from '@/config/routes';
 import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useAuthStore } from '@/store/auth';
 
 const SideBar = () => {
@@ -19,8 +22,11 @@ const SideBar = () => {
   const router = useRouter();
   const { logout } = useAuthStore();
   const theme = useTheme();
+  const locale = useLocaleStore((s) => s.locale);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { access, isLoading: isAccessLoading } = useMoreFeaturesAccess({ enabled: true });
+  const sidebarT = getMainTranslations(locale).sidebar as Record<string, string>;
+  const isRtl = locale === 'fa';
 
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
   const [lockedDialogOpen, setLockedDialogOpen] = useState(false);
@@ -42,14 +48,16 @@ const SideBar = () => {
     // Lock specific dashboard areas based on MoreFeatures selection.
     // (These keys are derived from pricing `feature_name` via `featureKeyFromTitle`.)
     if (route === PrivateRoutes.learningHub) {
-      return { locked: !enabled.has('learning_hub'), label: 'Learning Hub' };
+      return { locked: !enabled.has('learning_hub'), label: sidebarT.learningHub ?? 'Learning Hub' };
     }
     if (route === PrivateRoutes.interView || route === PrivateRoutes.chatInterView || route === PrivateRoutes.voiceInterView) {
       const ok = enabled.has('question_interview') || enabled.has('text_interview') || enabled.has('voice_interview');
-      return { locked: !ok, label: 'Interview' };
+      return { locked: !ok, label: sidebarT.interview ?? 'Interview' };
     }
     return { locked: false };
   };
+
+  const dashboardT = getMainTranslations(locale).dashboard as Record<string, string>;
 
   return (
     <SidebarContainer>
@@ -61,7 +69,7 @@ const SideBar = () => {
           pt={3}
           sx={{ display: { xs: 'none', md: 'block' } }}
         >
-          Menu
+          {sidebarT.menu ?? 'Menu'}
         </Typography>
         <List>
           {sidebarMenuItems.map((item) => {
@@ -69,6 +77,7 @@ const SideBar = () => {
             const MenuIcon = item.icon;
             const lock = isRouteLocked(item.route);
             const locked = lock.locked;
+            const label = sidebarT[item.translationKey] ?? item.label;
 
             return (
               <ItemButton
@@ -78,7 +87,7 @@ const SideBar = () => {
                 aria-disabled={locked}
                 onClick={() => {
                   if (locked) {
-                    setLockedDialogFeature(lock.label || item.label);
+                    setLockedDialogFeature(lock.label || label);
                     setLockedDialogOpen(true);
                     return;
                   }
@@ -88,13 +97,18 @@ const SideBar = () => {
                 <ItemIcon>
                   <MenuIcon />
                 </ItemIcon>
-                <SidebarItemText primary={item.label} />
+                <SidebarItemText primary={label} />
 
-                {isActive && (
-                  <KeyboardArrowRightRoundedIcon
-                    sx={{ display: { xs: 'none', md: 'inline-flex' } }}
-                  />
-                )}
+                {isActive &&
+                  (isRtl ? (
+                    <KeyboardArrowLeftRoundedIcon
+                      sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+                    />
+                  ) : (
+                    <KeyboardArrowRightRoundedIcon
+                      sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+                    />
+                  ))}
               </ItemButton>
             );
           })}
@@ -103,7 +117,7 @@ const SideBar = () => {
 
       <Stack>
         <ItemButton onClick={() => setOpenLogoutDialog(true)}>
-          <SidebarItemText primary='Log out' sx={{ color: '#F77A79' }} />
+          <SidebarItemText primary={sidebarT.logOut ?? 'Log out'} sx={{ color: '#F77A79' }} />
 
           <LogoutRoundedIcon sx={{ color: '#F77A79' }} fontSize='small' />
         </ItemButton>
@@ -115,7 +129,7 @@ const SideBar = () => {
           pb={3}
           sx={{ display: { xs: 'none', md: 'block' } }}
         >
-          Version 1.3.23
+          {sidebarT.version ?? 'Version'} 1.3.23
         </Typography>
       </Stack>
 
@@ -128,10 +142,10 @@ const SideBar = () => {
       <PlanRequiredDialog
         open={lockedDialogOpen}
         onClose={() => setLockedDialogOpen(false)}
-        title='Feature locked'
-        headline={`"${lockedDialogFeature}" is disabled for your account.`}
-        bodyText='Enable it in More Features (Step 3) to unlock it for your dashboard.'
-        primaryLabel='Enable in More Features'
+        title={dashboardT.featureLocked ?? 'Feature locked'}
+        headline={(dashboardT.featureLockedHeadline ?? '"{{name}}" is disabled for your account.').replace('{{name}}', lockedDialogFeature)}
+        bodyText={dashboardT.featureLockedBody ?? 'Enable it in More Features (Step 3) to unlock it for your dashboard.'}
+        primaryLabel={dashboardT.enableInMoreFeatures ?? 'Enable in More Features'}
         primaryHref='/resume-builder?step=3'
       />
     </SidebarContainer>

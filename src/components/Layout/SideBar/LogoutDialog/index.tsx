@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 
 import MuiButton from '@/components/UI/MuiButton';
 import { PublicRoutes } from '@/config/routes';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import { ActionContainer, DialogContainer, HeaderContainer, StackContainer, StackContent } from './styled';
 
@@ -18,6 +20,8 @@ interface LogoutDialogProps {
 
 const LogoutDialog: FunctionComponent<LogoutDialogProps> = (props) => {
     const router = useRouter();
+    const locale = useLocaleStore((s) => s.locale);
+    const sidebarT = getMainTranslations(locale).sidebar as Record<string, string>;
 
     const { open, onClose, onConfirm } = props;
 
@@ -31,7 +35,7 @@ const LogoutDialog: FunctionComponent<LogoutDialogProps> = (props) => {
             <StackContainer>
                 <HeaderContainer direction='row'>
                     <Typography color='text.primary' variant='body1' fontWeight={500}>
-                        Log out
+                        {sidebarT.logoutTitle ?? 'Log out'}
                     </Typography>
                     <IconButton onClick={onClose}>
                         <CloseRoundedIcon />
@@ -40,7 +44,7 @@ const LogoutDialog: FunctionComponent<LogoutDialogProps> = (props) => {
 
                 <StackContent>
                     <Typography color='text.primary' fontWeight={400} variant='body2' mx={2}>
-                        Are you sure you want to log out?
+                        {sidebarT.logoutConfirm ?? 'Are you sure you want to log out?'}
                     </Typography>
                 </StackContent>
 
@@ -48,12 +52,11 @@ const LogoutDialog: FunctionComponent<LogoutDialogProps> = (props) => {
 
                 <ActionContainer direction='row'>
                     <MuiButton fullWidth color='secondary' variant='outlined' onClick={onClose}>
-                        No
+                        {sidebarT.no ?? 'No'}
                     </MuiButton>
                     <MuiButton fullWidth variant='contained' color='error' onClick={handleConfirm}>
-                        Yes
+                        {sidebarT.yes ?? 'Yes'}
                     </MuiButton>
-                    
                 </ActionContainer>
             </StackContainer>
         </DialogContainer>

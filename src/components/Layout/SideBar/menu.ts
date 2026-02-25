@@ -12,51 +12,71 @@ import { normalizeRoute, PrivateRoutes } from '@/config/routes';
 
 export type SidebarMenuItem = {
     label: string;
+    translationKey: keyof typeof sidebarTranslationKeys;
     route: string;
     icon: ComponentType<SVGProps<SVGSVGElement>>;
     paths?: string[];
 };
 
+export const sidebarTranslationKeys = {
+    dashboard: 'dashboard',
+    resumeBuilder: 'resumeBuilder',
+    history: 'history',
+    payment: 'payment',
+    learningHub: 'learningHub',
+    interview: 'interview',
+    setting: 'setting',
+    support: 'support',
+} as const;
+
 export const sidebarMenuItems: SidebarMenuItem[] = [
     {
         label: 'Dashboard',
+        translationKey: 'dashboard',
         route: PrivateRoutes.dashboard,
         icon: DashboardRoundedIcon,
     },
     {
         label: 'Resume Builder',
+        translationKey: 'resumeBuilder',
         route: PrivateRoutes.resumeBuilder,
         icon: ArticleRoundedIcon,
     },
     {
         label: 'History',
+        translationKey: 'history',
         route: PrivateRoutes.history,
         icon: HistoryRoundedIcon,
         paths: [PrivateRoutes.history, PrivateRoutes.historyEdite],
     },
     {
         label: 'Payment',
+        translationKey: 'payment',
         route: PrivateRoutes.payment,
         icon: CreditCardRoundedIcon,
     },
     {
         label: 'Learning Hub',
+        translationKey: 'learningHub',
         route: PrivateRoutes.learningHub,
         icon: SchoolRoundedIcon,
     },
     {
         label: 'Interview',
+        translationKey: 'interview',
         route: PrivateRoutes.interView,
         icon: MicRoundedIcon,
         paths: [PrivateRoutes.interView, PrivateRoutes.chatInterView, PrivateRoutes.voiceInterView],
     },
     {
         label: 'Setting',
+        translationKey: 'setting',
         route: PrivateRoutes.setting,
         icon: SettingsRoundedIcon,
     },
     {
         label: 'Support',
+        translationKey: 'support',
         route: PrivateRoutes.support,
         icon: HeadphonesRoundedIcon,
     },

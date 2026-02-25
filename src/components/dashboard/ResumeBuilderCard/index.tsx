@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { ResumeBuilderCardRoot } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import { PrivateRoutes, PublicRoutes } from '@/config/routes';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 type ResumeInProgress = {
   requestId: string;
@@ -31,28 +33,30 @@ function toMMDDYYYY(value: string) {
   return `${mm}/${dd}/${yyyy}`;
 }
 
-function formatStepLabel(step?: string) {
+function formatStepLabel(step?: string, t?: Record<string, string>) {
   const raw = String(step ?? '').trim();
-  if (!raw) return 'In progress';
+  if (!raw) return t?.inProgress ?? 'In progress';
   const lower = raw.toLowerCase();
-  if (lower === 'completed') return 'Final step';
+  if (lower === 'completed') return t?.finalStep ?? 'Final step';
   if (lower.includes('step') || lower.includes('completed') || lower.includes('incomplete')) {
     return raw.replace(/_/g, ' ');
   }
   // e.g. "1" / "2" / "3"
-  if (/^\d+$/.test(raw)) return `Step ${raw}`;
+  if (/^\d+$/.test(raw)) return `${t?.step ?? 'Step'} ${raw}`;
   return raw.replace(/_/g, ' ');
 }
 
 const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) => {
   const router = useRouter();
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
   const [isStartingNew, setIsStartingNew] = useState(false);
   const hasDraft = Boolean(resumeInProgress?.requestId);
   const isBlockedByCredits = hasDraft && Number(creditsRemaining) <= 0;
 
   const meta = hasDraft
     ? {
-        stepLabel: formatStepLabel(resumeInProgress?.step),
+        stepLabel: formatStepLabel(resumeInProgress?.step, t),
         date: toMMDDYYYY(String(resumeInProgress?.updatedAt ?? '')),
         progress: `${Math.max(0, Number(resumeInProgress?.completedSections ?? 0))}/${Math.max(
           1,
@@ -94,9 +98,7 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
       return;
     }
 
-    const ok = window.confirm(
-      'Start a new resume? This will discard your current in-progress resume draft.',
-    );
+    const ok = window.confirm(t.startNewConfirm ?? 'Start a new resume? This will discard your current in-progress resume draft.');
     if (!ok) return;
 
     setIsStartingNew(true);
@@ -125,13 +127,13 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
       >
         <Stack gap={0.75} sx={{ minWidth: 0 }}>
           <Typography variant='subtitle1' color='text.primary' fontWeight='500'>
-            Resume Builder
+            {t.resumeBuilder ?? 'Resume Builder'}
           </Typography>
 
           {meta ? (
             <Stack direction='row' gap={2} alignItems='center' sx={{ flexWrap: 'wrap' }}>
               <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                {isBlockedByCredits ? 'Paused' : meta.stepLabel}
+                {isBlockedByCredits ? (t.paused ?? 'Paused') : meta.stepLabel}
               </Typography>
               <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
                 •
@@ -151,14 +153,14 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
                     •
                   </Typography>
                   <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                    Credits finished
+                    {t.creditsFinished ?? 'Credits finished'}
                   </Typography>
                 </>
               ) : null}
             </Stack>
           ) : (
             <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-              Start building your first resume
+              {t.startBuildingFirst ?? 'Start building your first resume'}
             </Typography>
           )}
         </Stack>
@@ -169,7 +171,7 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
           sx={{ width: { xs: '100%', sm: 'auto' }, alignSelf: { xs: 'stretch', sm: 'center' } }}
         >
           <MuiButton
-            text={!hasDraft ? 'Start' : isBlockedByCredits ? 'Recharge & continue' : 'Continue'}
+            text={!hasDraft ? (t.start ?? 'Start') : isBlockedByCredits ? (t.rechargeAndContinue ?? 'Recharge & continue') : (t.continue ?? 'Continue')}
             color='secondary'
             sx={{
               height: 40,
@@ -182,7 +184,7 @@ const ResumeBuilderCard = ({ resumeInProgress, creditsRemaining = 0 }: Props) =>
 
           {hasDraft && !isBlockedByCredits ? (
             <MuiButton
-              text='Start new'
+              text={t.startNew ?? 'Start new'}
               variant='outlined'
               color='secondary'
               loading={isStartingNew}

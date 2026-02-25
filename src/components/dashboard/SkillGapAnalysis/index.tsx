@@ -14,6 +14,8 @@ import { SectionHeader, SuggestedJobCardItem } from '@/components/dashboard/styl
 import MuiButton from '@/components/UI/MuiButton';
 import MuiAlert from '@/components/UI/MuiAlert';
 import { usePlanGate } from '@/hooks/usePlanGate';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useAuthStore } from '@/store/auth';
 
 type ResumeListItem = {
@@ -23,15 +25,17 @@ type ResumeListItem = {
   createdAt?: string | null;
 };
 
-function possessive(name: string) {
+function possessive(name: string, yourResumeLabel: string) {
   const n = String(name ?? '').trim();
-  if (!n) return 'Your Resume';
+  if (!n) return yourResumeLabel;
   const endsWithS = n.toLowerCase().endsWith('s');
-  return `${n}${endsWithS ? '’' : '’s'} Resume`;
+  return `${n}${endsWithS ? "'" : "'s"} Resume`;
 }
 
 const SkillGapAnalysis = () => {
   const router = useRouter();
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).dashboard as Record<string, string>;
   const accessToken = useAuthStore((s) => s.accessToken);
   const { guardAction, planDialog } = usePlanGate();
 
@@ -61,13 +65,13 @@ const SkillGapAnalysis = () => {
       })
       .catch(() => {
         setResumes([]);
-        setError('Failed to load your resumes.');
+        setError('failedToLoadResumes');
       })
       .finally(() => setIsLoading(false));
   }, [accessToken]);
 
   const latestResume = useMemo(() => (resumes.length > 0 ? resumes[0] : null), [resumes]);
-  const resumeLabel = possessive(latestResume?.displayName ?? '');
+  const resumeLabel = possessive(latestResume?.displayName ?? '', t.yourResume ?? 'Your Resume');
 
   const openSkillGap = () => {
     if (!latestResume?.requestId) return;
@@ -81,11 +85,11 @@ const SkillGapAnalysis = () => {
         <Stack direction='row' gap={1} alignItems='center'>
           <HeadIcon />
           <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-            Skill Gap Analysis
+            {t.skillGapAnalysis ?? 'Skill Gap Analysis'}
           </Typography>
         </Stack>
         <MuiButton
-          text='More'
+          text={t.more ?? 'More'}
           color='secondary'
           variant='text'
           endIcon={<ArrowRightIcon />}
@@ -155,29 +159,29 @@ const SkillGapAnalysis = () => {
 
               <Stack alignItems='center' gap={0.75}>
                 <Typography variant='subtitle1' color='text.primary' fontWeight='500' textAlign='center'>
-                  Identify Your Skill Gaps
+                  {t.identifySkillGaps ?? 'Identify Your Skill Gaps'}
                 </Typography>
                 <Stack direction='row' gap={1} alignItems='center'>
                   <PositionIcon />
                   <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                    {isLoading ? 'Loading…' : resumeLabel}
+                    {isLoading ? (t.loading ?? 'Loading…') : resumeLabel}
                   </Typography>
                 </Stack>
               </Stack>
             </Stack>
 
-            {error && <MuiAlert severity='error' message={error} />}
+            {error && <MuiAlert severity='error' message={t[error] ?? error} />}
 
             <Stack direction='row' justifyContent='space-between' alignItems='center'>
               <MuiButton
-                text='Help'
+                text={t.help ?? 'Help'}
                 color='secondary'
                 variant='text'
                 sx={{ minWidth: 'auto', px: 1, textTransform: 'none' }}
                 onClick={() => router.push('/history')}
               />
               <MuiButton
-                text='Activate'
+                text={t.activate ?? 'Activate'}
                 color='secondary'
                 sx={{ borderRadius: 2, px: 3, minWidth: 120, height: 40 }}
                 disabled={!latestResume?.requestId}
@@ -193,7 +197,7 @@ const SkillGapAnalysis = () => {
               height: '100%',
               minHeight: 240,
               borderRadius: 2,
-              border: (t) => `2px dashed ${t.palette.grey[200]}`,
+              border: (theme) => `2px dashed ${theme.palette.grey[200]}`,
               display: 'grid',
               placeItems: 'center',
               bgcolor: '#fff',
@@ -203,7 +207,7 @@ const SkillGapAnalysis = () => {
             <Stack alignItems='center' gap={1}>
               <Typography sx={{ fontSize: 44, color: '#4D49FC', lineHeight: 1 }}>+</Typography>
               <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                {latestResume?.requestId ? 'Activate Now' : 'Create a resume first'}
+                {latestResume?.requestId ? (t.activateNow ?? 'Activate Now') : (t.createResumeFirst ?? 'Create a resume first')}
               </Typography>
             </Stack>
           </Box>
