@@ -114,7 +114,6 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
 
     return (
         <Container dir={dir} sx={{ direction: dir }}>
-            {/* رندر مخفی فقط برای خروجی PDF؛ پیش‌نمایش در صفحه نشان داده نمی‌شود */}
             <div style={{ position: 'relative', overflow: 'hidden', height: 0 }}>
                 <div
                     aria-hidden

@@ -11,7 +11,9 @@ import MuiButton from '@/components/UI/MuiButton';
 import MuiInput from '@/components/UI/MuiInput';
 import { addCoverLetter } from '@/services/cv/add-cover-letter';
 import { getCoverLetter } from '@/services/cv/get-cover-letter';
+import { getMainTranslations } from '@/locales/main';
 import { useAuthStore } from '@/store/auth';
+import { useLocaleStore } from '@/store/common';
 
 import {
     ActionContainer,
@@ -216,7 +218,7 @@ const extractCoverLetterRequestId = (payload: unknown): string | null => {
     return null;
 };
 
-const getErrorMessage = (error: any): string => {
+const getErrorMessage = (error: any, fallback: string): string => {
     const maybe =
         error?.response?.data?.error?.message ??
         error?.response?.data?.error ??
@@ -225,7 +227,7 @@ const getErrorMessage = (error: any): string => {
         error?.toString?.();
 
     if (typeof maybe === 'string' && maybe.trim()) return maybe;
-    return 'Something went wrong';
+    return fallback;
 };
 
 const createEmptyValues = (defaults?: Partial<CreateCoverLetterValues>): CreateCoverLetterValues => ({
@@ -236,6 +238,8 @@ const createEmptyValues = (defaults?: Partial<CreateCoverLetterValues>): CreateC
 });
 
 export default function CreateCoverLetterDialog({ open, onClose, onCreated, defaultValues, resumeRequestId }: Props) {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).historyEdite.createCoverLetterDialog;
     const userId = useAuthStore((s) => s.accessToken);
     const [values, setValues] = useState<CreateCoverLetterValues>(() => createEmptyValues(defaultValues));
     const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof CreateCoverLetterValues, string>>>({});
@@ -262,10 +266,10 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
 
     const validate = (): boolean => {
         const next: Partial<Record<keyof CreateCoverLetterValues, string>> = {};
-        if (!values.companyName.trim()) next.companyName = 'Company name is required';
-        if (!values.positionTitle.trim()) next.positionTitle = 'Position title is required';
-        if (!values.cvContent.trim()) next.cvContent = 'CV content is required';
-        if (!values.jobDescription.trim()) next.jobDescription = 'Job description is required';
+        if (!values.companyName.trim()) next.companyName = t.companyRequired;
+        if (!values.positionTitle.trim()) next.positionTitle = t.positionRequired;
+        if (!values.cvContent.trim()) next.cvContent = t.cvContentRequired;
+        if (!values.jobDescription.trim()) next.jobDescription = t.jobDescriptionRequired;
 
         setFieldErrors(next);
         return Object.keys(next).length === 0;
@@ -300,7 +304,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                 coverLetterText = extractCoverLetterText(res);
             }
 
-            if (!coverLetterText) throw new Error('Cover letter is not ready yet. Please try again in a moment.');
+            if (!coverLetterText) throw new Error(t.notReadyYet);
 
             onCreated({
                 values: {
@@ -316,7 +320,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
             onClose();
         } catch (e: any) {
             console.error('addCoverLetter failed', e);
-            setSubmitError(getErrorMessage(e));
+            setSubmitError(getErrorMessage(e, t.somethingWentWrong));
         } finally {
             setIsSubmitting(false);
         }
@@ -327,9 +331,9 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
             <StackContainer>
                 <HeaderContainer direction='row'>
                     <Typography color='text.primary' variant='subtitle1' fontWeight={500}>
-                        Create cover letter
+                        {t.title}
                     </Typography>
-                    <IconButton onClick={onClose} aria-label='Close'>
+                    <IconButton onClick={onClose} aria-label={t.close}>
                         <CloseRoundedIcon />
                     </IconButton>
                 </HeaderContainer>
@@ -352,7 +356,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                             <MuiAlert
                                 severity='error'
                                 message={<span title={submitError}>{submitError}</span>}
-                                dismissLabel='Close'
+                                dismissLabel={t.dismissLabel}
                                 onDismiss={() => setSubmitError(null)}
                                 sx={{
                                     my: 0,
@@ -372,8 +376,8 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.25}>
                             <Stack sx={{ flex: 1, minWidth: 0 }}>
                                 <MuiInput
-                                    label='Company name'
-                                    placeholder='Company name'
+                                    label={t.companyName}
+                                    placeholder={t.companyNamePlaceholder}
                                     value={values.companyName}
                                     onChange={(v) => setValues((prev) => ({ ...prev, companyName: String(v ?? '') }))}
                                     error={Boolean(fieldErrors.companyName)}
@@ -383,7 +387,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                             </Stack>
                             <Stack sx={{ flex: 1, minWidth: 0 }}>
                                 <MuiInput
-                                    label='Position title'
+                                    label={t.positionTitle}
                                     value={values.positionTitle}
                                     onChange={(v) => setValues((prev) => ({ ...prev, positionTitle: String(v ?? '') }))}
                                     error={Boolean(fieldErrors.positionTitle)}
@@ -398,12 +402,12 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                                 variant='caption'
                                 color={fieldErrors.cvContent ? 'error.main' : 'text.secondary'}
                             >
-                                Job Description
+                                {t.jobDescriptionLabel}
                             </Typography>
                         </Stack>
                         <ContainerSkill direction='row' active={Boolean(values.cvContent.trim())}>
                             <InputContent
-                                placeholder='Paste your CV content...'
+                                placeholder={t.pasteCvContent}
                                 value={values.cvContent}
                                 wrap='soft'
                                 maxLength={20000}
@@ -423,12 +427,12 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                                 variant='caption'
                                 color={fieldErrors.jobDescription ? 'error.main' : 'text.secondary'}
                             >
-                                Subject
+                                {t.subject}
                             </Typography>
                             <TextField
                                 value={values.jobDescription}
                                 onChange={(e) => setValues((prev) => ({ ...prev, jobDescription: e.target.value }))}
-                                placeholder='Job description'
+                                placeholder={t.jobDescriptionPlaceholder}
                                 fullWidth
                                 error={Boolean(fieldErrors.jobDescription)}
                                 helperText={fieldErrors.jobDescription ?? ''}
@@ -442,7 +446,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
 
                 <ActionContainer direction={{ xs: 'column', sm: 'row' }}>
                     <MuiButton fullWidth color='secondary' variant='outlined' onClick={onClose} disabled={isSubmitting}>
-                        Cancel
+                        {t.cancel}
                     </MuiButton>
                     <MuiButton
                         fullWidth
@@ -452,7 +456,7 @@ export default function CreateCoverLetterDialog({ open, onClose, onCreated, defa
                         disabled={!canSubmit}
                         onClick={handleSubmit}
                     >
-                        Create
+                        {t.create}
                     </MuiButton>
                 </ActionContainer>
             </StackContainer>

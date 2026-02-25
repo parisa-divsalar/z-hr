@@ -16,6 +16,10 @@ import { usePlanGate } from '@/hooks/usePlanGate';
 import { getCoverLetter } from '@/services/cv/get-cover-letter';
 import { listCoverLetters } from '@/services/cv/list-cover-letters';
 import { updateCoverLetter } from '@/services/cv/update-cover-letter';
+import { useTranslatedSummary } from '@/components/Landing/Wizard/Step3/ResumeEditor/hooks/useTranslatedSummary';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
+import type { Locale } from '@/store/common/type';
 import { useWizardStore } from '@/store/wizard/useWizardStore';
 
 import CreateCoverLetterDialog, { CreateCoverLetterValues } from './CreateCoverLetterDialog';
@@ -35,6 +39,194 @@ type CoverLetterItem = {
 };
 
 const normalizeCoverLetter = (text: string) => text.replace(/\r\n/g, '\n').trim();
+
+/** Decode numeric HTML entities (e.g. &#10; -> newline) so they display correctly. */
+function decodeHtmlNumericEntities(text: string): string {
+    return String(text ?? '').replace(/&#(\d+);/g, (_, code) => {
+        const n = parseInt(code, 10);
+        return n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : `&#${code};`;
+    });
+}
+
+/** Renders a single cover letter card; when locale is fa, title and body from API are translated to Persian. */
+function CoverLetterCard({
+    item,
+    locale,
+    t,
+    resumeRequestId,
+    isFetching,
+    onStartEdit,
+    onSave,
+    onCancel,
+    onUpdateDraft,
+    onCopy,
+    onRefresh,
+}: {
+    item: CoverLetterItem;
+    locale: Locale;
+    t: ReturnType<typeof getMainTranslations>['historyEdite']['coverLetter'];
+    resumeRequestId: string | null;
+    isFetching: boolean;
+    onStartEdit: (id: string) => void;
+    onSave: (id: string) => void;
+    onCancel: (id: string) => void;
+    onUpdateDraft: (id: string, value: string) => void;
+    onCopy: (id: string) => void;
+    onRefresh: () => void;
+}) {
+    const { displayText: displayTitle } = useTranslatedSummary(item.title, locale);
+    const { displayText: displayBody } = useTranslatedSummary(item.body, locale);
+
+    const iconButtonSx = {
+        width: 40,
+        height: 40,
+        minWidth: 40,
+        minHeight: 40,
+        p: 0,
+        borderRadius: 2,
+        border: 'none',
+        backgroundColor: 'transparent',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'visible',
+        '&:hover': { backgroundColor: 'grey.50' },
+        '& svg': { width: 24, height: 24, flexShrink: 0, display: 'block' },
+        '& svg > rect': { display: 'none' },
+    } as const;
+
+    const rawTitle = item.isEditing ? item.title : displayTitle;
+    const rawBody = item.isEditing ? item.draftBody : displayBody;
+    const titleToShow = decodeHtmlNumericEntities(rawTitle);
+    const bodyToShow = decodeHtmlNumericEntities(rawBody);
+    const isRtl = locale === 'fa';
+
+    return (
+        <Stack
+            gap={2}
+            dir={isRtl ? 'rtl' : 'ltr'}
+            sx={{
+                border: '1px solid',
+                borderColor: 'grey.100',
+                borderRadius: 2,
+                backgroundColor: 'common.white',
+                px: 2.5,
+                py: 2.25,
+                minWidth: 0,
+                direction: isRtl ? 'rtl' : 'ltr',
+                textAlign: isRtl ? 'right' : 'left',
+            }}
+        >
+            <Stack
+                direction='row'
+                alignItems='baseline'
+                justifyContent='space-between'
+                gap={1}
+                sx={{ minWidth: 0, flexDirection: isRtl ? 'row-reverse' : 'row' }}
+            >
+                <Typography
+                    variant='body1'
+                    fontWeight={492}
+                    color='text.primary'
+                    sx={{
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        minWidth: 0,
+                        textAlign: isRtl ? 'right' : 'left',
+                    }}
+                >
+                    {titleToShow}
+                </Typography>
+
+                {resumeRequestId && item.isForCurrentResume === false && (
+                    <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+                        {t.otherResume}
+                    </Typography>
+                )}
+            </Stack>
+
+            {item.isEditing ? (
+                <TextField
+                    value={item.draftBody}
+                    onChange={(e) => onUpdateDraft(item.id, e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape') onCancel(item.id);
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) onSave(item.id);
+                    }}
+                    placeholder={t.placeholder}
+                    multiline
+                    minRows={6}
+                    maxRows={14}
+                    variant='standard'
+                    size='small'
+                    fullWidth
+                    autoFocus={false}
+                    InputProps={{ disableUnderline: true }}
+                    sx={{
+                        minWidth: 0,
+                        direction: isRtl ? 'rtl' : 'ltr',
+                        '& .MuiInputBase-root': { alignItems: 'flex-start' },
+                        '& .MuiInputBase-input': {
+                            fontSize: '0.875rem',
+                            lineHeight: 1.5,
+                            whiteSpace: 'pre-wrap',
+                            textAlign: isRtl ? 'right' : 'left',
+                            direction: isRtl ? 'rtl' : 'ltr',
+                        },
+                    }}
+                />
+            ) : (
+                <Typography
+                    variant='body2'
+                    color='text.primary'
+                    sx={{
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                        whiteSpace: 'pre-line',
+                        textAlign: isRtl ? 'right' : 'left',
+                        direction: isRtl ? 'rtl' : 'ltr',
+                    }}
+                >
+                    {bodyToShow}
+                </Typography>
+            )}
+
+            <Stack
+                direction='row'
+                alignItems='center'
+                gap={1}
+                sx={{ flexDirection: isRtl ? 'row-reverse' : 'row' }}
+            >
+                {item.isEditing ? (
+                    <>
+                        <IconButton sx={iconButtonSx} onClick={() => onSave(item.id)} aria-label={t.save}>
+                            <Check fontSize='small' />
+                        </IconButton>
+                        <IconButton sx={iconButtonSx} onClick={() => onCancel(item.id)} aria-label={t.cancel}>
+                            <Close fontSize='small' />
+                        </IconButton>
+                    </>
+                ) : (
+                    <IconButton sx={iconButtonSx} onClick={() => onStartEdit(item.id)} aria-label={t.edit}>
+                        <EditIcon />
+                    </IconButton>
+                )}
+
+                <IconButton sx={iconButtonSx} onClick={() => onCopy(item.id)} aria-label={t.copy}>
+                    <CopyIcon />
+                </IconButton>
+                <IconButton
+                    sx={iconButtonSx}
+                    aria-label={t.refresh}
+                    disabled={isFetching}
+                    onClick={onRefresh}
+                >
+                    <RefreshIcon />
+                </IconButton>
+            </Stack>
+        </Stack>
+    );
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -117,7 +309,7 @@ const extractCoverLetterText = (payload: unknown): string | null => {
     return null;
 };
 
-const getErrorMessage = (error: any): string => {
+const getErrorMessage = (error: any, fallback: string): string => {
     const maybe =
         error?.response?.data?.error?.message ??
         error?.response?.data?.error ??
@@ -126,38 +318,15 @@ const getErrorMessage = (error: any): string => {
         error?.toString?.();
 
     if (typeof maybe === 'string' && maybe.trim()) return maybe.trim();
-    return 'Failed to load cover letter';
+    return fallback;
 };
-
-const iconButtonSx = {
-    width: 40,
-    height: 40,
-    minWidth: 40,
-    minHeight: 40,
-    p: 0,
-    borderRadius: 2,
-    border: 'none',
-    backgroundColor: 'transparent',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
-    '&:hover': { backgroundColor: 'grey.50' },
-    '& svg': {
-        width: 24,
-        height: 24,
-        flexShrink: 0,
-        display: 'block',
-    },
-    '& svg > rect': {
-        display: 'none',
-    },
-} as const;
 
 const CoverLetter = () => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).historyEdite.coverLetter;
     const storedRequestId = useWizardStore((s) => s.requestId);
     const setStoredRequestId = useWizardStore((s) => s.setRequestId);
     const { guardAction, planDialog } = usePlanGate();
@@ -220,7 +389,7 @@ const CoverLetter = () => {
             const nextItems: CoverLetterItem[] = uniqueRows
                 .map((row: any) => {
                     const text = extractCoverLetterText(row?.coverLetter ?? row) ?? '';
-                    const title = extractCoverLetterTitle(row, 'Cover letter');
+                    const title = extractCoverLetterTitle(row, t.coverLetterFallback);
                     const requestId = String(row?.requestId ?? '').trim();
                     if (!requestId || !text) return null;
                     const rowCvRequestId = String(row?.cvRequestId ?? row?.cv_request_id ?? '').trim();
@@ -249,7 +418,7 @@ const CoverLetter = () => {
                 if (!cvRequestId) throw e;
                 const raw = await getCoverLetter({ requestId: cvRequestId });
                 const text = extractCoverLetterText(raw);
-                const title = extractCoverLetterTitle(raw, 'Cover letter');
+                const title = extractCoverLetterTitle(raw, t.coverLetterFallback);
                 if (text) {
                     setItems([
                         {
@@ -265,7 +434,7 @@ const CoverLetter = () => {
                     setItems([]);
                 }
             } catch (inner: any) {
-                setFetchError(getErrorMessage(inner ?? e));
+                setFetchError(getErrorMessage(inner ?? e, t.failedToLoad));
             }
         } finally {
             setIsFetching(false);
@@ -307,7 +476,7 @@ const CoverLetter = () => {
             if (!item.requestId || item.requestId === 'generated') return;
             await updateCoverLetter({ requestId: item.requestId, coverLetter: next, subject: item.title });
         } catch (e: any) {
-            setFetchError(getErrorMessage(e));
+            setFetchError(getErrorMessage(e, t.failedToLoad));
             // revert
             setItems((prev) =>
                 prev.map((it) =>
@@ -373,7 +542,7 @@ const CoverLetter = () => {
 
         if (createdRequestId) {
             const body = normalizeCoverLetter(coverLetterText);
-            const title = extractCoverLetterTitle(rawResponse, 'Cover letter');
+            const title = extractCoverLetterTitle(rawResponse, t.coverLetterFallback);
 
             // Prepend this new cover letter to the list (then re-sync from DB).
             setItems((prev) => {
@@ -423,7 +592,7 @@ const CoverLetter = () => {
                 {
                     id: 'cl:generated',
                     requestId: 'generated',
-                    title: 'Cover letter',
+                    title: t.coverLetterFallback,
                     body,
                     draftBody: body,
                     isEditing: false,
@@ -441,7 +610,7 @@ const CoverLetter = () => {
             {!resumeRequestId && !isFetching && !fetchError && (
                 <MuiAlert
                     severity='info'
-                    message='Showing your saved cover letters. To filter by a resume, open this page with ?requestId=...'
+                    message={t.showingSaved}
                     hideDismissButton
                 />
             )}
@@ -449,7 +618,7 @@ const CoverLetter = () => {
             {resumeRequestId && fetchScope === 'merged' && !isFetching && !fetchError && (
                 <MuiAlert
                     severity='info'
-                    message='Showing all your saved cover letters (including other resumes).'
+                    message={t.showingMerged}
                     hideDismissButton
                 />
             )}
@@ -457,7 +626,7 @@ const CoverLetter = () => {
             <Stack direction='row' justifyContent='flex-end'>
                 <MuiButton
                     onClick={handleProtectedAddNew}
-                    text='Add New'
+                    text={t.addNew}
                     variant='outlined'
                     color='secondary'
                     size='small'
@@ -469,120 +638,38 @@ const CoverLetter = () => {
                 <Stack direction='row' alignItems='center' gap={1}>
                     <CircularProgress size={18} />
                     <Typography variant='body2' color='text.secondary'>
-                        Loading cover letter...
+                        {t.loadingCoverLetter}
                     </Typography>
                 </Stack>
             )}
 
             {!isFetching && resumeRequestId && hasFetchedOnce && items.length === 0 && !fetchError && (
                 <Typography variant='body2' color='text.secondary'>
-                    No cover letter found for this request.
+                    {t.noCoverLetterForRequest}
                 </Typography>
             )}
 
             {!isFetching && !resumeRequestId && fetchScope === 'user' && hasFetchedOnce && items.length === 0 && !fetchError && (
                 <Typography variant='body2' color='text.secondary'>
-                    You don&apos;t have any saved cover letters yet.
+                    {t.noSavedCoverLetters}
                 </Typography>
             )}
 
             {items.map((item) => (
-                <Stack
+                <CoverLetterCard
                     key={item.id}
-                    gap={2}
-                    sx={{
-                        border: '1px solid',
-                        borderColor: 'grey.100',
-                        borderRadius: 2,
-                        backgroundColor: 'common.white',
-                        px: 2.5,
-                        py: 2.25,
-                        minWidth: 0,
-                    }}
-                >
-                    <Stack direction='row' alignItems='baseline' justifyContent='space-between' gap={1} sx={{ minWidth: 0 }}>
-                        <Typography
-                            variant='body1'
-                            fontWeight={492}
-                            color='text.primary'
-                            sx={{ wordBreak: 'break-word', overflowWrap: 'anywhere', minWidth: 0 }}
-                        >
-                            {item.title}
-                        </Typography>
-
-                        {resumeRequestId && item.isForCurrentResume === false && (
-                            <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
-                                Other resume
-                            </Typography>
-                        )}
-                    </Stack>
-
-                    {item.isEditing ? (
-                        <TextField
-                            value={item.draftBody}
-                            onChange={(e) => updateDraft(item.id, e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Escape') cancel(item.id);
-                                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save(item.id);
-                            }}
-                            placeholder='Type/paste your cover letter...'
-                            multiline
-                            minRows={6}
-                            maxRows={14}
-                            variant='standard'
-                            size='small'
-                            fullWidth
-                            autoFocus={false}
-                            InputProps={{ disableUnderline: true }}
-                            sx={{
-                                minWidth: 0,
-                                '& .MuiInputBase-root': { alignItems: 'flex-start' },
-                                '& .MuiInputBase-input': {
-                                    fontSize: '0.875rem',
-                                    lineHeight: 1.5,
-                                    whiteSpace: 'pre-wrap',
-                                },
-                            }}
-                        />
-                    ) : (
-                        <Typography
-                            variant='body2'
-                            color='text.primary'
-                            sx={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
-                        >
-                            {item.body}
-                        </Typography>
-                    )}
-
-                    <Stack direction='row' alignItems='center' gap={1}>
-                        {item.isEditing ? (
-                            <>
-                                <IconButton sx={iconButtonSx} onClick={() => save(item.id)} aria-label='Save'>
-                                    <Check fontSize='small' />
-                                </IconButton>
-                                <IconButton sx={iconButtonSx} onClick={() => cancel(item.id)} aria-label='Cancel'>
-                                    <Close fontSize='small' />
-                                </IconButton>
-                            </>
-                        ) : (
-                            <IconButton sx={iconButtonSx} onClick={() => startEdit(item.id)} aria-label='Edit'>
-                                <EditIcon />
-                            </IconButton>
-                        )}
-
-                        <IconButton sx={iconButtonSx} onClick={() => handleCopy(item.id)} aria-label='Copy'>
-                            <CopyIcon />
-                        </IconButton>
-                        <IconButton
-                            sx={iconButtonSx}
-                            aria-label='Refresh'
-                            disabled={isFetching}
-                            onClick={() => fetchCoverLetters(resumeRequestId ? { cvRequestId: resumeRequestId } : undefined)}
-                        >
-                            <RefreshIcon />
-                        </IconButton>
-                    </Stack>
-                </Stack>
+                    item={item}
+                    locale={locale}
+                    t={t}
+                    resumeRequestId={resumeRequestId}
+                    isFetching={isFetching}
+                    onStartEdit={startEdit}
+                    onSave={save}
+                    onCancel={cancel}
+                    onUpdateDraft={updateDraft}
+                    onCopy={handleCopy}
+                    onRefresh={() => fetchCoverLetters(resumeRequestId ? { cvRequestId: resumeRequestId } : undefined)}
+                />
             ))}
 
             <CreateCoverLetterDialog
