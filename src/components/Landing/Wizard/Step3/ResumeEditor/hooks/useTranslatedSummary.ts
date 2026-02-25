@@ -33,18 +33,27 @@ export function useTranslatedSummary(text: string, locale: Locale): { displayTex
         setIsLoading(true);
         setTranslated(null);
 
-        fetch('/api/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: trimmed }),
-        })
-            .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Translate failed'))))
-            .then((data: { translated?: string }) => {
-                const result = typeof data?.translated === 'string' ? data.translated.trim() : trimmed;
-                if (result) cache.set(trimmed, result);
-                setTranslated(result || trimmed);
+        const doFetch = () =>
+            fetch('/api/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: trimmed }),
             })
-            .catch(() => setTranslated(null))
+                .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Translate failed'))))
+                .then((data: { translated?: string }) => {
+                    const result = typeof data?.translated === 'string' ? data.translated.trim() : trimmed;
+                    if (result) cache.set(trimmed, result);
+                    setTranslated(result || trimmed);
+                });
+
+        doFetch()
+            .catch(() =>
+                new Promise<void>((resolve) => {
+                    window.setTimeout(() => {
+                        doFetch().catch(() => setTranslated(null)).finally(resolve);
+                    }, 800);
+                })
+            )
             .finally(() => setIsLoading(false));
     }, [trimmed, locale]);
 

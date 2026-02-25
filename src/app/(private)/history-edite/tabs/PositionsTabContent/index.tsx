@@ -12,7 +12,9 @@ import { SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled'
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
 import MuiAlert from '@/components/UI/MuiAlert';
+import { getMainTranslations } from '@/locales/main';
 import { useAuthStore } from '@/store/auth';
+import { useLocaleStore } from '@/store/common';
 
 type SuggestedPosition = {
   id: string;
@@ -37,9 +39,11 @@ const BookmarkSvg = ({ filled }: { filled: boolean }) => {
 const PositionCard = ({
   position,
   onToggleBookmark,
+  t,
 }: {
   position: SuggestedPosition;
   onToggleBookmark: (id: string) => void;
+  t: { fitWithPosition: string; removeBookmark: string; addBookmark: string; apply: string };
 }) => {
   return (
     <SuggestedJobCardItem>
@@ -77,13 +81,13 @@ const PositionCard = ({
           {position.fitPercent}%
         </Typography>
         <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-          Fit with this Position
+          {t.fitWithPosition}
         </Typography>
       </Stack>
 
       <Stack direction='row' alignItems='center' justifyContent='flex-end' gap={1} px={2} py={2} mt='auto'>
         <IconButton
-          aria-label={position.isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+          aria-label={position.isBookmarked ? t.removeBookmark : t.addBookmark}
           onClick={() => onToggleBookmark(position.id)}
           sx={{
             width: 40,
@@ -99,7 +103,7 @@ const PositionCard = ({
         </IconButton>
 
         <MuiButton
-          text='Apply'
+          text={t.apply}
           size='medium'
           color='secondary'
           sx={{ minWidth: 92, px: 2.5 }}
@@ -148,6 +152,8 @@ function locationTypeLabel(locationType?: string) {
 
 const PositionsTabContent = () => {
   const searchParams = useSearchParams();
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).historyEdite.positions;
   const requestId = useMemo(() => String(searchParams.get('id') ?? '').trim(), [searchParams]);
   const accessToken = useAuthStore((s) => s.accessToken);
 
@@ -159,7 +165,7 @@ const PositionsTabContent = () => {
   useEffect(() => {
     if (!requestId) {
       setPositions([]);
-      setError('Missing resume id.');
+      setError(t.missingResumeId);
       return;
     }
 
@@ -184,14 +190,14 @@ const PositionsTabContent = () => {
 
           return {
             id: String(job.id),
-            title: String(job.title ?? '').trim() || 'Untitled position',
+            title: String(job.title ?? '').trim() || t.untitledPosition,
             dateLabel,
             locationLabel: String(job.location ?? '').trim() || '—',
             description: String(job.description ?? '').trim() || '—',
             techStack:
               Array.isArray(job.techStack) && job.techStack.length > 0
-                ? `Tech stack: ${job.techStack.join(', ')}`
-                : 'Tech stack: —',
+                ? `${t.techStackLabel}: ${job.techStack.join(', ')}`
+                : `${t.techStackLabel}: —`,
             fitPercent: Math.max(0, Math.min(100, Number(job.fitScore) || 0)),
             isBookmarked: false,
             applicationUrl: String(job.applicationUrl ?? '').trim() || undefined,
@@ -201,10 +207,10 @@ const PositionsTabContent = () => {
       })
       .catch(() => {
         setPositions([]);
-        setError('Failed to load suggested positions.');
+        setError(t.failedToLoadPositions);
       })
       .finally(() => setIsLoading(false));
-  }, [requestId, accessToken]);
+  }, [requestId, accessToken, t.missingResumeId, t.failedToLoadPositions, t.untitledPosition, t.techStackLabel]);
 
   const filteredPositions = useMemo(() => {
     if (!bookmarksOnly) return positions;
@@ -215,12 +221,14 @@ const PositionsTabContent = () => {
     setPositions((prev) => prev.map((p) => (p.id === id ? { ...p, isBookmarked: !p.isBookmarked } : p)));
   };
 
+  const positionCardT = { fitWithPosition: t.fitWithPosition, removeBookmark: t.removeBookmark, addBookmark: t.addBookmark, apply: t.apply };
+
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, md: 12 }}>
         <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
           <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-            Suggested Positions
+            {t.suggestedPositions}
           </Typography>
 
           <MuiCheckbox
@@ -228,7 +236,7 @@ const PositionsTabContent = () => {
             onChange={(_, checked) => setBookmarksOnly(checked)}
             label={
               <Typography variant='body2' fontWeight='400' color='text.primary'>
-                Bookmarks
+                {t.bookmarks}
               </Typography>
             }
           />
@@ -242,12 +250,12 @@ const PositionsTabContent = () => {
             </Stack>
           ) : filteredPositions.length > 0 ? (
             filteredPositions.map((position) => (
-              <PositionCard key={position.id} position={position} onToggleBookmark={handleToggleBookmark} />
+              <PositionCard key={position.id} position={position} onToggleBookmark={handleToggleBookmark} t={positionCardT} />
             ))
           ) : (
             <SuggestedJobCardItem sx={{ p: 2, boxShadow: 1 }}>
               <Typography variant='subtitle2' color='text.secondary' fontWeight='400'>
-                No suggested positions yet.
+                {t.noSuggestedPositions}
               </Typography>
             </SuggestedJobCardItem>
           )}

@@ -25,7 +25,6 @@ export const HistoryRoot = styled(Stack)(({ theme }) => ({
 }));
 
 export const SectionHeader = styled(Stack)(({ theme }) => ({
-    direction: 'ltr',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -55,10 +54,12 @@ export const HistoryImage = styled(Box)(({ theme }) => ({
     position: 'relative',
     borderRadius: 8,
     overflow: 'hidden',
+    marginInlineEnd: theme.spacing(3),
     [theme.breakpoints.down('sm')]: {
         width: '100%',
         height: 160,
         marginBottom: theme.spacing(1),
+        marginInlineEnd: 0,
     },
 }));
 
@@ -90,8 +91,8 @@ export const MoreButton = styled('button')(({ theme }) => ({
 export const PopupMenu = styled('div')<{ isOpen: boolean }>(({ theme, isOpen }) => ({
     position: 'absolute',
     top: '100%',
-    right: 0,
     marginTop: '4px',
+    insetInlineEnd: 0,
     borderRadius: '8px',
     backgroundColor: 'white',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1)',
@@ -102,7 +103,7 @@ export const PopupMenu = styled('div')<{ isOpen: boolean }>(({ theme, isOpen }) 
     opacity: isOpen ? 1 : 0,
     visibility: isOpen ? 'visible' : 'hidden',
     transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-10px)',
-    transformOrigin: 'top right',
+    transformOrigin: theme.direction === 'rtl' ? 'top left' : 'top right',
     transition: 'opacity 0.2s ease, transform 0.2s ease, visibility 0.2s',
     border: `1px solid ${theme.palette.divider}`,
 

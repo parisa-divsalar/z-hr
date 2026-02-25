@@ -32,20 +32,61 @@ import { THistoryChannel } from '@/components/History/type';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiCheckbox from '@/components/UI/MuiCheckbox';
+import { getMainTranslations } from '@/locales/main';
 import { useAuthStore } from '@/store/auth';
+import { useLocaleStore } from '@/store/common';
 
 type THistorySortOption = 'NEW_TO_OLD' | 'OLD_TO_NEW' | 'SIZE' | 'FIT_SCORE';
 
-const SORT_OPTIONS: { value: THistorySortOption; label: string }[] = [
-    { value: 'NEW_TO_OLD', label: 'New to Old' },
-    { value: 'OLD_TO_NEW', label: 'Old to New' },
-    { value: 'SIZE', label: 'Size' },
-    { value: 'FIT_SCORE', label: 'Fit Score' },
-];
+const SORT_OPTION_KEYS: THistorySortOption[] = ['NEW_TO_OLD', 'OLD_TO_NEW', 'SIZE', 'FIT_SCORE'];
+
+function getSortOptions(t: Record<string, string>): { value: THistorySortOption; label: string }[] {
+    return [
+        { value: 'NEW_TO_OLD', label: t.sortNewToOld },
+        { value: 'OLD_TO_NEW', label: t.sortOldToNew },
+        { value: 'SIZE', label: t.sortSize },
+        { value: 'FIT_SCORE', label: t.sortFitScore },
+    ];
+}
+
+function translateHistoryField(value: string, t: Record<string, string>): string {
+    if (!value || typeof value !== 'string') return value;
+    const v = value.trim();
+    const upper = v.toUpperCase();
+    const levelMap: Record<string, string> = {
+        MID: t.levelMid,
+        'MID-SENIOR': t.levelMidSenior,
+        JUNIOR: t.levelJunior,
+        SENIOR: t.levelSenior,
+        ENTRY: t.levelEntry,
+    };
+    if (levelMap[upper]) return levelMap[upper];
+    const positionMap: Record<string, string> = {
+        'PROGRAMMING LANGUAGES': t.positionProgrammingLanguages,
+        'WEB FRAMEWORKS': t.positionWebFrameworks,
+    };
+    if (positionMap[upper]) return positionMap[upper];
+    if (upper === 'RESUME') return t.labelResume;
+    if (upper === 'VOICE') return t.labelVoice;
+    if (upper === 'PHOTO') return t.labelPhoto;
+    if (upper === 'VIDEO') return t.labelVideo;
+    return v;
+}
+
+function translateSizeDisplay(value: string, t: Record<string, string>): string {
+    if (!value || typeof value !== 'string') return value;
+    return value.replace(/\bMB\b/gi, t.sizeUnitMb);
+}
+
+function translateDisplayName(name: string, t: Record<string, string>): string {
+    if (!name || typeof name !== 'string') return name;
+    return name.replace(/\bResume\b/gi, t.labelResume);
+}
 
 type HistoryCardProps = THistoryChannel & {
     onToggleBookmark: (id: string, next: boolean) => void;
     onDelete: (id: string) => void;
+    t: Record<string, string>;
 };
 
 const HistoryCard = ({
@@ -63,6 +104,7 @@ const HistoryCard = ({
     is_bookmarked,
     onToggleBookmark,
     onDelete,
+    t,
 }: HistoryCardProps) => {
     const router = useRouter();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -127,24 +169,25 @@ const HistoryCard = ({
             >
                 <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                     <HistoryImage m={1}>
-                        <Image src={ResumeIcon} alt='Resume preview' fill />
+                        <Image src={ResumeIcon} alt={t.resumePreviewAlt} fill />
                     </HistoryImage>
                 </Grid>
 
                 <Grid
                     size={{ xs: 12, sm: 5, md: 7 }}
                     p={2}
-                    pl={5}
                     sx={(theme) => ({
+                        paddingInlineStart: theme.spacing(4),
+                        paddingInlineEnd: theme.spacing(2),
                         [theme.breakpoints.down('sm')]: {
-                            pl: theme.spacing(2),
-                            pr: theme.spacing(2),
+                            paddingInlineStart: theme.spacing(2),
+                            paddingInlineEnd: theme.spacing(2),
                         },
                     })}
                 >
                     <Stack direction='row' gap={2}>
                         <Typography variant='subtitle1' fontWeight='500' color='text.primary'>
-                            {name}
+                            {translateDisplayName(name, t)}
                         </Typography>
 
                         <TagPill>{Percentage}</TagPill>
@@ -156,15 +199,15 @@ const HistoryCard = ({
                         </Typography>
                         <StyledDivider orientation='vertical' flexItem />
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            {size}
+                            {translateSizeDisplay(size, t)}
                         </Typography>
                         <StyledDivider orientation='vertical' flexItem />
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            {position}
+                            {translateHistoryField(position, t)}
                         </Typography>
                         <StyledDivider orientation='vertical' flexItem />
                         <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
-                            {level}
+                            {translateHistoryField(level, t)}
                         </Typography>
                     </Stack>
 
@@ -183,19 +226,19 @@ const HistoryCard = ({
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VoiceIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                {Voice}
+                                {translateHistoryField(Voice, t)}
                             </Typography>
                         </Stack>
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <ImageIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                {Photo}
+                                {translateHistoryField(Photo, t)}
                             </Typography>
                         </Stack>
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VideoIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                {Video}
+                                {translateHistoryField(Video, t)}
                             </Typography>
                         </Stack>
                     </Stack>
@@ -240,7 +283,7 @@ const HistoryCard = ({
                         })}
                     >
                         <RelativeStack direction='row' gap={3}>
-                            <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label='More options'>
+                            <MoreButton ref={moreButtonRef} onClick={handleMoreClick} aria-label={t.moreOptionsAria}>
                                 <Dotsvertical />
                             </MoreButton>
 
@@ -249,13 +292,13 @@ const HistoryCard = ({
                                     <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleFavorite}>
                                         <FrameFaw />
                                         <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                            Favorite
+                                            {t.favorite}
                                         </Typography>
                                     </MenuItemStack>
                                     <MenuItemStack direction='row' alignItems='center' gap={1} onClick={handleDelete}>
                                         <TrashIcon />
                                         <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                            Delete
+                                            {t.delete}
                                         </Typography>
                                     </MenuItemStack>
                                 </MenuContentStack>
@@ -273,7 +316,7 @@ const HistoryCard = ({
                             })}
                         >
                             <MuiButton variant='outlined' color='secondary' onClick={handleEditClick}>
-                                Edit
+                                {t.edit}
                             </MuiButton>
                             {/*<MuiButton*/}
                             {/*    variant='contained'*/}
@@ -294,6 +337,9 @@ const HistoryCard = ({
 };
 
 const HistorySection = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).history as Record<string, string>;
+    const sortOptions = useMemo(() => getSortOptions(t), [t]);
     const [allItems, setAllItems] = useState<THistoryChannel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
@@ -310,8 +356,7 @@ const HistorySection = () => {
 
     const sortFromUrl = useMemo<THistorySortOption>(() => {
         const v = String(searchParams.get('sort') ?? '').trim().toUpperCase();
-        const allowed: THistorySortOption[] = ['NEW_TO_OLD', 'OLD_TO_NEW', 'SIZE', 'FIT_SCORE'];
-        return allowed.includes(v as THistorySortOption) ? (v as THistorySortOption) : 'NEW_TO_OLD';
+        return SORT_OPTION_KEYS.includes(v as THistorySortOption) ? (v as THistorySortOption) : 'NEW_TO_OLD';
     }, [searchParams]);
 
     const [sortOption, setSortOption] = useState<THistorySortOption>(sortFromUrl);
@@ -322,8 +367,8 @@ const HistorySection = () => {
     }, [sortFromUrl]);
 
     const selectedSortLabel = useMemo(
-        () => SORT_OPTIONS.find((o) => o.value === sortOption)?.label ?? 'Sort',
-        [sortOption],
+        () => sortOptions.find((o) => o.value === sortOption)?.label ?? t.sort,
+        [sortOption, sortOptions, t.sort],
     );
 
     const parseDateToTimestamp = (value: string) => {
@@ -493,7 +538,7 @@ const HistorySection = () => {
         <Stack gap={1}>
             <SectionHeader>
                 <Typography variant='h5' fontWeight='500' color='text.primary'>
-                    History{' '}
+                    {t.title}
                 </Typography>
                 <Stack direction='row' alignItems='center'>
                     <MuiCheckbox
@@ -501,7 +546,7 @@ const HistorySection = () => {
                         onChange={() => setBookmarksOnly((p) => !p)}
                         label={
                             <Typography variant='body2' fontWeight='400' color='text.primary'>
-                                Bookmarks{' '}
+                                {t.bookmarks}
                             </Typography>
                         }
                     />
@@ -524,7 +569,7 @@ const HistorySection = () => {
 
                         <PopupMenu ref={sortMenuRef} isOpen={isSortMenuOpen}>
                             <SortMenuContentStack>
-                                {SORT_OPTIONS.map((opt) => {
+                                {sortOptions.map((opt) => {
                                     const isSelected = sortOption === opt.value;
                                     return (
                                         <MenuItemStack
@@ -563,6 +608,7 @@ const HistorySection = () => {
                     {...channel}
                     onToggleBookmark={handleToggleBookmark}
                     onDelete={handleDelete}
+                    t={t}
                 />
             ))}
 
@@ -570,7 +616,7 @@ const HistorySection = () => {
                 {isLoading && <CircularProgress size={30} />}
                 {visibleCount >= sortedAllItems.length && displayedItems.length > 0 && (
                     <Typography variant='body2' color='text.secondary'>
-                        No more items to load
+                        {t.noMoreItems}
                     </Typography>
                 )}
             </Stack>

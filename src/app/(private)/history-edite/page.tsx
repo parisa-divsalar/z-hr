@@ -10,7 +10,9 @@ import { HistoryEditeRoot } from '@/app/(private)/history-edite/styled';
 import { THistoryChannel } from '@/components/History/type';
 import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
+import { getMainTranslations } from '@/locales/main';
 import { useAuthStore } from '@/store/auth';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 
 import GapSection from './Components/GapSection';
@@ -18,6 +20,8 @@ import PreviewEdite from './Components/PreviewEdite';
 
 const HistoryEdite = () => {
     const searchParams = useSearchParams();
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).historyEdite.page;
     const id = useMemo(() => searchParams.get('id'), [searchParams]);
     const mode = useMemo(() => searchParams.get('mode'), [searchParams]);
     const userId = useMemo(() => searchParams.get('userId'), [searchParams]);
@@ -33,7 +37,7 @@ const HistoryEdite = () => {
         if (mode === 'editor') return;
         if (!id) {
             setRow(null);
-            setError('Missing history id.');
+            setError(t.missingHistoryId);
             return;
         }
         setIsLoading(true);
@@ -50,10 +54,10 @@ const HistoryEdite = () => {
             })
             .catch(() => {
                 setRow(null);
-                setError('Failed to load this history item.');
+                setError(t.failedToLoadHistory);
             })
             .finally(() => setIsLoading(false));
-    }, [id, accessToken, mode]);
+    }, [id, accessToken, mode, t.missingHistoryId, t.failedToLoadHistory]);
 
     useEffect(() => {
         if (mode !== 'editor') return;

@@ -12,6 +12,8 @@ import MuiInput from '@/components/UI/MuiInput';
 import { addCoverLetter } from '@/services/cv/add-cover-letter';
 import { getCoverLetter } from '@/services/cv/get-cover-letter';
 import { getMainTranslations } from '@/locales/main';
+
+
 import { useAuthStore } from '@/store/auth';
 import { useLocaleStore } from '@/store/common';
 

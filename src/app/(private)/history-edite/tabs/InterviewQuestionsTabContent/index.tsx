@@ -1,7 +1,12 @@
+'use client';
+
 import React from 'react';
 
 import { Divider, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
+
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import {
     AnswerText,
@@ -16,9 +21,10 @@ interface QuestionCardProps {
     name?: string;
     question?: string;
     answer?: string;
+    answerLabel: string;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ number, name, question = 'Question', answer }) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({ number, name, question, answer, answerLabel }) => {
     return (
         <StyledQuestionCard>
             <Stack gap={1.5} width='100%' pb={2}>
@@ -37,7 +43,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, name, question = 'Q
                 </Stack>
                 {answer && (
                     <AnswerText variant='body2' fontWeight={400} color='text.primary' ml={1}>
-                        Answer: {answer}
+                        {answerLabel}: {answer}
                     </AnswerText>
                 )}
             </Stack>
@@ -47,6 +53,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, name, question = 'Q
 };
 
 const InterviewQuestionsTabContent = () => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).historyEdite.interviewQuestions;
     return (
         <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 12 }}>
@@ -54,9 +62,10 @@ const InterviewQuestionsTabContent = () => {
                     <QuestionCard
                         key={num}
                         number={num}
-                        name='Soft skill'
-                        question='Questions'
-                        answer='Access common and position-specific interview questions to prepare effectively.'
+                        name={t.softSkill}
+                        question={t.questionsLabel}
+                        answer={t.answerSample}
+                        answerLabel={t.answer}
                     />
                 ))}
             </Grid>

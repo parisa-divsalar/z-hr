@@ -9,6 +9,8 @@ import ArrowForwardIcon from '@/assets/images/dashboard/IconTp.svg';
 import RectangleImage from '@/assets/images/dashboard/imag/rectangle2.svg';
 import MuiButton from '@/components/UI/MuiButton';
 import { usePlanGate } from '@/hooks/usePlanGate';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import {
   SkillGapCard as CardWrapper,
@@ -46,6 +48,8 @@ const SkillGapCard = ({
   onToggleBookmark,
   onMoreClick,
 }: SkillGapCardProps) => {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).historyEdite.skillGapCard;
   const { guardAction, planDialog } = usePlanGate();
 
   const handleMoreClick = () => {
@@ -65,7 +69,7 @@ const SkillGapCard = ({
           {onToggleBookmark && (
             <IconButton
               size='small'
-              aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+              aria-label={isBookmarked ? t.removeBookmark : t.addBookmark}
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleBookmark(!isBookmarked);
@@ -94,14 +98,14 @@ const SkillGapCard = ({
               <Typography variant='subtitle2' fontWeight='400' color='text.secondary'>
                 {level}
               </Typography>
-              <PriceSection>{isFree ? <FreeChip>Free</FreeChip> : <Price>{price}</Price>}</PriceSection>
+              <PriceSection>{isFree ? <FreeChip>{t.free}</FreeChip> : <Price>{price}</Price>}</PriceSection>
             </CardTitleSection>
           </CardHeader>
 
           <CardFooter>
             <BoxIcon />
             <MuiButton
-              text='More'
+              text={t.more}
               variant='contained'
               size='small'
               color='secondary'

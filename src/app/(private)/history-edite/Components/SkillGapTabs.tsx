@@ -7,6 +7,8 @@ import { Tab } from '@mui/material';
 import PlanRequiredDialog from '@/components/Landing/Wizard/Step1/Common/PlanRequiredDialog';
 import { PublicRoutes } from '@/config/routes';
 import { useMoreFeaturesAccess } from '@/hooks/useMoreFeaturesAccess';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 import { TabsContainer, StyledTabs } from '../styled';
 
@@ -18,12 +20,14 @@ interface SkillGapTabsProps {
 const DEFAULT_TAB = 'interview-questions';
 
 const SkillGapTabs = ({ onChange, value }: SkillGapTabsProps) => {
+  const locale = useLocaleStore((s) => s.locale);
+  const t = getMainTranslations(locale).historyEdite.tabs;
   const { access, isLoading: isAccessLoading } = useMoreFeaturesAccess({ enabled: true });
   const [uncontrolledTab, setUncontrolledTab] = useState(DEFAULT_TAB);
   const activeTab = value ?? uncontrolledTab;
 
   const [lockedOpen, setLockedOpen] = useState(false);
-  const [lockedLabel, setLockedLabel] = useState<string>('this feature');
+  const [lockedLabel, setLockedLabel] = useState<string>(t.coverLetter);
 
   const enabled = useMemo(() => new Set((access?.enabledKeys ?? []).filter(Boolean)), [access?.enabledKeys]);
 
@@ -35,12 +39,12 @@ const SkillGapTabs = ({ onChange, value }: SkillGapTabsProps) => {
     const canCoverLetter = enabled.has('ai_cover_letter') || enabled.has('cover_letter');
 
     return {
-      'interview-questions': { locked: !canInterview, label: 'Suggested interview questions' },
-      positions: { locked: !canPositions, label: 'Suggested Positions' },
-      'skill-gap': { locked: !canSkillGap, label: 'Skill Gap' },
-      'cover-letter': { locked: !canCoverLetter, label: 'Cover letter' },
+      'interview-questions': { locked: !canInterview, label: t.suggestedInterviewQuestions },
+      positions: { locked: !canPositions, label: t.suggestedPositions },
+      'skill-gap': { locked: !canSkillGap, label: t.skillGap },
+      'cover-letter': { locked: !canCoverLetter, label: t.coverLetter },
     } as const;
-  }, [enabled]);
+  }, [enabled, t]);
 
   const handleChange = (_: React.SyntheticEvent, newValue: string) => {
     if (isAccessLoading) return;
@@ -62,10 +66,10 @@ const SkillGapTabs = ({ onChange, value }: SkillGapTabsProps) => {
       <PlanRequiredDialog
         open={lockedOpen}
         onClose={() => setLockedOpen(false)}
-        title='Feature locked'
-        headline={`"${lockedLabel}" is disabled for your account.`}
-        bodyText='Buy coins/upgrade your plan, then enable it in More Features (Step 3).'
-        primaryLabel='Buy plan / coins'
+        title={t.featureLocked}
+        headline={t.featureLockedHeadline(lockedLabel)}
+        bodyText={t.featureLockedBody}
+        primaryLabel={t.buyPlanCoins}
         primaryHref={PublicRoutes.pricing}
       />
 
@@ -78,25 +82,25 @@ const SkillGapTabs = ({ onChange, value }: SkillGapTabsProps) => {
           variant='standard'
         >
           <Tab
-            label='Suggested interview questions'
+            label={t.suggestedInterviewQuestions}
             value='interview-questions'
             aria-disabled={isAccessLoading || locks['interview-questions'].locked}
             sx={tabSx(locks['interview-questions'].locked)}
           />
           <Tab
-            label='Suggested Positions'
+            label={t.suggestedPositions}
             value='positions'
             aria-disabled={isAccessLoading || locks.positions.locked}
             sx={tabSx(locks.positions.locked)}
           />
           <Tab
-            label='Skill Gap'
+            label={t.skillGap}
             value='skill-gap'
             aria-disabled={isAccessLoading || locks['skill-gap'].locked}
             sx={tabSx(locks['skill-gap'].locked)}
           />
           <Tab
-            label='Cover letter'
+            label={t.coverLetter}
             value='cover-letter'
             aria-disabled={isAccessLoading || locks['cover-letter'].locked}
             sx={tabSx(locks['cover-letter'].locked)}

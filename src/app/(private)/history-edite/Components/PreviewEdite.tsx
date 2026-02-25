@@ -18,6 +18,8 @@ import { THistoryChannel } from '@/components/History/type';
 import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 import { useWizardStore } from '@/store/wizard';
 import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 
@@ -30,6 +32,8 @@ interface PreviewEditeProps {
 
 const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }) => {
     const router = useRouter();
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).historyEdite.preview;
     const setRequestId = useWizardStore((s) => s.setRequestId);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const moreButtonRef = useRef<HTMLButtonElement>(null);
@@ -48,7 +52,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
 
     const handleEditResume = () => {
         if (!requestId) {
-            setDownloadError('Missing resume id. Please go back and try again.');
+            setDownloadError(t.missingResumeId);
             return;
         }
 
@@ -67,11 +71,11 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
     const handleDownload = useCallback(async () => {
         if (isDownloading) return;
         if (!requestId) {
-            setDownloadError('Missing resume id. Please go back and try again.');
+            setDownloadError(t.missingResumeId);
             return;
         }
         if (!resumePdfRef.current || !isResumeReady) {
-            setDownloadError('Resume is still loading. Please wait a moment and try again.');
+            setDownloadError(t.resumeStillLoading);
             return;
         }
         setIsDownloading(true);
@@ -79,7 +83,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
         setDownloadError(null);
         try {
             const date = new Date().toISOString().slice(0, 10);
-            const baseName = sanitizeFileName(historyRow?.name || 'Resume') || 'Resume';
+            const baseName = sanitizeFileName(historyRow?.name || t.resumeFallback) || t.resumeFallback;
             await exportElementToPdf(resumePdfRef.current, {
                 fileName: `${baseName}-${date}`,
                 marginPt: 24,
@@ -90,13 +94,12 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                 preOpenWindow: false,
             });
         } catch (error) {
-             
             console.error('Failed to export PDF', error);
-            setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.');
+            setDownloadError(error instanceof Error ? error.message : t.failedToGeneratePdf);
         } finally {
             setIsDownloading(false);
         }
-    }, [historyRow?.name, isDownloading, isResumeReady, requestId]);
+    }, [historyRow?.name, isDownloading, isResumeReady, requestId, t.missingResumeId, t.resumeStillLoading, t.failedToGeneratePdf]);
 
     useEffect(() => {
         setIsResumeReady(false);
@@ -174,7 +177,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                     >
                         <BackIcon onClick={handleBackClick} style={{ cursor: 'pointer' }} />
                         <Typography variant='h5' color='text.primary' fontWeight='500'>
-                            {historyRow?.name || 'Resume'}
+                            {historyRow?.name || t.resumeFallback}
                         </Typography>
                     </Stack>
                     {downloadError && <MuiAlert severity='error' message={downloadError} sx={{ mt: 1 }} />}
@@ -185,7 +188,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                     sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}
                 >
                     <HistoryImage p={2}>
-                        <Image src={ResumeIcon} alt='Resume preview' fill />
+                        <Image src={ResumeIcon} alt={t.resumePreviewAlt} fill />
                     </HistoryImage>
                 </Grid>
 
@@ -199,7 +202,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                 >
                     <Stack direction='row' gap={1}>
                         <Typography variant='h6' fontWeight='500' color='text.primary'>
-                            {historyRow?.title || 'Resume'}
+                            {historyRow?.title || t.resumeFallback}
                         </Typography>
 
                         {historyRow?.Percentage && <TagPill sx={{ marginTop: '5px' }}>{historyRow.Percentage}</TagPill>}
@@ -239,19 +242,19 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VoiceIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                Voice{historyRow?.Voice ? ` (${historyRow.Voice})` : ''}
+                                {t.voice}{historyRow?.Voice ? ` (${historyRow.Voice})` : ''}
                             </Typography>
                         </Stack>
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <ImageIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                Photo{historyRow?.Photo ? ` (${historyRow.Photo})` : ''}
+                                {t.photo}{historyRow?.Photo ? ` (${historyRow.Photo})` : ''}
                             </Typography>
                         </Stack>
                         <Stack direction='row' gap={0.5} alignItems='center'>
                             <VideoIcon />
                             <Typography variant='subtitle2' fontWeight='400' color='text.primary'>
-                                Video{historyRow?.Video ? ` (${historyRow.Video})` : ''}
+                                {t.video}{historyRow?.Video ? ` (${historyRow.Video})` : ''}
                             </Typography>
                         </Stack>
                     </Stack>
@@ -260,7 +263,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                         <Position />
 
                         <Typography variant='subtitle2' fontWeight='500' color='text.primary'>
-                            3 Suggested Position{' '}
+                            {t.suggestedPositionsCount}{' '}
                         </Typography>
                     </Stack>
 
@@ -304,7 +307,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                                 textTransform: 'none',
                             }}
                         >
-                            Edit
+                            {t.edit}
                         </MuiButton>
                         <MuiButton
                             variant='contained'
@@ -319,7 +322,7 @@ const PreviewEdite: React.FC<PreviewEditeProps> = ({ setActiveStep, historyRow }
                                 textTransform: 'none',
                             }}
                         >
-                            {isDownloading ? `Preparing PDF… ${Math.round(downloadProgress * 100)}%` : 'Download'}
+                            {isDownloading ? t.preparingPdf(Math.round(downloadProgress * 100)) : t.download}
                         </MuiButton>
                     </Stack>
                 </Grid>
