@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { getMainTranslations } from '@/locales/main';
 import { useLocaleStore } from '@/store/common';
 
+import TranslatedText from '../components/TranslatedText';
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import {
@@ -93,19 +94,23 @@ export default function ExperienceSection({ c }: Props) {
                             <Wrapper key={experience.id}>
                                 {(experience.company || experience.position) && (
                                     <Box mb={1}>
-                                        {experience.company && (
-                                            <CompanyName variant='h6'>{experience.company}</CompanyName>
-                                        )}
-                                        {experience.position && (
-                                            <JobDetails variant='body2'>{experience.position}</JobDetails>
-                                        )}
+                                        {experience.company ? (
+                                            <CompanyName variant='h6'>
+                                                <TranslatedText text={experience.company} locale={locale} />
+                                            </CompanyName>
+                                        ) : null}
+                                        {experience.position ? (
+                                            <JobDetails variant='body2'>
+                                                <TranslatedText text={experience.position} locale={locale} />
+                                            </JobDetails>
+                                        ) : null}
                                     </Box>
                                 )}
-                                {experience.description && (
+                                {experience.description ? (
                                     <ExperienceDescription variant='body2'>
-                                        {experience.description}
+                                        <TranslatedText text={experience.description} locale={locale} />
                                     </ExperienceDescription>
-                                )}
+                                ) : null}
                             </Wrapper>
                         );
                     });

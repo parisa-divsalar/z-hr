@@ -21,6 +21,7 @@ import { useWizardStore } from '@/store/wizard';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
 import ResumeFooter from './ResumeEditor/components/ResumeFooter';
+import TranslatedText from './ResumeEditor/components/TranslatedText';
 import { useResumeEditorController, type ResumeEditorController, type ResumeEditorMode } from './ResumeEditor/hooks/useResumeEditorController';
 import { useTranslatedSummary } from './ResumeEditor/hooks/useTranslatedSummary';
 import { MainCardContainer, ResumeContainer } from './ResumeEditor/styled';
@@ -410,7 +411,10 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                                     overflowWrap: 'anywhere',
                                                                 }}
                                                             >
-                                                                {cleanText(exp.position) || cleanText(exp.company) || '—'}
+                                                                <TranslatedText
+                                                                    text={cleanText(exp.position) || cleanText(exp.company) || '—'}
+                                                                    locale={locale}
+                                                                />
                                                             </Typography>
                                                             {cleanText(exp.company) ? (
                                                                 <Typography
@@ -423,7 +427,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                                         overflowWrap: 'anywhere',
                                                                     }}
                                                                 >
-                                                                    {cleanText(exp.company)}
+                                                                    <TranslatedText text={cleanText(exp.company)} locale={locale} />
                                                                 </Typography>
                                                             ) : null}
                                                             {cleanText(exp.description) ? (
@@ -438,7 +442,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                                         overflowWrap: 'anywhere',
                                                                     }}
                                                                 >
-                                                                    {cleanText(exp.description)}
+                                                                    <TranslatedText text={cleanText(exp.description)} locale={locale} />
                                                                 </Typography>
                                                             ) : null}
                                                         </Box>
@@ -543,7 +547,7 @@ const ResumeEditorTemplate4: FunctionComponent<Props> = ({
                                                                             overflowWrap: 'anywhere',
                                                                         }}
                                                                     >
-                                                                        {line}
+                                                                        <TranslatedText text={line} locale={locale} />
                                                                     </Typography>
                                                                 ))}
                                                         </Box>

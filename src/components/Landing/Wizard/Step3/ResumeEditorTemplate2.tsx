@@ -14,6 +14,7 @@ import EditIcon from '@/assets/images/icons/edit.svg';
 import StarIcon from '@/assets/images/icons/star.svg';
 
 import DeleteSectionDialog from './ResumeEditor/components/DeleteSectionDialog';
+import TranslatedText from './ResumeEditor/components/TranslatedText';
 import { useTranslatedSummary } from './ResumeEditor/hooks/useTranslatedSummary';
 import RefreshDataLossDialog from './ResumeEditor/components/RefreshDataLossDialog';
 import ResumeAlerts from './ResumeEditor/components/ResumeAlerts';
@@ -377,6 +378,7 @@ function TextListCardT2({
     onEditValueChange,
     improveEnabled,
     noFoundText,
+    locale,
 }: {
     c: ResumeEditorController;
     title: string;
@@ -386,6 +388,7 @@ function TextListCardT2({
     onEditValueChange: (v: string) => void;
     improveEnabled: boolean;
     noFoundText?: string;
+    locale: 'en' | 'fa';
 }) {
     const isEditing = !c.isPreview && c.editingSection === section;
     const hasContent = value.some((entry) => String(entry ?? '').trim().length > 0);
@@ -435,7 +438,7 @@ function TextListCardT2({
                                     fontSize: `${T2.bodySizePx}px`,
                                 }}
                             >
-                                {text}
+                                <TranslatedText text={String(text ?? '').trim()} locale={locale} />
                             </SummaryText>
                         ))}
                     </Box>
@@ -571,7 +574,7 @@ function ExperienceCardT2({ c, title }: { c: ResumeEditorController; title: stri
                                                     variant='h6'
                                                     sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, fontWeight: 700 }}
                                                 >
-                                                    {experience.company}
+                                                    <TranslatedText text={experience.company} locale={locale} />
                                                 </CompanyName>
                                             ) : null}
                                             {location ? (
@@ -583,7 +586,7 @@ function ExperienceCardT2({ c, title }: { c: ResumeEditorController; title: stri
                                                         whiteSpace: 'nowrap',
                                                     }}
                                                 >
-                                                    {location}
+                                                    <TranslatedText text={location} locale={locale} />
                                                 </Typography>
                                             ) : null}
                                         </Box>
@@ -592,7 +595,7 @@ function ExperienceCardT2({ c, title }: { c: ResumeEditorController; title: stri
                                                 variant='body2'
                                                 sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.ruleStrong }}
                                             >
-                                                {[title, period].filter(Boolean).join(' ')}
+                                                <TranslatedText text={[title, period].filter(Boolean).join(' ')} locale={locale} />
                                             </JobDetails>
                                         ) : null}
                                     </Box>
@@ -602,7 +605,7 @@ function ExperienceCardT2({ c, title }: { c: ResumeEditorController; title: stri
                                         variant='body2'
                                         sx={{ fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px`, color: T2.ruleStrong }}
                                     >
-                                        {experience.description}
+                                        <TranslatedText text={experience.description} locale={locale} />
                                     </ExperienceDescription>
                                 ) : null}
                             </Wrapper>
@@ -660,7 +663,7 @@ function AdditionalInfoCardT2({ c, title }: { c: ResumeEditorController; title: 
                     </Typography>
                 ) : (
                     <SummaryText sx={{ whiteSpace: 'pre-line', fontFamily: T2.fontFamily, fontSize: `${T2.bodySizePx}px` }}>
-                        {c.additionalInfo}
+                        <TranslatedText text={c.additionalInfo} locale={locale} />
                     </SummaryText>
                 )}
             </Box>
@@ -998,6 +1001,7 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                                         onEditValueChange={c.setEducationEditText}
                                         improveEnabled={!c.isPreview && !c.isTextOnlyMode}
                                         noFoundText={resumeEditorT.noEducationFound}
+                                        locale={locale}
                                     />
                                 ) : null}
                                 {/* Render extra sections only if user has content; keeps screenshot-like output for typical data */}
@@ -1011,6 +1015,7 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                                         onEditValueChange={c.setCertificatesEditText}
                                         improveEnabled={!c.isPreview && !c.isTextOnlyMode}
                                         noFoundText={resumeEditorT.noCertificatesFound}
+                                        locale={locale}
                                     />
                                 ) : null}
                                 {!c.isSectionHidden('selectedProjects') ? (
@@ -1023,6 +1028,7 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                                         onEditValueChange={c.setSelectedProjectsEditText}
                                         improveEnabled={!c.isPreview && !c.isTextOnlyMode}
                                         noFoundText={resumeEditorT.noSelectedProjectsFound}
+                                        locale={locale}
                                     />
                                 ) : null}
                                 {!c.isSectionHidden('additionalInfo') ? (

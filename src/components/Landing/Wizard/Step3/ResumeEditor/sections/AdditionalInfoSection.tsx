@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { getMainTranslations } from '@/locales/main';
 import { useLocaleStore } from '@/store/common';
 
+import TranslatedText from '../components/TranslatedText';
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import { ExperienceTextareaAutosize, SectionContainer, SummaryText } from '../styled';
@@ -71,7 +72,9 @@ export default function AdditionalInfoSection({ c }: Props) {
                         {noAdditionalInfoFound}
                     </Typography>
                 ) : (
-                    <SummaryText sx={{ whiteSpace: 'pre-line' }}>{c.additionalInfo}</SummaryText>
+                    <SummaryText sx={{ whiteSpace: 'pre-line' }}>
+                        <TranslatedText text={c.additionalInfo} locale={locale} />
+                    </SummaryText>
                 )}
             </Box>
         </SectionContainer>

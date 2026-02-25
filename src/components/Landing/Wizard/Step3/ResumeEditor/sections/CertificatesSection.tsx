@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { getMainTranslations } from '@/locales/main';
 import { useLocaleStore } from '@/store/common';
 
+import TranslatedText from '../components/TranslatedText';
 import SkeletonParagraph from '../components/SkeletonParagraph';
 import SectionHeader from '../SectionHeader';
 import { ExperienceTextareaAutosize, SectionContainer, SummaryText } from '../styled';
@@ -76,7 +77,7 @@ export default function CertificatesSection({ c }: Props) {
                     <Box>
                         {c.certificates.map((text, idx) => (
                             <SummaryText key={idx} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
-                                {text}
+                                <TranslatedText text={String(text ?? '').trim()} locale={locale} />
                             </SummaryText>
                         ))}
                     </Box>
