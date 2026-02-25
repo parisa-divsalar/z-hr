@@ -17,9 +17,14 @@ type SuggestionPreviewCard = {
 
 interface SuggestionPreviewProps {
     cards: SuggestionPreviewCard[];
+    /** Translated label for "Answer:" (e.g. "Answer:" / "پاسخ: ") */
+    answerLabel?: string;
 }
 
-const SuggestionPreview: FunctionComponent<SuggestionPreviewProps> = ({ cards }) => {
+const SuggestionPreview: FunctionComponent<SuggestionPreviewProps> = ({
+    cards,
+    answerLabel = 'Answer: ',
+}) => {
     return (
         <Box sx={{ height: '100%', width: '100%', overflow: 'hidden', position: 'relative' }}>
             <CardsWrapper>
@@ -35,7 +40,7 @@ const SuggestionPreview: FunctionComponent<SuggestionPreviewProps> = ({ cards })
                         </SuggestionCardHeader>
                         <Typography variant='caption' color='text.primary' fontWeight='500'>
                             <Box component='span' sx={{ fontWeight: 400, color: 'text.primary' }}>
-                                Answer:{' '}
+                                {answerLabel}
                             </Box>
                             {card.answer}
                         </Typography>

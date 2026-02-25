@@ -600,6 +600,38 @@ export const mainTranslations = {
       no: 'No',
       yes: 'Yes',
     },
+    moreFeatures: {
+      title: 'More Features',
+      subtitle: 'You can utilize these features with your resume',
+      jobPositionSuggestions: {
+        title: 'Job Position Suggestions',
+        description:
+          'Get personalized job position recommendations based on your resume content and skills.',
+        coinText: '5 Coin',
+      },
+      learningHub: {
+        title: 'Learning Hub',
+        description:
+          "Explore tailored learning paths, tutorials, and resources to boost your skills. Whether you're diving into a new tool or deepening your knowledge.",
+        coinText: '5 Coin',
+        templateTitle: 'Front-end',
+        level: 'Mid-senior',
+        price: '$20',
+        more: 'More',
+      },
+      interviewQuestions: {
+        title: 'Interview Questions',
+        description:
+          'Review common and role-specific interview questions to boost your confidence and improve your chances of success.',
+        coinText: '5 Coin',
+        questions: 'Questions',
+        answer: 'Find common and role-specific questions',
+      },
+      more: 'More',
+      back: 'Back',
+      submit: 'Submit',
+      answerLabel: 'Answer:',
+    },
     landing: {
       introDialog: {
         primaryInfo: 'Primary information',
@@ -1531,6 +1563,38 @@ export const mainTranslations = {
       logoutConfirm: 'آیا مطمئن هستید که می‌خواهید خارج شوید؟',
       no: 'خیر',
       yes: 'بله',
+    },
+    moreFeatures: {
+      title: 'امکانات بیشتر',
+      subtitle: 'می‌توانید از این امکانات همراه با رزومه خود استفاده کنید',
+      jobPositionSuggestions: {
+        title: 'پیشنهاد موقعیت شغلی',
+        description:
+          'پیشنهادهای شخصی‌سازی‌شده موقعیت شغلی بر اساس محتوا و مهارت‌های رزومه شما.',
+        coinText: '۵ سکه',
+      },
+      learningHub: {
+        title: 'مرکز یادگیری',
+        description:
+          'مسیرهای یادگیری، آموزش‌ها و منابع متناسب را برای تقویت مهارت‌های خود ببینید. چه ابزار جدید یاد بگیرید چه دانش خود را عمیق‌تر کنید.',
+        coinText: '۵ سکه',
+        templateTitle: 'فرانت‌اند',
+        level: 'میانی تا ارشد',
+        price: '۲۰ دلار',
+        more: 'بیشتر',
+      },
+      interviewQuestions: {
+        title: 'سوالات مصاحبه',
+        description:
+          'سوالات رایج و مرتبط با نقش شغلی را مرور کنید تا اعتماد به نفس بیشتری داشته باشید و شانس موفقیت خود را بالا ببرید.',
+        coinText: '۵ سکه',
+        questions: 'سوالات',
+        answer: 'سوالات رایج و مرتبط با نقش را پیدا کنید',
+      },
+      more: 'بیشتر',
+      back: 'بازگشت',
+      submit: 'ارسال',
+      answerLabel: 'پاسخ: ',
     },
     landing: {
       introDialog: {

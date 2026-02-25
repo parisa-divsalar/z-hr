@@ -18,6 +18,8 @@ import {
 } from '@/components/MoreFeature/ResumeTemplates/styled';
 import SuggestionPreview from '@/components/MoreFeature/SuggestionPreview';
 import MuiButton from '@/components/UI/MuiButton';
+import { getMainTranslations } from '@/locales/main';
+import { useLocaleStore } from '@/store/common';
 
 interface MoreFeaturesProps {
     onBack: () => void;
@@ -26,46 +28,76 @@ interface MoreFeaturesProps {
 
 const RIGHT_PREVIEW_WIDTH_PX = 126 * 2 + 12; // matches ResumeCardGrid (2 cols + gap)
 
-const learningHubTemplates = [
-    { id: '1', title: 'Front-end', level: 'Mid-senior', price: '$20', isBookmarked: false },
-    { id: '2', title: 'Front-end', level: 'Mid-senior', price: '$20', isBookmarked: false },
-    { id: '3', title: 'Front-end', level: 'Mid-senior', price: '$20', isBookmarked: false },
-    { id: '4', title: 'Front-end', level: 'Mid-senior', price: '$20', isBookmarked: false },
-];
-
 const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }) => {
+    const locale = useLocaleStore((s) => s.locale);
+    const t = getMainTranslations(locale).moreFeatures;
+    const dir = locale === 'fa' ? 'rtl' : 'ltr';
+
+    const learningHubTemplates = [
+        {
+            id: '1',
+            title: t.learningHub.templateTitle,
+            level: t.learningHub.level,
+            price: t.learningHub.price,
+            isBookmarked: false,
+        },
+        {
+            id: '2',
+            title: t.learningHub.templateTitle,
+            level: t.learningHub.level,
+            price: t.learningHub.price,
+            isBookmarked: false,
+        },
+        {
+            id: '3',
+            title: t.learningHub.templateTitle,
+            level: t.learningHub.level,
+            price: t.learningHub.price,
+            isBookmarked: false,
+        },
+        {
+            id: '4',
+            title: t.learningHub.templateTitle,
+            level: t.learningHub.level,
+            price: t.learningHub.price,
+            isBookmarked: false,
+        },
+    ];
+
+    const suggestionCards = [
+        { number: 1, title: t.interviewQuestions.questions, answer: t.interviewQuestions.answer },
+        { number: 2, title: t.interviewQuestions.questions, answer: t.interviewQuestions.answer },
+        { number: 3, title: t.interviewQuestions.questions, answer: t.interviewQuestions.answer },
+    ];
+
     return (
-        <>
+        <Box dir={dir} sx={{ width: '100%' }}>
             <Stack textAlign='center' mt={2} mb={2} sx={{ px: { xs: 2, md: 0 } }}>
                 <Typography variant='h5' color='text.primary' fontWeight='500' mt={0.5}>
-                    More Features
+                    {t.title}
                 </Typography>
                 <Typography variant='h6' color='text.primary' mt={2} fontWeight='400'>
-                    You can utilize these features with your resume
+                    {t.subtitle}
                 </Typography>
             </Stack>
 
             <Stack spacing={2.5} mt={2}>
                 <FeatureRow
-                    title='Job Position Suggestions'
-                    description='Get personalized job position recommendations based on your resume content and skills.'
-                    coinText='5 Coin'
+                    title={t.jobPositionSuggestions.title}
+                    description={t.jobPositionSuggestions.description}
+                    coinText={t.jobPositionSuggestions.coinText}
+                    moreLabel={t.more}
                     rightWidth={RIGHT_PREVIEW_WIDTH_PX}
                     right={
-                        <SuggestionPreview
-                            cards={[
-                                { number: 1, title: 'Questions', answer: 'Find common and role-specific questions' },
-                                { number: 2, title: 'Questions', answer: 'Find common and role-specific questions' },
-                                { number: 3, title: 'Questions', answer: 'Find common and role-specific questions' },
-                            ]}
-                        />
+                        <SuggestionPreview cards={suggestionCards} answerLabel={t.answerLabel} />
                     }
                 />
 
                 <FeatureRow
-                    title='Learning Hub'
-                    description="Explore tailored learning paths, tutorials, and resources to boost your skills. Whether you're diving into a new tool or deepening your knowledge."
-                    coinText='5 Coin'
+                    title={t.learningHub.title}
+                    description={t.learningHub.description}
+                    coinText={t.learningHub.coinText}
+                    moreLabel={t.more}
                     rightWidth={RIGHT_PREVIEW_WIDTH_PX}
                     right={
                         <ResumeCardGrid>
@@ -109,7 +141,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                                                     {template.price}
                                                 </Typography>
                                             </PriceTag>
-                                            <MuiButton text='More' variant='outlined' size='small' />
+                                            <MuiButton text={t.learningHub.more} variant='outlined' size='small' />
                                         </Box>
                                     </CardContent>
                                 </ResumeCard>
@@ -119,18 +151,13 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                 />
 
                 <FeatureRow
-                    title='Interview Questions'
-                    description='Review common and role-specific interview questions to boost your confidence and improve your chances of success.'
-                    coinText='5 Coin'
+                    title={t.interviewQuestions.title}
+                    description={t.interviewQuestions.description}
+                    coinText={t.interviewQuestions.coinText}
+                    moreLabel={t.more}
                     rightWidth={RIGHT_PREVIEW_WIDTH_PX}
                     right={
-                        <SuggestionPreview
-                            cards={[
-                                { number: 1, title: 'Questions', answer: 'Find common and role-specific questions' },
-                                { number: 2, title: 'Questions', answer: 'Find common and role-specific questions' },
-                                { number: 3, title: 'Questions', answer: 'Find common and role-specific questions' },
-                            ]}
-                        />
+                        <SuggestionPreview cards={suggestionCards} answerLabel={t.answerLabel} />
                     }
                 />
             </Stack>
@@ -144,16 +171,17 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                 sx={{ width: '100%' }}
             >
                 <MuiButton
-                    text='Back'
+                    text={t.back}
                     variant='outlined'
                     color='secondary'
                     size='large'
-                    startIcon={<ArrowBackIcon style={{ color: '#111113' }} />}
+                    startIcon={dir === 'ltr' ? <ArrowBackIcon style={{ color: '#111113' }} /> : undefined}
+                    endIcon={dir === 'rtl' ? <ArrowBackIcon style={{ color: '#111113' }} /> : undefined}
                     onClick={onBack}
                     sx={{ width: { xs: '100%', md: 'auto' } }}
                 />
                 <MuiButton
-                    text='Submit'
+                    text={t.submit}
                     variant='contained'
                     color='secondary'
                     size='large'
@@ -161,7 +189,7 @@ const MoreFeatures: FunctionComponent<MoreFeaturesProps> = ({ onBack, onSubmit }
                     sx={{ width: { xs: '100%', md: 'auto' } }}
                 />
             </Stack>
-        </>
+        </Box>
     );
 };
 

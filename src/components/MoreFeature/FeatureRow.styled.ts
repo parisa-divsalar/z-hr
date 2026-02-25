@@ -5,6 +5,7 @@ import MuiButton from '@/components/UI/MuiButton';
 
 export const RowContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
+    flexDirection: 'row',
     gap: theme.spacing(4),
     padding: theme.spacing(1),
     borderRadius: '8px',
@@ -18,6 +19,13 @@ export const RowContainer = styled(Box)(({ theme }) => ({
         padding: theme.spacing(2),
         width: '100%',
         height: 'auto',
+    },
+
+    '[dir="rtl"] &': {
+        flexDirection: 'row-reverse',
+        [theme.breakpoints.down('md')]: {
+            flexDirection: 'column',
+        },
     },
 }));
 
@@ -51,7 +59,7 @@ export const TitleSection = styled(Box)(() => ({
 }));
 
 export const DescriptionText = styled(Typography)(({ theme }) => ({
-    marginLeft: theme.spacing(1),
+    marginInlineStart: theme.spacing(1),
     overflow: 'hidden',
     display: '-webkit-box',
     WebkitLineClamp: 2,
@@ -59,7 +67,7 @@ export const DescriptionText = styled(Typography)(({ theme }) => ({
 }));
 
 export const FooterRow = styled(Box)(({ theme }) => ({
-    marginLeft: theme.spacing(1),
+    marginInlineStart: theme.spacing(1),
     marginTop: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',

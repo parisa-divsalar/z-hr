@@ -20,6 +20,8 @@ interface FeatureRowProps {
     title: string;
     description: string;
     coinText?: string;
+    /** Translated label for the "More" button (e.g. "More" / "بیشتر") */
+    moreLabel?: string;
     right: ReactNode;
     onMoreClick?: () => void;
     /**
@@ -33,6 +35,7 @@ const FeatureRow: FunctionComponent<FeatureRowProps> = ({
     title,
     description,
     coinText,
+    moreLabel = 'More',
     right,
     onMoreClick,
     rightWidth,
@@ -68,7 +71,7 @@ const FeatureRow: FunctionComponent<FeatureRowProps> = ({
                         )}
 
                         <MoreButton
-                            text='More'
+                            text={moreLabel}
                             variant='contained'
                             color='secondary'
                             onClick={onMoreClick}
