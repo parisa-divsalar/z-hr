@@ -14,8 +14,11 @@ type Props = { c: ResumeEditorController };
 export default function LanguagesSection({ c }: Props) {
     const locale = useLocaleStore((s) => s.locale);
     const t = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const languageNames = (t as { languageNames?: Record<string, string> }).languageNames ?? {};
     const sectionTitle = t.sections.languages;
     const noLanguagesFound = t.noLanguagesFound;
+    const displayLanguageName = (name: string) =>
+        locale === 'fa' && name && languageNames[name] ? languageNames[name] : name;
     const isEditing = !c.isPreview && c.editingSection === 'languages';
     const hasContent = c.languages.some((lang) => String(lang?.name ?? '').trim().length > 0);
     const shouldRender =
@@ -64,7 +67,7 @@ export default function LanguagesSection({ c }: Props) {
                     <Box>
                         {c.languages.map((lang, idx) => (
                             <SummaryText key={lang.id} sx={{ mt: idx === 0 ? 0 : 1.5 }}>
-                                {lang.name}
+                                {displayLanguageName(String(lang?.name ?? '').trim())}
                                 {lang.level ? ` - ${lang.level}` : ''}
                             </SummaryText>
                         ))}

@@ -280,9 +280,17 @@ function SummaryCardT2({ c, title }: { c: ResumeEditorController; title: string 
 
 function SkillsCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
     const locale = useLocaleStore((s) => s.locale);
+    const skillCategoryFa = (getMainTranslations(locale).landing.skillCategoryFa ?? {}) as Record<string, string>;
     const noSkillsFound = getMainTranslations(locale).landing.wizard.resumeEditor.noSkillsFound;
     const isEditing = !c.isPreview && c.editingSection === 'skills';
     const visibleSkills = useMemo(() => c.skills.map((s) => String(s ?? '').trim()).filter(Boolean), [c.skills]);
+    const displaySkills = useMemo(
+        () =>
+            locale === 'fa' && Object.keys(skillCategoryFa).length > 0
+                ? visibleSkills.map((s) => skillCategoryFa[s] ?? s)
+                : visibleSkills,
+        [visibleSkills, locale, skillCategoryFa],
+    );
     const hasContent = c.skills.some((skill) => String(skill ?? '').trim().length > 0);
     if (!shouldShowSection({ c, section: 'skills', hasContent })) return null;
 
@@ -324,9 +332,9 @@ function SkillsCardT2({ c, title }: { c: ResumeEditorController; title: string }
                     </SkillsContainer>
                 ) : (
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0.75 }}>
-                        {visibleSkills.map((skill, index) => (
+                        {displaySkills.map((skill, index) => (
                             <Box
-                                key={`${skill}-${index}`}
+                                key={`${visibleSkills[index] ?? skill}-${index}`}
                                 component='span'
                                 sx={{
                                     display: 'inline-flex',
@@ -439,10 +447,14 @@ function TextListCardT2({
 
 function LanguagesCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
     const locale = useLocaleStore((s) => s.locale);
-    const noLanguagesFound = getMainTranslations(locale).landing.wizard.resumeEditor.noLanguagesFound;
+    const resumeEditorT = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const languageNames = (resumeEditorT as { languageNames?: Record<string, string> }).languageNames ?? {};
+    const noLanguagesFound = resumeEditorT.noLanguagesFound;
     const isEditing = !c.isPreview && c.editingSection === 'languages';
     const hasContent = c.languages.some((lang) => String(lang?.name ?? '').trim().length > 0);
     if (!shouldShowSection({ c, section: 'languages', hasContent })) return null;
+    const displayLanguageName = (name: string) =>
+        locale === 'fa' && name && languageNames[name] ? languageNames[name] : name;
 
     return (
         <Box>
@@ -484,7 +496,7 @@ function LanguagesCardT2({ c, title }: { c: ResumeEditorController; title: strin
                                     lineHeight: 1.5,
                                 }}
                             >
-                                {lang.name}
+                                {displayLanguageName(String(lang?.name ?? '').trim())}
                                 {lang.level ? ` - ${lang.level}` : ''}
                             </Typography>
                         ))}
@@ -657,6 +669,8 @@ function AdditionalInfoCardT2({ c, title }: { c: ResumeEditorController; title: 
 }
 
 function DetailsCardT2({ c, title }: { c: ResumeEditorController; title: string }) {
+    const locale = useLocaleStore((s) => s.locale);
+    const ph = getMainTranslations(locale).landing.wizard.resumeEditor.profileHeader;
     const isEditing = !c.isPreview && c.editingSection === 'contactWays';
     const hasContent = c.contactWays.some((v) => String(v ?? '').trim().length > 0) || Boolean(c.resolvedEmail) || Boolean(c.resolvedPhone);
     if (!shouldShowSection({ c, section: 'contactWays', hasContent })) return null;
@@ -744,7 +758,7 @@ function DetailsCardT2({ c, title }: { c: ResumeEditorController; title: string 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         {parsed.addressLines.length ? (
                             <Box>
-                                <Typography sx={rowLabelSx}>ADDRESS</Typography>
+                                <Typography sx={rowLabelSx}>{ph.address}</Typography>
                                 <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
                                     {parsed.addressLines.map((line, idx) => (
                                         <Typography key={idx} sx={rowValueSx}>
@@ -757,14 +771,14 @@ function DetailsCardT2({ c, title }: { c: ResumeEditorController; title: string 
 
                         {parsed.phone ? (
                             <Box>
-                                <Typography sx={rowLabelSx}>PHONE</Typography>
+                                <Typography sx={rowLabelSx}>{ph.phone}</Typography>
                                 <Typography sx={{ ...rowValueSx, mt: 0.5 }}>{parsed.phone}</Typography>
                             </Box>
                         ) : null}
 
                         {parsed.email ? (
                             <Box>
-                                <Typography sx={rowLabelSx}>EMAIL</Typography>
+                                <Typography sx={rowLabelSx}>{ph.email}</Typography>
                                 <Typography sx={{ ...rowValueSx, mt: 0.5 }}>{parsed.email}</Typography>
                             </Box>
                         ) : null}
@@ -790,6 +804,13 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
     const locale = useLocaleStore((s) => s.locale);
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
 
+    const mainT = getMainTranslations(locale);
+    const skillCategoryFa = mainT.landing.skillCategoryFa ?? ({} as Record<string, string>);
+    const displayMainSkill =
+        locale === 'fa' && c.resolvedMainSkill
+            ? (skillCategoryFa[c.resolvedMainSkill] ?? c.resolvedMainSkill)
+            : (c.resolvedMainSkill ?? '');
+
     const sectionLabels: Record<SectionKey, string> = useMemo(() => {
         const t = getMainTranslations(locale).landing.wizard.resumeEditor;
         return {
@@ -805,7 +826,7 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
         };
     }, [locale]);
 
-    const resumeEditorT = getMainTranslations(locale).landing.wizard.resumeEditor;
+    const resumeEditorT = mainT.landing.wizard.resumeEditor;
     const pendingDeleteLabel = c.pendingDeleteSection ? sectionLabels[c.pendingDeleteSection] : resumeEditorT.thisSection;
 
     useEffect(() => {
@@ -911,7 +932,7 @@ const ResumeEditorTemplate2: FunctionComponent<Props> = ({
                                     fontWeight: 500,
                                 }}
                             >
-                                {String(c.resolvedMainSkill ?? '').trim() || ' '}
+                                {String(displayMainSkill).trim() || ' '}
                             </Typography>
                         </Box>
 

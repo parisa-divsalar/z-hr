@@ -718,6 +718,7 @@ export const mainTranslations = {
             visaStatus: 'Visa Status',
             phone: 'Phone',
             email: 'Email',
+            address: 'Address',
             placeholder: 'Full name\n\nDD/MM/YYYY\n\nVisa Status: ... • ...\n\nPhone: ...\nEmail: ...',
           },
           sections: {
@@ -737,6 +738,7 @@ export const mainTranslations = {
             interests: 'Interests',
             skillsSummary: 'Skills Summary',
           },
+          languageNames: {} as Record<string, string>,
         },
         moreFeatures: {
           title: 'More Features',
@@ -1592,6 +1594,7 @@ export const mainTranslations = {
             visaStatus: 'وضعیت ویزا',
             phone: 'تلفن',
             email: 'ایمیل',
+            address: 'آدرس',
             placeholder: 'نام کامل\n\nسال/ماه/روز\n\nوضعیت ویزا: ... • ...\n\nتلفن: ...\nایمیل: ...',
           },
           sections: {
@@ -1611,6 +1614,22 @@ export const mainTranslations = {
             interests: 'علاقه‌مندی‌ها',
             skillsSummary: 'خلاصه مهارت‌ها',
           },
+          languageNames: {
+            Persian: 'فارسی',
+            English: 'انگلیسی',
+            Arabic: 'عربی',
+            French: 'فرانسوی',
+            German: 'آلمانی',
+            Spanish: 'اسپانیایی',
+            Turkish: 'ترکی',
+            Chinese: 'چینی',
+            Japanese: 'ژاپنی',
+            Korean: 'کرهای',
+            Russian: 'روسی',
+            Hindi: 'هندی',
+            Italian: 'ایتالیایی',
+            Portuguese: 'پرتغالی',
+          } as Record<string, string>,
         },
         moreFeatures: {
           title: 'قابلیت‌های بیشتر',

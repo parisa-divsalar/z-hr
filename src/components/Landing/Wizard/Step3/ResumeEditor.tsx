@@ -66,6 +66,12 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
     const { profile } = useUserProfile();
     const requestId = useWizardStore((state) => state.requestId);
     const locale = useLocaleStore((s) => s.locale);
+    const mainT = getMainTranslations(locale);
+    const skillCategoryFa = (mainT.landing.skillCategoryFa ?? {}) as Record<string, string>;
+    const displayMainSkill =
+        locale === 'fa' && c.resolvedMainSkill
+            ? (skillCategoryFa[c.resolvedMainSkill] ?? c.resolvedMainSkill)
+            : (c.resolvedMainSkill ?? '');
     const [isRefreshWarningOpen, setIsRefreshWarningOpen] = useState<boolean>(mode !== 'preview');
     const sectionLabels: Record<SectionKey, string> = useMemo(() => {
         const t = getMainTranslations(locale).landing.wizard.resumeEditor;
@@ -125,7 +131,7 @@ const ResumeEditor: FunctionComponent<ResumeEditorProps> = ({
                         fullName={c.profile.fullName}
                         dateOfBirth={c.profile.dateOfBirth}
                         visaStatus={c.resolvedVisaStatus}
-                        mainSkill={c.resolvedMainSkill}
+                        mainSkill={displayMainSkill}
                         phone={c.resolvedPhone}
                         email={c.resolvedEmail}
                         isEditing={!c.isPreview && c.editingSection === 'profile'}

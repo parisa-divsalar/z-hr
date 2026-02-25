@@ -14,8 +14,15 @@ type Props = { c: ResumeEditorController };
 
 export default function SkillsSection({ c }: Props) {
     const locale = useLocaleStore((s) => s.locale);
-    const sectionTitle = getMainTranslations(locale).landing.wizard.resumeEditor.sections.skills;
-    const noSkillsFound = getMainTranslations(locale).landing.wizard.resumeEditor.noSkillsFound;
+    const mainT = getMainTranslations(locale);
+    const resumeEditorT = mainT.landing.wizard.resumeEditor;
+    const skillCategoryFa = (mainT.landing.skillCategoryFa ?? {}) as Record<string, string>;
+    const sectionTitle = resumeEditorT.sections.skills;
+    const noSkillsFound = resumeEditorT.noSkillsFound;
+    const displaySkills =
+        locale === 'fa' && Object.keys(skillCategoryFa).length > 0
+            ? c.skills.map((s) => skillCategoryFa[String(s ?? '').trim()] ?? s)
+            : c.skills;
     const isEditing = !c.isPreview && c.editingSection === 'skills';
     const hasContent = c.skills.some((skill) => String(skill ?? '').trim().length > 0);
     const shouldRender =
@@ -65,7 +72,9 @@ export default function SkillsSection({ c }: Props) {
                         />
                     ))
                 ) : (
-                    c.skills.map((skill, index) => <MuiChips key={`${skill}-${index}`} label={skill} sx={{ mt: 0 }} />)
+                    displaySkills.map((skill, index) => (
+                        <MuiChips key={`${c.skills[index] ?? skill}-${index}`} label={skill} sx={{ mt: 0 }} />
+                    ))
                 )}
             </SkillsContainer>
         </SectionContainer>
