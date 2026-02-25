@@ -66,8 +66,8 @@ const CommunitySection = () => {
         <MuiButton text={t.more ?? 'More'} color='secondary' variant='text' endIcon={<ArrowRightIcon />} />
       </SectionHeader>
       <Stack gap={2}>
-        <CommunityCard icon='tel' title='Front end channel!' subtitle='Telegram — 2,638 Members' viewLabel={t.view ?? 'View'} joinLabel={t.join ?? 'Join'} />
-        <CommunityCard icon='insta' title='Front end Instagram' subtitle='Instagram — 2,337 Followers' viewLabel={t.view ?? 'View'} joinLabel={t.join ?? 'Join'} />
+        <CommunityCard icon='tel' title={t.communityTelTitle ?? 'Front end channel!'} subtitle={t.communityTelSubtitle ?? 'Telegram — 2,638 Members'} viewLabel={t.view ?? 'View'} joinLabel={t.join ?? 'Join'} />
+        <CommunityCard icon='insta' title={t.communityInstaTitle ?? 'Front end Instagram'} subtitle={t.communityInstaSubtitle ?? 'Instagram — 2,337 Followers'} viewLabel={t.view ?? 'View'} joinLabel={t.join ?? 'Join'} />
       </Stack>
     </Stack>
   );

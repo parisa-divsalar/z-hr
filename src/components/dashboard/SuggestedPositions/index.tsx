@@ -14,7 +14,9 @@ import Location from '@/assets/images/dashboard/location.svg';
 import { SectionHeader, SectionJob, SuggestedJobCardItem } from '@/components/dashboard/styled';
 import MuiButton from '@/components/UI/MuiButton';
 import MuiAlert from '@/components/UI/MuiAlert';
+import { useTranslatedSummary } from '@/components/Landing/Wizard/Step3/ResumeEditor/hooks/useTranslatedSummary';
 import { getMainTranslations } from '@/locales/main';
+import type { Locale } from '@/store/common/type';
 import { useLocaleStore } from '@/store/common';
 import { useAuthStore } from '@/store/auth';
 
@@ -41,33 +43,51 @@ function toMMDDYYYY(value: string | undefined) {
   return `${mm}/${dd}/${yyyy}`;
 }
 
-function locationTypeLabel(locationType?: string) {
+function locationTypeLabel(locationType: string | undefined, t: Record<string, string>) {
   const s = String(locationType ?? '').trim().toLowerCase();
   if (!s) return '';
-  if (s === 'remote') return 'Remote';
-  if (s === 'hybrid') return 'Hybrid';
-  if (s === 'onsite' || s === 'on-site' || s === 'on site') return 'Onsite';
+  if (s === 'remote') return t.locationRemote ?? 'Remote';
+  if (s === 'hybrid') return t.locationHybrid ?? 'Hybrid';
+  if (s === 'onsite' || s === 'on-site' || s === 'on site') return t.locationOnsite ?? 'Onsite';
   return s;
 }
 
-function possessive(name: string, yourResumeLabel: string) {
+function formatResumeLabel(name: string, yourResumeLabel: string, resumeOfTemplate: string) {
   const n = String(name ?? '').trim();
   if (!n) return yourResumeLabel;
-  const endsWithS = n.toLowerCase().endsWith('s');
-  return `${n}${endsWithS ? '’' : '’s'} Resume`;
+  return resumeOfTemplate.replace(/\{\{name\}\}/g, n);
 }
 
-const SuggestedJobCard = ({ job, t }: { job: SuggestedJob; t: Record<string, string> }) => {
+const SuggestedJobCard = ({
+  job,
+  t,
+  locale,
+}: {
+  job: SuggestedJob;
+  t: Record<string, string>;
+  locale: Locale;
+}) => {
   const date = toMMDDYYYY(job.postedDate);
-  const type = locationTypeLabel(job.locationType);
+  const type = locationTypeLabel(job.locationType, t);
   const subtitle = [date, type].filter(Boolean).join(' · ');
-  const resumeLabel = possessive(job.matchedResumeName, t.yourResume ?? 'Your Resume');
+
+  // Translate dynamic title, description, location & resume name when locale is 'fa'
+  const { displayText: titleText } = useTranslatedSummary(String(job.title ?? ''), locale);
+  const { displayText: descriptionText } = useTranslatedSummary(String(job.description ?? ''), locale);
+  const { displayText: locationText } = useTranslatedSummary(String(job.location ?? ''), locale);
+  const { displayText: resumeNameText } = useTranslatedSummary(String(job.matchedResumeName ?? ''), locale);
+
+  const resumeLabel = formatResumeLabel(
+    resumeNameText,
+    t.yourResume ?? 'Your Resume',
+    t.resumeOf ?? "{{name}}'s Resume",
+  );
 
   return (
     <SuggestedJobCardItem>
       <SectionJob bgcolor='gray.200'>
         <Typography variant='subtitle1' color='text.primary' fontWeight='400'>
-          {job.title}
+          {titleText}
         </Typography>
       </SectionJob>
       <Stack direction='row' alignItems='center' justifyContent='space-between' px={2} p={2}>
@@ -77,7 +97,7 @@ const SuggestedJobCard = ({ job, t }: { job: SuggestedJob; t: Record<string, str
         <Stack direction='row'>
           <Location style={{ marginTop: 4 }} />
           <Typography variant='subtitle2' color='text.primary' fontWeight='400' pl={1}>
-            {job.location || '—'}
+            {locationText || '—'}
           </Typography>
         </Stack>
       </Stack>
@@ -85,7 +105,7 @@ const SuggestedJobCard = ({ job, t }: { job: SuggestedJob; t: Record<string, str
       <Divider sx={{ borderColor: 'grey.100', marginX: '8px' }} />
 
       <Typography variant='subtitle2' color='text.primary' fontWeight='400' px={2} pt={1}>
-        {job.description || '—'}
+        {descriptionText || '—'}
       </Typography>
 
       <Typography variant='subtitle2' color='text.primary' fontWeight='400' mt={1} px={2}>
@@ -192,7 +212,7 @@ const SuggestedPositions = ({ suggestedJobs }: { suggestedJobs?: SuggestedJob[] 
         ) : jobs.length > 0 ? (
           jobs.map((job) => (
             <Grid key={job.id} size={{ xs: 12, md: 6 }}>
-              <SuggestedJobCard job={job} t={t} />
+              <SuggestedJobCard job={job} t={t} locale={locale} />
             </Grid>
           ))
         ) : (
