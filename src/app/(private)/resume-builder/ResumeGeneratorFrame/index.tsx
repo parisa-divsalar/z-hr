@@ -2,13 +2,10 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import {  Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useRouter } from 'next/navigation';
 
-import ArrowIcon from '@/assets/images/dashboard/Icon.svg';
-import LinkDarkIcon from '@/assets/images/icons/link-dark.svg';
-import ArrowRightIcon from '@/assets/images/icons/links.svg';
 import ResumeEditor from '@/components/Landing/Wizard/Step3/ResumeEditor';
 import MuiAlert from '@/components/UI/MuiAlert';
 import MuiButton from '@/components/UI/MuiButton';
@@ -21,7 +18,6 @@ import { exportElementToPdf, sanitizeFileName } from '@/utils/exportToPdf';
 import {
     Container,
     HeaderSection,
-    ResumePreview,
     InfoTable,
     InfoRow,
     FitScoreBadge,
@@ -120,18 +116,31 @@ const ResumeGeneratorFrame = (props: ResumeGeneratorFrameProps) => {
 
     return (
         <Container dir={dir} sx={{ direction: dir }}>
-            <Grid container spacing={{ xs: 3, sm: 4 }}>
-                {/*<Grid size={{ xs: 12, lg: 3 }}>*/}
-                {/*    <ResumePreview>*/}
-                {/*        <ResumeEditor*/}
-                {/*            mode='preview'*/}
-                {/*            pdfTargetRef={resumePdfRef}*/}
-                {/*            setStage={setStage ?? (() => undefined)}*/}
-                {/*            setActiveStep={setActiveStep ?? (() => undefined)}*/}
-                {/*        />*/}
-                {/*    </ResumePreview>*/}
-                {/*</Grid>*/}
+            {/* رندر مخفی فقط برای خروجی PDF؛ پیش‌نمایش در صفحه نشان داده نمی‌شود */}
+            <div style={{ position: 'relative', overflow: 'hidden', height: 0 }}>
+                <div
+                    aria-hidden
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        width: '210mm',
+                        minHeight: '297mm',
+                        opacity: 0,
+                        pointerEvents: 'none',
+                        zIndex: -1,
+                    }}
+                >
+                    <ResumeEditor
+                        mode='preview'
+                        pdfTargetRef={resumePdfRef}
+                        setStage={setStage ?? (() => undefined)}
+                        setActiveStep={setActiveStep ?? (() => undefined)}
+                    />
+                </div>
+            </div>
 
+            <Grid container spacing={{ xs: 3, sm: 4 }}>
                 <Grid size={{ xs: 12, lg: 12 }}>
                     <InfoTable>
                         <HeaderSection>
