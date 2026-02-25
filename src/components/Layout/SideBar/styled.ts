@@ -90,12 +90,15 @@ export const ItemButton = styled(ListItemButton, {
 }));
 
 export const ItemIcon = styled(ListItemIcon)(() => ({
-    minWidth: 36,
+    minWidth: 28,
     color: '#8c8c8c',
 }));
 
 export const SidebarItemText = styled(ListItemText)(({ theme }) => ({
-    flex: 1,
+    flex: '0 1 auto',
+    minWidth: 0,
+    paddingLeft: 8,
+    paddingRight: 8,
     '& .MuiTypography-root': {
         fontSize: '0.85rem',
     },
